@@ -1,9 +1,9 @@
 // The punctuation rule, kept separate from the file walking so it can be tested.
-// Characters are written as escapes so this file never contains the characters it forbids.
+// The characters are built from code points so this file never contains the characters it forbids.
 
 export const FORBIDDEN = [
-  { character: "—", name: "em dash" },
-  { character: "–", name: "en dash" },
+  { character: String.fromCharCode(0x2014), name: "em dash" },
+  { character: String.fromCharCode(0x2013), name: "en dash" },
 ];
 
 /** Every forbidden dash in a text, with its 1-based line and column. */
