@@ -57,10 +57,11 @@ CODEOWNERS and the attribution check only enforce anything once branch protectio
 | `contributor-policy.yml` | Attribution check over complete history |
 | `codeql.yml` | CodeQL analysis of the TypeScript source on pushes, pull requests and weekly |
 | `dependency-review.yml` | Fails a pull request that adds a dependency with a known high-severity vulnerability |
-| `dependabot.yml` | Weekly grouped update pull requests for npm and for the pinned actions |
 | `deploy-apps-script.yml` | Manual only, kept until the Apps Script service is removed |
 
 Settings applied by the owner's request: secret scanning and push protection, Dependabot alerts and security updates, private vulnerability reporting, and the rule that every action must be pinned to a full commit SHA. A ruleset `Protect main` blocks deleting `main` and force-pushing to it; nobody is exempt.
+
+**No scheduled Dependabot updates, by design:** the attribution policy rejects any commit authored by automation, and Dependabot's commits are bot-authored, so its pull requests fail it. Version updates are off (no `dependabot.yml`), alerts stay on, the weekly Verify run audits dependencies, and updates are made by hand (a pinned action is updated by editing its SHA). Dependabot security-update pull requests are still enabled in the repository settings and will fail the attribution check until the owner turns them off or exempts Dependabot in the policy.
 
 **Not enforced, by choice:** required status checks and required pull requests. GitHub rejects a direct push to a branch that requires checks, so requiring them means every change goes through a pull request. The owner chose to keep direct pushes to `main` for now; the checks still run on every push and a failure is visible, but it does not block the push. Revisit when more than one person contributes.
 
