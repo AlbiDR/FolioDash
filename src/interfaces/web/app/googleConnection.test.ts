@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { HttpClient } from "../../../adapters/google/ScriptsRun";
 import type { ConnectionConfig, ConnectionStep } from "../features/connection/ConnectionModel";
 import { SPREADSHEETS_SCOPE, createConnectionPort } from "./googleConnection";
+import { EMPTY_LEDGER } from "../../../core/Ledger";
 import type { SignInResult } from "./googleIdentity";
 
 const config: ConnectionConfig = { clientId: "1234567890-abc.apps.googleusercontent.com", scriptId: "script-id-0000000001", workbookId: "workbook-id-00000001" };
@@ -15,7 +16,7 @@ function http(status: number, body: unknown, seen: { url?: string; body?: unknow
 }
 
 const signedIn = (): Promise<SignInResult> => Promise.resolve({ ok: true, accessToken: "token" });
-const intact = { done: true, response: { result: { ok: true, value: { status: "ok", ignoredTrailingRows: 0, state: { revision: "rev-1", funds: [], snapshots: [{}] } } } } };
+const intact = { done: true, response: { result: { ok: true, value: { status: "ok", ignoredTrailingRows: 0, state: EMPTY_LEDGER } } } };
 
 async function run(port: ReturnType<typeof createConnectionPort>) {
   const steps: ConnectionStep[] = [];
@@ -36,7 +37,7 @@ describe("createConnectionPort", () => {
         http: http(200, intact, seen),
       }),
     );
-    expect(result).toEqual({ status: "connected", statements: 1, ignoredTrailingRows: 0 });
+    expect(result).toEqual({ status: "connected", statements: 0, ignoredTrailingRows: 0, ledger: EMPTY_LEDGER });
     expect(steps).toEqual(["signing-in", "calling-service"]);
     expect(scope).toBe(SPREADSHEETS_SCOPE);
     expect(seen.url).toContain("script-id-0000000001:run");

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
+import type { CheckResult, RecordResult, RemoteSave } from "./ImportModel";
 import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import { type EuroCents, ZERO_CENTS, formatEuro, parseItalianAmount } from "../../../../core/Money";
@@ -123,13 +124,26 @@ const DETECTION_TEXT: Readonly<Record<PlanRow["detected"], string>> = {
   Closed: "Closed earlier",
 };
 
+type SaveState =
+  | { readonly name: "idle" }
+  | { readonly name: "saving" }
+  | { readonly name: "not-saved"; readonly message: string }
+  | { readonly name: "refused"; readonly outcome: Extract<RecordResult, { status: "stale" | "rejected" | "damaged" }> }
+  | { readonly name: "saved-not-reloaded" }
+  | { readonly name: "unknown"; readonly message: string };
+
 export function CashQuestions(props: {
   readonly statement: ReviewStatement;
   readonly date: IsoDate;
   readonly ledger: LedgerState;
   readonly createRevision: () => string;
   readonly onRecord: (next: LedgerState) => void;
+  /** Present once the user has connected a spreadsheet. Without it, a statement is kept in this tab only. */
+  readonly save?: RemoteSave;
 }): JSX.Element {
+  const [saving, setSaving] = useState<SaveState>({ name: "idle" });
+  // One id per user action. It is kept across a failed attempt so a retry cannot be recorded twice.
+  const [commandId, setCommandId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Readonly<Record<string, Answer>>>({});
   const [moneyMoved, setMoneyMoved] = useState<"yes" | "no" | "">("");
   const [attempted, setAttempted] = useState(false);
@@ -145,9 +159,65 @@ export function CashQuestions(props: {
     setAnswers((current) => ({ ...current, [isin]: { ...(current[isin] ?? BLANK), ...patch } }));
   }
 
+  function settle(outcome: RecordResult | CheckResult): void {
+    switch (outcome.status) {
+      case "recorded":
+        props.onRecord(outcome.ledger);
+        return;
+      case "saved-not-reloaded":
+        setSaving({ name: "saved-not-reloaded" });
+        return;
+      case "stale":
+      case "rejected":
+      case "damaged":
+        setCommandId(null);
+        setSaving({ name: "refused", outcome });
+        return;
+      case "not-saved":
+        setSaving({ name: "not-saved", message: outcome.message });
+        return;
+      case "not-recorded":
+        setCommandId(null);
+        setSaving({ name: "not-saved", message: "The spreadsheet shows this statement was not recorded. It is safe to try again." });
+        return;
+      case "unknown":
+        setSaving({ name: "unknown", message: outcome.message });
+        return;
+      case "cannot-tell":
+        setSaving({ name: "unknown", message: outcome.message });
+        return;
+    }
+  }
+
+  async function saveToGoogle(save: RemoteSave): Promise<void> {
+    if (result === null || !result.ok) return;
+    const id = commandId ?? save.newCommandId();
+    setCommandId(id);
+    setSaving({ name: "saving" });
+    try {
+      settle(await save.record({ date: props.date, statement: props.statement, commands: built.commands }, id, props.ledger.revision));
+    } catch {
+      setSaving({ name: "unknown", message: "The save may or may not have been recorded. Check what happened before trying again." });
+    }
+  }
+
+  async function checkSave(save: RemoteSave): Promise<void> {
+    if (commandId === null) return;
+    setSaving({ name: "saving" });
+    try {
+      settle(await save.check(commandId));
+    } catch {
+      setSaving({ name: "unknown", message: "The spreadsheet could not be checked. Try again shortly." });
+    }
+  }
+
   function record(): void {
     setAttempted(true);
     if (result === null || !result.ok) return;
+    if (props.save !== undefined) {
+      void saveToGoogle(props.save);
+      return;
+    }
     const final = applyImport(props.ledger, props.statement, props.date, built.commands, props.createRevision());
     if (final.ok) props.onRecord(final.state);
   }
@@ -300,10 +370,55 @@ export function CashQuestions(props: {
         </section>
       )}
 
-      <button type="button" class="primary" onClick={record}>
+      <p class="hint">
+        {props.save === undefined
+          ? "Not connected to Google: this statement will be kept in this browser tab only and is lost when the page reloads."
+          : "Confirming saves this statement to your connected Google spreadsheet."}
+      </p>
+      <button type="button" class="primary" onClick={record} disabled={saving.name === "saving" || saving.name === "unknown"}>
         Confirm and record this statement
       </button>
       {hasErrors && attempted && <p class="field-error" role="alert">Some questions above still need an answer.</p>}
+      <div aria-live="polite" class="status">
+        {saving.name === "saving" && <p>Saving to your spreadsheet…</p>}
+      </div>
+      {saving.name === "not-saved" && (
+        <div class="review-problem" role="alert">
+          <h4>Not saved</h4>
+          <p>{saving.message}</p>
+        </div>
+      )}
+      {saving.name === "refused" && (
+        <div class="review-problem" role="alert">
+          <h4>Not saved</h4>
+          {saving.outcome.status === "stale" && (
+            <p>The ledger in the spreadsheet changed after you loaded it, so nothing was saved. Connect again on the Connection page to load the latest ledger, then repeat this import.</p>
+          )}
+          {saving.outcome.status === "rejected" && (
+            <>
+              <p>The spreadsheet service checked the statement and did not accept it. Nothing was saved.</p>
+              <ul>{saving.outcome.messages.map((message) => <li key={message}>{message}</li>)}</ul>
+            </>
+          )}
+          {saving.outcome.status === "damaged" && <p>{saving.outcome.message} Nothing was saved. Do not record anything until the ledger is restored.</p>}
+        </div>
+      )}
+      {saving.name === "saved-not-reloaded" && (
+        <div class="review-problem" role="alert">
+          <h4>Saved, but not reloaded</h4>
+          <p>The statement was recorded in your spreadsheet, but the ledger could not be read back. Do not record it again: connect on the Connection page to load the current ledger.</p>
+        </div>
+      )}
+      {saving.name === "unknown" && props.save !== undefined && (
+        <div class="review-problem" role="alert">
+          <h4>The result is not known</h4>
+          <p>{saving.message}</p>
+          <p>Do not try again yet. Checking reads your spreadsheet and writes nothing.</p>
+          <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>
+            Check what happened
+          </button>
+        </div>
+      )}
     </section>
   );
 }

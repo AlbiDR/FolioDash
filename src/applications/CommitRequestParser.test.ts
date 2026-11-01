@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseIsin } from "../../core/Isin";
-import { parseCommitRequest } from "./requests";
+import { parseIsin } from "../core/Isin";
+import { parseCommitRequest } from "./CommitRequestParser";
 
 function isin(code: string): string {
   for (let digit = 0; digit < 10; digit++) {

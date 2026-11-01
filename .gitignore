@@ -42,3 +42,4 @@ App Scripts/
 
 # Future synthetic binary fixtures require a documented, reviewed exception.
 # These rules do not detect sensitive content in allowed files or existing Git history.
+.claude/

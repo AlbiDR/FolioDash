@@ -4,6 +4,7 @@
 
 interface TokenResponse {
   readonly access_token?: string;
+  readonly expires_in?: number | string;
   readonly error?: string;
 }
 
@@ -31,7 +32,7 @@ declare global {
 }
 
 export type SignInResult =
-  | { readonly ok: true; readonly accessToken: string }
+  | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
   | { readonly ok: false; readonly reason: "denied" | "closed" | "unavailable" };
 
 const IDENTITY_SCRIPT = "https://accounts.google.com/gsi/client";
@@ -74,7 +75,8 @@ export async function signIn(clientId: string, scope: string): Promise<SignInRes
       scope,
       callback: (response) => {
         if (response.access_token !== undefined && response.error === undefined) {
-          resolve({ ok: true, accessToken: response.access_token });
+          const lifetime = Number(response.expires_in);
+          resolve({ ok: true, accessToken: response.access_token, ...(Number.isFinite(lifetime) && lifetime > 0 ? { expiresInSeconds: lifetime } : {}) });
         } else {
           resolve({ ok: false, reason: response.error === "access_denied" ? "denied" : "unavailable" });
         }

@@ -1,4 +1,6 @@
+import type { FundCommand, StatementInput } from "../../../../core/ImportPlan";
 import type { IsoDate } from "../../../../core/IsoDate";
+import type { LedgerState } from "../../../../core/Ledger";
 import type { EuroCents } from "../../../../core/Money";
 import type { DateCandidate } from "../../../../core/StatementDate";
 
@@ -59,3 +61,39 @@ export type ImportReview =
 export type ImportPreparer = (file: ImportFile) => Promise<ImportReview>;
 
 export type { IsoDate };
+
+/** What the user reviewed and confirmed, before it is saved. */
+export interface RecordRequest {
+  readonly date: IsoDate;
+  readonly statement: StatementInput;
+  readonly commands: readonly FundCommand[];
+}
+
+export type RecordResult =
+  /** Saved to the spreadsheet and read back; `ledger` is what the spreadsheet now holds. */
+  | { readonly status: "recorded"; readonly ledger: LedgerState }
+  /** Saved, but the ledger could not be read back afterwards. */
+  | { readonly status: "saved-not-reloaded" }
+  /** Known not to have been saved, so trying again is safe. */
+  | { readonly status: "not-saved"; readonly message: string }
+  /** The reviewed ledger is no longer the current one. Nothing was saved. */
+  | { readonly status: "stale" }
+  | { readonly status: "rejected"; readonly messages: readonly string[] }
+  | { readonly status: "damaged"; readonly message: string }
+  /** The save may or may not have happened. Check before trying again. */
+  | { readonly status: "unknown"; readonly message: string };
+
+export type CheckResult =
+  | { readonly status: "recorded"; readonly ledger: LedgerState }
+  | { readonly status: "saved-not-reloaded" }
+  /** The ledger shows this save did not happen, so trying again is safe. */
+  | { readonly status: "not-recorded" }
+  | { readonly status: "cannot-tell"; readonly message: string };
+
+/** Saves to the user's own Google spreadsheet. Offered only once the user has connected. */
+export interface RemoteSave {
+  newCommandId(): string;
+  record(request: RecordRequest, commandId: string, expectedRevision: string): Promise<RecordResult>;
+  /** Resolves a save whose result was lost, without writing anything. */
+  check(commandId: string): Promise<CheckResult>;
+}

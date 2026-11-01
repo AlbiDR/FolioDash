@@ -1,6 +1,7 @@
 # Google setup for the first live proof (owner steps)
 
-Status: **Draft. Written from Google's documentation read on 2026-11-01. None of these steps has been performed or tested, and Google's console wording changes.**  
+Status: **Performed once by the owner on 2026-11-01, with one synthetic spreadsheet. The Connection page's read-only `foliodashCheck` call then succeeded against Google (sign-in, `scripts.run`, spreadsheet access). Commit and read-back were not exercised. Google's console wording changes.**  
+Order found in practice: the consent screen must exist before the script can be linked to the project, and the consent screen's scope list and test user are added afterwards. Creating a web client also generates a client secret that the browser flow never uses; it is not kept.  
 Scope: what the owner does in their own Google account so FolioDash can make its first authenticated call to the Apps Script service, using a **synthetic** spreadsheet. This proves gates G2 and G3 of the [Google-backed architecture](../architecture/google-sheets-backend.md); it does not choose between the deployment models of FD-014.
 
 ## Ground rules

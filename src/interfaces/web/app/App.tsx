@@ -1,26 +1,32 @@
 import type { JSX } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
+import type { ConnectionConfig } from "../features/connection/ConnectionModel";
 import { ConnectionView } from "../features/connection/ConnectionView";
+import { HistoryView } from "../features/history/HistoryView";
 import { ImportView } from "../features/import/ImportView";
 import { OverviewView } from "../features/overview/OverviewView";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
 import { browserConnectionStorage } from "./connectionStorage";
 import { connectToGoogle } from "./googleConnection";
+import { browserRemoteSave } from "./googleLedger";
 import { prepareImport } from "./importPreparer";
 import { overviewFromLedger } from "./overviewFromLedger";
 
-type Route = "overview" | "import" | "connection";
+type Route = "overview" | "import" | "history" | "connection";
 
 function routeFrom(hash: string): Route {
   if (hash === "#import") return "import";
+  if (hash === "#history") return "history";
   return hash === "#connection" ? "connection" : "overview";
 }
 
 export function App(): JSX.Element {
   const [route, setRoute] = useState<Route>(routeFrom(window.location.hash));
-  // Held in memory only: nothing is saved yet, so a reload starts empty.
+  // Held in memory. Until a spreadsheet is connected it is only this tab; once connected it mirrors the spreadsheet.
   const [ledger, setLedger] = useState<LedgerState>(EMPTY_LEDGER);
+  const [connected, setConnected] = useState<ConnectionConfig | null>(null);
+  const save = useMemo(() => (connected === null ? undefined : browserRemoteSave(connected)), [connected]);
   useEffect(() => {
     const update = (): void => {
       setRoute(routeFrom(window.location.hash));
@@ -51,6 +57,11 @@ export function App(): JSX.Element {
               </a>
             </li>
             <li>
+              <a href="#history" aria-current={route === "history" ? "page" : undefined}>
+                Import history
+              </a>
+            </li>
+            <li>
               <a href="#connection" aria-current={route === "connection" ? "page" : undefined}>
                 Connection
               </a>
@@ -77,8 +88,9 @@ export function App(): JSX.Element {
         )}
         {route === "overview" && recorded && (
           <p class="notice" role="status">
-            Based on the statements you recorded in this browser tab. They are not saved: reloading the page clears
-            them.
+            {connected === null
+              ? "Based on the statements you recorded in this browser tab. They are not saved: reloading the page clears them."
+              : "Based on the ledger in your connected Google spreadsheet, as loaded when you connected or last saved."}
           </p>
         )}
       </header>
@@ -90,9 +102,20 @@ export function App(): JSX.Element {
             ledger={ledger}
             createRevision={() => crypto.randomUUID()}
             onRecord={setLedger}
+            {...(save === undefined ? {} : { save })}
           />
         )}
-        {route === "connection" && <ConnectionView connect={connectToGoogle} storage={browserConnectionStorage} />}
+        {route === "history" && <HistoryView ledger={ledger} onLedger={setLedger} {...(save === undefined ? {} : { save })} />}
+        {route === "connection" && (
+          <ConnectionView
+            connect={connectToGoogle}
+            storage={browserConnectionStorage}
+            onConnected={(config, loaded) => {
+              setConnected(config);
+              setLedger(loaded);
+            }}
+          />
+        )}
       </main>
     </>
   );

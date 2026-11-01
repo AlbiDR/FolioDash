@@ -7,7 +7,7 @@ import {
   readCommandOutcome,
   readLedger,
 } from "../../applications/LedgerService";
-import { parseCommitRequest } from "./requests";
+import { parseCommitRequest } from "../../applications/CommitRequestParser";
 
 /** Opens the caller's workbook as a service environment. Access is enforced by Google, not by this code. */
 export type EnvironmentOpener = (workbookId: string) => ServiceEnvironment;

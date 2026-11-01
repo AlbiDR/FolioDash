@@ -1,9 +1,9 @@
-import type { CommitRequest } from "../../applications/LedgerService";
-import type { FundCommand, StatementInput } from "../../core/ImportPlan";
-import { parseIsin } from "../../core/Isin";
-import { parseIsoDate } from "../../core/IsoDate";
-import type { HoldingAction } from "../../core/Ledger";
-import { type EuroCents, toEuroCents } from "../../core/Money";
+import type { CommitRequest } from "./LedgerService";
+import type { FundCommand, StatementInput } from "../core/ImportPlan";
+import { parseIsin } from "../core/Isin";
+import { parseIsoDate } from "../core/IsoDate";
+import type { HoldingAction } from "../core/Ledger";
+import { type EuroCents, toEuroCents } from "../core/Money";
 
 export type ParsedRequest =
   | { readonly ok: true; readonly request: CommitRequest }

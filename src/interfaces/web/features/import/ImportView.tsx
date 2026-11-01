@@ -9,6 +9,7 @@ import type {
   ImportFile,
   ImportPreparer,
   ImportReview,
+  RemoteSave,
   ReviewAdjustment,
   ReviewIssue,
   ReviewStatement,
@@ -165,6 +166,7 @@ function Review(props: {
   readonly ledger: LedgerState;
   readonly createRevision: () => string;
   readonly onRecord: (next: LedgerState, date: IsoDate) => void;
+  readonly save?: RemoteSave;
 }): JSX.Element {
   const { review, sheetIndex, date } = props;
   const chosen = parseIsoDate(date);
@@ -229,6 +231,7 @@ function Review(props: {
                   date={chosen}
                   ledger={props.ledger}
                   createRevision={props.createRevision}
+                  {...(props.save === undefined ? {} : { save: props.save })}
                   onRecord={(next) => {
                     props.onRecord(next, chosen);
                   }}
@@ -287,6 +290,8 @@ export function ImportView(props: {
   readonly ledger: LedgerState;
   readonly createRevision: () => string;
   readonly onRecord: (next: LedgerState) => void;
+  /** Present once a spreadsheet is connected; statements are then saved there instead of kept in this tab. */
+  readonly save?: RemoteSave;
   readonly initialPhase?: Phase;
 }): JSX.Element {
   const [phase, setPhase] = useState<Phase>(props.initialPhase ?? { name: "idle" });
@@ -360,6 +365,7 @@ export function ImportView(props: {
             onDate={setDate}
             ledger={props.ledger}
             createRevision={props.createRevision}
+            {...(props.save === undefined ? {} : { save: props.save })}
             onRecord={(next) => {
               props.onRecord(next);
               setPhase({ name: "idle" });

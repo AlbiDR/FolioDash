@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
+import type { LedgerState } from "../../../../core/Ledger";
 import type { ConnectionConfig, ConnectionPort, ConnectionResult, ConnectionStep, ConnectionStorage } from "./ConnectionModel";
 import { type ConfigField, checkConfig } from "./connectionConfig";
 
@@ -75,7 +76,12 @@ function failureMessage(failure: Extract<ConnectionResult, { status: "call-faile
 
 const BLANK: Readonly<Record<ConfigField, string>> = { clientId: "", scriptId: "", workbookId: "" };
 
-export function ConnectionView(props: { readonly connect: ConnectionPort; readonly storage: ConnectionStorage }): JSX.Element {
+export function ConnectionView(props: {
+  readonly connect: ConnectionPort;
+  readonly storage: ConnectionStorage;
+  /** Called when the spreadsheet answered and its ledger is intact, with the ledger it holds. */
+  readonly onConnected?: (config: ConnectionConfig, ledger: LedgerState) => void;
+}): JSX.Element {
   const saved = props.storage.load();
   const [fields, setFields] = useState<Readonly<Record<ConfigField, string>>>(saved ?? BLANK);
   const [remember, setRemember] = useState(saved !== null);
@@ -98,6 +104,7 @@ export function ConnectionView(props: { readonly connect: ConnectionPort; readon
         setPhase({ name: "working", step });
       });
       setPhase({ name: "done", result });
+      if (result.status === "connected") props.onConnected?.(config, result.ledger);
     } catch {
       setPhase({ name: "done", result: { status: "call-failed", failure: "unexpected", message: null } });
     }
@@ -130,8 +137,9 @@ export function ConnectionView(props: { readonly connect: ConnectionPort; readon
     <section aria-labelledby="connection-heading" class="connection">
       <h2 id="connection-heading">Connection to Google</h2>
       <p>
-        This checks that FolioDash can sign you in and reach your script and spreadsheet. It only reads: nothing is
-        recorded or changed. Use the synthetic test spreadsheet, not real data. Google may warn that the app is
+        This signs you in, reaches your script and spreadsheet, and loads the ledger it holds. Connecting only
+        reads: nothing is recorded or changed. Once connected, statements you confirm on the import screen are saved
+        to this spreadsheet. Use the synthetic test spreadsheet, not real data. Google may warn that the app is
         unverified; that is expected for your own test app.
       </p>
       <form

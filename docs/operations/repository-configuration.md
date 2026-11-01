@@ -8,6 +8,17 @@ Scope: GitHub repository settings, Actions configuration and the checks before t
 
 The owner intends to make this repository public. Treat every file, commit, pull request, issue and workflow log as public from the first commit, because history cannot be reliably unpublished. Private values live only in GitHub secrets or on the owner's machine. Secrets are never committed, echoed, passed on a command line or placed in a frontend build (see [Google-backed architecture §2](../architecture/google-sheets-backend.md#2-essential-correction-github-secrets-are-not-a-runtime-bridge)).
 
+### 1a. GitHub is the single source of truth for configuration (owner direction, 2026-11-01)
+
+The owner wants every value that can change, whether a secret or a variable, to be changed in one place: the repository's GitHub settings. Nothing is configured by editing files, a console, or a person's browser. This holds with one limit that GitHub imposes: a running browser cannot read GitHub, so a changed value reaches the app by re-running a workflow, which rebuilds or redeploys it. The path is always: change it on GitHub, run the workflow, and the app and script follow.
+
+- **Secrets** (never in a build, a log or a file): only the deployment credential, `CLASPRC_JSON`.
+- **Variables** (public-by-design locators, set on GitHub and injected by the build): the OAuth client ID, the script and deployment IDs, and optionally the default spreadsheet ID. They end up readable in the delivered app, so they are not credentials. Google, not secrecy, protects the data.
+- **Trade-off to decide:** baking the spreadsheet ID into a build that becomes public names the owner's spreadsheet to every visitor. Access is still enforced by Google, but the owner may prefer to keep it as something each person enters, as the Connection page does today.
+- Anything the repository cannot hold (Google console settings) is recorded in [Google setup](google-setup.md) so it can be recreated; it is not a second source of truth for values.
+
+This direction is recorded here; it is not an accepted decision and nothing in it has been created.
+
 ## 2. Configuration contract (planned)
 
 Names use `UPPER_SNAKE_CASE`. Each item is created only when the workflow that needs it exists. The owner enters secret values; an assistant never handles them. No item below exists yet.
@@ -16,9 +27,12 @@ Names use `UPPER_SNAKE_CASE`. Each item is created only when the workflow that n
 |---|---|---|---|---|
 | `APPS_SCRIPT_SCRIPT_ID` | Variable | Environment `apps-script-deploy` | Identifies the script project to push to. A locator, not a credential, but it names the owner's project, so it is not committed (`.clasp.json` stays ignored and is generated in CI) | First synthetic push |
 | `APPS_SCRIPT_DEPLOYMENT_ID` | Variable | Environment `apps-script-deploy` | Deployment to update, so the API executable keeps its identifier | First synthetic deploy |
+| `VITE_GOOGLE_CLIENT_ID` | Variable | Repository (read by the web build) | The OAuth client ID, injected into the build as the Connection page default. Public by design | First hosted build |
+| `VITE_GOOGLE_SCRIPT_ID` | Variable | Repository (read by the web build) | The script or deployment ID, injected as the Connection page default | First hosted build |
+| `VITE_GOOGLE_WORKBOOK_ID` | Variable | Repository, only if the owner decides in §1a | The default spreadsheet ID. Optional, see the trade-off in §1a | Owner decision |
 | `CLASPRC_JSON` | Secret | Environment `apps-script-deploy` only, never repository-wide | The clasp login token (FD-016) | After the protections in §3 are active |
 
-Public OAuth client IDs are public by design and belong in reviewed public configuration, not in secrets (Google-backed architecture §2).
+Public OAuth client IDs are public by design, so they are variables and never secrets (Google-backed architecture §2). Under §1a they are kept as GitHub variables, not committed files, so changing one is a settings change and a workflow run.
 
 ## 2a. Policy files in the repository
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type HttpClient, runScriptFunction, summariseCheck } from "./ScriptsRun";
+import { type HttpClient, runScriptFunction } from "./ScriptsRun";
 
 interface Call {
   readonly url: string;
@@ -61,29 +61,5 @@ describe("runScriptFunction", () => {
     expect(await runScriptFunction(client(200, "text"), request)).toEqual({ status: "unexpected" });
     expect(await runScriptFunction(client(200, { done: true }), request)).toEqual({ status: "unexpected" });
     expect(await runScriptFunction(client(400, { error: {} }), request)).toEqual({ status: "unexpected" });
-  });
-});
-
-describe("summariseCheck", () => {
-  it("summarises an intact ledger", () => {
-    const answer = { ok: true, value: { status: "ok", ignoredTrailingRows: 2, state: { revision: "rev-1", funds: [], snapshots: [{}, {}] } } };
-    expect(summariseCheck(answer)).toEqual({ kind: "ready", statements: 2, revision: "rev-1", ignoredTrailingRows: 2 });
-  });
-
-  it("recognises an empty, never-used workbook as a ledger with no statements", () => {
-    const answer = { ok: true, value: { status: "ok", ignoredTrailingRows: 0, state: { revision: "", funds: [], snapshots: [] } } };
-    expect(summariseCheck(answer)).toEqual({ kind: "ready", statements: 0, revision: "", ignoredTrailingRows: 0 });
-  });
-
-  it("reports damage, unavailability and refusals", () => {
-    expect(summariseCheck({ ok: true, value: { status: "damaged", message: "bad checksum" } })).toEqual({ kind: "damaged", message: "bad checksum" });
-    expect(summariseCheck({ ok: false, error: "unavailable", message: "no access" })).toEqual({ kind: "workbook-unavailable" });
-    expect(summariseCheck({ ok: false, error: "invalid-request", message: "bad id" })).toEqual({ kind: "refused", message: "bad id" });
-  });
-
-  it("does not guess at an answer it does not understand", () => {
-    for (const answer of [null, "text", [], {}, { ok: true }, { ok: true, value: { status: "ok" } }, { ok: true, value: { status: "ok", state: { snapshots: "x", revision: 1 } } }]) {
-      expect(summariseCheck(answer)).toEqual({ kind: "unrecognised" });
-    }
   });
 });
