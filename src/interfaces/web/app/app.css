@@ -167,3 +167,73 @@ summary:focus-visible {
 .status {
   min-height: 1.5rem;
 }
+
+.questions,
+.summary,
+.recorded {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.questions h4,
+.summary h4,
+.recorded h3 {
+  margin: 0;
+}
+
+fieldset {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+fieldset legend {
+  padding: 0 var(--space-2);
+  font-weight: 600;
+}
+
+fieldset label {
+  display: block;
+}
+
+.fund-question .field {
+  margin-top: var(--space-2);
+}
+
+.isin {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+.tag {
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.field-error {
+  margin: var(--space-2) 0 0;
+  color: var(--color-error);
+}
+
+.primary {
+  justify-self: start;
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-surface);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.primary:focus-visible {
+  outline: 3px solid var(--color-text);
+  outline-offset: 2px;
+}

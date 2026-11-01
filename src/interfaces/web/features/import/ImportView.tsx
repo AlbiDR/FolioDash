@@ -1,8 +1,10 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
+import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
+import type { LedgerState } from "../../../../core/Ledger";
 import { formatEuro } from "../../../../core/Money";
 import type { DateSource } from "../../../../core/StatementDate";
+import { CashQuestions } from "./CashQuestions";
 import type {
   ImportFile,
   ImportPreparer,
@@ -160,6 +162,9 @@ function Review(props: {
   readonly onSheet: (index: number) => void;
   readonly date: string;
   readonly onDate: (value: string) => void;
+  readonly ledger: LedgerState;
+  readonly createRevision: () => string;
+  readonly onRecord: (next: LedgerState, date: IsoDate) => void;
 }): JSX.Element {
   const { review, sheetIndex, date } = props;
   const chosen = parseIsoDate(date);
@@ -213,22 +218,75 @@ function Review(props: {
             </div>
           )}
           {sheet === undefined ? null : sheet.outcome.ok ? (
-            <Statement statement={sheet.outcome.statement} />
+            <>
+              <Statement statement={sheet.outcome.statement} />
+              {chosen === null ? (
+                <p>Choose the statement date above to continue.</p>
+              ) : (
+                <CashQuestions
+                  key={`${sheet.name}-${chosen}-${props.ledger.revision}`}
+                  statement={sheet.outcome.statement}
+                  date={chosen}
+                  ledger={props.ledger}
+                  createRevision={props.createRevision}
+                  onRecord={(next) => {
+                    props.onRecord(next, chosen);
+                  }}
+                />
+              )}
+            </>
           ) : (
             <Issues issues={sheet.outcome.issues} />
           )}
-          <p class="notice">
-            Saving is not connected yet, so nothing is stored or sent anywhere. The file stays in this browser. Opening
-            balances and cash movements come next.
-          </p>
         </>
       )}
     </div>
   );
 }
 
+function RecordedSummary(props: { readonly ledger: LedgerState }): JSX.Element | null {
+  const latest = props.ledger.snapshots[props.ledger.snapshots.length - 1];
+  if (latest === undefined) return null;
+  return (
+    <section aria-labelledby="recorded-heading" class="recorded">
+      <h3 id="recorded-heading">Recorded in this browser tab</h3>
+      <p>
+        {props.ledger.snapshots.length} {props.ledger.snapshots.length === 1 ? "statement" : "statements"}, latest{" "}
+        {formatDateLong(latest.date)}. This is kept only while this page stays open; saving to Google is not connected
+        yet.
+      </p>
+      <table class="funds">
+        <thead>
+          <tr>
+            <th scope="col">Fund</th>
+            <th scope="col">Status</th>
+            <th scope="col">Value</th>
+            <th scope="col">Net invested</th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.ledger.funds.map((fund) => {
+            const holding = latest.holdings[fund.isin];
+            return holding === undefined ? null : (
+              <tr key={fund.isin}>
+                <th scope="row">{fund.name}</th>
+                <td>{holding.status === "closed" ? "Closed" : "Active"}</td>
+                <td>{formatEuro(holding.value)}</td>
+                <td>{formatEuro(holding.netInvested)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </section>
+  );
+}
+
 export function ImportView(props: {
   readonly prepare: ImportPreparer;
+  readonly ledger: LedgerState;
+  readonly createRevision: () => string;
+  readonly onRecord: (next: LedgerState) => void;
   readonly initialPhase?: Phase;
 }): JSX.Element {
   const [phase, setPhase] = useState<Phase>(props.initialPhase ?? { name: "idle" });
@@ -300,8 +358,15 @@ export function ImportView(props: {
             onSheet={setSheetIndex}
             date={date}
             onDate={setDate}
+            ledger={props.ledger}
+            createRevision={props.createRevision}
+            onRecord={(next) => {
+              props.onRecord(next);
+              setPhase({ name: "idle" });
+            }}
           />
         ))}
+      <RecordedSummary ledger={props.ledger} />
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
 import { ImportView } from "../features/import/ImportView";
 import { OverviewView } from "../features/overview/OverviewView";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
@@ -13,6 +14,8 @@ function routeFrom(hash: string): Route {
 
 export function App(): JSX.Element {
   const [route, setRoute] = useState<Route>(routeFrom(window.location.hash));
+  // Held in memory only: nothing is saved yet, so a reload starts empty.
+  const [ledger, setLedger] = useState<LedgerState>(EMPTY_LEDGER);
   useEffect(() => {
     const update = (): void => {
       setRoute(routeFrom(window.location.hash));
@@ -62,7 +65,14 @@ export function App(): JSX.Element {
         )}
       </header>
       <main>
-        {route === "overview" ? <OverviewView model={demoPortfolio(variant)} /> : <ImportView prepare={prepareImport} />}
+        {route === "overview" ? <OverviewView model={demoPortfolio(variant)} /> : (
+            <ImportView
+              prepare={prepareImport}
+              ledger={ledger}
+              createRevision={() => crypto.randomUUID()}
+              onRecord={setLedger}
+            />
+          )}
       </main>
     </>
   );
