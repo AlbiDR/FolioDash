@@ -213,6 +213,7 @@ export function App(): JSX.Element {
                   state={data}
                   now={now}
                   clientConfigured={clientConfigured}
+                  build={__APP_BUILD__}
                   actions={{
                     connect: () => session.connect(),
                     refresh: () => session.refresh(),

@@ -31,6 +31,8 @@ export function AccountView(props: {
   readonly now: number;
   readonly clientConfigured: boolean;
   readonly actions: AccountActions;
+  /** Which build of the app this page is running, so a stale page is never mistaken for the new one. */
+  readonly build: string;
 }): JSX.Element {
   const { state, actions } = props;
   const [busy, setBusy] = useState(false);
@@ -268,6 +270,7 @@ export function AccountView(props: {
           </button>
         </details>
       )}
+      <p class="footnote build-stamp">FolioDash build: {props.build}</p>
     </section>
   );
 }

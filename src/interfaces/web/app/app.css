@@ -1561,3 +1561,8 @@ details.card > summary {
   cursor: pointer;
   font-weight: 650;
 }
+
+.build-stamp {
+  margin: 0 0.25rem;
+  user-select: all;
+}
