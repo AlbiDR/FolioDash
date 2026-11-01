@@ -14,6 +14,8 @@ test-results/
 !.env.example
 *.pem
 *.key
+.clasp.json
+.clasprc.json
 
 # Private local data must never become repository content.
 private/
