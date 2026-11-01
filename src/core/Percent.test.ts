@@ -17,8 +17,8 @@ describe("formatPercent", () => {
   });
 
   it("shows a dash when the figure is unavailable, not zero", () => {
-    expect(formatPercent(null)).toBe("–");
-    expect(formatPercent(Number.NaN)).toBe("–");
-    expect(formatPercent(Number.POSITIVE_INFINITY)).toBe("–");
+    expect(formatPercent(null)).toBe("-");
+    expect(formatPercent(Number.NaN)).toBe("-");
+    expect(formatPercent(Number.POSITIVE_INFINITY)).toBe("-");
   });
 });

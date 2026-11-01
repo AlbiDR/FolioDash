@@ -109,7 +109,7 @@ export function AccountView(props: {
               <div>
                 <dt>Your Google Sheet</dt>
                 <dd>
-                  {state.workbook === null ? "–" : (
+                  {state.workbook === null ? "-" : (
                     <a href={state.workbook.url} target="_blank" rel="noreferrer">
                       Open in Google Sheets
                     </a>
@@ -122,7 +122,7 @@ export function AccountView(props: {
               </div>
               <div>
                 <dt>Last checked against Google</dt>
-                <dd>{state.syncedAt === null ? "–" : describeAge(props.now, state.syncedAt)}</dd>
+                <dd>{state.syncedAt === null ? "-" : describeAge(props.now, state.syncedAt)}</dd>
               </div>
               <div>
                 <dt>Sheet health</dt>

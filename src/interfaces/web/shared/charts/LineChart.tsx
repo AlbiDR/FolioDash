@@ -105,7 +105,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
                 </svg>
                 {entry.label}
               </span>
-              <span class="chart-readout-value">{point === undefined ? "–" : show(point.value)}</span>
+              <span class="chart-readout-value">{point === undefined ? "-" : show(point.value)}</span>
             </span>
           );
         })}
@@ -197,7 +197,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
                 <th scope="row">{props.formatTime(time)}</th>
                 {props.series.map((entry) => {
                   const point = entry.points.find((candidate) => candidate.time === time);
-                  return <td key={entry.id}>{point?.value === undefined || point.value === null ? "–" : show(point.value)}</td>;
+                  return <td key={entry.id}>{point?.value === undefined || point.value === null ? "-" : show(point.value)}</td>;
                 })}
               </tr>
             ))}

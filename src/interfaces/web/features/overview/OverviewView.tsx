@@ -34,7 +34,7 @@ function StatCard(props: {
         <p class="stat-caption">{props.unavailable}</p>
       ) : (
         <>
-          {kpi.signed && kpi.percent !== null ? <Pill ratio={kpi.percent} signed /> : <span class="pill">–</span>}
+          {kpi.signed && kpi.percent !== null ? <Pill ratio={kpi.percent} signed /> : <span class="pill">-</span>}
           <p class="stat-caption">{props.caption}</p>
         </>
       )}
@@ -228,7 +228,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           </div>
           <div>
             <dt>First statement</dt>
-            <dd>{dates[0] === undefined ? "–" : formatDateLong(dates[0])}</dd>
+            <dd>{dates[0] === undefined ? "-" : formatDateLong(dates[0])}</dd>
           </div>
           <div>
             <dt>Funds ever held</dt>

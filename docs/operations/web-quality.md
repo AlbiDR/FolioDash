@@ -1,6 +1,6 @@
 # Web quality and verification contract
 
-Status: **Proposed — not implemented or measured**  
+Status: **Proposed - not implemented or measured**  
 Created: 2026-11-01  
 Architecture authority: [CleanStack ADR](../architecture/cleanstack.md)  
 Open decisions: [Decision register](../architecture/decision-register.md)

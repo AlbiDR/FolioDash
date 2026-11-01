@@ -23,7 +23,7 @@ export function PrivacyProvider(props: { readonly hidden: boolean; readonly chil
 export function Amount(props: { readonly cents: EuroCents | null; readonly signed?: boolean; readonly empty?: string }): JSX.Element {
   const hidden = usePrivacy();
   const kind = props.signed === true ? "amount signed" : "amount";
-  if (props.cents === null) return <span class={kind}>{props.empty ?? "–"}</span>;
+  if (props.cents === null) return <span class={kind}>{props.empty ?? "-"}</span>;
   if (hidden) {
     return (
       <span class={`${kind} masked`} role="img" aria-label="Amount hidden">

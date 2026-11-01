@@ -11,7 +11,7 @@ FolioDash should turn bank statements and explicitly recorded cash movements int
 ## Start here
 
 - [Documentation map](docs/README.md)
-- [CleanStack Architecture — Authoritative Design Reference](docs/architecture/cleanstack.md)
+- [CleanStack Architecture - Authoritative Design Reference](docs/architecture/cleanstack.md)
 - [GitHub + Google Sheets + Apps Script architecture](docs/architecture/google-sheets-backend.md)
 - [Decision register](docs/architecture/decision-register.md)
 - [Web quality and verification contract](docs/operations/web-quality.md)

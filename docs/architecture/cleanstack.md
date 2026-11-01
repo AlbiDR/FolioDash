@@ -1,11 +1,11 @@
 # FolioDash: CleanStack Architecture
 
-Status: **Draft for owner review — not yet accepted**  
+Status: **Draft for owner review - not yet accepted**  
 Decision type: Authoritative Design Reference (ADR)  
 Created: 2026-11-01  
 Scope: PWA, calculation kernel, import pipeline, private persistence, synchronisation and recovery
 
-**2026-11-01 amendment — FD-013:** the owner selected GitHub-managed frontend delivery, a user-owned private Google workbook and Apps Script as the service/backend. [Google-backed architecture](google-sheets-backend.md) defines that direction and the still-unverified FD-014 runtime route. No separate database provider is required; GitHub secrets are not the browser's data connection. Remaining proposed rules below must be read with this amendment, not as a claim that any service is deployed.
+**2026-11-01 amendment - FD-013:** the owner selected GitHub-managed frontend delivery, a user-owned private Google workbook and Apps Script as the service/backend. [Google-backed architecture](google-sheets-backend.md) defines that direction and the still-unverified FD-014 runtime route. No separate database provider is required; GitHub secrets are not the browser's data connection. Remaining proposed rules below must be read with this amendment, not as a claim that any service is deployed.
 
 ## 1. Purpose and authority
 

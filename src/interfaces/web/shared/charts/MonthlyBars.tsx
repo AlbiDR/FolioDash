@@ -50,7 +50,7 @@ export function MonthlyBars(props: {
       <p class="bars-readout" aria-hidden="true">
         <span class="bars-readout-month">{shown?.label ?? ""}</span>
         <span class={`bars-readout-value ${shown?.value === undefined || shown.value === null ? "" : shown.value >= 0 ? "gain" : "loss"}`}>
-          {shown?.value === undefined || shown.value === null ? "–" : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
+          {shown?.value === undefined || shown.value === null ? "-" : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
         </span>
       </p>
       <svg viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`} role="img" aria-label={props.description}>
@@ -100,7 +100,7 @@ export function MonthlyBars(props: {
             {props.bars.map((bar) => (
               <tr key={bar.key}>
                 <th scope="row">{bar.label}</th>
-                <td>{bar.value === null ? "–" : show(bar.value)}</td>
+                <td>{bar.value === null ? "-" : show(bar.value)}</td>
               </tr>
             ))}
           </tbody>
