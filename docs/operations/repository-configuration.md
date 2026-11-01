@@ -48,6 +48,22 @@ Public OAuth client IDs are public by design, so they are variables and never se
 
 CODEOWNERS and the attribution check only enforce anything once branch protection requires them (§4). Adapted from the Playlist Tidy project; its licence headers, typography check and deployment workflows were deliberately not copied.
 
+## 2b. Workflows and repository settings in force (2026-11-02)
+
+| Workflow or file | What it does |
+|---|---|
+| `verify.yml` | Contributor-neutral quality gate: punctuation, typecheck, lint, tests, build, Apps Script bundle check and dependency audit, on Node 22 and 24. Runs on pushes to `main`, pull requests, weekly, manually, and as a reusable workflow |
+| `deploy-pages.yml` | On every push to `main`: runs `verify.yml`, then builds and publishes `dist/web` to GitHub Pages. The OAuth client ID comes from the repository variable `VITE_GOOGLE_CLIENT_ID` |
+| `contributor-policy.yml` | Attribution check over complete history |
+| `codeql.yml` | CodeQL analysis of the TypeScript source on pushes, pull requests and weekly |
+| `dependency-review.yml` | Fails a pull request that adds a dependency with a known high-severity vulnerability |
+| `dependabot.yml` | Weekly grouped update pull requests for npm and for the pinned actions |
+| `deploy-apps-script.yml` | Manual only, kept until the Apps Script service is removed |
+
+Settings applied by the owner's request: secret scanning and push protection, Dependabot alerts and security updates, private vulnerability reporting, and the rule that every action must be pinned to a full commit SHA. A ruleset `Protect main` blocks deleting `main` and force-pushing to it; nobody is exempt.
+
+**Not enforced, by choice:** required status checks and required pull requests. GitHub rejects a direct push to a branch that requires checks, so requiring them means every change goes through a pull request. The owner chose to keep direct pushes to `main` for now; the checks still run on every push and a failure is visible, but it does not block the push. Revisit when more than one person contributes.
+
 ## 3. Environment and workflow rules (proposed)
 
 - One environment, `apps-script-deploy`, restricted to the `main` branch, with the owner as required reviewer.
