@@ -3,6 +3,6 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["../scripts/**/*.ts", "./eslint.config.ts"],
+  "include": ["../scripts/**/*.ts", "./eslint.config.ts", "./pwa.ts", "./vite.config.ts"],
   "exclude": []
 }

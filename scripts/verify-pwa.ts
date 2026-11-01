@@ -1,0 +1,96 @@
+// Checks that the built site is installable: a valid manifest, real icons of the declared
+// sizes, a service worker that lists every built file, and a page that links the manifest.
+// It runs after the build. It proves the files are right; whether a browser offers the
+// install prompt still has to be seen on a real device.
+
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import process from "node:process";
+
+const PUBLIC = "src/interfaces/web/public";
+const DIST = "dist/web";
+
+const failures: string[] = [];
+const check = (condition: boolean, message: string): void => {
+  if (!condition) failures.push(message);
+};
+
+interface Icon {
+  readonly src?: unknown;
+  readonly sizes?: unknown;
+  readonly type?: unknown;
+  readonly purpose?: unknown;
+}
+interface Manifest {
+  readonly name?: unknown;
+  readonly short_name?: unknown;
+  readonly start_url?: unknown;
+  readonly scope?: unknown;
+  readonly id?: unknown;
+  readonly display?: unknown;
+  readonly theme_color?: unknown;
+  readonly background_color?: unknown;
+  readonly icons?: unknown;
+}
+
+function pngSize(path: string): string | null {
+  const bytes = readFileSync(path);
+  const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+  if (bytes.length < 24 || signature.some((value, index) => bytes[index] !== value)) return null;
+  return `${String(bytes.readUInt32BE(16))}x${String(bytes.readUInt32BE(20))}`;
+}
+
+function filesUnder(directory: string): string[] {
+  return readdirSync(directory).flatMap((name) => {
+    const path = join(directory, name);
+    return statSync(path).isDirectory() ? filesUnder(path) : [path];
+  });
+}
+
+const manifest = JSON.parse(readFileSync(`${PUBLIC}/manifest.webmanifest`, "utf8")) as Manifest;
+for (const field of ["name", "short_name", "start_url", "scope", "id"] as const) {
+  check(typeof manifest[field] === "string" && manifest[field] !== "", `the manifest has no ${field}`);
+}
+// Relative values keep the app working from a sub-folder such as a GitHub Pages project site.
+check(manifest.start_url === "./" && manifest.scope === "./", "start_url and scope must be ./ so the app works under a sub-folder");
+check(manifest.display === "standalone", "display must be standalone for the app to open without browser chrome");
+for (const field of ["theme_color", "background_color"] as const) {
+  check(typeof manifest[field] === "string" && /^#[0-9a-f]{6}$/iu.test(manifest[field]), `${field} must be a six-digit hex colour`);
+}
+
+const icons = Array.isArray(manifest.icons) ? (manifest.icons as Icon[]) : [];
+for (const icon of icons) {
+  const src = typeof icon.src === "string" ? icon.src : "";
+  const file = `${PUBLIC}/${src}`;
+  if (!existsSync(file)) {
+    failures.push(`the icon ${src} does not exist`);
+    continue;
+  }
+  check(icon.type === "image/png", `the icon ${src} must declare type image/png`);
+  check(pngSize(file) === icon.sizes, `the icon ${src} is not ${String(icon.sizes)}`);
+}
+const has = (size: string, purpose: string): boolean => icons.some((icon) => icon.sizes === size && icon.purpose === purpose);
+check(has("192x192", "any") && has("512x512", "any"), "the manifest needs 192 and 512 pixel icons");
+check(has("512x512", "maskable"), "the manifest needs a 512 pixel maskable icon so Android can shape it");
+check(pngSize(`${PUBLIC}/icons/apple-touch-icon.png`) === "180x180", "the Apple touch icon must be 180x180");
+
+if (!existsSync(`${DIST}/sw.js`)) {
+  failures.push("the build has no sw.js: run the build first");
+} else {
+  const worker = readFileSync(`${DIST}/sw.js`, "utf8");
+  const built = filesUnder(DIST)
+    .map((path) => relative(DIST, path).split("\\").join("/"))
+    .filter((file) => file !== "sw.js" && file !== "index.html" && !file.endsWith(".map"));
+  for (const file of built) check(worker.includes(`"${file}"`), `the service worker does not list ${file}`);
+  check(!/googleapis|accounts\.google/u.test(worker), "the service worker must not mention Google: it never handles those requests");
+  const page = readFileSync(`${DIST}/index.html`, "utf8");
+  check(/rel="manifest"/u.test(page), "the page does not link the manifest");
+  check(/rel="apple-touch-icon"/u.test(page), "the page does not link the Apple touch icon");
+}
+
+if (failures.length > 0) {
+  process.stderr.write(`PWA check failed:\n${failures.map((entry) => `- ${entry}`).join("\n")}\n`);
+  process.exitCode = 1;
+} else {
+  process.stdout.write(`PWA check passed (${String(icons.length)} manifest icons, service worker lists the built files).\n`);
+}

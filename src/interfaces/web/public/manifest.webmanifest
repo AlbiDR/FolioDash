@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "FolioDash",
+  "short_name": "FolioDash",
+  "description": "A private portfolio tracker. Your data stays in your own Google Sheet.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07080d",
+  "theme_color": "#07080d",
+  "categories": ["finance"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Import a statement", "short_name": "Import", "url": "./#import" },
+    { "name": "Your data", "short_name": "Your data", "url": "./#connection" }
+  ]
+}

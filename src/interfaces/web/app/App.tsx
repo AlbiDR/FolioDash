@@ -21,6 +21,7 @@ import { prepareImport } from "./importPreparer";
 import { memoizeLast } from "./memo";
 import { overviewFromLedger } from "./overviewFromLedger";
 import { type Route, navEntryOf, routeFrom } from "./routes";
+import { watchForUpdate } from "./serviceWorker";
 import { describeAge } from "./timeAgo";
 import { useNow, useSession } from "./useSession";
 
@@ -59,6 +60,14 @@ export function App(): JSX.Element {
     return () => {
       window.removeEventListener("hashchange", update);
     };
+  }, []);
+
+  // A newer version of the app, kept waiting until the person chooses to switch.
+  const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
+  useEffect(() => {
+    watchForUpdate((apply) => {
+      setApplyUpdate(() => apply);
+    });
   }, []);
 
   const [hidden, setHidden] = usePrivacyChoice(browserPrivacyStorage);
@@ -135,6 +144,14 @@ export function App(): JSX.Element {
                 <PrivacyToggle hidden={hidden} onChange={setHidden} />
               </div>
             </header>
+            {applyUpdate !== null && (
+              <p class="notice" role="status">
+                A new version of FolioDash is ready.{" "}
+                <button type="button" onClick={applyUpdate}>
+                  Reload to update
+                </button>
+              </p>
+            )}
             {portfolioScreen && data.mode === "signed-out" && (
               <p class="notice" role="status">
                 Demonstration with invented data. Nothing here is yours until you continue with Google.
