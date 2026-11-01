@@ -149,6 +149,20 @@ Locking coordinates participating script executions, not manual spreadsheet edit
 
 Keep data writes batched and formatting out of the service's hot path. No repeated chart rebuilding, sheet resizing, source-file rewriting or UI generation occurs on import. Exact parser and commit limits are measured, named and enforced.
 
+### 7.1 Implemented against an in-memory sheet
+
+The protocol's logic exists in `src/applications/LedgerService.ts` (use cases: read the ledger, commit a statement, read a command outcome) and `src/adapters/ledger/RowLedgerStore.ts` (the row format), behind a minimal `RowSheet` port. It is exercised with an in-memory sheet that can be made to fail, so the failure paths run in CI. This is **not** a test of Google Sheets or Apps Script.
+
+Row format version 1, append-only, every field plain text so a sheet cannot retype it:
+
+- Each row is `revision`, `type`, `payload`, `checksum`. A revision is one `META` record (schema version and funds), a `SNAPSHOT` record for each snapshot that is new or changed, `TIMELINE` records listing every snapshot of the revision by row index and checksum, and finally one `COMMIT` record.
+- A payload's checksum is the SHA-256 of its text. The commit record's checksum covers all of the revision's other records, and it carries the record count, the command id and a checksum of the command's content.
+- A reader trusts only the last revision whose commit record matches. Rows after it are an interrupted write: they are ignored and reported, never read as history. Any checksum, structure or reference failure, and any ledger that breaks its own rules, is reported as damaged and blocks further writes. The service never rebuilds a damaged ledger from current data.
+- A command id is recorded with its revision. Repeating a command returns the earlier result without writing; reusing the id with different content is rejected. A review against a revision that is no longer current is reported as stale.
+- A failed write is classified: known not committed (safe to retry with the same id), committed after all (a lost acknowledgement, resolved by reading), or unknown (the store could not be read afterwards; read the command outcome first).
+
+Proved by tests against the in-memory sheet: interruption before the commit record, a failure before any write, a lost acknowledgement after the commit record, an unreadable store after a failure, a repeated and a conflicting command, a stale review, a rejected statement, and tampering with a snapshot, the header, the commit record and a timeline reference. Gate G5 remains NOT RUN against real Sheets and Apps Script: concurrent executions, the lock's real scope, quotas and the actual publication primitive are still to be proven.
+
 ## 8. What "live" means
 
 The app reads committed Google data on connect/open, after a confirmed write, on explicit refresh, and on foreground/reconnect using a bounded freshness policy. A lightweight revision check can avoid repeatedly transferring all history.
