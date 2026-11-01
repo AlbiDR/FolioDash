@@ -4,6 +4,7 @@ import type { IsoDate } from "../core/IsoDate";
 import { type RawSheet, type StoredSheet, toStoredSheet } from "../core/RawSheet";
 import type { LedgerIssue, LedgerState } from "../core/Ledger";
 import { sha256Hex } from "../core/Sha256";
+import { replayedMonth } from "./Rebuild";
 
 /** What the store says about the committed ledger: the state, or why it cannot be trusted. */
 export type LoadResult =
@@ -52,8 +53,8 @@ export type SourcesResult =
 export interface LedgerStore {
   load(): LoadResult;
   findCommand(commandId: string): CommandReceipt | null;
-  /** Writes `next` as a new committed revision, with the month's source if there is one. May throw; the outcome of a throw is then unknown. */
-  publish(next: LedgerState, receipt: CommandReceipt, source?: SourceRecord): void;
+  /** Writes `next` as a new committed revision, with the bank statements being saved in it, if any. May throw; the outcome of a throw is then unknown. */
+  publish(next: LedgerState, receipt: CommandReceipt, sources?: readonly SourceRecord[]): void;
   /** Every stored bank statement and the decisions made about it, checked, in the order they were saved. */
   loadSources(): SourcesResult;
 }
@@ -146,7 +147,7 @@ export function commitStatement(environment: ServiceEnvironment, request: Commit
         { commandId: request.commandId, revision: applied.state.revision, requestHash: hash },
         request.source === undefined
           ? undefined
-          : { date: request.date, commandId: request.commandId, sheetName: request.source.sheetName, commands: request.commands, sheet: toStoredSheet(request.source.sheet) },
+          : [{ date: request.date, commandId: request.commandId, sheetName: request.source.sheetName, commands: request.commands, sheet: toStoredSheet(request.source.sheet) }],
       );
     } catch {
       // The write may or may not have committed. Look before saying anything.
@@ -168,4 +169,94 @@ function resolveFailedPublish(environment: ServiceEnvironment, commandId: string
   } catch {
     return unknown("The save failed and the result could not be checked. Read the command outcome before retrying.");
   }
+}
+
+/** One saved month and the bank statement to attach to it. */
+export interface AttachItem {
+  readonly date: IsoDate;
+  readonly statement: StatementInput;
+  readonly commands: readonly FundCommand[];
+  readonly source: StatementSource;
+}
+
+export interface AttachRequest {
+  /** A fresh id per user action. Repeating the same action reuses it, so it is recorded at most once. */
+  readonly commandId: string;
+  readonly expectedRevision: string;
+  readonly items: readonly AttachItem[];
+}
+
+export type AttachOutcome =
+  | { readonly status: "attached"; readonly revision: string; readonly count: number }
+  | { readonly status: "already-attached"; readonly revision: string }
+  | { readonly status: "stale"; readonly currentRevision: string }
+  | { readonly status: "rejected"; readonly messages: readonly string[] }
+  | { readonly status: "damaged"; readonly message: string }
+  | { readonly status: "not-committed"; readonly message: string }
+  | { readonly status: "unknown"; readonly message: string };
+
+function attachHash(request: AttachRequest): string {
+  return sha256Hex(
+    canonicalJson({
+      attach: request.items.map((item) => ({ date: item.date, statement: item.statement, commands: item.commands, sheetName: item.source.sheetName, sheet: toStoredSheet(item.source.sheet) })),
+    }),
+  );
+}
+
+/**
+ * Adds bank statements to months that are already saved, in one new revision. The
+ * saved figures do not change: each statement must replay, with today's rules and
+ * the decisions given, to exactly the month already saved, so a wrong statement is
+ * refused rather than attached. A month that already has its statement is refused.
+ */
+export function attachStatements(environment: ServiceEnvironment, request: AttachRequest): AttachOutcome {
+  return environment.withLock((): AttachOutcome => {
+    const loaded = environment.store.load();
+    if (loaded.status === "damaged") return loaded;
+
+    const hash = attachHash(request);
+    const earlier = environment.store.findCommand(request.commandId);
+    if (earlier !== null) {
+      return earlier.requestHash === hash
+        ? { status: "already-attached", revision: earlier.revision }
+        : { status: "rejected", messages: ["This command id was already used for different content."] };
+    }
+    if (loaded.state.revision !== request.expectedRevision) return { status: "stale", currentRevision: loaded.state.revision };
+
+    const existing = environment.store.loadSources();
+    if (existing.status === "damaged") return existing;
+    const have = new Set(existing.sources.map((source) => source.date));
+    const problems: string[] = [];
+    const seen = new Set<IsoDate>();
+    for (const item of request.items) {
+      const index = loaded.state.snapshots.findIndex((snapshot) => snapshot.date === item.date);
+      const saved = loaded.state.snapshots[index];
+      if (saved === undefined) problems.push(`${item.date}: no month is saved for this date.`);
+      else if (have.has(item.date) || seen.has(item.date)) problems.push(`${item.date}: this month already has its bank statement.`);
+      else {
+        const replayed = replayedMonth(loaded.state, index, item.statement, item.date, item.commands);
+        if (replayed === undefined || canonicalJson(replayed) !== canonicalJson(saved)) {
+          problems.push(`${item.date}: this statement does not produce the figures already saved for the month.`);
+        }
+      }
+      seen.add(item.date);
+    }
+    if (problems.length > 0 || request.items.length === 0) {
+      return { status: "rejected", messages: problems.length > 0 ? problems.slice(0, 10) : ["There is no statement to attach."] };
+    }
+
+    const next: LedgerState = { ...loaded.state, revision: environment.newRevision() };
+    try {
+      environment.store.publish(
+        next,
+        { commandId: request.commandId, revision: next.revision, requestHash: hash },
+        request.items.map((item) => ({ date: item.date, commandId: request.commandId, sheetName: item.source.sheetName, commands: item.commands, sheet: toStoredSheet(item.source.sheet) })),
+      );
+    } catch {
+      const resolved = resolveFailedPublish(environment, request.commandId, loaded.state.revision);
+      if (resolved.status === "committed") return { status: "attached", revision: resolved.revision, count: request.items.length };
+      return resolved.status === "unknown" || resolved.status === "not-committed" ? resolved : { status: "unknown", message: "The save failed and the result could not be checked. Read the command outcome before retrying." };
+    }
+    return { status: "attached", revision: next.revision, count: request.items.length };
+  });
 }

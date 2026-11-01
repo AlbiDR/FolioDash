@@ -1,4 +1,4 @@
-import { commitStatement, type CommitRequest, type ServiceEnvironment, type SourceRecord } from "../../applications/LedgerService";
+import { type AttachRequest, type CommitRequest, type ServiceEnvironment, type SourceRecord, attachStatements, commitStatement } from "../../applications/LedgerService";
 import { readableView, statementCells } from "../../applications/ReadableView";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { type LedgerState, parseLedgerState } from "../../core/Ledger";
@@ -6,7 +6,7 @@ import type { IsoDate } from "../../core/IsoDate";
 import { type RawSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedgerStore";
-import { type Workbook, appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, writeReadableView, writeStatementTab } from "./GoogleWorkbook";
+import { type Workbook, appendLedgerRows, createWorkbook, findWorkbook, hideLedgerTab, readLedgerRows, writeReadableView, writeStatementTabs } from "./GoogleWorkbook";
 import type { CallFailure, RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
 import { type RestClient, type RestFailure, wroteNothing } from "./Rest";
 
@@ -80,36 +80,26 @@ export async function readDirect(rest: RestClient, accessToken: string, workbook
 const LOST = "The save may or may not have been recorded. Check what happened before trying again.";
 
 /**
- * Saves one reviewed statement. It reads the ledger, applies the same rules as
- * always in memory, checks once more that nobody else wrote in the meantime, and
- * sends the result in a single request. Only a refusal Google made before doing
- * anything counts as "not written"; a lost answer is unknown and is resolved by
- * reading the sheet, never by saving again.
+ * Runs one ledger operation in memory against the rows already stored, checks once
+ * more that nobody else wrote in the meantime, and sends what the operation added
+ * in a single request. Only a refusal Google made before doing anything counts as
+ * "not written"; a lost answer is unknown and is resolved by reading the sheet,
+ * never by trying again.
  */
-export async function commitDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: CommitRequest): Promise<RemoteCommit> {
+async function writeOnce(
+  deps: DirectDeps,
+  accessToken: string,
+  workbookId: string,
+  operate: (environment: ServiceEnvironment) => { readonly result: RemoteCommit; readonly wrote: boolean },
+): Promise<RemoteCommit> {
   const before = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!before.ok) return notWritten(before.failure);
   if ("notALedger" in before.value) return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so nothing was saved." };
 
   const { sheet, store } = storeOf(before.value.rows);
   const environment: ServiceEnvironment = { store, withLock: (action) => action(), newRevision: deps.newRevision };
-  const outcome = commitStatement(environment, request);
-  switch (outcome.status) {
-    case "already-committed":
-      return { status: "already-committed", revision: outcome.revision };
-    case "stale":
-      return { status: "stale" };
-    case "rejected":
-      return { status: "rejected", messages: outcome.issues.map((issue) => issue.message).slice(0, 10) };
-    case "damaged":
-      return { status: "damaged", message: outcome.message };
-    case "not-committed":
-      return { status: "not-committed", message: outcome.message };
-    case "unknown":
-      return { status: "unknown", message: outcome.message };
-    case "committed":
-      break;
-  }
+  const { result, wrote } = operate(environment);
+  if (!wrote) return result;
 
   // Nothing has been written yet. Make sure the sheet has not changed since it was read.
   const again = await readLedgerRows(deps.rest, accessToken, workbookId);
@@ -117,8 +107,57 @@ export async function commitDirect(deps: DirectDeps, accessToken: string, workbo
   if ("notALedger" in again.value || again.value.rows.length !== before.value.rows.length) return { status: "stale" };
 
   const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending);
-  if (sent.ok) return { status: "committed", revision: outcome.revision };
+  if (sent.ok) return result;
   return sent.failure === "unavailable" || sent.failure === "network" ? { status: "unknown", message: LOST } : notWritten(sent.failure);
+}
+
+/** Saves one reviewed statement. */
+export function commitDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: CommitRequest): Promise<RemoteCommit> {
+  return writeOnce(deps, accessToken, workbookId, (environment) => {
+    const outcome = commitStatement(environment, request);
+    switch (outcome.status) {
+      case "committed":
+        return { result: { status: "committed", revision: outcome.revision }, wrote: true };
+      case "already-committed":
+        return { result: { status: "already-committed", revision: outcome.revision }, wrote: false };
+      case "stale":
+        return { result: { status: "stale" }, wrote: false };
+      case "rejected":
+        return { result: { status: "rejected", messages: outcome.issues.map((issue) => issue.message).slice(0, 10) }, wrote: false };
+      case "damaged":
+        return { result: { status: "damaged", message: outcome.message }, wrote: false };
+      case "not-committed":
+        return { result: { status: "not-committed", message: outcome.message }, wrote: false };
+      case "unknown":
+        return { result: { status: "unknown", message: outcome.message }, wrote: false };
+    }
+  });
+}
+
+/**
+ * Attaches bank statements to months that are already saved, in one request. The
+ * saved figures do not change, and a statement that does not reproduce them is refused.
+ */
+export function attachDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: AttachRequest): Promise<RemoteCommit> {
+  return writeOnce(deps, accessToken, workbookId, (environment) => {
+    const outcome = attachStatements(environment, request);
+    switch (outcome.status) {
+      case "attached":
+        return { result: { status: "committed", revision: outcome.revision }, wrote: true };
+      case "already-attached":
+        return { result: { status: "already-committed", revision: outcome.revision }, wrote: false };
+      case "stale":
+        return { result: { status: "stale" }, wrote: false };
+      case "rejected":
+        return { result: { status: "rejected", messages: outcome.messages }, wrote: false };
+      case "damaged":
+        return { result: { status: "damaged", message: outcome.message }, wrote: false };
+      case "not-committed":
+        return { result: { status: "not-committed", message: outcome.message }, wrote: false };
+      case "unknown":
+        return { result: { status: "unknown", message: outcome.message }, wrote: false };
+    }
+  });
 }
 
 function notWritten(failure: RestFailure): RemoteCommit {
@@ -190,10 +229,15 @@ export function statementTabTitle(date: IsoDate): string {
   return `Bank ${date}`;
 }
 
-/** Writes the readable tab for one month. Best effort: the exact statement is already in the ledger. */
-export async function mirrorStatement(rest: RestClient, accessToken: string, workbookId: string, date: IsoDate, sheet: RawSheet): Promise<boolean> {
-  const written = await writeStatementTab(rest, accessToken, workbookId, statementTabTitle(date), statementCells(sheet));
+/** Writes the readable tabs for any number of months in a few requests. Best effort: the exact statements are already in the ledger. */
+export async function mirrorStatements(rest: RestClient, accessToken: string, workbookId: string, months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[]): Promise<boolean> {
+  const written = await writeStatementTabs(rest, accessToken, workbookId, months.map((month) => ({ title: statementTabTitle(month.date), lines: statementCells(month.sheet) })));
   return written.ok;
+}
+
+/** Hides the ledger tab if it is showing. Best effort. */
+export function tidyLedgerTab(rest: RestClient, accessToken: string, workbookId: string): Promise<boolean> {
+  return hideLedgerTab(rest, accessToken, workbookId);
 }
 
 export type ReadAll =

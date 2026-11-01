@@ -7,7 +7,7 @@ import { parseIsin } from "../../core/Isin";
 import { EMPTY_LEDGER } from "../../core/Ledger";
 import type { RawSheet } from "../../core/RawSheet";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
-import { type DirectDeps, commitDirect, ensureWorkbook, mirrorStatement, outcomeDirect, readAllDirect, readDirect, refreshView, restoreDirect, statementTabTitle } from "./DirectLedger";
+import { type DirectDeps, attachDirect, commitDirect, ensureWorkbook, mirrorStatements, outcomeDirect, readAllDirect, readDirect, refreshView, restoreDirect, statementTabTitle, tidyLedgerTab } from "./DirectLedger";
 import { LEDGER_TAB, VIEW_TAB } from "./SheetsLayout";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;
@@ -322,11 +322,11 @@ describe("saving the bank statement with the month", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     await commitDirect(deps, google.token, workbook.id, withSource());
-    expect(await mirrorStatement(google.client, google.token, workbook.id, date("2026-01-31"), sheet)).toBe(true);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }])).toBe(true);
     const title = statementTabTitle(date("2026-01-31"));
     expect(title).toBe("Bank 2026-01-31");
     expect(google.tab(workbook.id, title)?.rows).toEqual([["", "Categoria / Nome prodotto"], [652.289, "Synthetic Fund A"]]);
-    expect(await mirrorStatement(google.client, google.token, workbook.id, date("2026-01-31"), sheet)).toBe(true);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }])).toBe(true);
     expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === title)).toHaveLength(1);
   });
 
@@ -336,8 +336,103 @@ describe("saving the bank statement with the month", () => {
     await commitDirect(deps, google.token, workbook.id, withSource());
     const before = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
     google.faults.push({ match: /:batchUpdate$/u, status: 503 });
-    expect(await mirrorStatement(google.client, google.token, workbook.id, date("2026-01-31"), sheet)).toBe(false);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }])).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
     expect((await readAllDirect(google.client, google.token, workbook.id)).status).toBe("ok");
+  });
+});
+
+describe("the ledger tab stays hidden", () => {
+  it("is hidden when created, and hidden afterwards when Google ignored the request", async () => {
+    const hidden = setup();
+    const a = await readyWorkbook(hidden.google);
+    expect(hidden.google.tab(a.id, LEDGER_TAB)?.hidden).toBe(true);
+
+    const ignored = setup();
+    ignored.google.ignoreHiddenOnCreate = true;
+    const created = await ensureWorkbook(ignored.google.client, ignored.google.token);
+    if (created.status !== "ready") throw new Error("setup failed");
+    // createWorkbook already tries again after creation, which is what makes it hidden here.
+    expect(ignored.google.tab(created.workbook.id, LEDGER_TAB)?.hidden).toBe(true);
+  });
+
+  it("hides a tab that a person or an older build left showing, and says so", async () => {
+    const { google } = setup();
+    google.ignoreHiddenOnCreate = true;
+    const created = await ensureWorkbook(google.client, google.token);
+    if (created.status !== "ready") throw new Error("setup failed");
+    const tab = google.tab(created.workbook.id, LEDGER_TAB);
+    if (tab !== undefined) tab.hidden = false;
+    expect(await tidyLedgerTab(google.client, google.token, created.workbook.id)).toBe(true);
+    expect(google.tab(created.workbook.id, LEDGER_TAB)?.hidden).toBe(true);
+    expect(await tidyLedgerTab(google.client, google.token, "no-such-workbook")).toBe(false);
+  });
+});
+
+describe("the readable monthly tabs, in a few requests", () => {
+  const sheetFor = (label: string): RawSheet => ({ date1904: false, rows: [[{ kind: "text", text: label }]] });
+
+  it("writes seventeen months with the same handful of requests as one, never one request per month", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const months = Array.from({ length: 17 }, (_, index) => ({ date: date(`2026-${String((index % 12) + 1).padStart(2, "0")}-${index < 12 ? "15" : "16"}`), sheet: sheetFor(`Month ${String(index)}`) }));
+    const before = google.calls.length;
+    expect(await mirrorStatements(google.client, google.token, workbook.id, months)).toBe(true);
+    // List the tabs, add the missing ones, clear them, fill them.
+    expect(google.calls.length - before).toBe(4);
+    expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name.startsWith("Bank "))).toHaveLength(17);
+    expect(google.tab(workbook.id, "Bank 2026-03-15")?.rows).toEqual([["Month 2"]]);
+  });
+
+  it("rewrites tabs that exist and adds only the missing ones", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheetFor("old") }]);
+    await mirrorStatements(google.client, google.token, workbook.id, [
+      { date: date("2026-01-31"), sheet: sheetFor("new") },
+      { date: date("2026-02-28"), sheet: sheetFor("second") },
+    ]);
+    expect(google.tab(workbook.id, "Bank 2026-01-31")?.rows).toEqual([["new"]]);
+    expect(google.tab(workbook.id, "Bank 2026-02-28")?.rows).toEqual([["second"]]);
+    expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === "Bank 2026-01-31")).toHaveLength(1);
+  });
+
+  it("does nothing, and asks Google for nothing, when there are no months", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const before = google.calls.length;
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [])).toBe(true);
+    expect(google.calls.length).toBe(before);
+  });
+});
+
+describe("attachDirect: statements for months saved earlier", () => {
+  it("attaches in one request, leaves the figures as they were, and a repeat writes nothing", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const one = await commitDirect(deps, google.token, workbook.id, first());
+    const revision = one.status === "committed" ? one.revision : "";
+    const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "Fondi" }]] };
+    // The earlier save had no statement; this statement must reproduce the saved month, so it is the same funds and figures.
+    const request = { commandId: "attach-0001", expectedRevision: revision, items: [{ date: date("2026-01-31"), statement: statement(1000), commands: [start], source: { sheetName: "Il Mio Patrimonio", sheet } }] };
+    const appendsBefore = google.callsMatching(/:append$/u).length;
+    expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("committed");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore + 1);
+    const all = await readAllDirect(google.client, google.token, workbook.id);
+    expect(all.status === "ok" && [all.state.snapshots.length, all.sources.length]).toEqual([1, 1]);
+    expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("already-committed");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore + 1);
+  });
+
+  it("refuses a statement that does not reproduce the saved month, and writes nothing", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const one = await commitDirect(deps, google.token, workbook.id, first());
+    const revision = one.status === "committed" ? one.revision : "";
+    const sheet: RawSheet = { date1904: false, rows: [] };
+    const request = { commandId: "attach-0002", expectedRevision: revision, items: [{ date: date("2026-01-31"), statement: statement(999), commands: [start], source: { sheetName: "S", sheet } }] };
+    const appendsBefore = google.callsMatching(/:append$/u).length;
+    expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("rejected");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore);
   });
 });

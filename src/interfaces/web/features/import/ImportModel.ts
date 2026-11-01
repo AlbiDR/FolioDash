@@ -2,7 +2,7 @@ import type { FundCommand, StatementInput } from "../../../../core/ImportPlan";
 import type { IsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import type { RawSheet } from "../../../../core/RawSheet";
-import type { StatementSource } from "../../../../applications/LedgerService";
+import type { AttachItem, StatementSource } from "../../../../applications/LedgerService";
 import type { EuroCents } from "../../../../core/Money";
 import type { DateCandidate } from "../../../../core/StatementDate";
 
@@ -102,4 +102,11 @@ export interface RemoteSave {
   record(request: RecordRequest, commandId: string, expectedRevision: string): Promise<RecordResult>;
   /** Resolves a save whose result was lost, without writing anything. */
   check(commandId: string): Promise<CheckResult>;
+  /**
+   * Adds bank statements to months that are already saved, in one request. Nothing
+   * saved changes, and a statement that does not reproduce its month is refused.
+   */
+  attach(items: readonly AttachItem[], commandId: string, expectedRevision: string): Promise<RecordResult>;
+  /** The months that already have a stored bank statement, or null when they could not be read. */
+  statementDates(): Promise<ReadonlySet<IsoDate> | null>;
 }

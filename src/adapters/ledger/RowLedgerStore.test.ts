@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type CommitRequest, type ServiceEnvironment, commitStatement } from "../../applications/LedgerService";
+import { type CommitRequest, type ServiceEnvironment, type SourceRecord, commitStatement } from "../../applications/LedgerService";
 import type { FundCommand, StatementInput } from "../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { parseIsin } from "../../core/Isin";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
-import type { RawSheet } from "../../core/RawSheet";
+import { type RawSheet, toStoredSheet } from "../../core/RawSheet";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "./RowLedgerStore";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;
@@ -66,6 +66,30 @@ function setup() {
   });
   return { sheet, store, environment, january, february };
 }
+
+describe("several statements in one revision", () => {
+  it("keeps a large statement and a small one apart, each exactly, when saved together", () => {
+    const { store, environment, january } = setup();
+    commitStatement(environment, january());
+    const loaded = store.load();
+    if (loaded.status !== "ok") throw new Error("setup failed");
+    const record = (day: string, id: string, sheet: RawSheet): SourceRecord => ({ date: date(day), commandId: id, sheetName: "S", commands: [start], sheet: toStoredSheet(sheet) });
+    store.publish({ ...loaded.state, revision: "revision-attach" }, { commandId: "attach-1", revision: "revision-attach", requestHash: "hash" }, [
+      record("2026-01-31", "a", sheetOf("Large", 900)),
+      record("2026-02-28", "b", sheetOf("Small", 2)),
+      record("2026-03-31", "c", sheetOf("Large again", 900)),
+    ]);
+    const sources = store.loadSources();
+    expect(sources.status).toBe("ok");
+    if (sources.status !== "ok") return;
+    expect(sources.sources.map((source) => [source.date, source.sheet.rows.length])).toEqual([
+      ["2026-01-31", 900],
+      ["2026-02-28", 2],
+      ["2026-03-31", 900],
+    ]);
+    expect(sources.sources[1]?.sheet.rows[1]?.[1]).toEqual({ kind: "text", text: "Small 1" });
+  });
+});
 
 describe("stored bank statements", () => {
   it("keeps the exact statement and the decisions with each month, and reads them back", () => {

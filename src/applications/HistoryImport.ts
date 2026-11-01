@@ -1,6 +1,7 @@
 import { parseCommitRequest } from "./CommitRequestParser";
-import type { CommitRequest } from "./LedgerService";
+import type { AttachItem, CommitRequest } from "./LedgerService";
 import { applyImport } from "../core/ImportPlan";
+import type { IsoDate } from "../core/IsoDate";
 import type { LedgerState } from "../core/Ledger";
 
 /** One statement of a history file: what the review screen would have produced, with a fixed command id. */
@@ -120,4 +121,18 @@ export async function runHistory<Failure>(
     onProgress(saved, toSave.length);
   }
   return { ledger, saved, stopped: null };
+}
+
+/**
+ * The months the ledger already holds whose bank statement is in the file but not
+ * yet stored with the ledger. They are attached in one step; their figures do not
+ * change, and a statement that does not reproduce its month is refused when attached.
+ */
+export function planAttach(ledger: LedgerState, statements: readonly HistoryStatement[], have: ReadonlySet<IsoDate>): AttachItem[] {
+  const saved = new Set(ledger.snapshots.map((snapshot) => snapshot.date));
+  return statements.flatMap((statement): AttachItem[] =>
+    statement.source !== undefined && saved.has(statement.date) && !have.has(statement.date)
+      ? [{ date: statement.date, statement: statement.statement, commands: statement.commands, source: statement.source }]
+      : [],
+  );
 }

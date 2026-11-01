@@ -190,6 +190,9 @@ What this decides:
 - **Proof:** a "Check my history" control replays each month with today's reader and rules and compares the result with the saved figures. It reads only. Months saved before statements were kept, or restored from a device copy, are counted as having no statement rather than called wrong.
 - **Identifiers:** the statement is stored exactly as the bank wrote it, including the holder name and the contract and account numbers. They live only in the owner's private sheet and are never put in the device copy.
 
+- **Months saved before this:** the owner's first live import saved 17 months with figures and decisions only. A history import from a file that carries the statements now attaches them to months already saved, in one new revision. The saved figures do not change: each statement must replay, with today's rules and the decisions given, to exactly the month already saved, or the whole request is refused. A month that already has its statement is refused too.
+- **Quiet writes:** the readable summary and the monthly tabs are written once after a quiet moment, with the monthly tabs in four requests however many there are, so a run of saves stays under Google's write limit. What Google refuses waits for the next chance. The ledger tab is hidden after creation as well, because Google does not always honour "hidden" when a tab is created.
+
 Verified in tests with a stand-in for Google, and on the owner's 17 real months locally: the ledger rebuilt from only the 17 stored statements and decisions is identical to the replayed ledger. Not verified on real Google.
 
 ## Decision record template

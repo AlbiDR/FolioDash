@@ -133,17 +133,22 @@ function decodeSources(rows: readonly LedgerRow[]): SourceRecord[] {
       return damaged("A stored statement belongs to a revision that does not match its commit record.");
     }
     const parsed = pieces.map((row) => parseJson(row.payload) as { readonly d?: unknown; readonly k?: unknown; readonly n?: unknown });
-    const count = parsed[0]?.n;
-    if (typeof count !== "number" || parsed.length !== count || !parsed.every((piece, index) => piece.k === index && piece.n === count && typeof piece.d === "string")) {
-      return damaged("A stored statement is missing a piece.");
+    // A revision can hold several statements, each as consecutive pieces numbered from zero.
+    let at = 0;
+    while (at < parsed.length) {
+      const count = parsed[at]?.n;
+      if (typeof count !== "number" || !Number.isInteger(count) || count < 1 || at + count > parsed.length) return damaged("A stored statement is missing a piece.");
+      const group = parsed.slice(at, at + count);
+      if (!group.every((piece, index) => piece.k === index && piece.n === count && typeof piece.d === "string")) return damaged("A stored statement is missing a piece.");
+      at += count;
+      const value = parseJson(group.map((piece) => String(piece.d)).join("")) as Record<string, unknown>;
+      const date = typeof value["date"] === "string" ? parseIsoDate(value["date"]) : null;
+      const sheet = parseStoredSheet(value["sheet"]);
+      if (date === null || sheet === null || typeof value["commandId"] !== "string" || typeof value["sheetName"] !== "string" || !Array.isArray(value["commands"])) {
+        return damaged("A stored statement is not in the expected form.");
+      }
+      found.push({ date, commandId: value["commandId"], sheetName: value["sheetName"], commands: value["commands"] as FundCommand[], sheet: value["sheet"] as StoredSheet });
     }
-    const value = parseJson(parsed.map((piece) => String(piece.d)).join("")) as Record<string, unknown>;
-    const date = typeof value["date"] === "string" ? parseIsoDate(value["date"]) : null;
-    const sheet = parseStoredSheet(value["sheet"]);
-    if (date === null || sheet === null || typeof value["commandId"] !== "string" || typeof value["sheetName"] !== "string" || !Array.isArray(value["commands"])) {
-      return damaged("A stored statement is not in the expected form.");
-    }
-    found.push({ date, commandId: value["commandId"], sheetName: value["sheetName"], commands: value["commands"] as FundCommand[], sheet: value["sheet"] as StoredSheet });
   });
   return found;
 }
@@ -194,7 +199,7 @@ export class RowLedgerStore implements LedgerStore {
     return null;
   }
 
-  publish(next: LedgerState, receipt: CommandReceipt, source?: SourceRecord): void {
+  publish(next: LedgerState, receipt: CommandReceipt, sources: readonly SourceRecord[] = []): void {
     const existing = this.sheet.readRows();
     const decoded = decodeRows(existing);
     const previousByDate = new Map(decoded.state.snapshots.map((snapshot, index) => [snapshot.date, { snapshot, reference: decoded.references[index] }]));
@@ -217,7 +222,7 @@ export class RowLedgerStore implements LedgerStore {
     for (let offset = 0; offset < references.length; offset += TIMELINE_PAGE) {
       records.push({ type: "TIMELINE", payload: canonicalJson(references.slice(offset, offset + TIMELINE_PAGE)) });
     }
-    if (source !== undefined) {
+    for (const source of sources) {
       const text = canonicalJson(source);
       const pieces: string[] = [];
       for (let offset = 0; offset < text.length; offset += SOURCE_PIECE) pieces.push(text.slice(offset, offset + SOURCE_PIECE));

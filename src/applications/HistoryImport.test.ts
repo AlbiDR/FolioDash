@@ -4,8 +4,9 @@ import { type FundCommand, applyImport } from "../core/ImportPlan";
 import { EMPTY_LEDGER, type LedgerState } from "../core/Ledger";
 import { parseIsoDate } from "../core/IsoDate";
 import type { EuroCents } from "../core/Money";
-import { type HistoryStatement, parseHistory, planHistory, runHistory } from "./HistoryImport";
+import { type HistoryStatement, parseHistory, planAttach, planHistory, runHistory } from "./HistoryImport";
 
+const date = (text: string) => parseIsoDate(text) as never;
 const ISIN_A = parseIsin("US0378331005") as string;
 const cents = (value: number): EuroCents => value as EuroCents;
 
@@ -135,5 +136,25 @@ describe("runHistory", () => {
     expect(run.stopped?.statement.commandId).toBe("history-2026-02");
     expect(run.stopped?.failure).toBe("unknown");
     expect(progress).toEqual([0, 1]);
+  });
+});
+
+describe("planAttach", () => {
+  const stored = { sheetName: "S", sheet: { date1904: false, rows: [] } };
+  const withSource = three.map((statement) => ({ ...statement, source: stored }));
+
+  it("lists the saved months whose statement is in the file but not yet stored", () => {
+    const items = planAttach(ledgerAfter(2), withSource, new Set());
+    expect(items.map((item) => item.date)).toEqual(["2026-01-31", "2026-02-28"]);
+  });
+
+  it("leaves out months that already have a stored statement, months not saved yet, and months the file has no statement for", () => {
+    expect(planAttach(ledgerAfter(2), withSource, new Set([date("2026-01-31")])).map((item) => item.date)).toEqual(["2026-02-28"]);
+    expect(planAttach(ledgerAfter(1), withSource, new Set()).map((item) => item.date)).toEqual(["2026-01-31"]);
+    expect(planAttach(ledgerAfter(2), three, new Set())).toEqual([]);
+  });
+
+  it("has nothing to attach when every saved month has its statement", () => {
+    expect(planAttach(ledgerAfter(3), withSource, new Set(withSource.map((statement) => statement.date)))).toEqual([]);
   });
 });

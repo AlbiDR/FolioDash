@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
+import { OPENING, februarySheet, januarySheet } from "../../../../tests/fixtures/SavedMonths";
 import { ISIN_A, ISIN_B, syntheticSheet } from "../../../../tests/fixtures/SyntheticFideuramSheet";
+import type { AttachItem } from "../../../applications/LedgerService";
+import { planImport } from "../../../core/ImportPlan";
 import { LEDGER_TAB, VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { FundCommand, StatementInput } from "../../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../../core/IsoDate";
@@ -341,5 +344,106 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
   it("needs a sheet before it can check anything", async () => {
     const { make } = world();
     expect(await make().verifyHistory()).toMatchObject({ status: "failed" });
+  });
+});
+
+describe("attaching statements to months saved earlier, through the session", () => {
+  /** Two months saved the way the first version saved them: figures and decisions, no bank statement. */
+  async function twoMonthsWithoutStatements() {
+    const w = world();
+    const session = w.make();
+    await session.connect();
+    const read = (sheet: ReturnType<typeof januarySheet>) => {
+      const result = interpretStatement(sheet);
+      if (!result.ok) throw new Error("setup failed");
+      return result.statement;
+    };
+    await saved(session, { date: date("2026-01-31"), statement: read(januarySheet()), commands: OPENING });
+    const keeps = planImport(session.state.ledger, read(februarySheet())).map((row): FundCommand => ({ isin: row.isin, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" }));
+    await saved(session, { date: date("2026-02-28"), statement: read(februarySheet()), commands: keeps });
+    const items: AttachItem[] = [
+      { date: date("2026-01-31"), statement: read(januarySheet()), commands: OPENING, source: { sheetName: "Il Mio Patrimonio", sheet: januarySheet() } },
+      { date: date("2026-02-28"), statement: read(februarySheet()), commands: keeps, source: { sheetName: "Il Mio Patrimonio", sheet: februarySheet() } },
+    ];
+    return { ...w, session, items };
+  }
+
+  it("attaches every statement in one step, writes the monthly tabs together once, and the history then rebuilds", async () => {
+    const { google, session, items } = await twoMonthsWithoutStatements();
+    expect(await session.save.statementDates()).toEqual(new Set());
+    expect(await session.verifyHistory()).toMatchObject({ report: { months: 2, matching: 0, withoutStatement: 2 } });
+    const appends = google.callsMatching(/:append$/u).length;
+    const result = await session.save.attach(items, session.save.newCommandId(), session.state.ledger.revision);
+    expect(result.status).toBe("recorded");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(appends + 1);
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
+    expect(google.tab(id, "Bank 2026-02-28")?.rows.length).toBeGreaterThan(5);
+    expect(await session.save.statementDates()).toEqual(new Set(["2026-01-31", "2026-02-28"]));
+    expect(await session.verifyHistory()).toEqual({ status: "checked", report: { months: 2, matching: 2, withoutStatement: 0, differing: [], unreadable: [] } });
+  });
+
+  it("refuses a statement for the wrong month and leaves the sheet as it was", async () => {
+    const { google, session, items } = await twoMonthsWithoutStatements();
+    const swapped: AttachItem[] = [{ ...(items[0] as AttachItem), source: (items[1] as AttachItem).source, statement: (items[1] as AttachItem).statement }];
+    const rows = google.tab(session.state.workbook?.id ?? "", "_FolioDash ledger")?.rows.length;
+    const result = await session.save.attach(swapped, session.save.newCommandId(), session.state.ledger.revision);
+    expect(result.status).toBe("rejected");
+    expect(google.tab(session.state.workbook?.id ?? "", "_FolioDash ledger")?.rows.length).toBe(rows);
+  });
+
+  it("a lost answer is unknown, the check finds it, and a repeat cannot attach twice", async () => {
+    const { google, session, items } = await twoMonthsWithoutStatements();
+    const id = session.save.newCommandId();
+    google.faults.push({ match: /:append$/u, network: true, applyFirst: true });
+    expect((await session.save.attach(items, id, session.state.ledger.revision)).status).toBe("unknown");
+    expect((await session.save.check(id)).status).toBe("recorded");
+    expect((await session.save.attach(items, id, "whatever")).status).toBe("recorded");
+    expect(await session.save.statementDates()).toEqual(new Set(["2026-01-31", "2026-02-28"]));
+  });
+
+  it("says plainly that nothing was attached when nobody is connected", async () => {
+    const { items } = await twoMonthsWithoutStatements();
+    const stranger = world().make();
+    expect(await stranger.save.attach(items, "id-1", "")).toMatchObject({ status: "not-saved" });
+    expect(await stranger.save.statementDates()).toBeNull();
+  });
+});
+
+describe("the readable tabs and summary are written once after a run of saves", () => {
+  it("two saves in a row write both monthly tabs and the summary together, in one batch, not once per save", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    const first = interpretStatement(januarySheet());
+    const second = interpretStatement(februarySheet());
+    if (!first.ok || !second.ok) throw new Error("setup failed");
+    await saved(session, { date: date("2026-01-31"), statement: first.statement, commands: OPENING, source: { sheetName: "S", sheet: januarySheet() } });
+    const keeps = planImport(session.state.ledger, second.statement).map((row): FundCommand => ({ isin: row.isin, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" }));
+    await saved(session, { date: date("2026-02-28"), statement: second.statement, commands: keeps, source: { sheetName: "S", sheet: februarySheet() } });
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    // One clear and one fill for both months, plus the summary's own: never one per save.
+    expect(google.callsMatching(/values:batchClear$/u)).toHaveLength(1);
+    expect(google.callsMatching(/values:batchUpdate$/u)).toHaveLength(1);
+    expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
+    expect(google.tab(id, "Bank 2026-02-28")?.rows.length).toBeGreaterThan(5);
+  });
+
+  it("keeps what could not be written, and writes it at the next chance", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    google.faults.push({ match: /values:batchClear$/u, status: 429 });
+    const sheet = syntheticSheet();
+    const read = interpretStatement(sheet);
+    if (!read.ok) throw new Error("setup failed");
+    await saved(session, { date: date("2026-01-31"), statement: read.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    expect(google.tab(id, "Bank 2026-01-31")?.rows ?? []).toHaveLength(0);
+    await session.idle();
+    expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
   });
 });

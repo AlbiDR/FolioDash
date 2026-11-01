@@ -1,7 +1,7 @@
 import { canonicalJson } from "../core/CanonicalJson";
-import { type StatementInput, applyImport } from "../core/ImportPlan";
+import { type FundCommand, type StatementInput, applyImport } from "../core/ImportPlan";
 import type { IsoDate } from "../core/IsoDate";
-import { EMPTY_LEDGER, type LedgerState } from "../core/Ledger";
+import { EMPTY_LEDGER, type LedgerState, type Snapshot } from "../core/Ledger";
 import { type RawSheet, parseStoredSheet } from "../core/RawSheet";
 import type { SourceRecord } from "./LedgerService";
 
@@ -22,7 +22,7 @@ export interface RebuildReport {
 }
 
 /** What the ledger looked like just before a given month, taken from the saved ledger itself. */
-function before(ledger: LedgerState, index: number): LedgerState {
+export function before(ledger: LedgerState, index: number): LedgerState {
   if (index === 0) return EMPTY_LEDGER;
   const previous = ledger.snapshots[index - 1];
   return {
@@ -30,6 +30,15 @@ function before(ledger: LedgerState, index: number): LedgerState {
     funds: ledger.funds.filter((fund) => previous !== undefined && fund.firstDate <= previous.date),
     snapshots: ledger.snapshots.slice(0, index),
   };
+}
+
+/**
+ * The month that a statement and its decisions produce, replayed from the saved
+ * month before it with today's rules. Undefined when the rules refuse it.
+ */
+export function replayedMonth(ledger: LedgerState, index: number, statement: StatementInput, date: IsoDate, commands: readonly FundCommand[]): Snapshot | undefined {
+  const replayed = applyImport(before(ledger, index), statement, date, commands, "replay");
+  return replayed.ok ? replayed.state.snapshots[index] : undefined;
 }
 
 /**
@@ -55,8 +64,7 @@ export function verifyRebuild(ledger: LedgerState, sources: readonly SourceRecor
       unreadable.push(saved.date);
       return;
     }
-    const replayed = applyImport(before(ledger, index), read.statement, saved.date, source.commands, "verify");
-    const rebuilt = replayed.ok ? replayed.state.snapshots[index] : undefined;
+    const rebuilt = replayedMonth(ledger, index, read.statement, saved.date, source.commands);
     if (rebuilt === undefined) {
       unreadable.push(saved.date);
       return;

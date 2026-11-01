@@ -1,18 +1,23 @@
 import {
   type DirectDeps,
+  attachDirect,
   commitDirect,
   ensureWorkbook,
-  mirrorStatement,
+  mirrorStatements,
   outcomeDirect,
   readAllDirect,
   readDirect,
   refreshView,
   restoreDirect,
+  tidyLedgerTab,
 } from "../../../adapters/google/DirectLedger";
 import type { Workbook } from "../../../adapters/google/GoogleWorkbook";
 import type { CallFailure } from "../../../adapters/google/LedgerResults";
 import type { RestClient } from "../../../adapters/google/Rest";
+import type { AttachItem } from "../../../applications/LedgerService";
 import { type InterpretStatement, type RebuildReport, verifyRebuild } from "../../../applications/Rebuild";
+import type { IsoDate } from "../../../core/IsoDate";
+import type { RawSheet } from "../../../core/RawSheet";
 import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../features/import/ImportModel";
 import type { SignInResult } from "./googleIdentity";
@@ -82,6 +87,8 @@ export interface SessionDeps {
   readonly cache: LedgerCache;
   readonly now: () => number;
   readonly newId: () => string;
+  /** How long to wait for quiet before writing the readable tabs, so a run of saves writes them once. */
+  readonly quietMilliseconds?: number;
 }
 
 const NEEDS: Readonly<Record<Exclude<SheetStatus, "unchecked" | "ok">, string>> = {
@@ -102,6 +109,11 @@ export class Session {
   private token: { readonly accessToken: string; readonly validUntil: number } | null = null;
   private readonly listeners = new Set<() => void>();
   private readonly background = new Set<Promise<unknown>>();
+  // Readable tabs and the summary are written once after a quiet moment, not after every save of a run.
+  private pendingTabs = new Map<IsoDate, RawSheet>();
+  private pendingView: { readonly workbook: Workbook; readonly state: LedgerState } | null = null;
+  private quietTimer: ReturnType<typeof setTimeout> | null = null;
+  private tidied: string | null = null;
 
   constructor(deps: SessionDeps) {
     this.deps = deps;
@@ -114,7 +126,45 @@ export class Session {
 
   /** Resolves when the readable tabs written after a save have finished. They never delay a save and never affect it. */
   async idle(): Promise<void> {
+    if (this.quietTimer !== null) {
+      clearTimeout(this.quietTimer);
+      this.quietTimer = null;
+    }
+    await this.flushViews();
     while (this.background.size > 0) await Promise.allSettled([...this.background]);
+  }
+
+  private hasPendingView(): boolean {
+    return this.pendingView !== null;
+  }
+
+  /** The token, only if it is still valid. Used for background work, which never asks the person to sign in. */
+  private validToken(): string | null {
+    return this.token !== null && this.deps.now() < this.token.validUntil ? this.token.accessToken : null;
+  }
+
+  private queueViews(workbook: Workbook, state: LedgerState, months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[]): void {
+    this.pendingView = { workbook, state };
+    for (const month of months) this.pendingTabs.set(month.date, month.sheet);
+    if (this.quietTimer !== null) clearTimeout(this.quietTimer);
+    this.quietTimer = setTimeout(() => {
+      this.quietTimer = null;
+      this.later(this.flushViews());
+    }, this.deps.quietMilliseconds ?? 1500);
+  }
+
+  /** Writes the summary and the monthly tabs that are waiting. If Google refuses, they wait for the next chance. */
+  private async flushViews(): Promise<void> {
+    const view = this.pendingView;
+    const token = this.validToken();
+    if (view === null || token === null) return;
+    const tabs = [...this.pendingTabs.entries()].map(([date, sheet]) => ({ date, sheet }));
+    this.pendingView = null;
+    this.pendingTabs = new Map();
+    const [summary, monthly] = await Promise.all([refreshView(this.deps.rest, token, view.workbook.id, view.state), mirrorStatements(this.deps.rest, token, view.workbook.id, tabs)]);
+    // Whatever Google refused waits for the next chance, together with the summary, which is rewritten with it.
+    if ((!summary || !monthly) && !this.hasPendingView()) this.pendingView = view;
+    if (!monthly) for (const tab of tabs) if (!this.pendingTabs.has(tab.date)) this.pendingTabs.set(tab.date, tab.sheet);
   }
 
   private later(work: Promise<unknown>): void {
@@ -199,6 +249,10 @@ export class Session {
     const changed = read.state.revision !== copy.revision;
     this.keep(workbook, read.state);
     this.set({ mode: "online", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
+    if (this.tidied !== workbook.id) {
+      this.tidied = workbook.id;
+      this.later(tidyLedgerTab(this.deps.rest, accessToken, workbook.id));
+    }
     return { status: "connected", created, statements: read.state.snapshots.length, changed };
   }
 
@@ -252,6 +306,11 @@ export class Session {
     this.deps.cache.clear();
     if (this.token !== null) this.deps.revoke?.(this.token.accessToken);
     this.token = null;
+    if (this.quietTimer !== null) clearTimeout(this.quietTimer);
+    this.quietTimer = null;
+    this.pendingView = null;
+    this.pendingTabs = new Map();
+    this.tidied = null;
     this.set({ mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 });
   }
 
@@ -276,7 +335,7 @@ export class Session {
       switch (commit.status) {
         case "committed":
         case "already-committed":
-          return this.readBack(workbook, signed.token, request);
+          return this.readBack(workbook, signed.token, request.source === undefined ? [] : [{ date: request.date, sheet: request.source.sheet }]);
         case "stale":
           return { status: "stale" };
         case "rejected":
@@ -292,6 +351,43 @@ export class Session {
         case "unknown":
           return { status: "unknown", message: commit.message };
       }
+    },
+
+    attach: async (items: readonly AttachItem[], commandId: string, expectedRevision: string): Promise<RecordResult> => {
+      const { workbook } = this.current;
+      if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
+      const signed = await this.accessToken();
+      if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
+      const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
+      const commit = await attachDirect(deps, signed.token, workbook.id, { commandId, expectedRevision, items });
+      switch (commit.status) {
+        case "committed":
+        case "already-committed":
+          return this.readBack(workbook, signed.token, items.map((item) => ({ date: item.date, sheet: item.source.sheet })));
+        case "stale":
+          return { status: "stale" };
+        case "rejected":
+          return { status: "rejected", messages: commit.messages };
+        case "damaged":
+          return { status: "damaged", message: commit.message };
+        case "not-committed":
+          return { status: "not-saved", message: commit.message };
+        case "not-sent":
+          return { status: "not-saved", message: NOT_SENT_TEXT[commit.failure] };
+        case "refused":
+          return { status: "not-saved", message: commit.message };
+        case "unknown":
+          return { status: "unknown", message: commit.message };
+      }
+    },
+
+    statementDates: async (): Promise<ReadonlySet<IsoDate> | null> => {
+      const { workbook } = this.current;
+      if (workbook === null) return null;
+      const signed = await this.accessToken();
+      if (!signed.ok) return null;
+      const all = await readAllDirect(this.deps.rest, signed.token, workbook.id);
+      return all.status === "ok" ? new Set(all.sources.map((source) => source.date)) : null;
     },
 
     check: async (commandId: string): Promise<CheckResult> => {
@@ -315,14 +411,13 @@ export class Session {
     },
   };
 
-  private async readBack(workbook: Workbook, accessToken: string, saved?: RecordRequest): Promise<RecordResult> {
+  private async readBack(workbook: Workbook, accessToken: string, mirror: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[] = []): Promise<RecordResult> {
     const read = await readDirect(this.deps.rest, accessToken, workbook.id);
     if (read.status !== "ok") return { status: "saved-not-reloaded" };
     this.keep(workbook, read.state);
     this.set({ mode: "online", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
     // The readable tab is a convenience; its failure never affects the saved records.
-    this.later(refreshView(this.deps.rest, accessToken, workbook.id, read.state));
-    if (saved?.source !== undefined) this.later(mirrorStatement(this.deps.rest, accessToken, workbook.id, saved.date, saved.source.sheet));
+    this.queueViews(workbook, read.state, mirror);
     return { status: "recorded", ledger: read.state };
   }
 }

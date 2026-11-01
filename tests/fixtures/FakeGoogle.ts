@@ -21,6 +21,12 @@ function parseUrl(text: string): ParsedUrl {
   return { pathname, query: (name) => pairs.get(name) ?? null };
 }
 
+/** The tab named by a range such as 'Bank 2026-01-31'!A1 or _FolioDash ledger!A1:D, with its quotes removed. */
+function tabNameOf(range: string): string {
+  const name = range.split("!")[0] ?? "";
+  return name.startsWith("'") && name.endsWith("'") ? name.slice(1, -1).replace(/''/gu, "'") : name;
+}
+
 interface FakeFile {
   readonly id: string;
   readonly name: string;
@@ -30,6 +36,7 @@ interface FakeFile {
 }
 
 interface FakeTab {
+  readonly id: number;
   hidden: boolean;
   rows: unknown[][];
 }
@@ -51,6 +58,9 @@ interface Fault {
  */
 export class FakeGoogle {
   token = "good-token";
+  /** Google does not always honour "hidden" when a tab is created; this reproduces that. */
+  ignoreHiddenOnCreate = false;
+  private nextTabId = 100;
   files = new Map<string, FakeFile>();
   workbooks = new Map<string, Map<string, FakeTab>>();
   faults: Fault[] = [];
@@ -112,6 +122,14 @@ export class FakeGoogle {
       return this.respond(200, { id: file.id });
     }
     if (request.method === "POST" && path === "/v4/spreadsheets") return this.createSpreadsheet(body);
+    const info = /^\/v4\/spreadsheets\/([^/:]+)$/u.exec(path);
+    if (request.method === "GET" && info !== null) {
+      const tabs = this.workbooks.get(info[1] ?? "");
+      if (tabs === undefined) return this.respond(404, {});
+      return this.respond(200, { sheets: [...tabs.entries()].map(([title, tab]) => ({ properties: { sheetId: tab.id, title, hidden: tab.hidden } })) });
+    }
+    const bulk = /^\/v4\/spreadsheets\/([^/]+)\/values:(batchClear|batchUpdate)$/u.exec(path);
+    if (request.method === "POST" && bulk !== null) return this.bulkValues(bulk[1] ?? "", bulk[2] ?? "", body);
     const batch = /^\/v4\/spreadsheets\/([^/]+):batchUpdate$/u.exec(path);
     if (request.method === "POST" && batch !== null) return this.batchUpdate(batch[1] ?? "", body);
 
@@ -120,15 +138,45 @@ export class FakeGoogle {
     return this.respond(400, { error: "unknown route" });
   }
 
+  private bulkValues(id: string, action: string, body: Record<string, unknown> | null): RestResponse {
+    const tabs = this.workbooks.get(id);
+    if (tabs === undefined) return this.respond(404, {});
+    const tabOf = (range: string): FakeTab | undefined => tabs.get(tabNameOf(range));
+    if (action === "batchClear") {
+      for (const range of (body?.["ranges"] as string[] | undefined) ?? []) {
+        const tab = tabOf(range);
+        if (tab === undefined) return this.respond(400, { error: "Unable to parse range" });
+        tab.rows = [];
+      }
+      return this.respond(200, {});
+    }
+    for (const entry of (body?.["data"] as { range: string; values: unknown[][] }[] | undefined) ?? []) {
+      const tab = tabOf(entry.range);
+      if (tab === undefined) return this.respond(400, { error: "Unable to parse range" });
+      entry.values.forEach((row, index) => {
+        tab.rows[index] = [...row];
+      });
+    }
+    return this.respond(200, {});
+  }
+
   private batchUpdate(id: string, body: Record<string, unknown> | null): RestResponse {
     const tabs = this.workbooks.get(id);
     if (tabs === undefined) return this.respond(404, {});
-    for (const request of (body?.["requests"] as { addSheet?: { properties: { title: string } } }[] | undefined) ?? []) {
+    type Step = { addSheet?: { properties: { title: string } }; updateSheetProperties?: { properties: { sheetId: number; hidden?: boolean }; fields: string } };
+    for (const request of (body?.["requests"] as Step[] | undefined) ?? []) {
       const title = request.addSheet?.properties.title;
-      if (title === undefined) continue;
-      // Google refuses a second tab with the same name.
-      if (tabs.has(title)) return this.respond(400, { error: "A sheet with the name already exists" });
-      tabs.set(title, { hidden: false, rows: [] });
+      if (title !== undefined) {
+        // Google refuses a second tab with the same name.
+        if (tabs.has(title)) return this.respond(400, { error: "A sheet with the name already exists" });
+        tabs.set(title, { id: this.nextTabId++, hidden: false, rows: [] });
+      }
+      const update = request.updateSheetProperties;
+      if (update !== undefined) {
+        const tab = [...tabs.values()].find((candidate) => candidate.id === update.properties.sheetId);
+        if (tab === undefined) return this.respond(400, { error: "No such sheet" });
+        if (update.fields.includes("hidden")) tab.hidden = update.properties.hidden === true;
+      }
     }
     return this.respond(200, {});
   }
@@ -149,7 +197,7 @@ export class FakeGoogle {
     const title = ((body?.["properties"] as Record<string, unknown> | undefined)?.["title"] as string | undefined) ?? "Untitled";
     const tabs = new Map<string, FakeTab>();
     for (const sheet of (body?.["sheets"] as { properties: { title: string; hidden?: boolean } }[] | undefined) ?? []) {
-      tabs.set(sheet.properties.title, { hidden: sheet.properties.hidden === true, rows: [] });
+      tabs.set(sheet.properties.title, { id: this.nextTabId++, hidden: this.ignoreHiddenOnCreate ? false : sheet.properties.hidden === true, rows: [] });
     }
     this.workbooks.set(id, tabs);
     this.files.set(id, { id, name: title, appProperties: {}, trashed: false, createdTime: this.clock++ });
@@ -159,8 +207,7 @@ export class FakeGoogle {
   private values(request: RestRequest, body: Record<string, unknown> | null, id: string, range: string, action: string): RestResponse {
     const tabs = this.workbooks.get(id);
     if (tabs === undefined) return this.respond(404, {});
-    const tabName = range.split("!")[0] ?? "";
-    const tab = tabs.get(tabName);
+    const tab = tabs.get(tabNameOf(range));
     if (tab === undefined) return this.respond(400, { error: "Unable to parse range" });
 
     if (request.method === "GET") {
