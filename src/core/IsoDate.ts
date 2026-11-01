@@ -91,6 +91,15 @@ export function fromSpreadsheetSerial(serial: number, date1904: boolean): IsoDat
   return toIsoDate(year, month, day);
 }
 
+/** The spreadsheet date number (1900 system, as Google Sheets uses) of a calendar date. The inverse of `fromSpreadsheetSerial`. */
+export function toSpreadsheetSerial(date: IsoDate): number {
+  const match = ISO_DATE.exec(date);
+  const year = Number(match?.[1]);
+  const month = Number(match?.[2]);
+  const day = Number(match?.[3]);
+  return Math.round(Date.UTC(year, month - 1, day) / 86_400_000) + SERIAL_1900_TO_UNIX_DAYS;
+}
+
 export function compareIsoDates(left: IsoDate, right: IsoDate): number {
   if (left === right) return 0;
   return left < right ? -1 : 1;

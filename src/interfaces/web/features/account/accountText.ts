@@ -1,5 +1,5 @@
 import { formatMonthYear } from "../../../../core/IsoDate";
-import type { ConnectOutcome, RestoreOutcome, SheetStatus, VerifyOutcome } from "../../app/session";
+import type { ConnectOutcome, RestoreOutcome, SheetStatus, TidyOutcome, VerifyOutcome } from "../../app/session";
 
 export interface Message {
   readonly good: boolean;
@@ -89,6 +89,21 @@ export function describeVerify(outcome: VerifyOutcome): Message {
         title: everything ? "Your whole history can be rebuilt" : clean ? "What can be checked, matches" : "Something does not match",
         body: [`${String(report.matching)} of ${plural(report.months, "month", "months")} rebuild exactly from the saved bank statements.`, ...lines].join(" "),
       };
+    }
+  }
+}
+
+export function describeTidy(outcome: TidyOutcome): Message {
+  switch (outcome.status) {
+    case "sign-in-failed":
+      return { good: false, title: "Not signed in", body: SIGN_IN[outcome.reason] ?? "Sign-in did not complete." };
+    case "needs-attention":
+      return { good: false, title: "Your Google Sheet needs attention", body: outcome.message };
+    case "failed":
+      return { good: false, title: "Could not tidy", body: outcome.message };
+    case "tidied": {
+      const rest = outcome.withoutStatement > 0 ? ` ${plural(outcome.withoutStatement, "month has", "months have")} no kept statement, so there is no tab for ${outcome.withoutStatement === 1 ? "it" : "them"}.` : "";
+      return { good: true, title: "Your sheet is tidy", body: `The summary and ${plural(outcome.months, "monthly tab", "monthly tabs")} were rewritten.${rest}` };
     }
   }
 }

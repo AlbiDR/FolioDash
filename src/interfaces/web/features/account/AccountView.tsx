@@ -1,15 +1,16 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { describeAge } from "../../app/timeAgo";
-import type { ConnectOutcome, RestoreOutcome, SessionState, VerifyOutcome } from "../../app/session";
+import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../app/session";
 import { Icon } from "../../shared/ui/icons";
-import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeVerify } from "./accountText";
+import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeTidy, describeVerify } from "./accountText";
 
 export interface AccountActions {
   connect(): Promise<ConnectOutcome>;
   refresh(): Promise<ConnectOutcome>;
   restore(): Promise<RestoreOutcome>;
   verify(): Promise<VerifyOutcome>;
+  tidy(): Promise<TidyOutcome>;
   forget(): void;
   /** Remembers a client ID on this device. Returns false if it is not shaped like one. */
   setClientId(text: string): boolean;
@@ -38,6 +39,7 @@ export function AccountView(props: {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
   const [checkMessage, setCheckMessage] = useState<Message | null>(null);
+  const [tidyMessage, setTidyMessage] = useState<Message | null>(null);
   const [confirmRestore, setConfirmRestore] = useState(false);
   const [confirmForget, setConfirmForget] = useState(false);
   const [clientText, setClientText] = useState("");
@@ -75,6 +77,18 @@ export function AccountView(props: {
       setCheckMessage(describeVerify(await actions.verify()));
     } catch {
       setCheckMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function tidy(): Promise<void> {
+    setBusy(true);
+    setTidyMessage(null);
+    try {
+      setTidyMessage(describeTidy(await actions.tidy()));
+    } catch {
+      setTidyMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
     } finally {
       setBusy(false);
     }
@@ -154,6 +168,18 @@ export function AccountView(props: {
             Check my history
           </button>
           <Result message={checkMessage} />
+        </div>
+      )}
+
+      {!signedOut && state.workbook !== null && (
+        <div class="card">
+          <h3 class="card-title">Tidy your Google Sheet</h3>
+          <p class="card-subtitle">Rewrites the summary and every month's tab so they look alike and stay lean.</p>
+          <p>Dates, amounts and prices are shown the same way in every month, with one empty row and column around the data and nothing beyond it. Your saved records are not touched.</p>
+          <button type="button" disabled={busy} onClick={() => void tidy()}>
+            Tidy my sheet
+          </button>
+          <Result message={tidyMessage} />
         </div>
       )}
 

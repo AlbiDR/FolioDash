@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../tests/fixtures/FakeGoogle";
 import type { CommitRequest } from "../../applications/LedgerService";
+import { rawGrid } from "../../applications/SheetGrid";
 import type { FundCommand, StatementInput } from "../../core/ImportPlan";
-import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
+import { type IsoDate, parseIsoDate, toSpreadsheetSerial } from "../../core/IsoDate";
 import { parseIsin } from "../../core/Isin";
 import { EMPTY_LEDGER } from "../../core/Ledger";
 import type { RawSheet } from "../../core/RawSheet";
@@ -276,10 +277,10 @@ describe("refreshView", () => {
     if (read.status !== "ok") throw new Error("setup failed");
     expect(await refreshView(google.client, google.token, workbook.id, read.state)).toBe(true);
     const lines = google.tab(workbook.id, VIEW_TAB)?.rows ?? [];
-    expect(String(lines[1]?.[0])).toContain("rebuilt");
-    expect(lines.some((line) => line[0] === "Latest statement" && line[1] === "2026-01-31")).toBe(true);
+    expect(String(lines[2]?.[1])).toContain("rebuilt");
+    expect(lines.some((line) => line[1] === "Latest statement" && line[2] === toSpreadsheetSerial(date("2026-01-31")))).toBe(true);
     const ledgerBefore = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
-    google.faults.push({ match: /:clear$/u, status: 500 });
+    google.faults.push({ match: /:batchUpdate$/u, status: 500 });
     expect(await refreshView(google.client, google.token, workbook.id, read.state)).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(ledgerBefore);
   });
@@ -322,11 +323,17 @@ describe("saving the bank statement with the month", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     await commitDirect(deps, google.token, workbook.id, withSource());
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }])).toBe(true);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid)).toBe(true);
     const title = statementTabTitle(date("2026-01-31"));
     expect(title).toBe("Bank 2026-01-31");
-    expect(google.tab(workbook.id, title)?.rows).toEqual([["", "Categoria / Nome prodotto"], [652.289, "Synthetic Fund A"]]);
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }])).toBe(true);
+    // The data keeps its place, with one empty row and column around it.
+    expect(google.tab(workbook.id, title)?.rows).toEqual([
+      ["", "", "", ""],
+      ["", "", "Categoria / Nome prodotto", ""],
+      ["", 652.289, "Synthetic Fund A", ""],
+      ["", "", "", ""],
+    ]);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid)).toBe(true);
     expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === title)).toHaveLength(1);
   });
 
@@ -336,7 +343,7 @@ describe("saving the bank statement with the month", () => {
     await commitDirect(deps, google.token, workbook.id, withSource());
     const before = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
     google.faults.push({ match: /:batchUpdate$/u, status: 503 });
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }])).toBe(false);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid)).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
     expect((await readAllDirect(google.client, google.token, workbook.id)).status).toBe("ok");
   });
@@ -377,23 +384,23 @@ describe("the readable monthly tabs, in a few requests", () => {
     const workbook = await readyWorkbook(google);
     const months = Array.from({ length: 17 }, (_, index) => ({ date: date(`2026-${String((index % 12) + 1).padStart(2, "0")}-${index < 12 ? "15" : "16"}`), sheet: sheetFor(`Month ${String(index)}`) }));
     const before = google.calls.length;
-    expect(await mirrorStatements(google.client, google.token, workbook.id, months)).toBe(true);
-    // List the tabs, add the missing ones, clear them, fill them.
-    expect(google.calls.length - before).toBe(4);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, months, rawGrid)).toBe(true);
+    // List the tabs, then one batch that adds, fits, formats and fills them all.
+    expect(google.calls.length - before).toBe(2);
     expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name.startsWith("Bank "))).toHaveLength(17);
-    expect(google.tab(workbook.id, "Bank 2026-03-15")?.rows).toEqual([["Month 2"]]);
+    expect(google.tab(workbook.id, "Bank 2026-03-15")?.rows).toEqual([["", "", ""], ["", "Month 2", ""], ["", "", ""]]);
   });
 
   it("rewrites tabs that exist and adds only the missing ones", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
-    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheetFor("old") }]);
+    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheetFor("old") }], rawGrid);
     await mirrorStatements(google.client, google.token, workbook.id, [
       { date: date("2026-01-31"), sheet: sheetFor("new") },
       { date: date("2026-02-28"), sheet: sheetFor("second") },
-    ]);
-    expect(google.tab(workbook.id, "Bank 2026-01-31")?.rows).toEqual([["new"]]);
-    expect(google.tab(workbook.id, "Bank 2026-02-28")?.rows).toEqual([["second"]]);
+    ], rawGrid);
+    expect(google.tab(workbook.id, "Bank 2026-01-31")?.rows).toEqual([["", "", ""], ["", "new", ""], ["", "", ""]]);
+    expect(google.tab(workbook.id, "Bank 2026-02-28")?.rows).toEqual([["", "", ""], ["", "second", ""], ["", "", ""]]);
     expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === "Bank 2026-01-31")).toHaveLength(1);
   });
 
@@ -401,8 +408,67 @@ describe("the readable monthly tabs, in a few requests", () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
     const before = google.calls.length;
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [])).toBe(true);
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [], rawGrid)).toBe(true);
     expect(google.calls.length).toBe(before);
+  });
+});
+
+describe("lean tabs", () => {
+  const sheet = (): RawSheet => ({ date1904: false, rows: [[], [undefined, { kind: "text", text: "Header" }, { kind: "number", text: "5", format: null }], [], []] });
+
+  it("cuts a tab down to its data plus one empty row and column, deleting what was there", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheet() }], rawGrid);
+    const tab = google.tab(workbook.id, "Bank 2026-01-31");
+    expect([tab?.rowCount, tab?.columnCount]).toEqual([3, 4]);
+    // Rewriting with a bigger tab in place first (as a person might) still ends lean.
+    if (tab !== undefined) {
+      tab.rowCount = 1000;
+      tab.columnCount = 26;
+      tab.rows[500] = ["stray"];
+    }
+    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheet() }], rawGrid);
+    expect([tab?.rowCount, tab?.columnCount]).toEqual([3, 4]);
+    expect(tab?.rows).toHaveLength(3);
+  });
+
+  it("applies the whole write or none of it, so a refused batch leaves the old tab alone", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheet() }], rawGrid);
+    const before = JSON.stringify(google.tab(workbook.id, "Bank 2026-01-31")?.rows);
+    google.faults.push({ match: /:batchUpdate$/u, status: 400 });
+    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: { date1904: false, rows: [[{ kind: "text", text: "Other" }]] } }], rawGrid)).toBe(false);
+    expect(JSON.stringify(google.tab(workbook.id, "Bank 2026-01-31")?.rows)).toBe(before);
+  });
+
+  it("writes the summary tab with a margin, and money, percent and date shown as such", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    const read = await readDirect(google.client, google.token, workbook.id);
+    if (read.status !== "ok") throw new Error("setup failed");
+    expect(await refreshView(google.client, google.token, workbook.id, read.state)).toBe(true);
+    const view = google.tab(workbook.id, VIEW_TAB);
+    expect(view?.rows[0]?.every((cell) => cell === "")).toBe(true);
+    expect(view?.rows[1]?.[0]).toBe("");
+    expect(view?.rows[1]?.[1]).toBe("FolioDash");
+    const patterns = (view?.formats ?? []).flat().map((format) => (format?.["numberFormat"] as { pattern?: string } | undefined)?.pattern);
+    expect(patterns).toContain('#,##0.00" €"');
+    expect(patterns).toContain("dd/mm/yyyy");
+  });
+
+  it("trims the ledger tab's unused columns but never deletes its rows", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    const ledger = google.tab(workbook.id, LEDGER_TAB);
+    if (ledger !== undefined) ledger.columnCount = 26;
+    const rowsBefore = ledger?.rows.length;
+    expect(await tidyLedgerTab(google.client, google.token, workbook.id)).toBe(true);
+    expect(ledger?.columnCount).toBe(4);
+    expect(ledger?.rows).toHaveLength(rowsBefore ?? -1);
   });
 });
 

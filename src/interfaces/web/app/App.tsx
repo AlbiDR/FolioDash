@@ -219,6 +219,7 @@ export function App(): JSX.Element {
                     refresh: () => session.refresh(),
                     restore: () => session.restoreFromDevice(),
                     verify: () => session.verifyHistory(),
+                    tidy: () => session.tidySheet(),
                     forget: () => {
                       session.forget();
                     },

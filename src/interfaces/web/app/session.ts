@@ -4,6 +4,7 @@ import {
   commitDirect,
   ensureWorkbook,
   mirrorStatements,
+  type PresentStatement,
   outcomeDirect,
   readAllDirect,
   readDirect,
@@ -17,7 +18,7 @@ import type { RestClient } from "../../../adapters/google/Rest";
 import type { AttachItem } from "../../../applications/LedgerService";
 import { type InterpretStatement, type RebuildReport, verifyRebuild } from "../../../applications/Rebuild";
 import type { IsoDate } from "../../../core/IsoDate";
-import type { RawSheet } from "../../../core/RawSheet";
+import { type RawSheet, parseStoredSheet } from "../../../core/RawSheet";
 import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../features/import/ImportModel";
 import type { SignInResult } from "./googleIdentity";
@@ -77,10 +78,18 @@ export type VerifyOutcome =
   | { readonly status: "needs-attention"; readonly message: string }
   | { readonly status: "failed"; readonly message: string };
 
+export type TidyOutcome =
+  | { readonly status: "tidied"; readonly months: number; readonly withoutStatement: number }
+  | { readonly status: "sign-in-failed"; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }
+  | { readonly status: "needs-attention"; readonly message: string }
+  | { readonly status: "failed"; readonly message: string };
+
 export interface SessionDeps {
   readonly clientId: string;
   /** Re-reads a stored bank statement with today's reader, to prove the ledger can be rebuilt from them. */
   readonly interpret: InterpretStatement;
+  /** How a statement is shown in its tab of the person's spreadsheet. */
+  readonly present: PresentStatement;
   readonly signIn: (clientId: string, scope: string) => Promise<SignInResult>;
   readonly revoke?: (accessToken: string) => void;
   readonly rest: RestClient;
@@ -161,7 +170,9 @@ export class Session {
     const tabs = [...this.pendingTabs.entries()].map(([date, sheet]) => ({ date, sheet }));
     this.pendingView = null;
     this.pendingTabs = new Map();
-    const [summary, monthly] = await Promise.all([refreshView(this.deps.rest, token, view.workbook.id, view.state), mirrorStatements(this.deps.rest, token, view.workbook.id, tabs)]);
+    // One after the other, so two batches never race to add the same tab.
+    const summary = await refreshView(this.deps.rest, token, view.workbook.id, view.state);
+    const monthly = await mirrorStatements(this.deps.rest, token, view.workbook.id, tabs, this.deps.present);
     // Whatever Google refused waits for the next chance, together with the summary, which is rewritten with it.
     if ((!summary || !monthly) && !this.hasPendingView()) this.pendingView = view;
     if (!monthly) for (const tab of tabs) if (!this.pendingTabs.has(tab.date)) this.pendingTabs.set(tab.date, tab.sheet);
@@ -299,6 +310,34 @@ export class Session {
       case "ok":
         return { status: "checked", report: verifyRebuild(all.state, all.sources, this.deps.interpret) };
     }
+  }
+
+  /**
+   * Rewrites the summary and every month's tab from the saved records, in the current
+   * layout: typed alike, formatted, and cut to the data plus one empty row and column.
+   * Only the views are rewritten; the records are read, never changed.
+   */
+  async tidySheet(): Promise<TidyOutcome> {
+    const { workbook } = this.current;
+    if (workbook === null) return { status: "failed", message: "There is no Google Sheet to tidy yet." };
+    const signed = await this.accessToken();
+    if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
+    const all = await readAllDirect(this.deps.rest, signed.token, workbook.id);
+    if (all.status === "damaged") return { status: "needs-attention", message: `${all.message} Nothing was changed.` };
+    if (all.status === "unavailable") {
+      return all.failure === "missing" || all.failure === "not-a-ledger"
+        ? { status: "needs-attention", message: NEEDS[all.failure === "missing" ? "missing" : "not-a-ledger"] }
+        : { status: "failed", message: "Google could not be reached, so nothing was changed." };
+    }
+    const months = all.sources.flatMap((source) => {
+      const sheet = parseStoredSheet(source.sheet);
+      return sheet === null ? [] : [{ date: source.date, sheet }];
+    });
+    const summary = await refreshView(this.deps.rest, signed.token, workbook.id, all.state);
+    const monthly = await mirrorStatements(this.deps.rest, signed.token, workbook.id, months, this.deps.present);
+    await tidyLedgerTab(this.deps.rest, signed.token, workbook.id);
+    if (!summary || !monthly) return { status: "failed", message: "Google did not accept the change, so your sheet was left as it was. Try again shortly." };
+    return { status: "tidied", months: months.length, withoutStatement: all.state.snapshots.length - months.length };
   }
 
   /** Wipes everything this device holds and signs out. The spreadsheet in Google is not touched. */

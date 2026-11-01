@@ -1,13 +1,15 @@
 import { type AttachRequest, type CommitRequest, type ServiceEnvironment, type SourceRecord, attachStatements, commitStatement } from "../../applications/LedgerService";
-import { readableView, statementCells } from "../../applications/ReadableView";
+import { readableView } from "../../applications/ReadableView";
+import type { Grid } from "../../applications/SheetGrid";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { type LedgerState, parseLedgerState } from "../../core/Ledger";
 import type { IsoDate } from "../../core/IsoDate";
-import { type RawSheet } from "../../core/RawSheet";
+import type { RawSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedgerStore";
-import { type Workbook, appendLedgerRows, createWorkbook, findWorkbook, hideLedgerTab, readLedgerRows, writeReadableView, writeStatementTabs } from "./GoogleWorkbook";
+import { type Workbook, appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs } from "./GoogleWorkbook";
 import type { CallFailure, RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
+import { VIEW_TAB } from "./SheetsLayout";
 import { type RestClient, type RestFailure, wroteNothing } from "./Rest";
 
 /**
@@ -220,7 +222,7 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
 
 /** Refreshes the readable tab. Best effort: a failure here never affects the saved records. */
 export async function refreshView(rest: RestClient, accessToken: string, workbookId: string, state: LedgerState): Promise<boolean> {
-  const written = await writeReadableView(rest, accessToken, workbookId, readableView(state));
+  const written = await writeGridTabs(rest, accessToken, workbookId, [{ title: VIEW_TAB, grid: readableView(state) }]);
   return written.ok;
 }
 
@@ -229,15 +231,24 @@ export function statementTabTitle(date: IsoDate): string {
   return `Bank ${date}`;
 }
 
-/** Writes the readable tabs for any number of months in a few requests. Best effort: the exact statements are already in the ledger. */
-export async function mirrorStatements(rest: RestClient, accessToken: string, workbookId: string, months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[]): Promise<boolean> {
-  const written = await writeStatementTabs(rest, accessToken, workbookId, months.map((month) => ({ title: statementTabTitle(month.date), lines: statementCells(month.sheet) })));
+/** Turns a bank statement into the tab shown for it; the bank-specific reading is supplied by the caller. */
+export type PresentStatement = (sheet: RawSheet) => Grid;
+
+/** Writes the readable tabs for any number of months in two requests. Best effort: the exact statements are already in the ledger. */
+export async function mirrorStatements(
+  rest: RestClient,
+  accessToken: string,
+  workbookId: string,
+  months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[],
+  present: PresentStatement,
+): Promise<boolean> {
+  const written = await writeGridTabs(rest, accessToken, workbookId, months.map((month) => ({ title: statementTabTitle(month.date), grid: present(month.sheet) })));
   return written.ok;
 }
 
-/** Hides the ledger tab if it is showing. Best effort. */
+/** Hides the ledger tab if it is showing and trims its unused columns. Best effort. */
 export function tidyLedgerTab(rest: RestClient, accessToken: string, workbookId: string): Promise<boolean> {
-  return hideLedgerTab(rest, accessToken, workbookId);
+  return tidyTab(rest, accessToken, workbookId);
 }
 
 export type ReadAll =

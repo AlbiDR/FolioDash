@@ -1,5 +1,6 @@
 import type { RestClient } from "../../../adapters/google/Rest";
 import { browserLedgerCache } from "./ledgerCache";
+import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
 import { interpretStatement } from "./interpretStatement";
 import { Session } from "./session";
 import { revokeToken, signIn } from "./googleIdentity";
@@ -19,6 +20,7 @@ export function createBrowserSession(clientId: string): Session {
   return new Session({
     clientId,
     interpret: interpretStatement,
+    present: presentStatement,
     signIn,
     revoke: revokeToken,
     rest: browserRest,

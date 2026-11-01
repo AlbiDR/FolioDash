@@ -124,7 +124,7 @@ function present(sheet: RawSheet, row: number, column: number): boolean {
   return !isMissing(cellAt(sheet, row, column));
 }
 
-function findHeader(sheet: RawSheet): number | null {
+export function findHeader(sheet: RawSheet): number | null {
   for (let row = 0; row < sheet.rows.length; row++) {
     if (
       HEADERS.every(([column, label]) => textOf(sheet, row, column) === label) &&

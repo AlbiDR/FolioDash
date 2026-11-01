@@ -11,6 +11,7 @@ import { parseIsin } from "../../../core/Isin";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/Money";
 import type { RecordRequest } from "../features/import/ImportModel";
 import type { SignInResult } from "./googleIdentity";
+import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
 import { interpretStatement } from "./interpretStatement";
 import { type KeyValueStore, createLedgerCache } from "./ledgerCache";
 import { type SessionDeps, Session } from "./session";
@@ -43,6 +44,7 @@ function world(overrides: { google?: FakeGoogle; store?: ReturnType<typeof memor
     new Session({
       clientId: "client",
       interpret: interpretStatement,
+      present: presentStatement,
       signIn: (): Promise<SignInResult> => {
         log.signIns++;
         return Promise.resolve({ ok: true, accessToken: google.token, expiresInSeconds: 3600 });
@@ -411,6 +413,48 @@ describe("attaching statements to months saved earlier, through the session", ()
   });
 });
 
+describe("tidying the sheet", () => {
+  it("rewrites every month's tab lean and typed, from the kept statements, leaving the records alone", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    const sheet = syntheticSheet();
+    const read = interpretStatement(sheet);
+    if (!read.ok) throw new Error("setup failed");
+    await saved(session, { date: date("2026-01-31"), statement: read.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    // A person (or an older build) left the tab bare and oversized.
+    const tab = google.tab(id, "Bank 2026-01-31");
+    if (tab !== undefined) {
+      tab.rowCount = 1000;
+      tab.columnCount = 26;
+      tab.formats = [];
+    }
+    const ledgerBefore = JSON.stringify(google.tab(id, "_FolioDash ledger")?.rows);
+    const outcome = await session.tidySheet();
+    expect(outcome).toEqual({ status: "tidied", months: 1, withoutStatement: 0 });
+    expect(tab?.columnCount).toBeLessThan(26);
+    expect(tab?.rowCount).toBe(tab?.rows.length);
+    const patterns = (tab?.formats ?? []).flat().map((format) => (format?.["numberFormat"] as { pattern?: string } | undefined)?.pattern);
+    expect(patterns).toContain("dd/mm/yyyy");
+    expect(JSON.stringify(google.tab(id, "_FolioDash ledger")?.rows)).toBe(ledgerBefore);
+  });
+
+  it("changes nothing and says so when Google refuses", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    const sheet = syntheticSheet();
+    const read = interpretStatement(sheet);
+    if (!read.ok) throw new Error("setup failed");
+    await saved(session, { date: date("2026-01-31"), statement: read.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await session.idle();
+    google.faults.push({ match: /:batchUpdate$/u, status: 503 });
+    expect((await session.tidySheet()).status).toBe("failed");
+  });
+});
+
 describe("the readable tabs and summary are written once after a run of saves", () => {
   it("two saves in a row write both monthly tabs and the summary together, in one batch, not once per save", async () => {
     const { google, make } = world();
@@ -424,9 +468,8 @@ describe("the readable tabs and summary are written once after a run of saves", 
     await saved(session, { date: date("2026-02-28"), statement: second.statement, commands: keeps, source: { sheetName: "S", sheet: februarySheet() } });
     await session.idle();
     const id = session.state.workbook?.id ?? "";
-    // One clear and one fill for both months, plus the summary's own: never one per save.
-    expect(google.callsMatching(/values:batchClear$/u)).toHaveLength(1);
-    expect(google.callsMatching(/values:batchUpdate$/u)).toHaveLength(1);
+    // One batch for both months and one for the summary: never one per save.
+    expect(google.callsMatching(/:batchUpdate$/u)).toHaveLength(2);
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
     expect(google.tab(id, "Bank 2026-02-28")?.rows.length).toBeGreaterThan(5);
   });
@@ -435,7 +478,8 @@ describe("the readable tabs and summary are written once after a run of saves", 
     const { google, make } = world();
     const session = make();
     await session.connect();
-    google.faults.push({ match: /values:batchClear$/u, status: 429 });
+    // Google refuses both the summary's batch and the months' batch.
+    google.faults.push({ match: /:batchUpdate$/u, status: 429 }, { match: /:batchUpdate$/u, status: 429 });
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);
     if (!read.ok) throw new Error("setup failed");

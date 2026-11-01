@@ -191,9 +191,18 @@ What this decides:
 - **Identifiers:** the statement is stored exactly as the bank wrote it, including the holder name and the contract and account numbers. They live only in the owner's private sheet and are never put in the device copy.
 
 - **Months saved before this:** the owner's first live import saved 17 months with figures and decisions only. A history import from a file that carries the statements now attaches them to months already saved, in one new revision. The saved figures do not change: each statement must replay, with today's rules and the decisions given, to exactly the month already saved, or the whole request is refused. A month that already has its statement is refused too.
-- **Quiet writes:** the readable summary and the monthly tabs are written once after a quiet moment, with the monthly tabs in four requests however many there are, so a run of saves stays under Google's write limit. What Google refuses waits for the next chance. The ledger tab is hidden after creation as well, because Google does not always honour "hidden" when a tab is created.
+- **Quiet writes:** the readable summary and the monthly tabs are written once after a quiet moment, with the monthly tabs in one batch however many there are, so a run of saves stays under Google's write limit. What Google refuses waits for the next chance. The ledger tab is hidden after creation as well, because Google does not always honour "hidden" when a tab is created.
 
 Verified in tests with a stand-in for Google, and on the owner's 17 real months locally: the ledger rebuilt from only the 17 stored statements and decisions is identical to the replayed ledger. Not verified on real Google.
+
+### FD-019 follow-up: how the tabs in the person's sheet are laid out (owner request, 2026-11-01)
+
+- **Typed alike, every month.** A `Bank YYYY-MM-DD` tab keeps the bank's positions but shows each column in one type and format whatever the month's file stored: dates as real dates (`dd/mm/yyyy`), quantities, prices (with their currency), rates, risk and euro amounts as numbers. Where the statement as a whole was read successfully, quantity, price and rate are the values that reading settled on, so a month whose file stored a quantity as a time still shows the real quantity. A cell with no single reading stays as the file wrote it. The exact statement stays in the ledger; these tabs are views.
+- **One row and one column of margin, nothing beyond.** Every written tab is cut to its data plus one empty row and column on each side, with narrow margin columns; surplus rows and columns are deleted, as the earlier workbook's views did. The summary tab follows the same rule.
+- **One batch.** All tabs are written in one `batchUpdate` (add, fit, reset, values, formats, widths), applied whole or not at all.
+- **The ledger tab is the exception.** It is read from A1 by its stored format, so it has no top or left margin; only its unused columns are deleted. Its rows are never deleted by the app, because another device may be appending at that moment and a delete could take committed rows. New ledger tabs start with two rows and grow as rows are appended.
+- **Rewriting existing tabs.** Your data has a "Tidy my sheet" action that rewrites the summary and every kept month from the ledger.
+- **Not yet verified on real Google:** the format and resize requests are tested only against the stand-in.
 
 ## Decision record template
 
