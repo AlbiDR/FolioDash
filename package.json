@@ -1,0 +1,26 @@
+{
+  "name": "foliodash",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A private portfolio tracker for Mac and Android.",
+  "scripts": {
+    "verify": "npm run verify:contributors && npm run typecheck && npm run lint && npm test",
+    "verify:contributors": "node scripts/verify-contributors.mjs",
+    "typecheck": "tsc --project config/tsconfig.json",
+    "lint": "eslint --config config/eslint.config.js src",
+    "test": "vitest run --config config/vitest.config.ts",
+    "audit:dependencies": "npm audit --audit-level=high"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.14.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  }
+}
