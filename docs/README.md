@@ -9,6 +9,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Fideuram XLSX layout v1](architecture/fideuram-xlsx-layout.md) | Observed bank export layout, cell formats, reconciliation relations and proposed bank-adapter rules | Draft; one observed export, no parser or fixtures |
 | [Decision register](architecture/decision-register.md) | Decisions, alternatives, approval state and implementation blockers | Google-backed direction selected; implementation details open |
 | [Repository configuration](operations/repository-configuration.md) | GitHub variables, secrets, environments, workflow rules and the public-release gate | Draft; nothing created |
+| [Google setup](operations/google-setup.md) | Owner steps in the owner's Google account for the first live proof with a synthetic spreadsheet | Draft; not performed or tested |
 | [Web quality contract](operations/web-quality.md) | User journeys, accessible presentation, measurement methods and release evidence | Proposed acceptance requirements |
 
 ## Authority and amendment
