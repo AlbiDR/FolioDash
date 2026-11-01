@@ -30,6 +30,7 @@ export function createImportPreparer(localDateOf: (milliseconds: number) => IsoD
       if (!interpreted.ok && interpreted.issues.every((issue) => issue.code === "layout-not-found")) continue;
       sheets.push({
         name: entry.name,
+        raw: entry.sheet,
         outcome: interpreted.ok
           ? { ok: true, statement: interpreted.statement }
           : { ok: false, issues: interpreted.issues },

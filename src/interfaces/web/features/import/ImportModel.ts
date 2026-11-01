@@ -1,6 +1,8 @@
 import type { FundCommand, StatementInput } from "../../../../core/ImportPlan";
 import type { IsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
+import type { RawSheet } from "../../../../core/RawSheet";
+import type { StatementSource } from "../../../../applications/LedgerService";
 import type { EuroCents } from "../../../../core/Money";
 import type { DateCandidate } from "../../../../core/StatementDate";
 
@@ -50,6 +52,8 @@ export type SheetOutcome =
 export interface ReviewedSheet {
   readonly name: string;
   readonly outcome: SheetOutcome;
+  /** The sheet exactly as read from the file, kept with the month it becomes. */
+  readonly raw: RawSheet;
 }
 
 export type ImportReview =
@@ -67,6 +71,8 @@ export interface RecordRequest {
   readonly date: IsoDate;
   readonly statement: StatementInput;
   readonly commands: readonly FundCommand[];
+  /** The bank statement behind this month, saved beside it so the ledger can always be rebuilt. */
+  readonly source?: StatementSource;
 }
 
 export type RecordResult =

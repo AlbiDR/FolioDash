@@ -1,4 +1,5 @@
-import type { CommitRequest } from "./LedgerService";
+import { parseStoredSheet } from "../core/RawSheet";
+import type { CommitRequest, StatementSource } from "./LedgerService";
 import type { FundCommand, StatementInput } from "../core/ImportPlan";
 import { parseIsin } from "../core/Isin";
 import { parseIsoDate } from "../core/IsoDate";
@@ -88,5 +89,14 @@ export function parseCommitRequest(input: unknown): ParsedRequest {
     });
   }
 
-  return { ok: true, request: { commandId, expectedRevision, statement: { funds, fundsSubtotal }, date, commands } };
+  let source: StatementSource | undefined;
+  if (body["source"] !== undefined) {
+    const given = record(body["source"]);
+    const sheetName = text(given?.["sheetName"], 200);
+    const sheet = parseStoredSheet(given?.["sheet"]);
+    if (sheetName === null || sheet === null) return fail("The bank statement is missing or not in the expected form.");
+    source = { sheetName, sheet };
+  }
+
+  return { ok: true, request: { commandId, expectedRevision, statement: { funds, fundsSubtotal }, date, commands, ...(source === undefined ? {} : { source }) } };
 }

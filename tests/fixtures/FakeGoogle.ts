@@ -112,10 +112,25 @@ export class FakeGoogle {
       return this.respond(200, { id: file.id });
     }
     if (request.method === "POST" && path === "/v4/spreadsheets") return this.createSpreadsheet(body);
+    const batch = /^\/v4\/spreadsheets\/([^/]+):batchUpdate$/u.exec(path);
+    if (request.method === "POST" && batch !== null) return this.batchUpdate(batch[1] ?? "", body);
 
     const values = /^\/v4\/spreadsheets\/([^/]+)\/values\/(.+?)(:append|:clear)?$/u.exec(path);
     if (values !== null) return this.values(request, body, values[1] ?? "", values[2] ?? "", values[3] ?? "");
     return this.respond(400, { error: "unknown route" });
+  }
+
+  private batchUpdate(id: string, body: Record<string, unknown> | null): RestResponse {
+    const tabs = this.workbooks.get(id);
+    if (tabs === undefined) return this.respond(404, {});
+    for (const request of (body?.["requests"] as { addSheet?: { properties: { title: string } } }[] | undefined) ?? []) {
+      const title = request.addSheet?.properties.title;
+      if (title === undefined) continue;
+      // Google refuses a second tab with the same name.
+      if (tabs.has(title)) return this.respond(400, { error: "A sheet with the name already exists" });
+      tabs.set(title, { hidden: false, rows: [] });
+    }
+    return this.respond(200, {});
   }
 
   private listFiles(query: string): RestResponse {

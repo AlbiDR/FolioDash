@@ -67,7 +67,7 @@ export function HistoryView(props: {
     try {
       const run = await runHistory<RecordResult>(
         async (item, expectedRevision) => {
-          const result = await save.record({ date: item.date, statement: item.statement, commands: item.commands }, item.commandId, expectedRevision);
+          const result = await save.record({ date: item.date, statement: item.statement, commands: item.commands, ...(item.source === undefined ? {} : { source: item.source }) }, item.commandId, expectedRevision);
           return result.status === "recorded" ? { ok: true, ledger: result.ledger } : { ok: false, failure: result };
         },
         props.ledger,

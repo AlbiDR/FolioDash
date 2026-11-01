@@ -5,8 +5,9 @@ import type { FundCommand, StatementInput } from "../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { parseIsin } from "../../core/Isin";
 import { EMPTY_LEDGER } from "../../core/Ledger";
+import type { RawSheet } from "../../core/RawSheet";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
-import { type DirectDeps, commitDirect, ensureWorkbook, outcomeDirect, readDirect, refreshView, restoreDirect } from "./DirectLedger";
+import { type DirectDeps, commitDirect, ensureWorkbook, mirrorStatement, outcomeDirect, readAllDirect, readDirect, refreshView, restoreDirect, statementTabTitle } from "./DirectLedger";
 import { LEDGER_TAB, VIEW_TAB } from "./SheetsLayout";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;
@@ -281,5 +282,62 @@ describe("refreshView", () => {
     google.faults.push({ match: /:clear$/u, status: 500 });
     expect(await refreshView(google.client, google.token, workbook.id, read.state)).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(ledgerBefore);
+  });
+});
+
+describe("saving the bank statement with the month", () => {
+  const sheet: RawSheet = {
+    date1904: false,
+    rows: [
+      [undefined, { kind: "text", text: "Categoria / Nome prodotto" }],
+      [{ kind: "number", text: "652.289", format: null }, { kind: "text", text: "Synthetic Fund A" }],
+    ],
+  };
+  const withSource = (): CommitRequest => ({ ...first(), source: { sheetName: "Il Mio Patrimonio", sheet } });
+
+  it("saves the exact statement in the same single request as the ledger, and reads it back with the ledger", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    expect((await commitDirect(deps, google.token, workbook.id, withSource())).status).toBe("committed");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(1);
+    const all = await readAllDirect(google.client, google.token, workbook.id);
+    expect(all.status).toBe("ok");
+    if (all.status !== "ok") return;
+    expect(all.state.snapshots).toHaveLength(1);
+    expect(all.sources).toHaveLength(1);
+    expect(all.sources[0]).toMatchObject({ date: "2026-01-31", sheetName: "Il Mio Patrimonio" });
+    expect(all.sources[0]?.sheet.rows[1]?.[0]).toEqual({ kind: "number", text: "652.289", format: null });
+  });
+
+  it("reports a damaged stored statement, and never returns the ledger without saying so", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, withSource());
+    const piece = (google.tab(workbook.id, LEDGER_TAB)?.rows ?? []).find((row) => row[1] === "SOURCE");
+    if (piece !== undefined) piece[2] = String(piece[2]).replace("Synthetic Fund A", "Synthetic Fund Z");
+    expect((await readAllDirect(google.client, google.token, workbook.id)).status).toBe("damaged");
+  });
+
+  it("writes a readable tab for the month, and rewrites it in place instead of adding another", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, withSource());
+    expect(await mirrorStatement(google.client, google.token, workbook.id, date("2026-01-31"), sheet)).toBe(true);
+    const title = statementTabTitle(date("2026-01-31"));
+    expect(title).toBe("Bank 2026-01-31");
+    expect(google.tab(workbook.id, title)?.rows).toEqual([["", "Categoria / Nome prodotto"], [652.289, "Synthetic Fund A"]]);
+    expect(await mirrorStatement(google.client, google.token, workbook.id, date("2026-01-31"), sheet)).toBe(true);
+    expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === title)).toHaveLength(1);
+  });
+
+  it("lets a failed readable tab pass without touching the saved records", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, withSource());
+    const before = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
+    google.faults.push({ match: /:batchUpdate$/u, status: 503 });
+    expect(await mirrorStatement(google.client, google.token, workbook.id, date("2026-01-31"), sheet)).toBe(false);
+    expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
+    expect((await readAllDirect(google.client, google.token, workbook.id)).status).toBe("ok");
   });
 });

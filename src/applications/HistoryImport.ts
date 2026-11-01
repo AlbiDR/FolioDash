@@ -38,8 +38,9 @@ export function parseHistory(text: string): ParsedHistory {
   for (const [index, entry] of entries.entries()) {
     const parsed = parseCommitRequest(typeof entry === "object" && entry !== null ? { ...entry, expectedRevision: "" } : entry);
     if (!parsed.ok) return { ok: false, message: `Statement ${String(index + 1)}: ${parsed.message}` };
-    const { commandId, date, statement: input, commands } = parsed.request;
-    const statement: HistoryStatement = { commandId, date, statement: input, commands };
+    const { commandId, date, statement: input, commands, source } = parsed.request;
+    // The bank statement travels with its month, so the import keeps it and the ledger stays rebuildable.
+    const statement: HistoryStatement = { commandId, date, statement: input, commands, ...(source === undefined ? {} : { source }) };
     if (ids.has(statement.commandId)) return { ok: false, message: `Statement ${String(index + 1)} repeats a command id.` };
     ids.add(statement.commandId);
     statements.push(statement);

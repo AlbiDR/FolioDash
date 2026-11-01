@@ -217,6 +217,7 @@ export function App(): JSX.Element {
                     connect: () => session.connect(),
                     refresh: () => session.refresh(),
                     restore: () => session.restoreFromDevice(),
+                    verify: () => session.verifyHistory(),
                     forget: () => {
                       session.forget();
                     },

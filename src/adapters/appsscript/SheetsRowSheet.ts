@@ -23,7 +23,7 @@ export interface SpreadsheetLike {
 export const LEDGER_TAB = "_FolioDash ledger";
 const HEADER: readonly string[] = ["revision", "type", "payload", "checksum"];
 const COLUMNS = HEADER.length;
-const TYPES = new Set<string>(["META", "SNAPSHOT", "TIMELINE", "COMMIT"]);
+const TYPES = new Set<string>(["META", "SNAPSHOT", "TIMELINE", "SOURCE", "COMMIT"]);
 
 /**
  * Stores ledger rows in a hidden tab of a Google spreadsheet. Every cell is

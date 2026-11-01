@@ -1,6 +1,7 @@
 import { computeMetrics } from "../core/Metrics";
 import type { LedgerState } from "../core/Ledger";
 import type { EuroCents } from "../core/Money";
+import type { RawSheet } from "../core/RawSheet";
 
 export type ViewCell = string | number;
 
@@ -36,4 +37,20 @@ export function readableView(state: LedgerState): ViewCell[][] {
     lines.push([names.get(isin) ?? isin, isin, fund.status === "closed" ? "Closed" : "Active", euros(fund.value), euros(fund.netInvested), euros(fund.gain), fund.gainPercent ?? ""]);
   }
   return lines;
+}
+
+/**
+ * A bank statement as plain cells for a readable tab. A number is written as a
+ * number only when that loses nothing; otherwise it stays as the file's own text.
+ * The exact statement is kept in the ledger; this tab is only a view of it.
+ */
+export function statementCells(sheet: RawSheet): ViewCell[][] {
+  return sheet.rows.map((row) =>
+    row.map((cell): ViewCell => {
+      if (cell === undefined || cell.kind === "formula") return "";
+      if (cell.kind === "text") return cell.text;
+      const value = Number(cell.text);
+      return Number.isFinite(value) && String(value) === cell.text ? value : cell.text;
+    }),
+  );
 }

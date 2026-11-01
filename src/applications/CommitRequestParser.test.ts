@@ -67,3 +67,33 @@ describe("parseCommitRequest", () => {
     expect(parseCommitRequest(body).ok).toBe(false);
   });
 });
+
+describe("parseCommitRequest: the bank statement", () => {
+  const base = (): Record<string, unknown> => ({
+    commandId: "command-0001",
+    expectedRevision: "",
+    date: "2026-01-31",
+    statement: { funds: [], fundsSubtotal: 0 },
+    commands: [],
+  });
+
+  it("accepts a request with no statement, as older callers send", () => {
+    const parsed = parseCommitRequest(base());
+    expect(parsed.ok && parsed.request.source).toBeUndefined();
+  });
+
+  it("reads a stored statement, treating an empty cell sent as null as an empty cell", () => {
+    const parsed = parseCommitRequest({ ...base(), source: { sheetName: "Il Mio Patrimonio", sheet: { date1904: false, rows: [[null, { kind: "text", text: "Fondi" }]] } } });
+    expect(parsed.ok && parsed.request.source?.sheetName).toBe("Il Mio Patrimonio");
+    expect(parsed.ok && parsed.request.source?.sheet.rows[0]).toEqual([undefined, { kind: "text", text: "Fondi" }]);
+  });
+
+  it.each([
+    ["no sheet name", { sheet: { date1904: false, rows: [] } }],
+    ["a sheet name that is too long", { sheetName: "x".repeat(201), sheet: { date1904: false, rows: [] } }],
+    ["an unreadable sheet", { sheetName: "S", sheet: { date1904: false, rows: [[{ kind: "image" }]] } }],
+    ["a source that is not an object", "nope"],
+  ])("refuses a statement with %s, never repairing it", (_name, source) => {
+    expect(parseCommitRequest({ ...base(), source }).ok).toBe(false);
+  });
+});

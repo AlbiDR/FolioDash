@@ -1,10 +1,12 @@
-import { commitStatement, type CommitRequest, type ServiceEnvironment } from "../../applications/LedgerService";
-import { readableView } from "../../applications/ReadableView";
+import { commitStatement, type CommitRequest, type ServiceEnvironment, type SourceRecord } from "../../applications/LedgerService";
+import { readableView, statementCells } from "../../applications/ReadableView";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { type LedgerState, parseLedgerState } from "../../core/Ledger";
+import type { IsoDate } from "../../core/IsoDate";
+import { type RawSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedgerStore";
-import { type Workbook, appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, writeReadableView } from "./GoogleWorkbook";
+import { type Workbook, appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, writeReadableView, writeStatementTab } from "./GoogleWorkbook";
 import type { CallFailure, RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
 import { type RestClient, type RestFailure, wroteNothing } from "./Rest";
 
@@ -181,4 +183,33 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
 export async function refreshView(rest: RestClient, accessToken: string, workbookId: string, state: LedgerState): Promise<boolean> {
   const written = await writeReadableView(rest, accessToken, workbookId, readableView(state));
   return written.ok;
+}
+
+/** The tab that mirrors one month's bank statement, named like the earlier workbook's Bank tabs. */
+export function statementTabTitle(date: IsoDate): string {
+  return `Bank ${date}`;
+}
+
+/** Writes the readable tab for one month. Best effort: the exact statement is already in the ledger. */
+export async function mirrorStatement(rest: RestClient, accessToken: string, workbookId: string, date: IsoDate, sheet: RawSheet): Promise<boolean> {
+  const written = await writeStatementTab(rest, accessToken, workbookId, statementTabTitle(date), statementCells(sheet));
+  return written.ok;
+}
+
+export type ReadAll =
+  | { readonly status: "ok"; readonly state: LedgerState; readonly sources: readonly SourceRecord[]; readonly ignoredTrailingRows: number }
+  | { readonly status: "damaged"; readonly message: string }
+  | { readonly status: "unavailable"; readonly failure: CallFailure | "missing" | "not-a-ledger" };
+
+/** Reads the ledger and every stored statement, each checked, in one pass over the rows. */
+export async function readAllDirect(rest: RestClient, accessToken: string, workbookId: string): Promise<ReadAll> {
+  const tab = await readLedgerRows(rest, accessToken, workbookId);
+  if (!tab.ok) return { status: "unavailable", failure: tab.failure === "not-found" ? "missing" : tab.failure };
+  if ("notALedger" in tab.value) return { status: "unavailable", failure: "not-a-ledger" };
+  const { store } = storeOf(tab.value.rows);
+  const loaded = store.load();
+  if (loaded.status === "damaged") return { status: "damaged", message: loaded.message };
+  const sources = store.loadSources();
+  if (sources.status === "damaged") return { status: "damaged", message: sources.message };
+  return { status: "ok", state: loaded.state, sources: sources.sources, ignoredTrailingRows: loaded.ignoredTrailingRows };
 }

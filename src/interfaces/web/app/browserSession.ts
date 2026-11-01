@@ -1,5 +1,6 @@
 import type { RestClient } from "../../../adapters/google/Rest";
 import { browserLedgerCache } from "./ledgerCache";
+import { interpretStatement } from "./interpretStatement";
 import { Session } from "./session";
 import { revokeToken, signIn } from "./googleIdentity";
 
@@ -17,6 +18,7 @@ const browserRest: RestClient = async (request) => {
 export function createBrowserSession(clientId: string): Session {
   return new Session({
     clientId,
+    interpret: interpretStatement,
     signIn,
     revoke: revokeToken,
     rest: browserRest,

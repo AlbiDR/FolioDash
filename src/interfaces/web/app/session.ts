@@ -2,7 +2,9 @@ import {
   type DirectDeps,
   commitDirect,
   ensureWorkbook,
+  mirrorStatement,
   outcomeDirect,
+  readAllDirect,
   readDirect,
   refreshView,
   restoreDirect,
@@ -10,6 +12,7 @@ import {
 import type { Workbook } from "../../../adapters/google/GoogleWorkbook";
 import type { CallFailure } from "../../../adapters/google/LedgerResults";
 import type { RestClient } from "../../../adapters/google/Rest";
+import { type InterpretStatement, type RebuildReport, verifyRebuild } from "../../../applications/Rebuild";
 import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../features/import/ImportModel";
 import type { SignInResult } from "./googleIdentity";
@@ -63,8 +66,16 @@ export type RestoreOutcome =
   | { readonly status: "not-needed" }
   | { readonly status: "failed"; readonly message: string };
 
+export type VerifyOutcome =
+  | { readonly status: "checked"; readonly report: RebuildReport }
+  | { readonly status: "sign-in-failed"; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }
+  | { readonly status: "needs-attention"; readonly message: string }
+  | { readonly status: "failed"; readonly message: string };
+
 export interface SessionDeps {
   readonly clientId: string;
+  /** Re-reads a stored bank statement with today's reader, to prove the ledger can be rebuilt from them. */
+  readonly interpret: InterpretStatement;
   readonly signIn: (clientId: string, scope: string) => Promise<SignInResult>;
   readonly revoke?: (accessToken: string) => void;
   readonly rest: RestClient;
@@ -90,6 +101,7 @@ export class Session {
   private current: SessionState;
   private token: { readonly accessToken: string; readonly validUntil: number } | null = null;
   private readonly listeners = new Set<() => void>();
+  private readonly background = new Set<Promise<unknown>>();
 
   constructor(deps: SessionDeps) {
     this.deps = deps;
@@ -98,6 +110,18 @@ export class Session {
       copy === null
         ? { mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 }
         : { mode: "device-copy", ledger: copy.ledger, workbook: copy.workbook, syncedAt: copy.syncedAt, sheet: "unchecked", trailingRows: 0 };
+  }
+
+  /** Resolves when the readable tabs written after a save have finished. They never delay a save and never affect it. */
+  async idle(): Promise<void> {
+    while (this.background.size > 0) await Promise.allSettled([...this.background]);
+  }
+
+  private later(work: Promise<unknown>): void {
+    this.background.add(work);
+    void work.finally(() => {
+      this.background.delete(work);
+    });
   }
 
   get state(): SessionState {
@@ -195,8 +219,32 @@ export class Session {
     }
     this.keep(result.workbook, result.ledger);
     this.set({ mode: "online", ledger: result.ledger, workbook: result.workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: 0 });
+    // The device copy holds figures only, so a restored sheet has no stored bank statements; the health check says so.
     await refreshView(this.deps.rest, signed.token, result.workbook.id, result.ledger);
     return { status: "restored", workbook: result.workbook };
+  }
+
+  /**
+   * Proves the saved ledger can be rebuilt: every month that has a stored bank
+   * statement is replayed with today's rules and compared with the saved figures.
+   * It reads only; it never changes the sheet or the saved copy.
+   */
+  async verifyHistory(): Promise<VerifyOutcome> {
+    const { workbook } = this.current;
+    if (workbook === null) return { status: "failed", message: "There is no Google Sheet to check yet." };
+    const signed = await this.accessToken();
+    if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
+    const all = await readAllDirect(this.deps.rest, signed.token, workbook.id);
+    switch (all.status) {
+      case "damaged":
+        return { status: "needs-attention", message: `${all.message} Nothing was changed.` };
+      case "unavailable":
+        return all.failure === "missing" || all.failure === "not-a-ledger"
+          ? { status: "needs-attention", message: NEEDS[all.failure === "missing" ? "missing" : "not-a-ledger"] }
+          : { status: "failed", message: "Google could not be reached, so nothing was checked." };
+      case "ok":
+        return { status: "checked", report: verifyRebuild(all.state, all.sources, this.deps.interpret) };
+    }
   }
 
   /** Wipes everything this device holds and signs out. The spreadsheet in Google is not touched. */
@@ -223,11 +271,12 @@ export class Session {
         statement: request.statement,
         date: request.date,
         commands: request.commands,
+        ...(request.source === undefined ? {} : { source: request.source }),
       });
       switch (commit.status) {
         case "committed":
         case "already-committed":
-          return this.readBack(workbook, signed.token);
+          return this.readBack(workbook, signed.token, request);
         case "stale":
           return { status: "stale" };
         case "rejected":
@@ -266,13 +315,14 @@ export class Session {
     },
   };
 
-  private async readBack(workbook: Workbook, accessToken: string): Promise<RecordResult> {
+  private async readBack(workbook: Workbook, accessToken: string, saved?: RecordRequest): Promise<RecordResult> {
     const read = await readDirect(this.deps.rest, accessToken, workbook.id);
     if (read.status !== "ok") return { status: "saved-not-reloaded" };
     this.keep(workbook, read.state);
     this.set({ mode: "online", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
     // The readable tab is a convenience; its failure never affects the saved records.
-    void refreshView(this.deps.rest, accessToken, workbook.id, read.state);
+    this.later(refreshView(this.deps.rest, accessToken, workbook.id, read.state));
+    if (saved?.source !== undefined) this.later(mirrorStatement(this.deps.rest, accessToken, workbook.id, saved.date, saved.source.sheet));
     return { status: "recorded", ledger: read.state };
   }
 }

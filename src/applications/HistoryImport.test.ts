@@ -53,6 +53,25 @@ describe("parseHistory", () => {
   });
 });
 
+describe("parseHistory: bank statements", () => {
+  const stored = { sheetName: "Bank 2026-01-31", sheet: { date1904: false, rows: [[null, { kind: "text", text: "Fondi" }]] } };
+  const file = (statements: unknown) => JSON.stringify({ kind: "foliodash-history", version: 1, statements });
+
+  it("keeps each month's bank statement, so a history import saves it and the ledger stays rebuildable", () => {
+    const parsed = parseHistory(file([{ ...three[0], source: stored }, { ...three[1], source: stored, commandId: "history-2026-02" }]));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.statements.map((statement) => statement.source?.sheetName)).toEqual(["Bank 2026-01-31", "Bank 2026-01-31"]);
+    expect(parsed.statements[0]?.source?.sheet.rows[0]).toEqual([undefined, { kind: "text", text: "Fondi" }]);
+  });
+
+  it("still accepts a month with no statement, and refuses a statement that is not readable", () => {
+    const parsed = parseHistory(file([three[0]]));
+    expect(parsed.ok && parsed.statements[0]?.source).toBeUndefined();
+    expect(parseHistory(file([{ ...three[0], source: { sheetName: "x", sheet: { rows: [[{ kind: "image" }]], date1904: false } } }])).ok).toBe(false);
+  });
+});
+
 describe("planHistory", () => {
   it("plans every statement for an empty ledger", () => {
     const plan = planHistory(EMPTY_LEDGER, three);

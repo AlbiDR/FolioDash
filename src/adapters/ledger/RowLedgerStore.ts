@@ -1,13 +1,16 @@
-import type { CommandReceipt, LedgerStore, LoadResult } from "../../applications/LedgerService";
+import type { CommandReceipt, LedgerStore, LoadResult, SourceRecord, SourcesResult } from "../../applications/LedgerService";
 import { canonicalJson } from "../../core/CanonicalJson";
+import { type FundCommand } from "../../core/ImportPlan";
+import { parseIsoDate } from "../../core/IsoDate";
 import { type Fund, type LedgerState, type Snapshot, EMPTY_LEDGER, validateLedger } from "../../core/Ledger";
+import { type StoredSheet, parseStoredSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 
 /** One stored record. Every field is plain text so the sheet cannot retype it. */
 export interface LedgerRow {
   /** The revision this record belongs to. */
   readonly revision: string;
-  readonly type: "META" | "SNAPSHOT" | "TIMELINE" | "COMMIT";
+  readonly type: "META" | "SNAPSHOT" | "TIMELINE" | "SOURCE" | "COMMIT";
   readonly payload: string;
   /** SHA-256 of the payload (for COMMIT, of the whole revision's records). */
   readonly checksum: string;
@@ -25,6 +28,8 @@ export const SCHEMA = 1;
 // A single Google Sheets cell holds at most 50,000 characters; stay well inside it.
 const MAX_PAYLOAD_LENGTH = 45_000;
 const TIMELINE_PAGE = 250;
+// A statement is written as pieces this long, so each stays well inside one cell even after JSON escaping.
+const SOURCE_PIECE = 20_000;
 
 type Reference = readonly [index: number, checksum: string];
 
@@ -81,7 +86,7 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
   }
   const first = payload[0];
   if (first?.type !== "META") return damaged("The committed revision has no header record.");
-  if (!payload.slice(1).every((row) => row.type === "SNAPSHOT" || row.type === "TIMELINE") || !payload.some((row) => row.type === "TIMELINE")) {
+  if (!payload.slice(1).every((row) => row.type === "SNAPSHOT" || row.type === "TIMELINE" || row.type === "SOURCE") || !payload.some((row) => row.type === "TIMELINE")) {
     return damaged("The committed revision has an invalid structure.");
   }
   const commitPayload = parseJson(commit.payload) as CommitPayload;
@@ -110,6 +115,39 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
   return { state, references, trailing: rows.length - commitIndex - 1 };
 }
 
+function decodeSources(rows: readonly LedgerRow[]): SourceRecord[] {
+  const found: SourceRecord[] = [];
+  rows.forEach((commit, commitIndex) => {
+    if (commit.type !== "COMMIT") return;
+    let start = commitIndex - 1;
+    while (start >= 0 && rows[start]?.revision === commit.revision) start--;
+    const block = rows.slice(start + 1, commitIndex);
+    const pieces = block.filter((row) => row.type === "SOURCE");
+    if (pieces.length === 0) return;
+    // The revision these pieces belong to must itself be intact.
+    for (const row of block) {
+      if (row.checksum !== sha256Hex(row.payload)) return damaged("A stored statement failed its checksum.");
+    }
+    const commitPayload = parseJson(commit.payload) as CommitPayload;
+    if (commitPayload.count !== block.length || commit.checksum !== recordsChecksum(block)) {
+      return damaged("A stored statement belongs to a revision that does not match its commit record.");
+    }
+    const parsed = pieces.map((row) => parseJson(row.payload) as { readonly d?: unknown; readonly k?: unknown; readonly n?: unknown });
+    const count = parsed[0]?.n;
+    if (typeof count !== "number" || parsed.length !== count || !parsed.every((piece, index) => piece.k === index && piece.n === count && typeof piece.d === "string")) {
+      return damaged("A stored statement is missing a piece.");
+    }
+    const value = parseJson(parsed.map((piece) => String(piece.d)).join("")) as Record<string, unknown>;
+    const date = typeof value["date"] === "string" ? parseIsoDate(value["date"]) : null;
+    const sheet = parseStoredSheet(value["sheet"]);
+    if (date === null || sheet === null || typeof value["commandId"] !== "string" || typeof value["sheetName"] !== "string" || !Array.isArray(value["commands"])) {
+      return damaged("A stored statement is not in the expected form.");
+    }
+    found.push({ date, commandId: value["commandId"], sheetName: value["sheetName"], commands: value["commands"] as FundCommand[], sheet: value["sheet"] as StoredSheet });
+  });
+  return found;
+}
+
 /**
  * Stores the ledger as append-only checksummed rows in a sheet. A revision is a
  * header record, any new snapshot records, a timeline of references and finally
@@ -133,6 +171,20 @@ export class RowLedgerStore implements LedgerStore {
     }
   }
 
+  /**
+   * Reads back every stored bank statement. Each piece must pass its checksum and
+   * belong to a revision that was committed whole; anything else is reported as
+   * damaged and nothing is returned.
+   */
+  loadSources(): SourcesResult {
+    try {
+      return { status: "ok", sources: decodeSources(this.sheet.readRows()) };
+    } catch (error) {
+      if (error instanceof DamagedLedger) return { status: "damaged", message: error.message };
+      throw error;
+    }
+  }
+
   findCommand(commandId: string): CommandReceipt | null {
     for (const row of this.sheet.readRows()) {
       if (row.type !== "COMMIT") continue;
@@ -142,7 +194,7 @@ export class RowLedgerStore implements LedgerStore {
     return null;
   }
 
-  publish(next: LedgerState, receipt: CommandReceipt): void {
+  publish(next: LedgerState, receipt: CommandReceipt, source?: SourceRecord): void {
     const existing = this.sheet.readRows();
     const decoded = decodeRows(existing);
     const previousByDate = new Map(decoded.state.snapshots.map((snapshot, index) => [snapshot.date, { snapshot, reference: decoded.references[index] }]));
@@ -164,6 +216,14 @@ export class RowLedgerStore implements LedgerStore {
     if (references.length === 0) records.push({ type: "TIMELINE", payload: "[]" });
     for (let offset = 0; offset < references.length; offset += TIMELINE_PAGE) {
       records.push({ type: "TIMELINE", payload: canonicalJson(references.slice(offset, offset + TIMELINE_PAGE)) });
+    }
+    if (source !== undefined) {
+      const text = canonicalJson(source);
+      const pieces: string[] = [];
+      for (let offset = 0; offset < text.length; offset += SOURCE_PIECE) pieces.push(text.slice(offset, offset + SOURCE_PIECE));
+      pieces.forEach((piece, index) => {
+        records.push({ type: "SOURCE", payload: canonicalJson({ d: piece, k: index, n: pieces.length }) });
+      });
     }
     if (records.some((record) => record.payload.length > MAX_PAYLOAD_LENGTH)) {
       throw new Error("A ledger record exceeds the safe cell size. Nothing was written.");

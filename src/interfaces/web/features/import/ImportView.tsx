@@ -231,6 +231,7 @@ function Review(props: {
                   date={chosen}
                   ledger={props.ledger}
                   createRevision={props.createRevision}
+                  source={{ sheetName: sheet.name, sheet: sheet.raw }}
                   {...(props.save === undefined ? {} : { save: props.save })}
                   onRecord={(next) => {
                     props.onRecord(next, chosen);

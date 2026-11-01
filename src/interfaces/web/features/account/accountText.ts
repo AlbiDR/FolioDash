@@ -1,4 +1,5 @@
-import type { ConnectOutcome, RestoreOutcome, SheetStatus } from "../../app/session";
+import { formatMonthYear } from "../../../../core/IsoDate";
+import type { ConnectOutcome, RestoreOutcome, SheetStatus, VerifyOutcome } from "../../app/session";
 
 export interface Message {
   readonly good: boolean;
@@ -60,3 +61,34 @@ export const SHEET_TEXT: Readonly<Record<SheetStatus, string>> = {
   damaged: "Records failed their checks",
   "not-a-ledger": "Not a FolioDash sheet",
 };
+
+const plural = (count: number, one: string, many: string): string => `${String(count)} ${count === 1 ? one : many}`;
+
+/** What the history check says: how many months rebuild exactly, and, plainly, which cannot be checked or do not match. */
+export function describeVerify(outcome: VerifyOutcome): Message {
+  switch (outcome.status) {
+    case "sign-in-failed":
+      return { good: false, title: "Not signed in", body: SIGN_IN[outcome.reason] ?? "Sign-in did not complete." };
+    case "needs-attention":
+      return { good: false, title: "Your Google Sheet needs attention", body: outcome.message };
+    case "failed":
+      return { good: false, title: "Could not check", body: outcome.message };
+    case "checked": {
+      const { report } = outcome;
+      if (report.months === 0) return { good: true, title: "Nothing to check yet", body: "No months are saved yet." };
+      const lines: string[] = [];
+      if (report.differing.length > 0) lines.push(`These months do not match what their saved statement produces: ${report.differing.map((date) => formatMonthYear(date)).join(", ")}.`);
+      if (report.unreadable.length > 0) lines.push(`These months have a saved statement that could not be read: ${report.unreadable.map((date) => formatMonthYear(date)).join(", ")}.`);
+      if (report.withoutStatement > 0) {
+        lines.push(`${plural(report.withoutStatement, "month was", "months were")} saved without its bank statement (before statements were kept, or restored from a device copy), so ${report.withoutStatement === 1 ? "it" : "they"} cannot be rebuilt.`);
+      }
+      const clean = report.differing.length === 0 && report.unreadable.length === 0;
+      const everything = clean && report.withoutStatement === 0;
+      return {
+        good: clean,
+        title: everything ? "Your whole history can be rebuilt" : clean ? "What can be checked, matches" : "Something does not match",
+        body: [`${String(report.matching)} of ${plural(report.months, "month", "months")} rebuild exactly from the saved bank statements.`, ...lines].join(" "),
+      };
+    }
+  }
+}

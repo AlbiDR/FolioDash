@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
+import { ISIN_A, ISIN_B, syntheticSheet } from "../../../../tests/fixtures/SyntheticFideuramSheet";
 import { LEDGER_TAB, VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { FundCommand, StatementInput } from "../../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../../core/IsoDate";
@@ -7,6 +8,7 @@ import { parseIsin } from "../../../core/Isin";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/Money";
 import type { RecordRequest } from "../features/import/ImportModel";
 import type { SignInResult } from "./googleIdentity";
+import { interpretStatement } from "./interpretStatement";
 import { type KeyValueStore, createLedgerCache } from "./ledgerCache";
 import { type SessionDeps, Session } from "./session";
 
@@ -37,6 +39,7 @@ function world(overrides: { google?: FakeGoogle; store?: ReturnType<typeof memor
   const make = (extra: Partial<SessionDeps> = {}): Session =>
     new Session({
       clientId: "client",
+      interpret: interpretStatement,
       signIn: (): Promise<SignInResult> => {
         log.signIns++;
         return Promise.resolve({ ok: true, accessToken: google.token, expiresInSeconds: 3600 });
@@ -154,7 +157,7 @@ describe("the device copy", () => {
     await session.connect();
     google.faults.push({ match: /:clear$/u, status: 500 });
     expect((await saved(session, january)).status).toBe("recorded");
-    await Promise.resolve();
+    await session.idle();
     const id = session.state.workbook?.id ?? "";
     expect(google.tab(id, LEDGER_TAB)?.rows.length).toBeGreaterThan(1);
     expect(session.state.ledger.snapshots).toHaveLength(1);
@@ -280,5 +283,63 @@ describe("forgetting this device", () => {
     const before = notified;
     session.forget();
     expect(notified).toBe(before);
+  });
+});
+
+describe("the sheet keeps the bank statements, and can prove it", () => {
+  /** The invented bank statement, read the way the import screen reads it, with the decisions made about it. */
+  function withStatement(): RecordRequest {
+    const sheet = syntheticSheet();
+    const read = interpretStatement(sheet);
+    if (!read.ok) throw new Error("setup failed");
+    const commands: FundCommand[] = [ISIN_A, ISIN_B].map((isin) => ({ isin, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" }));
+    return { date: date("2026-01-31"), statement: read.statement, commands, source: { sheetName: "Il Mio Patrimonio", sheet } };
+  }
+
+  it("saves the statement with the month, writes a readable tab for it, and proves the ledger rebuilds from it", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    expect((await saved(session, withStatement())).status).toBe("recorded");
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
+    expect(await session.verifyHistory()).toEqual({ status: "checked", report: { months: 1, matching: 1, withoutStatement: 0, differing: [], unreadable: [] } });
+  });
+
+  it("counts a month saved without its statement as exactly that, not as an error", async () => {
+    const { make } = world();
+    const session = make();
+    await session.connect();
+    await saved(session, january);
+    expect(await session.verifyHistory()).toMatchObject({ status: "checked", report: { months: 1, matching: 0, withoutStatement: 1 } });
+  });
+
+  it("says plainly that a restored sheet holds the figures but not the statements", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    await saved(session, withStatement());
+    google.workbooks.delete(session.state.workbook?.id ?? "");
+    await session.refresh();
+    expect((await session.restoreFromDevice()).status).toBe("restored");
+    expect(await session.verifyHistory()).toMatchObject({ status: "checked", report: { months: 1, matching: 0, withoutStatement: 1 } });
+  });
+
+  it("reports a stored statement that was altered by hand, and changes nothing", async () => {
+    const { google, store, make } = world();
+    const session = make();
+    await session.connect();
+    await saved(session, withStatement());
+    const before = store.data.get("foliodash.ledger.v1");
+    const piece = (google.tab(session.state.workbook?.id ?? "", "_FolioDash ledger")?.rows ?? []).find((row) => row[1] === "SOURCE");
+    if (piece !== undefined) piece[2] = String(piece[2]).replace("EXAMPLE", "EXAMPLX");
+    expect(await session.verifyHistory()).toMatchObject({ status: "needs-attention" });
+    expect(store.data.get("foliodash.ledger.v1")).toBe(before);
+  });
+
+  it("needs a sheet before it can check anything", async () => {
+    const { make } = world();
+    expect(await make().verifyHistory()).toMatchObject({ status: "failed" });
   });
 });

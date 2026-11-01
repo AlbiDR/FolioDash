@@ -1,14 +1,15 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { describeAge } from "../../app/timeAgo";
-import type { ConnectOutcome, RestoreOutcome, SessionState } from "../../app/session";
+import type { ConnectOutcome, RestoreOutcome, SessionState, VerifyOutcome } from "../../app/session";
 import { Icon } from "../../shared/ui/icons";
-import { type Message, SHEET_TEXT, describeConnect, describeRestore } from "./accountText";
+import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeVerify } from "./accountText";
 
 export interface AccountActions {
   connect(): Promise<ConnectOutcome>;
   refresh(): Promise<ConnectOutcome>;
   restore(): Promise<RestoreOutcome>;
+  verify(): Promise<VerifyOutcome>;
   forget(): void;
   /** Remembers a client ID on this device. Returns false if it is not shaped like one. */
   setClientId(text: string): boolean;
@@ -34,6 +35,7 @@ export function AccountView(props: {
   const { state, actions } = props;
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
+  const [checkMessage, setCheckMessage] = useState<Message | null>(null);
   const [confirmRestore, setConfirmRestore] = useState(false);
   const [confirmForget, setConfirmForget] = useState(false);
   const [clientText, setClientText] = useState("");
@@ -59,6 +61,18 @@ export function AccountView(props: {
       setConfirmRestore(false);
     } catch {
       setMessage({ good: false, title: "Something went wrong", body: "Nothing on this device was changed. Try again." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verify(): Promise<void> {
+    setBusy(true);
+    setCheckMessage(null);
+    try {
+      setCheckMessage(describeVerify(await actions.verify()));
+    } catch {
+      setCheckMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
     } finally {
       setBusy(false);
     }
@@ -129,6 +143,18 @@ export function AccountView(props: {
         <Result message={message} />
       </div>
 
+      {!signedOut && state.workbook !== null && (
+        <div class="card">
+          <h3 class="card-title">Check that your history can be rebuilt</h3>
+          <p class="card-subtitle">Every month keeps its exact bank statement. This replays each one and compares it with your saved figures.</p>
+          <p>It only reads. Nothing in your Google Sheet or on this device is changed.</p>
+          <button type="button" disabled={busy} onClick={() => void verify()}>
+            Check my history
+          </button>
+          <Result message={checkMessage} />
+        </div>
+      )}
+
       {canRestore && (
         <div class="card">
           <h3 class="card-title">Restore your Google Sheet</h3>
@@ -137,7 +163,7 @@ export function AccountView(props: {
             {statements === 1 ? "statement" : "statements"}.
           </p>
           <p>
-            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it.
+            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it. The copy holds your figures but not the original bank statements, so a restored sheet cannot be rebuilt from statements until you import them again.
           </p>
           <label class="check">
             <input

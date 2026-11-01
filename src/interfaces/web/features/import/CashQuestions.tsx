@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
+import type { StatementSource } from "../../../../applications/LedgerService";
 import type { CheckResult, RecordResult, RemoteSave } from "./ImportModel";
 import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
@@ -141,6 +142,8 @@ export function CashQuestions(props: {
   readonly onRecord: (next: LedgerState) => void;
   /** Present once the user has connected a spreadsheet. Without it, a statement is kept in this tab only. */
   readonly save?: RemoteSave;
+  /** The bank statement being imported, saved with the month so the ledger can always be rebuilt from it. */
+  readonly source?: StatementSource;
 }): JSX.Element {
   const [saving, setSaving] = useState<SaveState>({ name: "idle" });
   // One id per user action. It is kept across a failed attempt so a retry cannot be recorded twice.
@@ -196,7 +199,7 @@ export function CashQuestions(props: {
     setCommandId(id);
     setSaving({ name: "saving" });
     try {
-      settle(await save.record({ date: props.date, statement: props.statement, commands: built.commands }, id, props.ledger.revision));
+      settle(await save.record({ date: props.date, statement: props.statement, commands: built.commands, ...(props.source === undefined ? {} : { source: props.source }) }, id, props.ledger.revision));
     } catch {
       setSaving({ name: "unknown", message: "The save may or may not have been recorded. Check what happened before trying again." });
     }

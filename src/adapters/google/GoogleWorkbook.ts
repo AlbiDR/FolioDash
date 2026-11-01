@@ -12,7 +12,7 @@ import {
 
 const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 const DRIVE = "https://www.googleapis.com/drive/v3/files";
-const TYPES = new Set<string>(["META", "SNAPSHOT", "TIMELINE", "COMMIT"]);
+const TYPES = new Set<string>(["META", "SNAPSHOT", "TIMELINE", "SOURCE", "COMMIT"]);
 
 export interface Workbook {
   readonly id: string;
@@ -140,6 +140,30 @@ export async function writeReadableView(rest: RestClient, accessToken: string, w
   const written = await callRest(rest, accessToken, {
     method: "PUT",
     url: `${SHEETS}/${encodeURIComponent(workbookId)}/values/${encodeURIComponent(`${VIEW_TAB}!A1`)}?valueInputOption=RAW`,
+    body: { values: lines.map((line) => [...line]) },
+  });
+  return written.ok ? { ok: true, value: true } : written;
+}
+
+/**
+ * Writes one month's bank statement into its own readable tab, creating the tab if
+ * it is not there. The exact statement lives in the ledger; this tab is a view that
+ * can be rewritten at any time, so a failure here never affects the saved records.
+ */
+export async function writeStatementTab(rest: RestClient, accessToken: string, workbookId: string, title: string, lines: readonly (readonly ViewCell[])[]): Promise<RestResult<true>> {
+  const created = await callRest(rest, accessToken, {
+    method: "POST",
+    url: `${SHEETS}/${encodeURIComponent(workbookId)}:batchUpdate`,
+    body: { requests: [{ addSheet: { properties: { title } } }] },
+  });
+  // A tab that already exists answers 400, which is fine: it is rewritten below.
+  if (!created.ok && created.failure !== "unexpected") return created;
+  const range = encodeURIComponent(`${title}!A1:Z2000`);
+  const cleared = await callRest(rest, accessToken, { method: "POST", url: `${SHEETS}/${encodeURIComponent(workbookId)}/values/${range}:clear`, body: {} });
+  if (!cleared.ok) return cleared;
+  const written = await callRest(rest, accessToken, {
+    method: "PUT",
+    url: `${SHEETS}/${encodeURIComponent(workbookId)}/values/${encodeURIComponent(`${title}!A1`)}?valueInputOption=RAW`,
     body: { values: lines.map((line) => [...line]) },
   });
   return written.ok ? { ok: true, value: true } : written;

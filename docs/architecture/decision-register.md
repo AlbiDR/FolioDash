@@ -37,6 +37,7 @@ The owner has now selected GitHub-managed frontend delivery with a user-owned pr
 | FD-016 | Apps Script source sync | **Owner direction; NOT SET UP; details proposed** | GitHub is the source of truth; reviewed merges push the Apps Script code with clasp from CI, one-way, so editor edits are overwritten | FD-014 deployment model, any CI credential, repository creation |
 | FD-017 | Direct browser-to-Google storage (supersedes the Apps Script service for new users) | **Accepted by owner 2026-11-01; NOT yet verified on real Google** | The browser signs the person in once with the narrow `drive.file` permission, creates their spreadsheet itself, finds it again on any device, and reads and writes the ledger through the Sheets API. No script is deployed per person. The checked row protocol and the ledger rules are unchanged; they run in the browser. Replaces FD-014's route and amends FD-013 and FD-016 | Live proof on a real Google account; the Apps Script service and its deploy workflow are removed only after that proof |
 | FD-018 | Browser copy of the ledger | **Accepted by owner 2026-11-01** | The Google spreadsheet is the durable record and the browser copy is a rebuildable accelerator, never financial authority. It is kept as a plain copy on the device with a visible "Forget this device" control; signing out wipes it. Encryption at rest and a passcode were offered and not chosen | Revisit if the threat model changes (shared devices) |
+| FD-019 | Each month keeps its exact bank statement | **Accepted by owner 2026-11-01; not yet verified on real Google** | A save stores the month's bank statement, as read, and the decisions made about it, in the same all-or-nothing request as the ledger, with checksums; a readable tab per month (`Bank YYYY-MM-DD`) is written from it afterwards. The ledger can then be rebuilt from nothing but these, and a "Check my history" control replays every month and compares it with the saved figures. The holder name and contract numbers are kept in the sheet and never on the device copy | Live proof on a real Google account; months saved before this, or restored from a device copy, have no statement and are reported as such |
 
 ## FD-003: privacy implications of the selected Google direction
 
@@ -176,6 +177,20 @@ What this decides:
 Not verified on real Google: that `drive.file` alone lets the Sheets API read and write a spreadsheet the app created (Google's scope list says so; no live test yet), that a file can be found again by its tag across devices, and that text written raw stays text. Each has a fallback or a fail-closed check, and the live proof is the gate for removing the Apps Script service.
 
 Still open under FD-011 and the public-release gate: the licence, the history rewrite, and the decision to make the repository public and publish through GitHub Pages.
+
+## FD-019: each month keeps its exact bank statement (owner decision, 2026-11-01)
+
+The owner pointed out that the ledger holds only a distilled summary (each fund's value, net invested and the decisions), not enough to rebuild everything, and proposed storing the monthly bank export in the sheet. Quantity, price, exchange rate, average cost, the risk figure, the account line and the category subtotals were read and then discarded, so nothing could be re-derived, audited or extended for months already imported.
+
+What this decides:
+
+- **What is kept per month:** the bank sheet exactly as read (every cell, with the file's own number text and format), the sheet's name, the statement date, the command id and the decisions made (money in, money out, opening balances, comments). The cash decisions are not in the bank file, so they must be kept beside it.
+- **Where, and how:** as `SOURCE` records in the existing checked row log, in the same single request as the month's ledger rows and its commit record, so a month is saved with its statement or not at all. A statement is split into pieces that each stay inside one cell and each carries a checksum; the revision's commit record covers them. Pieces from a save that never committed are ignored.
+- **The owner's choice of a tab per month:** a readable tab named `Bank YYYY-MM-DD` is written from the stored statement right after a save. It is a view, rewritten freely, and its failure never affects the saved records. The exact copy is the checked record, not the tab, because a tab cannot be committed together with the ledger.
+- **Proof:** a "Check my history" control replays each month with today's reader and rules and compares the result with the saved figures. It reads only. Months saved before statements were kept, or restored from a device copy, are counted as having no statement rather than called wrong.
+- **Identifiers:** the statement is stored exactly as the bank wrote it, including the holder name and the contract and account numbers. They live only in the owner's private sheet and are never put in the device copy.
+
+Verified in tests with a stand-in for Google, and on the owner's 17 real months locally: the ledger rebuilt from only the 17 stored statements and decisions is identical to the replayed ledger. Not verified on real Google.
 
 ## Decision record template
 
