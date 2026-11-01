@@ -4,6 +4,7 @@ import {
   formatEuro,
   parseDecimalAsCents,
   parseItalianAmount,
+  parseUsAmount,
   subtractCents,
   toEuroCents,
 } from "./Money";
@@ -59,12 +60,36 @@ describe("parseItalianAmount", () => {
   );
 });
 
+describe("parseUsAmount", () => {
+  it.each([
+    ["1,234.56", 123456],
+    ["1,234", 123400],
+    ["12.5", 1250],
+    ["1.50", 150],
+    ["-1,000.00", -100000],
+  ])("reads %j as %i cents", (text, expected) => {
+    expect(parseUsAmount(text)).toBe(expected);
+  });
+
+  it.each(["", "1.234", "1,00", "1.234,56", "abc"])("rejects %j", (text) => {
+    expect(parseUsAmount(text)).toBeNull();
+  });
+
+  it("never overlaps with the Italian reading of the same text", () => {
+    for (const text of ["1.234", "1,234", "12,50", "12.50", "1.50", "1,50"]) {
+      const italian = parseItalianAmount(text);
+      const us = parseUsAmount(text);
+      expect(italian === null || us === null || italian === us).toBe(true);
+    }
+  });
+});
+
 describe("parseDecimalAsCents", () => {
   it.each([
-    ["31219.2", 3121920],
-    ["8066.93", 806693],
-    ["8066.930000000001", 806693],
-    ["8066.929999999999", 806693],
+    ["1234.5", 123450],
+    ["1234.56", 123456],
+    ["1234.560000000001", 123456],
+    ["1234.559999999999", 123456],
     ["-12.5", -1250],
     ["0", 0],
   ])("reads %j as %i cents", (text, expected) => {

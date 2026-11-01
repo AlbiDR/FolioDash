@@ -3,6 +3,7 @@ import {
   compareIsoDates,
   formatDateLong,
   formatMonthYear,
+  fromSpreadsheetSerial,
   monthKey,
   monthSerial,
   parseBankDate,
@@ -45,16 +46,33 @@ describe("parseIsoDate", () => {
 
 describe("parseBankDate", () => {
   it("reads the day-first bank form", () => {
-    expect(parseBankDate("09/07/2025")).toBe("2025-07-09");
-    expect(parseBankDate("22/04/2025")).toBe("2025-04-22");
+    expect(parseBankDate("01/02/2025")).toBe("2025-02-01");
+    expect(parseBankDate("15/03/2025")).toBe("2025-03-15");
   });
 
-  it.each(["", "9/7/2025", "31/04/2025", "07/13/2025", "2025-07-09", "09-07-2025", "09/07/25"])(
+  it.each(["", "1/2/2025", "31/04/2025", "07/13/2025", "2025-02-01", "01-02-2025", "01/02/25"])(
     "rejects %j",
     (text) => {
       expect(parseBankDate(text)).toBeNull();
     },
   );
+});
+
+describe("fromSpreadsheetSerial", () => {
+  it("converts 1900-system serials", () => {
+    expect(fromSpreadsheetSerial(45689, false)).toBe("2025-02-01");
+    expect(fromSpreadsheetSerial(46327, false)).toBe("2026-11-01");
+    expect(fromSpreadsheetSerial(61, false)).toBe("1900-03-01");
+    expect(fromSpreadsheetSerial(36585, false)).toBe("2000-02-29");
+  });
+
+  it("converts 1904-system serials", () => {
+    expect(fromSpreadsheetSerial(45689 - 1462, true)).toBe("2025-02-01");
+  });
+
+  it.each([60, 0, -5, 1.5, Number.NaN])("rejects serial %s", (serial) => {
+    expect(fromSpreadsheetSerial(serial, false)).toBeNull();
+  });
 });
 
 describe("toIsoDate", () => {
@@ -67,8 +85,8 @@ describe("toIsoDate", () => {
 
 describe("ordering and months", () => {
   it("sorts chronologically as plain text", () => {
-    const shuffled = ["2026-01-05", "2025-12-31", "2026-01-04", "2025-07-09", "2026-11-01"];
-    expect([...shuffled].sort()).toEqual(["2025-07-09", "2025-12-31", "2026-01-04", "2026-01-05", "2026-11-01"]);
+    const shuffled = ["2026-01-05", "2025-12-31", "2026-01-04", "2025-02-01", "2026-11-01"];
+    expect([...shuffled].sort()).toEqual(["2025-02-01", "2025-12-31", "2026-01-04", "2026-01-05", "2026-11-01"]);
   });
 
   it("compares dates", () => {
@@ -91,8 +109,8 @@ describe("ordering and months", () => {
 describe("display", () => {
   it("spells the month in full", () => {
     expect(formatDateLong(date("2026-11-01"))).toBe("1 November 2026");
-    expect(formatDateLong(date("2025-07-09"))).toBe("9 July 2025");
-    expect(formatMonthYear(date("2025-07-09"))).toBe("July 2025");
+    expect(formatDateLong(date("2025-02-01"))).toBe("1 February 2025");
+    expect(formatMonthYear(date("2025-02-01"))).toBe("February 2025");
   });
 
   it("spells every month", () => {

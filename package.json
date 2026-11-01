@@ -8,7 +8,7 @@
     "verify": "npm run verify:contributors && npm run typecheck && npm run lint && npm test",
     "verify:contributors": "node scripts/verify-contributors.mjs",
     "typecheck": "tsc --project config/tsconfig.json",
-    "lint": "eslint --config config/eslint.config.js src",
+    "lint": "eslint --config config/eslint.config.js src tests",
     "test": "vitest run --config config/vitest.config.ts",
     "audit:dependencies": "npm audit --audit-level=high"
   },

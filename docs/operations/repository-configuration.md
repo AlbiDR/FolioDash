@@ -52,6 +52,7 @@ On the current free plan, a private repository cannot have branch protection, an
 Before changing visibility, with explicit owner authority (AGENTS.md):
 
 1. Licence chosen and added (FD-011).
+1b. The history still contains a few real example values (amounts, a quantity and account-opening dates) in tests and comments committed before 2026-11-01 16:35. They were removed from the current files, but not from earlier commits. Rewrite or squash the history, and recreate the repository if needed, before it becomes public.
 1a. Every commit uses the approved GitHub no-reply author address. The first commit used a personal address and must be rewritten before the switch.
 2. Full history and current files scanned with a secret scanner, plus a manual check for real portfolio data, account identifiers and personal context.
 3. `App Scripts/`, `.Montly Exports/` and other private folders confirmed absent from history.

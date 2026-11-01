@@ -97,7 +97,7 @@ These are recommendations for owner review, not accepted decisions.
 5. **Text numbers.** The native form is one strict Italian grammar per column (§4). Only the variants on rule 3's list are accepted besides it. Anything else, including an unknown currency symbol, is rejected, not guessed.
 6. **Dates.** The native form is `dd/mm/yyyy` text. A numeric date serial is a rule 3 variant. Impossible calendar dates are rejected.
 7. **Placeholders.** The four tokens and a lone space are recognised as missing, not as zero. Whether a given column may legitimately be missing is decided per column; an unexpected missing value is an error.
-8. **Reconciliation as validation.** Check contract row against product row, the fund subtotal, the grand total and the currency/exchange-rate pairing. A mismatch stops the import; it is never relaxed to make a file pass. These checks are also what makes rule 3 safe. The market-value tolerance needs more samples first.
+8. **Reconciliation as validation.** Check each fund contract against its products, the funds subtotal against its contracts, the grand total against the category subtotals, the currency/exchange-rate pairing, and market value against quantity × price (÷ rate). A mismatch stops the import; it is never relaxed to make a file pass. These checks are also what makes rule 3 safe. The market-value tolerance is twice the rounding error of the displayed price and rate, plus one cent. It is provisional until more samples exist. The risk figure is not used in results, so an unreadable or inconsistent one is noted in the review but does not stop the import. Categories other than funds are not interpreted: they are listed with their subtotal, and the grand total is checked only when every subtotal is readable.
 9. **Identity.** ISIN, validated by checksum, within the portfolio. Contract and account numbers, holder name and current-account cash stay outside the candidate model, consistent with CleanStack §6.2. FD-004 still decides what source evidence is retained.
 10. **Report date comes from review.** See §6.
 11. **Bytes.** Hash the original file as received (CleanStack §6.2).
@@ -164,5 +164,6 @@ The owner asked for the remaining questions to be answered from the legacy Apps 
 | Layout facts in §2 to §4 | Observed from one real export and one private workbook; not independently reviewed |
 | Reconciliation relations in §4 | Computed over 9 months; tolerance undecided |
 | Adapter rules in §5 | Proposed |
-| Parser, fixtures, tests | NOT RUN: none exist |
+| Interpreter (sheet cells to candidate statement) | Implemented in `src/adapters/fideuram/` with synthetic fixtures and tests; passes `npm run verify`. The XLSX file reader, UI and storage are not implemented |
+| Check against real files | Run locally only, with nothing committed: the bank export (no adjustment needed) and all 17 historical sheets were read. 9 of the 17 needed no adjustment. The other 8 were read with the adjustments listed (re-saved number formats, and early months that lack the account and total lines), and the four time-formatted quantities resolved to the same values as the neighbouring months |
 | Second real export | Not available |

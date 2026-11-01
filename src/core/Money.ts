@@ -5,12 +5,13 @@ export type EuroCents = number & { readonly [euroCentsBrand]: true };
 
 const MAX_CENTS = BigInt(Number.MAX_SAFE_INTEGER);
 const ITALIAN_AMOUNT = /^([+-]?)(\d+|[1-9]\d{0,2}(?:\.\d{3})+)(?:,(\d{1,2}))?$/u;
+const US_AMOUNT = /^([+-]?)(\d+|\d{1,3}(?:,\d{3})+)(?:\.(\d{1,2}))?$/u;
 const PLAIN_DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?$/u;
 
 // Decimal text is scaled to 1e-12 euro, so one cent is 1e10 units.
 const DECIMAL_DIGITS = 12;
 const CENT_UNITS = 10n ** 10n;
-// Float noise from a double (for example 8066.930000000001) is far below 1e-6 euro.
+// Float noise from a double (for example 1234.560000000001) is far below 1e-6 euro.
 const NOISE_LIMIT_UNITS = 10n ** 6n;
 
 function fromBigInt(value: bigint): EuroCents | null {
@@ -47,7 +48,20 @@ export function parseItalianAmount(text: string): EuroCents | null {
 }
 
 /**
- * Reads a plain decimal such as `8066.93` exactly, without binary floating
+ * Parses an amount in US notation (comma for thousands, dot for at most two
+ * decimals). Only used to recognise a re-saved bank file, never for typed input.
+ */
+export function parseUsAmount(text: string): EuroCents | null {
+  const match = US_AMOUNT.exec(text.replace(/[\s€]/gu, ""));
+  if (!match) return null;
+  const whole = (match[2] ?? "").replaceAll(",", "");
+  const fraction = (match[3] ?? "").padEnd(2, "0");
+  const cents = BigInt(whole) * 100n + BigInt(fraction);
+  return fromBigInt(match[1] === "-" ? -cents : cents);
+}
+
+/**
+ * Reads a plain decimal such as `1234.56` exactly, without binary floating
  * point, and returns whole cents. Float noise far below a cent is absorbed;
  * a value that genuinely needs more than two decimals, or uses an exponent, is
  * rejected.

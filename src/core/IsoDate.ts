@@ -62,6 +62,35 @@ export function parseBankDate(text: string): IsoDate | null {
   return toIsoDate(Number(match[3]), Number(match[2]), Number(match[1]));
 }
 
+// Days from the 1900 spreadsheet epoch to 1970-01-01, and between the 1900 and 1904 systems.
+const SERIAL_1900_TO_UNIX_DAYS = 25569;
+const SERIAL_1904_OFFSET_DAYS = 1462;
+// Serials before 61 touch the spreadsheet's fictitious 29 February 1900.
+const FIRST_SUPPORTED_SERIAL_1900 = 61;
+
+/**
+ * Converts a whole spreadsheet date serial to a calendar date. A serial with a
+ * time-of-day fraction is not a date cell and is rejected.
+ */
+export function fromSpreadsheetSerial(serial: number, date1904: boolean): IsoDate | null {
+  if (!Number.isSafeInteger(serial)) return null;
+  const serial1900 = date1904 ? serial + SERIAL_1904_OFFSET_DAYS : serial;
+  if (serial1900 < FIRST_SUPPORTED_SERIAL_1900) return null;
+  // Civil-from-days conversion over the proleptic Gregorian calendar.
+  const z = serial1900 - SERIAL_1900_TO_UNIX_DAYS + 719468;
+  const era = Math.floor(z / 146097);
+  const dayOfEra = z - era * 146097;
+  const yearOfEra = Math.floor(
+    (dayOfEra - Math.floor(dayOfEra / 1460) + Math.floor(dayOfEra / 36524) - Math.floor(dayOfEra / 146096)) / 365,
+  );
+  const dayOfYear = dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100));
+  const monthPart = Math.floor((5 * dayOfYear + 2) / 153);
+  const day = dayOfYear - Math.floor((153 * monthPart + 2) / 5) + 1;
+  const month = monthPart < 10 ? monthPart + 3 : monthPart - 9;
+  const year = yearOfEra + era * 400 + (month <= 2 ? 1 : 0);
+  return toIsoDate(year, month, day);
+}
+
 export function compareIsoDates(left: IsoDate, right: IsoDate): number {
   if (left === right) return 0;
   return left < right ? -1 : 1;
