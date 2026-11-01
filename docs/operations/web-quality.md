@@ -20,6 +20,7 @@ FD-013 selects GitHub frontend delivery with user-owned private Google Sheets an
 | View portfolio | Opening KPIs and chart values agree with the same committed revision | Independent expected-value and real chart tests |
 | Select a fund | Name-based selection; ISIN accessible; only that view updates | Keyboard/touch journey and measured selection latency |
 | Add/close/reopen | Preserve history; require explicit lifecycle and cash facts | Kernel cases and full import journeys |
+| Any portfolio, any change | Views are generated from the committed funds, never from a fixed list, column, colour or count. Zero, one or many funds, funds added, closed, reopened, or a completely different set (another person's portfolio) all render correctly, with series and labels from data | Synthetic portfolios of differing size and composition, and a month-to-month change of the whole fund set, through the import journey and real chart tests |
 | Correct a statement | Preview affected history, preserve prior revision, report save outcome | Replay/transaction tests and UI recovery journey |
 | Use a second device | Confirmed Mac import appears on Android after synchronisation | Deployed two-device synthetic-account test |
 | Refresh Google history | Show the latest committed workbook revision on defined refresh/focus events; do not silently accept unreviewed bank-tab edits | Racing-commit/read and manual-source-change tests |
