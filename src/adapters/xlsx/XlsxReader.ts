@@ -10,7 +10,7 @@ export interface XlsxSheet {
 }
 
 export type ReadXlsxResult =
-  | { readonly ok: true; readonly sheets: readonly XlsxSheet[] }
+  | { readonly ok: true; readonly sheets: readonly XlsxSheet[]; readonly created: string | null }
   | { readonly ok: false; readonly code: XlsxErrorCode; readonly message: string };
 
 const WORKBOOK = "xl/workbook.xml";
@@ -18,6 +18,7 @@ const WORKBOOK_RELATIONSHIPS = "xl/_rels/workbook.xml.rels";
 const SHARED_STRINGS = "xl/sharedStrings.xml";
 const STYLES = "xl/styles.xml";
 const MACRO_PART = "xl/vbaProject.bin";
+const CORE_PROPERTIES = "docProps/core.xml";
 
 // Display formats the file may reference by number without defining them.
 const BUILTIN_FORMATS: Readonly<Record<number, string>> = {
@@ -86,6 +87,19 @@ async function readCellFormats(archive: ZipArchive, limits: XlsxLimits): Promise
     const id = Number(xf.attrs["numFmtId"] ?? "0");
     return custom.get(id) ?? BUILTIN_FORMATS[id] ?? null;
   });
+}
+
+/** The file's own creation time, as written. Optional: a missing or damaged part is simply absent. */
+async function readCreated(archive: ZipArchive, limits: XlsxLimits): Promise<string | null> {
+  if (!archive.names.includes(CORE_PROPERTIES)) return null;
+  try {
+    const created = firstChild(await readXml(archive, CORE_PROPERTIES, limits), "created");
+    const text = created ? textOf(created).trim() : "";
+    return text === "" ? null : text;
+  } catch (error) {
+    if (error instanceof XlsxError) return null;
+    throw error;
+  }
 }
 
 function columnIndex(letters: string): number {
@@ -212,7 +226,7 @@ export async function readXlsx(bytes: Uint8Array, limits: XlsxLimits = XLSX_LIMI
         sheet: parseSheet(root, strings, formats, date1904, limits),
       });
     }
-    return { ok: true, sheets };
+    return { ok: true, sheets, created: await readCreated(archive, limits) };
   } catch (error) {
     if (error instanceof XlsxError) return { ok: false, code: error.code, message: error.message };
     throw error;

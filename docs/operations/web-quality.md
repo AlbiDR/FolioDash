@@ -27,7 +27,7 @@ FD-013 selects GitHub frontend delivery with user-owned private Google Sheets an
 | Lose connection | Retain review; distinguish offline cached view from saved/unsaved state | Browser/network failure injection |
 | Export and restore | Complete portable history; declared omissions; validated recoverable restoration | Round-trip plus damaged/incompatible backup tests |
 | Sign out/switch account | No previous account's data or cached chart remains accessible | Two-account cache, API and UI isolation tests |
-| Install/update | App opens coherently; update never destroys an unsaved import | Actual supported Mac/Android install and update journey |
+| Install/update | App opens coherently; update never destroys an unsaved import. On Android, Chrome installs a qualifying PWA as a WebAPK (its own icon, standalone window and app-drawer entry); that behaviour is part of the journey | Actual supported Mac/Android install and update journey, including the Android WebAPK install on a real device |
 
 Normal success does not require opening an editor, calling AI, running a repair script or finding a maintenance submenu. Recovery actions may exist but must not be routine completion steps.
 

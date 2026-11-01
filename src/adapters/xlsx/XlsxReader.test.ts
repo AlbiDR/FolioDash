@@ -79,6 +79,22 @@ describe("reading a well-formed file", () => {
   });
 });
 
+describe("the file's creation time", () => {
+  it("is returned as written when the file has one", async () => {
+    const result = await readXlsx(await buildXlsx([baseline], { created: "2026-11-01T10:48:57Z" }));
+    expect(result.ok && result.created).toBe("2026-11-01T10:48:57Z");
+  });
+
+  it("is null when the file has none, or when that part is damaged", async () => {
+    const plain = await readXlsx(await buildXlsx([baseline]));
+    expect(plain.ok && plain.created).toBeNull();
+    const damaged = await readXlsx(
+      await buildXlsx([baseline], { overrides: { "docProps/core.xml": "<a><b></a>" }, extraEntries: [] }),
+    );
+    expect(damaged.ok && damaged.created).toBeNull();
+  });
+});
+
 describe("files that must be rejected", () => {
   it("rejects bytes that are not a zip", async () => {
     expect((await readFailure(encoder.encode("this is not a spreadsheet at all"))).code).toBe("not-a-zip");

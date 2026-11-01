@@ -8,7 +8,7 @@ const encoder = new TextEncoder();
 async function deflateRaw(data: Uint8Array): Promise<Uint8Array> {
   const stream = new CompressionStream("deflate-raw");
   const writer = stream.writable.getWriter();
-  void writer.write(data).then(() => writer.close());
+  void writer.write(new Uint8Array(data)).then(() => writer.close());
   const reader = stream.readable.getReader();
   const chunks: Uint8Array[] = [];
   for (;;) {
@@ -98,6 +98,8 @@ export interface SheetInput {
 export interface XlsxOptions {
   readonly deflate?: boolean;
   readonly date1904?: boolean;
+  /** Creation time to write into docProps/core.xml, as the bank file does. */
+  readonly created?: string;
   /** Replaces a generated part's text, for building malformed files. */
   readonly overrides?: Readonly<Record<string, string>>;
   readonly extraEntries?: readonly ZipEntryInput[];
@@ -161,6 +163,11 @@ export async function buildXlsx(sheets: readonly SheetInput[], options: XlsxOpti
       .join("")}</numFmts><cellXfs><xf numFmtId="0"/>${formats
       .map((_format, index) => `<xf numFmtId="${String(164 + index)}"/>`)
       .join("")}</cellXfs></styleSheet>`;
+
+  if (options.created !== undefined) {
+    parts["docProps/core.xml"] =
+      `<?xml version="1.0" encoding="UTF-8"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dcterms="http://purl.org/dc/terms/"><dcterms:created>${escapeXml(options.created)}</dcterms:created></cp:coreProperties>`;
+  }
 
   for (const [name, text] of Object.entries(options.overrides ?? {})) parts[name] = text;
   const entries: ZipEntryInput[] = Object.entries(parts).map(([name, text]) => ({

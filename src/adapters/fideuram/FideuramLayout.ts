@@ -60,6 +60,7 @@ export interface Adjustment {
 }
 
 export type IssueCode =
+  | "layout-not-found"
   | "unsupported-layout"
   | "unsupported-structure"
   | "formula-cell"
@@ -98,6 +99,8 @@ interface ProductSummary {
 }
 
 interface ContractSummary {
+  /** True once a row under this contract failed, so follow-on checks would only repeat that problem. */
+  incomplete: boolean;
   readonly row: number;
   readonly value: EuroCents;
   readonly risk: Decimal | null;
@@ -166,7 +169,7 @@ export function interpretFideuramSheet(sheet: RawSheet): InterpretResult {
       ok: false,
       issues: [
         {
-          code: "unsupported-layout",
+          code: "layout-not-found",
           cell: null,
           message: "The header row of the supported Fideuram holdings layout was not found.",
         },
@@ -226,7 +229,10 @@ export function interpretFideuramSheet(sheet: RawSheet): InterpretResult {
         addIssue("formula-cell", cellRef(row, column), "Formula cells are not supported.");
       }
     }
-    if (hasFormula) continue;
+    if (hasFormula) {
+      if (contract !== null) contract.incomplete = true;
+      continue;
+    }
 
     const label = textOf(sheet, row, COLUMN.B);
     if (label.toLowerCase() === TOTAL_LABEL) {
@@ -275,7 +281,7 @@ export function interpretFideuramSheet(sheet: RawSheet): InterpretResult {
         contract = null;
         continue;
       }
-      contract = { row, value, risk, products: [] };
+      contract = { incomplete: false, row, value, risk, products: [] };
       current.contracts.push(contract);
       continue;
     }
@@ -286,13 +292,17 @@ export function interpretFideuramSheet(sheet: RawSheet): InterpretResult {
         continue;
       }
       const product = readProduct(sheet, row, pick, lenientRisk, addIssue, seenIsins);
-      if (product === null) continue;
+      if (product === null) {
+        contract.incomplete = true;
+        continue;
+      }
       funds.push(product.fund);
       contract.products.push({ row, value: product.fund.marketValue, risk: product.risk });
       for (const message of product.adjustments) adjustments.push({ cell: cellRef(row, COLUMN.M), message });
       continue;
     }
 
+    if (contract !== null) contract.incomplete = true;
     addIssue("unsupported-structure", cellRef(row, COLUMN.B), "This row does not match any supported row type.");
   }
 
@@ -352,6 +362,7 @@ function checkCategory(
     );
   }
   for (const contract of category.contracts) {
+    if (contract.incomplete) continue;
     if (contract.products.length === 0) {
       addIssue("unsupported-structure", cellRef(contract.row, COLUMN.B), "A fund contract has no product row.");
       continue;

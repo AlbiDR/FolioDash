@@ -105,3 +105,65 @@ summary:focus-visible {
     transition: none !important;
   }
 }
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-3);
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  max-width: 24rem;
+  padding: var(--space-2);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.import,
+.review {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.review h3,
+.review h4,
+.import h2 {
+  margin: 0;
+}
+
+.review-problem {
+  padding: var(--space-3);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.review-problem h4,
+.review-problem h3 {
+  color: var(--color-error);
+  margin: 0 0 var(--space-2);
+}
+
+.review-adjustments {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.status {
+  min-height: 1.5rem;
+}

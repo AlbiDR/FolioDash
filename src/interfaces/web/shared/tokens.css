@@ -11,6 +11,7 @@
   --color-notice: #fff4d6;
   --color-notice-text: #5a4300;
   --color-grid: #e3e8f2;
+  --color-error: #b42318;
 
   --series-0: #1d4ed8;
   --series-1: #0f766e;
@@ -42,6 +43,7 @@
     --color-notice: #3a2f10;
     --color-notice-text: #f3d98a;
     --color-grid: #1f2b43;
+    --color-error: #ff9b8f;
 
     --series-0: #7aa2ff;
     --series-1: #4fd1c5;

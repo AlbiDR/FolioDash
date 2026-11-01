@@ -58,7 +58,8 @@ function findEndOfCentralDirectory(bytes: Uint8Array): number {
 async function inflate(data: Uint8Array, expectedSize: number): Promise<Uint8Array> {
   const stream = new DecompressionStream("deflate-raw");
   const writer = stream.writable.getWriter();
-  const writing = writer.write(data).then(() => writer.close());
+  // A fresh copy keeps the buffer type the platform streams require.
+  const writing = writer.write(new Uint8Array(data)).then(() => writer.close());
   writing.catch(() => undefined);
   const reader = stream.readable.getReader();
   const output = new Uint8Array(expectedSize);

@@ -168,7 +168,7 @@ describe("files that must be rejected", () => {
     const sheet = withCell(syntheticSheet(), ROW.header, COL.H, text("Price"));
     expect(interpretFideuramSheet(sheet)).toEqual({
       ok: false,
-      issues: [expect.objectContaining({ code: "unsupported-layout" })],
+      issues: [expect.objectContaining({ code: "layout-not-found" })],
     });
   });
 
