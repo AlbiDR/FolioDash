@@ -7,12 +7,14 @@
   "scripts": {
     "dev": "vite --config config/vite.config.ts --host 127.0.0.1",
     "build": "vite build --config config/vite.config.ts",
-    "verify": "npm run verify:contributors && npm run typecheck && npm run lint && npm test && npm run build",
+    "verify": "npm run verify:contributors && npm run typecheck && npm run lint && npm test && npm run build && npm run verify:apps-script",
     "verify:contributors": "node scripts/verify-contributors.mjs",
     "typecheck": "tsc --project config/tsconfig.json && tsc --project config/tsconfig.web.json",
     "lint": "eslint --config config/eslint.config.js src tests",
     "test": "vitest run --config config/vitest.config.ts",
-    "audit:dependencies": "npm audit --audit-level=high"
+    "audit:dependencies": "npm audit --audit-level=high",
+    "build:apps-script": "node scripts/build-apps-script.mjs",
+    "verify:apps-script": "node scripts/verify-apps-script-bundle.mjs"
   },
   "engines": {
     "node": ">=22.13.0"
@@ -23,6 +25,7 @@
     "@types/d3-scale": "^4.0.9",
     "@types/d3-shape": "^3.2.0",
     "@types/node": "^22.20.5",
+    "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.1",
