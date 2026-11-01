@@ -1,0 +1,83 @@
+import { describe, expect, it } from "vitest";
+import { type ChartLayout, type ChartSeries, computeLineChart } from "./lineChartGeometry";
+
+const DAY = 24 * 60 * 60 * 1000;
+const START = Date.UTC(2026, 0, 1);
+
+const layout: ChartLayout = {
+  width: 400,
+  height: 200,
+  margin: { top: 10, right: 10, bottom: 20, left: 40 },
+  includeZero: true,
+};
+
+function series(id: string, values: readonly (number | null)[], days: readonly number[]): ChartSeries {
+  return { id, label: id, points: values.map((value, index) => ({ time: START + (days[index] ?? 0) * DAY, value })) };
+}
+
+describe("computeLineChart", () => {
+  it("spaces points by elapsed time, not by position", () => {
+    const geometry = computeLineChart([series("a", [1, 2, 3], [0, 1, 31])], layout);
+    const [first, second, third] = geometry.series[0]?.points ?? [];
+    expect(first && second && third).toBeTruthy();
+    const gapOne = (second?.x ?? 0) - (first?.x ?? 0);
+    const gapThirty = (third?.x ?? 0) - (second?.x ?? 0);
+    expect(gapThirty / gapOne).toBeCloseTo(30, 0);
+  });
+
+  it("breaks the line at a missing observation and keeps zero as a real value", () => {
+    const geometry = computeLineChart([series("a", [5, 0, null, 7, 8], [0, 1, 2, 3, 4])], layout);
+    const only = geometry.series[0];
+    expect(only?.paths).toHaveLength(2);
+    expect(only?.points).toHaveLength(4);
+    const zero = only?.points.find((point) => point.value === 0);
+    expect(zero).toBeDefined();
+  });
+
+  it("draws no line for a lone point but still plots it", () => {
+    const geometry = computeLineChart([series("a", [4], [0])], layout);
+    expect(geometry.series[0]?.paths).toEqual([]);
+    expect(geometry.series[0]?.points).toHaveLength(1);
+    expect(geometry.empty).toBe(false);
+  });
+
+  it("maps higher values higher on the screen", () => {
+    const geometry = computeLineChart([series("a", [1, 9], [0, 1])], layout);
+    const [low, high] = geometry.series[0]?.points ?? [];
+    expect((high?.y ?? 0) < (low?.y ?? 0)).toBe(true);
+  });
+
+  it("extends the value axis to zero only when asked", () => {
+    const data = [series("a", [100, 120], [0, 1])];
+    const withZero = computeLineChart(data, layout);
+    const withoutZero = computeLineChart(data, { ...layout, includeZero: false });
+    expect(Math.min(...withZero.yTicks.map((tick) => tick.value))).toBe(0);
+    expect(Math.min(...withoutZero.yTicks.map((tick) => tick.value))).toBeGreaterThan(0);
+  });
+
+  it("lets every series inform the shared bounds", () => {
+    const geometry = computeLineChart([series("small", [1, 2], [0, 1]), series("large", [900, 1000], [0, 1])], layout);
+    const top = Math.max(...geometry.yTicks.map((tick) => tick.value));
+    expect(top).toBeGreaterThanOrEqual(1000);
+    const small = geometry.series[0]?.points[0];
+    const large = geometry.series[1]?.points[0];
+    expect((large?.y ?? 0) < (small?.y ?? 0)).toBe(true);
+  });
+
+  it("reports an empty chart when nothing was observed", () => {
+    expect(computeLineChart([], layout).empty).toBe(true);
+    expect(computeLineChart([series("a", [null, null], [0, 1])], layout).empty).toBe(true);
+  });
+
+  it("handles any number of series and a flat series", () => {
+    const many = Array.from({ length: 12 }, (_, index) => series(`s${String(index)}`, [index, index + 1], [0, 1]));
+    expect(computeLineChart(many, layout).series).toHaveLength(12);
+    const flat = computeLineChart([series("a", [5, 5], [0, 1])], layout);
+    expect(flat.yTicks.length).toBeGreaterThan(1);
+  });
+
+  it("is deterministic", () => {
+    const data = [series("a", [1, 4, 2], [0, 10, 20])];
+    expect(computeLineChart(data, layout)).toEqual(computeLineChart(data, layout));
+  });
+});

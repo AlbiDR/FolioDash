@@ -1,0 +1,95 @@
+.chart {
+  margin: 0;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.chart-title {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-grid line {
+  stroke: var(--color-grid);
+  stroke-width: 1;
+}
+
+.chart-tick {
+  fill: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.chart-series path,
+.chart-swatch line {
+  stroke: var(--series-color);
+  stroke-width: 2.5;
+  stroke-dasharray: var(--series-dash);
+}
+
+.chart-series circle {
+  fill: var(--series-color);
+}
+
+/* Colour and dash pattern together, so a series never depends on colour alone. */
+.series-0 { --series-color: var(--series-0); --series-dash: none; }
+.series-1 { --series-color: var(--series-1); --series-dash: 8 4; }
+.series-2 { --series-color: var(--series-2); --series-dash: 2 4; }
+.series-3 { --series-color: var(--series-3); --series-dash: 12 4 2 4; }
+.series-4 { --series-color: var(--series-4); --series-dash: 6 3 2 3 2 3; }
+.series-5 { --series-color: var(--series-5); --series-dash: 14 5; }
+.series-6 { --series-color: var(--series-6); --series-dash: 3 3; }
+.series-7 { --series-color: var(--series-7); --series-dash: 10 3 3 3; }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chart-swatch {
+  width: 2rem;
+  height: 0.5rem;
+}
+
+.chart-table {
+  margin-top: var(--space-3);
+}
+
+.chart-table table {
+  border-collapse: collapse;
+  margin-top: var(--space-2);
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+.chart-table th,
+.chart-table td {
+  border: 1px solid var(--color-border);
+  padding: var(--space-1) var(--space-2);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chart-table th[scope="row"],
+.chart-table thead th:first-child {
+  text-align: left;
+}

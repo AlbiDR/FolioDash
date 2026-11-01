@@ -6,10 +6,10 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parserOptions: {
-        project: "./config/tsconfig.json",
+        project: ["./config/tsconfig.json", "./config/tsconfig.web.json"],
         tsconfigRootDir: new URL("..", import.meta.url).pathname,
       },
     },

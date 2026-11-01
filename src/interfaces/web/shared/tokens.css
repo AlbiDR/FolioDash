@@ -1,0 +1,68 @@
+/* The single source of colour, type and spacing. Components use these names, never raw values. */
+:root {
+  color-scheme: light dark;
+
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-text: #0f1b33;
+  --color-muted: #51607a;
+  --color-border: #d5dbe8;
+  --color-accent: #1d4ed8;
+  --color-notice: #fff4d6;
+  --color-notice-text: #5a4300;
+  --color-grid: #e3e8f2;
+
+  --series-0: #1d4ed8;
+  --series-1: #0f766e;
+  --series-2: #b45309;
+  --series-3: #7c3aed;
+  --series-4: #be123c;
+  --series-5: #4d7c0f;
+  --series-6: #0e7490;
+  --series-7: #a16207;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --radius: 0.5rem;
+  --page-inset: clamp(1rem, 4vw, 2.5rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0b1220;
+    --color-surface: #131c2f;
+    --color-text: #e6ecf8;
+    --color-muted: #9aa8c2;
+    --color-border: #26334d;
+    --color-accent: #7aa2ff;
+    --color-notice: #3a2f10;
+    --color-notice-text: #f3d98a;
+    --color-grid: #1f2b43;
+
+    --series-0: #7aa2ff;
+    --series-1: #4fd1c5;
+    --series-2: #f6ad55;
+    --series-3: #b794f4;
+    --series-4: #fc8181;
+    --series-5: #9ae66e;
+    --series-6: #63d3e8;
+    --series-7: #f0d264;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --series-0: CanvasText;
+    --series-1: CanvasText;
+    --series-2: CanvasText;
+    --series-3: CanvasText;
+    --series-4: CanvasText;
+    --series-5: CanvasText;
+    --series-6: CanvasText;
+    --series-7: CanvasText;
+  }
+}
