@@ -1,6 +1,6 @@
 # Repository configuration: variables, secrets, environments and the public-release gate
 
-Status: **Draft. The deploy workflow file and the build-time defaults exist in the repository, untested; no GitHub variable, secret or environment has been created.**  
+Status: **Draft. Created on 2026-11-01: environment `apps-script-deploy` (no protection rules, since the free private plan does not allow them), its variables `APPS_SCRIPT_SCRIPT_ID` and `APPS_SCRIPT_DEPLOYMENT_ID`, and the repository variables `VITE_GOOGLE_CLIENT_ID` and `VITE_GOOGLE_SCRIPT_ID`. Not created: the secret `CLASPRC_JSON`, which the owner enters. The deploy workflow has not run, and no hosted web build reads the repository variables yet.**  
 Created: 2026-11-01  
 Scope: GitHub repository settings, Actions configuration and the checks before the repository becomes public. Related decisions: FD-011 (licence), FD-014 (deployment model), FD-016 (Apps Script sync).
 
