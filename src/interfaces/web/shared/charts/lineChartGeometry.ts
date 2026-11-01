@@ -13,6 +13,10 @@ export interface ChartSeries {
   readonly label: string;
   /** Draw dashed. For a series that is a different measure, never for the same measure from another source. */
   readonly dashed?: boolean;
+  /** The palette slot, so a companion series can share its fund's colour. Defaults to the series' position. */
+  readonly slot?: number;
+  /** A quiet companion line (dotted, faded) in the colour of its slot. It is left out of the legend and the readout. */
+  readonly muted?: boolean;
   readonly points: readonly ChartPoint[];
 }
 
@@ -36,6 +40,8 @@ export interface PlottedSeries {
   readonly id: string;
   readonly label: string;
   readonly dashed: boolean;
+  readonly slot: number | null;
+  readonly muted: boolean;
   /** One path per unbroken run of two or more points. A gap always splits the line. */
   readonly paths: readonly string[];
   /** The filled shape under each run, down to the bottom of the plot. */
@@ -144,7 +150,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       run.push(placed);
     }
     flush();
-    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, paths, areas, points };
+    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, slot: entry.slot ?? null, muted: entry.muted === true, paths, areas, points };
   });
 
   return {

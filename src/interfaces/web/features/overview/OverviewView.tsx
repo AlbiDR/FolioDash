@@ -102,11 +102,22 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.invested ?? null) })),
     },
   ];
-  const fundSeries: ChartSeries[] = funds.map((fund) => ({
-    id: fund.isin,
-    label: fund.name,
-    points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.values[start + index] ?? null) })),
-  }));
+  // Each fund's money invested is drawn beneath its value, in the same colour, dotted and faded.
+  const fundSeries: ChartSeries[] = [
+    ...funds.map((fund, slot) => ({
+      id: `${fund.isin}-invested`,
+      label: `${fund.name}: net invested`,
+      slot,
+      muted: true,
+      points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.netInvested[start + index] ?? null) })),
+    })),
+    ...funds.map((fund, slot) => ({
+      id: fund.isin,
+      label: fund.name,
+      slot,
+      points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.values[start + index] ?? null) })),
+    })),
+  ];
 
   const slices = allocation(props.model);
   const ranking = fundRanking(props.model);
@@ -236,8 +247,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           id="funds-chart"
           key={`funds-${props.range}`}
           title="Value of each fund"
-          subtitle="One line per fund, each in its own colour. A gap means the fund was not held that month."
-          description="One line per fund showing its value over time. A fund that was not held leaves a gap."
+          subtitle="Solid line: a fund's value. Dotted line, same colour: what you have put into it. A gap means it was not held that month."
+          description="One solid line per fund showing its value over time, and a faint dotted line in the same colour for the money invested in it. A fund that was not held leaves a gap."
           series={fundSeries}
           formatTime={monthLabel}
           formatValue={euroLabel}

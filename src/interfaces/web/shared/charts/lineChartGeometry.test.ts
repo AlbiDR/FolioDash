@@ -108,4 +108,24 @@ describe("computeLineChart", () => {
       }
     });
   });
+
+  describe("companion series", () => {
+    it("carries a palette slot and a muted flag through, so a companion line can share its fund's colour", () => {
+      const data: ChartSeries[] = [
+        { ...series("invested", [1, 2], [0, 1]), slot: 3, muted: true },
+        { ...series("value", [2, 3], [0, 1]), slot: 3 },
+        series("plain", [1, 1], [0, 1]),
+      ];
+      const plotted = computeLineChart(data, { ...layout, includeZero: false }).series;
+      expect(plotted.map((entry) => [entry.slot, entry.muted])).toEqual([[3, true], [3, false], [null, false]]);
+    });
+
+    it("lets a companion series inform the axis, so no line is ever drawn outside the plot", () => {
+      const data: ChartSeries[] = [{ ...series("invested", [100, 200], [0, 1]), muted: true }, series("value", [10, 20], [0, 1])];
+      const geometry = computeLineChart(data, { ...layout, includeZero: false });
+      const ys = geometry.series.flatMap((entry) => entry.points.map((point) => point.y));
+      expect(Math.min(...ys)).toBeGreaterThanOrEqual(geometry.plot.top);
+      expect(Math.max(...ys)).toBeLessThanOrEqual(geometry.plot.top + geometry.plot.height);
+    });
+  });
 });

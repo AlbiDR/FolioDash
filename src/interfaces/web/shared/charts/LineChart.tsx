@@ -32,8 +32,8 @@ const LAYOUT = {
 // The palette repeats after this many series.
 const STYLE_COUNT = 8;
 
-function styleClass(index: number): string {
-  return `series-${String(index % STYLE_COUNT)}`;
+function styleClass(index: number, slot: number | null): string {
+  return `series-${String((slot ?? index) % STYLE_COUNT)}`;
 }
 
 /**
@@ -93,9 +93,10 @@ export function LineChart(props: LineChartProps): JSX.Element {
       <div class="chart-readout" aria-hidden="true">
         <span class="chart-readout-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span>
         {geometry.series.map((entry, index) => {
+          if (entry.muted) return null;
           const point = entry.points.find((candidate) => candidate.time === activeTime);
           return (
-            <span key={entry.id} class={`chart-readout-item ${styleClass(index)}${entry.dashed ? " dashed" : ""}`}>
+            <span key={entry.id} class={`chart-readout-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
               <span class="chart-readout-label">
                 <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
                   <line x1="0" x2="32" y1="4" y2="4" />
@@ -144,12 +145,12 @@ export function LineChart(props: LineChartProps): JSX.Element {
           <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />
         )}
         {geometry.series.map((entry, index) => (
-          <g key={entry.id} class={`chart-series ${styleClass(index)}${entry.dashed ? " dashed" : ""}`} data-series={entry.id}>
+          <g key={entry.id} class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}`} data-series={entry.id}>
             {props.fillFirst === true && index === 0 && entry.areas.map((area) => <path key={area} class="area" d={area} />)}
             {entry.paths.map((path) => (
               <path key={path} class="line" d={path} fill="none" />
             ))}
-            {entry.points.map((point) => (
+            {(entry.muted ? [] : entry.points).map((point) => (
               <circle
                 key={point.time}
                 class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
@@ -164,14 +165,16 @@ export function LineChart(props: LineChartProps): JSX.Element {
         ))}
       </svg>
       <ul class="chart-legend">
-        {geometry.series.map((entry, index) => (
-          <li key={entry.id} class={`chart-legend-item ${styleClass(index)}${entry.dashed ? " dashed" : ""}`}>
-            <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
-              <line x1="0" x2="32" y1="4" y2="4" />
-            </svg>
-            {entry.label}
-          </li>
-        ))}
+        {geometry.series.map((entry, index) =>
+          entry.muted ? null : (
+            <li key={entry.id} class={`chart-legend-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
+              <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
+                <line x1="0" x2="32" y1="4" y2="4" />
+              </svg>
+              {entry.label}
+            </li>
+          ),
+        )}
       </ul>
       <details class="chart-table">
         <summary>Show the values as a table</summary>

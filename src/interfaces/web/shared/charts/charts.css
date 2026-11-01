@@ -145,6 +145,13 @@
   stroke-dasharray: 6 5;
 }
 
+/* A companion line, such as the money invested in one fund: the fund's own colour, much quieter, dotted. */
+.chart-series.muted path.line {
+  stroke-width: 1.75;
+  stroke-dasharray: 1 5.5;
+  opacity: 0.6;
+}
+
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
