@@ -1,7 +1,7 @@
 import { type ComponentChildren, type JSX, createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import type { EuroCents } from "../../../../core/Money";
-import { MASK, type PrivacyStorage, amountText, readPrivacyChoice, writePrivacyChoice } from "./privacyChoice";
+import { type PrivacyStorage, amountText, readPrivacyChoice, writePrivacyChoice } from "./privacyChoice";
 
 const PrivacyContext = createContext(true);
 
@@ -13,18 +13,24 @@ export function PrivacyProvider(props: { readonly hidden: boolean; readonly chil
   return <PrivacyContext.Provider value={props.hidden}>{props.children}</PrivacyContext.Provider>;
 }
 
-/** An amount that follows the privacy choice. A hidden amount is announced as hidden, not read out. */
+/**
+ * An amount that follows the privacy choice. Shown and hidden occupy the same
+ * fixed width (set in CSS, never taken from the figure), so switching does not
+ * move anything, and the width does not reveal how large the number is. A hidden
+ * amount is announced as hidden, not read out.
+ */
 export function Amount(props: { readonly cents: EuroCents | null; readonly signed?: boolean; readonly empty?: string }): JSX.Element {
   const hidden = usePrivacy();
-  if (props.cents === null) return <>{props.empty ?? "–"}</>;
+  const kind = props.signed === true ? "amount signed" : "amount";
+  if (props.cents === null) return <span class={kind}>{props.empty ?? "–"}</span>;
   if (hidden) {
     return (
-      <span class="masked" role="img" aria-label="Amount hidden">
-        {MASK}
+      <span class={`${kind} masked`} role="img" aria-label="Amount hidden">
+        {amountText(props.cents, true, props.signed === true)}
       </span>
     );
   }
-  return <>{amountText(props.cents, false, props.signed === true)}</>;
+  return <span class={kind}>{amountText(props.cents, false, props.signed === true)}</span>;
 }
 
 export function PrivacyToggle(props: { readonly hidden: boolean; readonly onChange: (hidden: boolean) => void }): JSX.Element {

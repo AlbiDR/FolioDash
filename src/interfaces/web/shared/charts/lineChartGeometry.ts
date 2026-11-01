@@ -38,6 +38,8 @@ export interface PlottedSeries {
   readonly dashed: boolean;
   /** One path per unbroken run of two or more points. A gap always splits the line. */
   readonly paths: readonly string[];
+  /** The filled shape under each run, down to the bottom of the plot. */
+  readonly areas: readonly string[];
   readonly points: readonly PlottedPoint[];
 }
 
@@ -113,10 +115,17 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
     const ordered = [...entry.points].sort((left, right) => left.time - right.time);
     const points: PlottedPoint[] = [];
     const paths: string[] = [];
+    const areas: string[] = [];
+    const base = round(plot.top + plot.height);
     let run: PlottedPoint[] = [];
     const flush = (): void => {
       const drawn = run.length >= 2 ? path(run) : null;
-      if (drawn !== null) paths.push(drawn);
+      const first = run[0];
+      const last = run[run.length - 1];
+      if (drawn !== null && first !== undefined && last !== undefined) {
+        paths.push(drawn);
+        areas.push(`${drawn}L${String(last.x)},${String(base)}L${String(first.x)},${String(base)}Z`);
+      }
       run = [];
     };
     for (const point of ordered) {
@@ -135,7 +144,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       run.push(placed);
     }
     flush();
-    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, paths, points };
+    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, paths, areas, points };
   });
 
   return {

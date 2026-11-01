@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EuroCents } from "../../../../core/Money";
-import { MASK, type PrivacyStorage, amountText, readPrivacyChoice, writePrivacyChoice } from "./privacyChoice";
+import { MASK, type PrivacyStorage, amountText, maskNumbers, readPrivacyChoice, writePrivacyChoice } from "./privacyChoice";
 
 const memory = (): PrivacyStorage & { data: Map<string, string> } => {
   const data = new Map<string, string>();
@@ -36,16 +36,30 @@ describe("privacy choice", () => {
 
 describe("amountText", () => {
   const cents = 123456 as EuroCents;
-  it("masks an amount without leaving any digit of it, signed or not", () => {
-    for (const signed of [false, true]) {
-      const hidden = amountText(cents, true, signed);
-      expect(hidden).toBe(MASK);
-      expect(hidden).not.toMatch(/\d/u);
+
+  it("hides the number but keeps the currency symbol", () => {
+    const hidden = amountText(cents, true);
+    expect(hidden).toBe(`${MASK} €`);
+    expect(hidden).not.toMatch(/\d/u);
+  });
+
+  it("keeps a sign, since the figure is still read as a gain or a loss, and hides every digit", () => {
+    expect(amountText(cents, true, true)).toBe(`+${MASK} €`);
+    expect(amountText(-5 as EuroCents, true)).toBe(`-${MASK} €`);
+    for (const value of [0, 1, 99, 100, 123456, 987654321, -123456]) {
+      expect(amountText(value as EuroCents, true, true)).not.toMatch(/\d/u);
     }
   });
 
   it("shows the amount when not hidden", () => {
     expect(amountText(cents, false)).toContain("1.234,56");
     expect(amountText(cents, false, true)).toContain("+");
+  });
+});
+
+describe("maskNumbers", () => {
+  it("replaces only the number in an already formatted amount", () => {
+    expect(maskNumbers("25.743,52 €")).toBe(`${MASK} €`);
+    expect(maskNumbers("-806,82 €")).toBe(`-${MASK} €`);
   });
 });

@@ -31,9 +31,16 @@ export function writePrivacyChoice(open: () => PrivacyStorage, hidden: boolean):
 
 export const MASK = "••••";
 
-/** Text for an amount, or the mask. Percentages never go through this: they do not reveal an amount. */
-export function amountText(cents: EuroCents, hidden: boolean, signed = false): string {
-  if (hidden) return MASK;
-  return signed ? formatSignedEuro(cents) : formatEuro(cents);
+/**
+ * Replaces the digits and separators of an already formatted amount with the mask.
+ * The currency symbol, sign and spacing are kept: only the number is hidden.
+ */
+export function maskNumbers(formatted: string): string {
+  return formatted.replace(/[\d.,]+/u, MASK);
 }
 
+/** Text for an amount, with its number hidden when asked. Percentages never go through this: they reveal no amount. */
+export function amountText(cents: EuroCents, hidden: boolean, signed = false): string {
+  const formatted = signed ? formatSignedEuro(cents) : formatEuro(cents);
+  return hidden ? maskNumbers(formatted) : formatted;
+}

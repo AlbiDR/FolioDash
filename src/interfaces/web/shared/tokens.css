@@ -1,62 +1,72 @@
-/* The single source of colour, type and spacing. Components use these names, never raw values. */
+/* The single source of colour, type and spacing. Components use these names, never raw values.
+   The palette follows Apple's system colours: grouped backgrounds, label hierarchy, and a
+   darker green and red in light mode so text stays readable. */
 :root {
   color-scheme: light dark;
 
-  --color-background: #f5f7fb;
+  --color-background: #f2f2f7;
   --color-surface: #ffffff;
-  --color-text: #0f1b33;
-  --color-muted: #51607a;
-  --color-border: #d5dbe8;
-  --color-accent: #1d4ed8;
-  --color-notice: #fff4d6;
-  --color-notice-text: #5a4300;
-  --color-grid: #e3e8f2;
-  --color-error: #b42318;
-  --color-gain: #0a7a3d;
-  --color-loss: #b42318;
+  --color-surface-2: #f2f2f7;
+  --color-text: #000000;
+  --color-muted: #6c6c70;
+  --color-border: rgba(60, 60, 67, 0.18);
+  --color-accent: #007aff;
+  --color-accent-soft: rgba(0, 122, 255, 0.12);
+  --color-on-accent: #ffffff;
+  --color-notice: rgba(255, 149, 0, 0.14);
+  --color-notice-text: #8a4b00;
+  --color-grid: rgba(60, 60, 67, 0.14);
+  --color-error: #d70015;
+  --color-gain: #1f8a3b;
+  --color-loss: #d70015;
+  --nav-background: rgba(249, 249, 249, 0.78);
 
-  --series-0: #1d4ed8;
-  --series-1: #0f766e;
-  --series-2: #b45309;
-  --series-3: #7c3aed;
-  --series-4: #be123c;
-  --series-5: #4d7c0f;
-  --series-6: #0e7490;
-  --series-7: #a16207;
+  --series-0: #007aff;
+  --series-1: #34c759;
+  --series-2: #ff9500;
+  --series-3: #af52de;
+  --series-4: #ff2d55;
+  --series-5: #30b0c7;
+  --series-6: #5856d6;
+  --series-7: #a2845e;
 
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2.5rem;
-  --radius: 0.5rem;
-  --page-inset: clamp(1rem, 4vw, 2.5rem);
+  --radius: 12px;
+  --radius-lg: 18px;
+  --page-inset: clamp(1rem, 4vw, 2rem);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: #0b1220;
-    --color-surface: #131c2f;
-    --color-text: #e6ecf8;
-    --color-muted: #9aa8c2;
-    --color-border: #26334d;
-    --color-accent: #7aa2ff;
-    --color-notice: #3a2f10;
-    --color-notice-text: #f3d98a;
-    --color-grid: #1f2b43;
-    --color-error: #ff9b8f;
-    --color-gain: #5fd490;
-    --color-loss: #ff9b8f;
+    --color-background: #000000;
+    --color-surface: #1c1c1e;
+    --color-surface-2: #2c2c2e;
+    --color-text: #ffffff;
+    --color-muted: #98989f;
+    --color-border: rgba(84, 84, 88, 0.5);
+    --color-accent: #0a84ff;
+    --color-accent-soft: rgba(10, 132, 255, 0.2);
+    --color-notice: rgba(255, 159, 10, 0.18);
+    --color-notice-text: #ffc65a;
+    --color-grid: rgba(235, 235, 245, 0.14);
+    --color-error: #ff453a;
+    --color-gain: #30d158;
+    --color-loss: #ff453a;
+    --nav-background: rgba(30, 30, 30, 0.72);
 
-    --series-0: #7aa2ff;
-    --series-1: #4fd1c5;
-    --series-2: #f6ad55;
-    --series-3: #b794f4;
-    --series-4: #fc8181;
-    --series-5: #9ae66e;
-    --series-6: #63d3e8;
-    --series-7: #f0d264;
+    --series-0: #0a84ff;
+    --series-1: #30d158;
+    --series-2: #ff9f0a;
+    --series-3: #bf5af2;
+    --series-4: #ff375f;
+    --series-5: #40c8e0;
+    --series-6: #5e5ce6;
+    --series-7: #ac8e68;
   }
 }
 

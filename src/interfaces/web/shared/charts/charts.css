@@ -2,8 +2,7 @@
   margin: 0;
   padding: var(--space-3);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
 }
 
 .chart-title {
@@ -11,31 +10,82 @@
   margin-bottom: var(--space-2);
 }
 
+.chart-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  min-height: 2.75rem;
+  margin-bottom: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-readout-date {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  flex-basis: 100%;
+}
+
+/* A fixed width per item, so the readout wraps the same way whether amounts are shown or hidden. */
+.chart-readout-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 10rem;
+  font-weight: 600;
+}
+
 .chart-svg {
   display: block;
   width: 100%;
   height: auto;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .chart-grid line {
   stroke: var(--color-grid);
   stroke-width: 1;
+  stroke-dasharray: 2 4;
 }
 
 .chart-tick {
   fill: var(--color-muted);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 11px;
 }
 
-.chart-series path,
+.chart-series path.line,
 .chart-swatch line {
   stroke: var(--series-color);
-  stroke-width: 2.5;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-series path.area {
+  fill: var(--series-color);
+  opacity: 0.12;
+  stroke: none;
 }
 
 .chart-series circle {
   fill: var(--series-color);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.chart-series circle.is-last,
+.chart-series circle.is-active {
+  opacity: 1;
+}
+
+.chart-guide {
+  stroke: var(--color-muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
 }
 
 /* One line style for every series; colour alone separates funds, since they are one measure. */
@@ -48,10 +98,17 @@
 .series-6 { --series-color: var(--series-6); }
 .series-7 { --series-color: var(--series-7); }
 
-/* Only a series that is a different measure (net invested against value) is dashed. */
-.chart-series.dashed path,
-.chart-legend-item.dashed .chart-swatch line {
-  stroke-dasharray: 8 5;
+/* Only a series that is a different measure (net invested against value) is dashed, in a quiet grey. */
+.chart-series.dashed,
+.chart-legend-item.dashed,
+.chart-readout-item.dashed {
+  --series-color: var(--color-muted);
+}
+
+.chart-series.dashed path.line,
+.chart-legend-item.dashed .chart-swatch line,
+.chart-readout-item.dashed .chart-swatch line {
+  stroke-dasharray: 6 5;
 }
 
 .chart-legend {
@@ -61,6 +118,7 @@
   list-style: none;
   margin: var(--space-3) 0 0;
   padding: 0;
+  font-size: 0.875rem;
 }
 
 .chart-legend-item {
@@ -70,12 +128,13 @@
 }
 
 .chart-swatch {
-  width: 2rem;
+  width: 1.5rem;
   height: 0.5rem;
 }
 
 .chart-table {
   margin-top: var(--space-3);
+  font-size: 0.875rem;
 }
 
 .chart-table table {
@@ -88,7 +147,7 @@
 
 .chart-table th,
 .chart-table td {
-  border: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   padding: var(--space-1) var(--space-2);
   text-align: right;
   white-space: nowrap;
