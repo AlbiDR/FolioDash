@@ -24,6 +24,10 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
         const holding = snapshot.holdings[fund.isin];
         return holding === undefined || holding.action === "Closed" ? null : holding.value;
       }),
+      netInvested: state.snapshots.map((snapshot) => {
+        const holding = snapshot.holdings[fund.isin];
+        return holding === undefined || holding.action === "Closed" ? null : holding.netInvested;
+      }),
       latest: current === undefined
         ? null
         : {
@@ -31,6 +35,8 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
             netInvested: current.netInvested,
             gain: current.gain,
             gainPercent: current.gainPercent,
+            monthlyGain: current.monthlyGain,
+            monthlyGainPercent: current.monthlyGainPercent,
             share: current.share,
           },
     };
@@ -54,6 +60,18 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
     funds,
     totals: metrics.map((entry) => ({ value: entry.total, invested: entry.invested })),
     kpis,
+    months: metrics.map((entry) => ({
+      date: entry.date,
+      value: entry.total,
+      gain: entry.gain,
+      gainPercent: entry.gainPercent,
+      monthlyGain: entry.monthlyGain,
+      monthlyGainPercent: entry.monthlyGainPercent,
+      yearToDateGain: entry.yearToDateGain,
+      yearToDatePercent: entry.yearToDatePercent,
+      yearOverYearGain: entry.yearOverYearGain,
+      yearOverYearPercent: entry.yearOverYearPercent,
+    })),
     estimated: metrics.some((entry) => entry.estimated),
   };
 }

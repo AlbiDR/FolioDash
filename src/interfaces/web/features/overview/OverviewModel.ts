@@ -20,6 +20,8 @@ export interface OverviewFundLatest {
   readonly netInvested: EuroCents;
   readonly gain: EuroCents;
   readonly gainPercent: number | null;
+  readonly monthlyGain: EuroCents | null;
+  readonly monthlyGainPercent: number | null;
   readonly share: number | null;
 }
 
@@ -29,7 +31,23 @@ export interface OverviewFund {
   readonly status: HoldingStatus;
   /** One entry per statement date. Null means the fund was not held (or is closed and no longer shown). */
   readonly values: readonly (EuroCents | null)[];
+  /** Net invested on the same dates and with the same gaps as `values`. */
+  readonly netInvested: readonly (EuroCents | null)[];
   readonly latest: OverviewFundLatest | null;
+}
+
+/** The portfolio's figures at one statement, as the monthly summary shows them. */
+export interface OverviewMonth {
+  readonly date: IsoDate;
+  readonly value: EuroCents;
+  readonly gain: EuroCents;
+  readonly gainPercent: number | null;
+  readonly monthlyGain: EuroCents | null;
+  readonly monthlyGainPercent: number | null;
+  readonly yearToDateGain: EuroCents | null;
+  readonly yearToDatePercent: number | null;
+  readonly yearOverYearGain: EuroCents | null;
+  readonly yearOverYearPercent: number | null;
 }
 
 export interface OverviewModel {
@@ -40,6 +58,8 @@ export interface OverviewModel {
   /** Portfolio value and net invested per statement date, aligned with `dates`. */
   readonly totals: readonly { readonly value: EuroCents; readonly invested: EuroCents }[];
   readonly kpis: readonly OverviewKpi[];
+  /** One entry per statement date, aligned with `dates`. */
+  readonly months: readonly OverviewMonth[];
   /** True when any cash moved, so percentages depend on assumed timing. */
   readonly estimated: boolean;
 }

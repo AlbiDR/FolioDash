@@ -2,7 +2,7 @@ import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
-import { formatEuro } from "../../../../core/Money";
+import { Amount } from "../../shared/privacy/privacy";
 import type { DateSource } from "../../../../core/StatementDate";
 import { CashQuestions } from "./CashQuestions";
 import type {
@@ -81,11 +81,11 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
         </div>
         <div>
           <dt>Funds subtotal</dt>
-          <dd>{formatEuro(statement.fundsSubtotal)}</dd>
+          <dd><Amount cents={statement.fundsSubtotal} /></dd>
         </div>
         <div>
           <dt>Grand total</dt>
-          <dd>{statement.total === null ? "Not in the file" : formatEuro(statement.total)}</dd>
+          <dd>{statement.total === null ? "Not in the file" : <Amount cents={statement.total} />}</dd>
         </div>
       </dl>
 
@@ -127,7 +127,7 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
               <tr key={fund.isin}>
                 <th scope="row">{fund.name}</th>
                 <td>{fund.isin}</td>
-                <td>{formatEuro(fund.marketValue)}</td>
+                <td><Amount cents={fund.marketValue} /></td>
               </tr>
             ))}
           </tbody>
@@ -147,7 +147,7 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
           {statement.categories.map((category) => (
             <tr key={category.label}>
               <th scope="row">{category.label}</th>
-              <td>{category.subtotal === null ? "–" : formatEuro(category.subtotal)}</td>
+              <td><Amount cents={category.subtotal} /></td>
               <td>{category.tracked ? "Yes" : "Not yet"}</td>
             </tr>
           ))}
@@ -274,8 +274,8 @@ function RecordedSummary(props: { readonly ledger: LedgerState }): JSX.Element |
               <tr key={fund.isin}>
                 <th scope="row">{fund.name}</th>
                 <td>{holding.status === "closed" ? "Closed" : "Active"}</td>
-                <td>{formatEuro(holding.value)}</td>
-                <td>{formatEuro(holding.netInvested)}</td>
+                <td><Amount cents={holding.value} /></td>
+                <td><Amount cents={holding.netInvested} /></td>
               </tr>
             );
           })}

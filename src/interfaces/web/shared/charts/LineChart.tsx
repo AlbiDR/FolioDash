@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { usePrivacy } from "../privacy/privacy";
 import { type ChartSeries, computeLineChart } from "./lineChartGeometry";
 
 export interface LineChartProps {
@@ -9,6 +10,7 @@ export interface LineChartProps {
   readonly series: readonly ChartSeries[];
   readonly formatTime: (time: number) => string;
   readonly formatValue: (value: number) => string;
+  /** Extend the value axis to zero. Off by default: the axis fits the data. */
   readonly includeZero?: boolean;
   /** Text shown when there is nothing to plot. */
   readonly emptyMessage: string;
@@ -19,7 +21,8 @@ const LAYOUT = {
   height: 360,
   margin: { top: 16, right: 20, bottom: 36, left: 84 },
 } as const;
-// The palette and dash patterns repeat after this many series, so a long list still tells lines apart.
+// Series share one line style and differ only by colour: they are the same measure from different sources.
+// The palette repeats after this many series.
 const STYLE_COUNT = 8;
 
 function styleClass(index: number): string {
@@ -27,13 +30,15 @@ function styleClass(index: number): string {
 }
 
 /**
- * A multi-series line chart drawn as SVG. Series are told apart by colour, dash
- * pattern and a direct legend, never by colour alone. The plotted values are in
+ * A multi-series line chart drawn as SVG. Series are told apart by colour and a
+ * direct legend and table. When amounts are hidden, no value is written on the
+ * axis, in the table or in the page's data attributes; only the shape remains. The plotted values are in
  * the page as data attributes and also as a table, so they can be read, tested
  * and used without the picture.
  */
 export function LineChart(props: LineChartProps): JSX.Element {
-  const geometry = computeLineChart(props.series, { ...LAYOUT, includeZero: props.includeZero ?? true });
+  const hidden = usePrivacy();
+  const geometry = computeLineChart(props.series, { ...LAYOUT, includeZero: props.includeZero ?? false });
   const titleId = `${props.id}-title`;
   const descriptionId = `${props.id}-description`;
 
@@ -68,7 +73,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
             <g key={`y-${String(tick.value)}`}>
               <line x1={geometry.plot.left} x2={geometry.plot.left + geometry.plot.width} y1={tick.y} y2={tick.y} />
               <text class="chart-tick" x={geometry.plot.left - 8} y={tick.y} text-anchor="end" dominant-baseline="middle">
-                {props.formatValue(tick.value)}
+                {hidden ? "" : props.formatValue(tick.value)}
               </text>
             </g>
           ))}
@@ -79,7 +84,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
           ))}
         </g>
         {geometry.series.map((entry, index) => (
-          <g key={entry.id} class={`chart-series ${styleClass(index)}`} data-series={entry.id}>
+          <g key={entry.id} class={`chart-series ${styleClass(index)}${entry.dashed ? " dashed" : ""}`} data-series={entry.id}>
             {entry.paths.map((path) => (
               <path key={path} d={path} fill="none" />
             ))}
@@ -90,7 +95,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
                 cy={point.y}
                 r={3.5}
                 data-time={point.time}
-                data-value={point.value}
+                {...(hidden ? {} : { "data-value": point.value })}
               />
             ))}
           </g>
@@ -98,7 +103,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </svg>
       <ul class="chart-legend">
         {geometry.series.map((entry, index) => (
-          <li key={entry.id} class={`chart-legend-item ${styleClass(index)}`}>
+          <li key={entry.id} class={`chart-legend-item ${styleClass(index)}${entry.dashed ? " dashed" : ""}`}>
             <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
               <line x1="0" x2="32" y1="4" y2="4" />
             </svg>
@@ -127,7 +132,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
                   const point = entry.points.find((candidate) => candidate.time === time);
                   return (
                     <td key={entry.id}>
-                      {point?.value === undefined || point.value === null ? "–" : props.formatValue(point.value)}
+                      {point?.value === undefined || point.value === null ? "–" : hidden ? "••••" : props.formatValue(point.value)}
                     </td>
                   );
                 })}

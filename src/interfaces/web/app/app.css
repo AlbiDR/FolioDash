@@ -11,7 +11,7 @@ body {
 }
 
 #app {
-  max-width: 62rem;
+  max-width: 72rem;
   margin: 0 auto;
   padding: var(--page-inset);
 }
@@ -53,7 +53,7 @@ body {
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: var(--space-3);
   margin: 0;
 }
@@ -74,6 +74,7 @@ body {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .funds {
@@ -239,9 +240,123 @@ fieldset label {
 }
 
 .kpi-percent {
+  display: block;
   font-size: 0.875rem;
   font-weight: 400;
+}
+
+.gain {
+  color: var(--color-gain);
+}
+
+.loss {
+  color: var(--color-loss);
+}
+
+.kpi-percent,
+.kpis .kpi dd:not(.gain):not(.loss) .kpi-percent {
+  color: inherit;
+}
+
+/* Hidden amounts keep their width so the layout does not jump when the choice changes. */
+.masked {
+  letter-spacing: 0.12em;
   color: var(--color-muted);
+  user-select: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.app-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.app-title h1 {
+  margin: 0;
+}
+
+.privacy-toggle {
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.privacy-toggle[aria-pressed="true"] {
+  border-color: var(--color-accent);
+}
+
+.privacy-toggle:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.matrix {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--color-surface);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.matrix th,
+.matrix td {
+  border: 1px solid var(--color-border);
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
+}
+
+.matrix td {
+  text-align: right;
+}
+
+.matrix thead th {
+  text-align: right;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.matrix thead th:first-child,
+.matrix thead th:nth-child(2),
+.matrix tbody th {
+  text-align: left;
+}
+
+.matrix tbody th {
+  font-weight: 600;
+  background: var(--color-surface);
+}
+
+.matrix tbody th[scope="row"]:not([rowspan]) {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.matrix tr.matrix-first > th,
+.matrix tr.matrix-first > td {
+  border-top-width: 2px;
+}
+
+.kpis .kpi dd {
+  display: grid;
+  gap: 0;
 }
 
 .definitions {
@@ -270,8 +385,13 @@ fieldset label {
   white-space: nowrap;
 }
 
-.funds td:nth-child(2) {
-  text-align: left;
+.funds td {
+  font-variant-numeric: tabular-nums;
+}
+
+.funds tr.closed th,
+.funds tr.closed td {
+  color: var(--color-muted);
 }
 
 .connection {

@@ -127,3 +127,9 @@ export function formatMonthYear(date: IsoDate): string {
   const { year, month } = parts(date);
   return `${monthName(month)} ${String(year)}`;
 }
+
+/** Display only, for a narrow column heading, for example `Nov 26`. */
+export function formatMonthShort(date: IsoDate): string {
+  const { year, month } = parts(date);
+  return `${monthName(month).slice(0, 3)} ${String(year % 100).padStart(2, "0")}`;
+}

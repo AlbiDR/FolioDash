@@ -13,6 +13,7 @@ import { connectToGoogle } from "./googleConnection";
 import { browserRemoteSave } from "./googleLedger";
 import { prepareImport } from "./importPreparer";
 import { overviewFromLedger } from "./overviewFromLedger";
+import { PrivacyProvider, PrivacyToggle, usePrivacyChoice } from "../shared/privacy/privacy";
 
 type Route = "overview" | "import" | "history" | "connection";
 
@@ -21,6 +22,8 @@ function routeFrom(hash: string): Route {
   if (hash === "#history") return "history";
   return hash === "#connection" ? "connection" : "overview";
 }
+
+const browserPrivacyStorage = (): Storage => window.localStorage;
 
 export function App(): JSX.Element {
   const [route, setRoute] = useState<Route>(routeFrom(window.location.hash));
@@ -38,13 +41,17 @@ export function App(): JSX.Element {
     };
   }, []);
 
+  const [hidden, setHidden] = usePrivacyChoice(browserPrivacyStorage);
   const variant = demoVariantFrom(window.location.search);
   const recorded = ledger.snapshots.length > 0;
   const model = recorded ? overviewFromLedger(ledger, "recorded") : demoPortfolio(variant);
   return (
-    <>
+    <PrivacyProvider hidden={hidden}>
       <header class="app-header">
-        <h1>FolioDash</h1>
+        <div class="app-title">
+          <h1>FolioDash</h1>
+          <PrivacyToggle hidden={hidden} onChange={setHidden} />
+        </div>
         <nav aria-label="Main">
           <ul class="demo-nav">
             <li>
@@ -119,6 +126,6 @@ export function App(): JSX.Element {
           />
         )}
       </main>
-    </>
+    </PrivacyProvider>
   );
 }

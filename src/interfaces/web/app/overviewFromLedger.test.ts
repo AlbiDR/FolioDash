@@ -6,7 +6,7 @@ import { overviewFromLedger } from "./overviewFromLedger";
 describe("overviewFromLedger", () => {
   it("shows nothing for an empty ledger", () => {
     const model = overviewFromLedger(EMPTY_LEDGER, "recorded");
-    expect(model).toMatchObject({ dates: [], funds: [], totals: [], kpis: [], source: "recorded" });
+    expect(model).toMatchObject({ dates: [], funds: [], totals: [], kpis: [], months: [], source: "recorded" });
   });
 
   it("shows no value before a fund was held nor after the statement that closed it", () => {
@@ -36,6 +36,15 @@ describe("overviewFromLedger", () => {
     ]);
     expect(model.estimated).toBe(true);
     expect(model.kpis.every((kpi) => kpi.note.length > 0)).toBe(true);
+  });
+
+  it("reports one monthly summary and one net invested value per statement, with the same gaps as the fund values", () => {
+    const model = demoPortfolio("typical");
+    expect(model.months.map((month) => month.date)).toEqual(model.dates);
+    for (const fund of model.funds) {
+      expect(fund.netInvested.map((value) => value === null)).toEqual(fund.values.map((value) => value === null));
+    }
+    expect(model.months[model.months.length - 1]?.value).toBe(model.totals[model.totals.length - 1]?.value);
   });
 
   it("builds every demo variant from the real ledger rules, for any number of funds", () => {

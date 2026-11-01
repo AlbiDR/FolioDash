@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   compareIsoDates,
   formatDateLong,
+  formatMonthShort,
   formatMonthYear,
   fromSpreadsheetSerial,
   monthKey,
@@ -129,5 +130,12 @@ describe("display", () => {
       "November 2026",
       "December 2026",
     ]);
+  });
+});
+
+describe("formatMonthShort", () => {
+  it("gives a three-letter month and a two-digit year for a column heading", () => {
+    expect(formatMonthShort(date("2026-11-01"))).toBe("Nov 26");
+    expect(formatMonthShort(date("2025-02-01"))).toBe("Feb 25");
   });
 });

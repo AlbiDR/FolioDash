@@ -32,22 +32,27 @@
 .chart-swatch line {
   stroke: var(--series-color);
   stroke-width: 2.5;
-  stroke-dasharray: var(--series-dash);
 }
 
 .chart-series circle {
   fill: var(--series-color);
 }
 
-/* Colour and dash pattern together, so a series never depends on colour alone. */
-.series-0 { --series-color: var(--series-0); --series-dash: none; }
-.series-1 { --series-color: var(--series-1); --series-dash: 8 4; }
-.series-2 { --series-color: var(--series-2); --series-dash: 2 4; }
-.series-3 { --series-color: var(--series-3); --series-dash: 12 4 2 4; }
-.series-4 { --series-color: var(--series-4); --series-dash: 6 3 2 3 2 3; }
-.series-5 { --series-color: var(--series-5); --series-dash: 14 5; }
-.series-6 { --series-color: var(--series-6); --series-dash: 3 3; }
-.series-7 { --series-color: var(--series-7); --series-dash: 10 3 3 3; }
+/* One line style for every series; colour alone separates funds, since they are one measure. */
+.series-0 { --series-color: var(--series-0); }
+.series-1 { --series-color: var(--series-1); }
+.series-2 { --series-color: var(--series-2); }
+.series-3 { --series-color: var(--series-3); }
+.series-4 { --series-color: var(--series-4); }
+.series-5 { --series-color: var(--series-5); }
+.series-6 { --series-color: var(--series-6); }
+.series-7 { --series-color: var(--series-7); }
+
+/* Only a series that is a different measure (net invested against value) is dashed. */
+.chart-series.dashed path,
+.chart-legend-item.dashed .chart-swatch line {
+  stroke-dasharray: 8 5;
+}
 
 .chart-legend {
   display: flex;

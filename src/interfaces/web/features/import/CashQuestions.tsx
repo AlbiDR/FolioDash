@@ -4,7 +4,8 @@ import { type FundCommand, type PlanRow, applyImport, planImport } from "../../.
 import type { CheckResult, RecordResult, RemoteSave } from "./ImportModel";
 import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
-import { type EuroCents, ZERO_CENTS, formatEuro, parseItalianAmount } from "../../../../core/Money";
+import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/Money";
+import { Amount } from "../../shared/privacy/privacy";
 import type { ReviewStatement } from "./ImportModel";
 
 interface Answer {
@@ -264,8 +265,19 @@ export function CashQuestions(props: {
               {row.name} <span class="isin">{row.isin}</span> <span class="tag">{DETECTION_TEXT[row.detected]}</span>
             </legend>
             <p class="hint">
-              {row.detected === "Missing" || row.detected === "Closed" ? "No value on this statement." : `Market value ${formatEuro(row.value)}.`}
-              {row.detected === "Opening" ? "" : ` Net invested before: ${formatEuro(row.priorNetInvested)}.`}
+              {row.detected === "Missing" || row.detected === "Closed" ? (
+                "No value on this statement."
+              ) : (
+                <>
+                  Market value <Amount cents={row.value} />.
+                </>
+              )}
+              {row.detected !== "Opening" && (
+                <>
+                  {" "}
+                  Net invested before: <Amount cents={row.priorNetInvested} />.
+                </>
+              )}
             </p>
 
             {row.detected === "Opening" && (
@@ -355,9 +367,9 @@ export function CashQuestions(props: {
                   <tr key={row.isin}>
                     <th scope="row">{result.state.funds.find((fund) => fund.isin === row.isin)?.name ?? row.name}</th>
                     <td>{holding.action}</td>
-                    <td>{formatEuro(holding.moneyIn)}</td>
-                    <td>{formatEuro(holding.moneyOut)}</td>
-                    <td>{formatEuro(holding.netInvested)}</td>
+                    <td><Amount cents={holding.moneyIn} /></td>
+                    <td><Amount cents={holding.moneyOut} /></td>
+                    <td><Amount cents={holding.netInvested} /></td>
                   </tr>
                 );
               })}

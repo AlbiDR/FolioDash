@@ -80,4 +80,32 @@ describe("computeLineChart", () => {
     const data = [series("a", [1, 4, 2], [0, 10, 20])];
     expect(computeLineChart(data, layout)).toEqual(computeLineChart(data, layout));
   });
+
+  describe("fitted value axis", () => {
+    const fitted: ChartLayout = { ...layout, includeZero: false };
+    const data = [series("a", [50_000, 52_000, 56_000], [0, 31, 62]), series("b", [43_000, 43_500, 50_500], [0, 31, 62])];
+
+    it("starts and ends at the lowest and highest plotted values, not at rounded numbers", () => {
+      const geometry = computeLineChart(data, fitted);
+      const values = geometry.yTicks.map((tick) => tick.value);
+      expect(Math.min(...values)).toBe(43_000);
+      expect(Math.max(...values)).toBe(56_000);
+    });
+
+    it("leaves only a small buffer above the highest and below the lowest point", () => {
+      const geometry = computeLineChart(data, fitted);
+      const ys = geometry.series.flatMap((entry) => entry.points.map((point) => point.y));
+      const { top, height } = geometry.plot;
+      expect((Math.min(...ys) - top) / height).toBeLessThan(0.06);
+      expect((top + height - Math.max(...ys)) / height).toBeLessThan(0.06);
+    });
+
+    it("keeps tick labels apart: no intermediate tick sits next to an end tick", () => {
+      const geometry = computeLineChart(data, fitted);
+      const ys = geometry.yTicks.map((tick) => tick.y).sort((left, right) => left - right);
+      for (let index = 1; index < ys.length; index++) {
+        expect((ys[index] ?? 0) - (ys[index - 1] ?? 0)).toBeGreaterThan(geometry.plot.height * 0.1);
+      }
+    });
+  });
 });

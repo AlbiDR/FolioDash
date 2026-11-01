@@ -11,6 +11,8 @@ export interface ChartPoint {
 export interface ChartSeries {
   readonly id: string;
   readonly label: string;
+  /** Draw dashed. For a series that is a different measure, never for the same measure from another source. */
+  readonly dashed?: boolean;
   readonly points: readonly ChartPoint[];
 }
 
@@ -33,6 +35,7 @@ export interface PlottedPoint {
 export interface PlottedSeries {
   readonly id: string;
   readonly label: string;
+  readonly dashed: boolean;
   /** One path per unbroken run of two or more points. A gap always splits the line. */
   readonly paths: readonly string[];
   readonly points: readonly PlottedPoint[];
@@ -48,6 +51,10 @@ export interface ChartGeometry {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TICK_TARGET = 5;
+/** Headroom above the highest and below the lowest value, as a share of the range. Deliberately small. */
+const VALUE_BUFFER = 0.03;
+/** An intermediate tick closer than this share of the range to an end tick is dropped, so labels do not collide. */
+const TICK_CLEARANCE = 0.14;
 
 function round(value: number): number {
   return Math.round(value * 100) / 100;
@@ -89,7 +96,14 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
   }
 
   const xScale = scaleUtc().domain([new Date(minTime), new Date(maxTime)]).range([plot.left, plot.left + plot.width]);
-  const yScale = scaleLinear().domain([minValue, maxValue]).nice().range([plot.top + plot.height, plot.top]);
+  // The axis runs from the lowest to the highest plotted value plus a small buffer. It is not rounded outwards.
+  const buffer = (maxValue - minValue) * VALUE_BUFFER;
+  const yScale = scaleLinear().domain([minValue - buffer, maxValue + buffer]).range([plot.top + plot.height, plot.top]);
+  const span = maxValue - minValue;
+  const between = yScale
+    .ticks(TICK_TARGET)
+    .filter((value) => value - minValue > span * TICK_CLEARANCE && maxValue - value > span * TICK_CLEARANCE);
+  const yTickValues = [minValue, ...between, maxValue];
   const path = line<PlottedPoint>()
     .x((point) => point.x)
     .y((point) => point.y)
@@ -121,14 +135,14 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       run.push(placed);
     }
     flush();
-    return { id: entry.id, label: entry.label, paths, points };
+    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, paths, points };
   });
 
   return {
     empty: false,
     plot,
     xTicks: xScale.ticks(TICK_TARGET).map((date) => ({ time: date.getTime(), x: round(xScale(date)) })),
-    yTicks: yScale.ticks(TICK_TARGET).map((value) => ({ value, y: round(yScale(value)) })),
+    yTicks: yTickValues.map((value) => ({ value, y: round(yScale(value)) })),
     series: plotted,
   };
 }
