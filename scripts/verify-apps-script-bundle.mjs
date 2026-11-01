@@ -86,6 +86,8 @@ for (const name of OPERATIONS) check(typeof context[name] === "function", `${nam
 for (const forbidden of ["process", "require", "window", "document", "fetch", "XMLHttpRequest"]) {
   check(!new RegExp(`\\b${forbidden}\\b`, "u").test(code), `the bundle refers to ${forbidden}`);
 }
+// Apps Script's file parser rejects BigInt literals (a digit string ending in n), even though its runtime has BigInt.
+check(!/(^|[^\w$.])\d[\d_]*n(?![\w$])/mu.test(code), "the bundle contains a BigInt literal, which Apps Script cannot parse");
 check(JSON.stringify(manifest.oauthScopes) === JSON.stringify(["https://www.googleapis.com/auth/spreadsheets"]), "unexpected OAuth scopes");
 
 const plain = (value) => JSON.parse(JSON.stringify(value));

@@ -4,6 +4,9 @@ export interface Decimal {
   readonly scale: number;
 }
 
+// Built with BigInt() because Apps Script's file parser rejects BigInt literals such as `10n`.
+const ZERO = BigInt(0);
+const TEN = BigInt(10);
 const PLAIN_DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?$/u;
 
 export function decimalFromParts(units: bigint, scale: number): Decimal {
@@ -21,7 +24,7 @@ export function parseDecimal(text: string): Decimal | null {
 
 /** Exact canonical text, keeping every digit, for example `123.456`. */
 export function decimalToString(value: Decimal): string {
-  const negative = value.units < 0n;
+  const negative = value.units < ZERO;
   const digits = (negative ? -value.units : value.units).toString().padStart(value.scale + 1, "0");
   const whole = digits.slice(0, digits.length - value.scale);
   const fraction = digits.slice(digits.length - value.scale);
@@ -31,7 +34,7 @@ export function decimalToString(value: Decimal): string {
 /** Value equality, so `1.50` equals `1.5`. */
 export function decimalsEqual(left: Decimal, right: Decimal): boolean {
   const scale = Math.max(left.scale, right.scale);
-  return left.units * 10n ** BigInt(scale - left.scale) === right.units * 10n ** BigInt(scale - right.scale);
+  return left.units * TEN ** BigInt(scale - left.scale) === right.units * TEN ** BigInt(scale - right.scale);
 }
 
 /** Approximate value, for plausibility checks only. Never store the result. */

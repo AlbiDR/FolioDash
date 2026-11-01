@@ -8,11 +8,15 @@ const ITALIAN_AMOUNT = /^([+-]?)(\d+|[1-9]\d{0,2}(?:\.\d{3})+)(?:,(\d{1,2}))?$/u
 const US_AMOUNT = /^([+-]?)(\d+|\d{1,3}(?:,\d{3})+)(?:\.(\d{1,2}))?$/u;
 const PLAIN_DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?$/u;
 
+// Apps Script's file parser rejects BigInt literals such as `100n`, so these
+// constants are built with BigInt(). Keep literals out of code the server bundles.
+const TWO = BigInt(2);
+const HUNDRED = BigInt(100);
 // Decimal text is scaled to 1e-12 euro, so one cent is 1e10 units.
 const DECIMAL_DIGITS = 12;
-const CENT_UNITS = 10n ** 10n;
+const CENT_UNITS = BigInt(10) ** BigInt(10);
 // Float noise from a double (for example 1234.560000000001) is far below 1e-6 euro.
-const NOISE_LIMIT_UNITS = 10n ** 6n;
+const NOISE_LIMIT_UNITS = BigInt(10) ** BigInt(6);
 
 function fromBigInt(value: bigint): EuroCents | null {
   if (value > MAX_CENTS || value < -MAX_CENTS) return null;
@@ -46,7 +50,7 @@ export function parseItalianAmount(text: string): EuroCents | null {
   if (!match) return null;
   const whole = (match[2] ?? "").replaceAll(".", "");
   const fraction = (match[3] ?? "").padEnd(2, "0");
-  const cents = BigInt(whole) * 100n + BigInt(fraction);
+  const cents = BigInt(whole) * HUNDRED + BigInt(fraction);
   return fromBigInt(match[1] === "-" ? -cents : cents);
 }
 
@@ -59,7 +63,7 @@ export function parseUsAmount(text: string): EuroCents | null {
   if (!match) return null;
   const whole = (match[2] ?? "").replaceAll(",", "");
   const fraction = (match[3] ?? "").padEnd(2, "0");
-  const cents = BigInt(whole) * 100n + BigInt(fraction);
+  const cents = BigInt(whole) * HUNDRED + BigInt(fraction);
   return fromBigInt(match[1] === "-" ? -cents : cents);
 }
 
@@ -74,7 +78,7 @@ export function parseDecimalAsCents(text: string): EuroCents | null {
   if (!match) return null;
   const fraction = (match[3] ?? "").slice(0, DECIMAL_DIGITS).padEnd(DECIMAL_DIGITS, "0");
   const units = BigInt((match[2] ?? "") + fraction);
-  const cents = (units + CENT_UNITS / 2n) / CENT_UNITS;
+  const cents = (units + CENT_UNITS / TWO) / CENT_UNITS;
   const exact = cents * CENT_UNITS;
   const residual = units > exact ? units - exact : exact - units;
   if (residual > NOISE_LIMIT_UNITS) return null;
@@ -84,8 +88,8 @@ export function parseDecimalAsCents(text: string): EuroCents | null {
 /** Display form only. Never parse this string back to obtain a stored value. */
 export function formatEuro(amount: EuroCents): string {
   const magnitude = BigInt(Math.abs(amount));
-  const euros = (magnitude / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/gu, ".");
-  const cents = (magnitude % 100n).toString().padStart(2, "0");
+  const euros = (magnitude / HUNDRED).toString().replace(/\B(?=(\d{3})+(?!\d))/gu, ".");
+  const cents = (magnitude % HUNDRED).toString().padStart(2, "0");
   return `${amount < 0 ? "-" : ""}${euros},${cents} €`;
 }
 

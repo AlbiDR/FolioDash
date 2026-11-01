@@ -25,7 +25,7 @@ export async function buildAppsScript() {
     format: "iife",
     globalName: "FolioDashBundle",
     platform: "neutral",
-    target: "es2020",
+    target: "es2019",
     tsconfig: "config/tsconfig.json",
     legalComments: "none",
     logLevel: "error",
