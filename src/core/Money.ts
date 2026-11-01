@@ -19,6 +19,9 @@ function fromBigInt(value: bigint): EuroCents | null {
   return Number(value) as EuroCents;
 }
 
+/** Zero euros. */
+export const ZERO_CENTS = 0 as EuroCents;
+
 /** Accepts only safe whole numbers of cents. */
 export function toEuroCents(value: number): EuroCents | null {
   if (!Number.isSafeInteger(value)) return null;

@@ -1,5 +1,6 @@
 import type { Decimal } from "../../core/Decimal";
 import { parseIsin } from "../../core/Isin";
+import { isSafeFundName } from "../../core/Ledger";
 import { type EuroCents, addCents } from "../../core/Money";
 import { type RawSheet, cellAt, cellRef } from "../../core/RawSheet";
 import {
@@ -34,7 +35,6 @@ const HEADERS: readonly (readonly [number, string])[] = [
 ];
 const TOTAL_LABEL = "totale visualizzato";
 const FUNDS_LABEL = "fondi";
-const MAX_NAME_LENGTH = 160;
 
 export interface FundPosition {
   readonly isin: string;
@@ -141,10 +141,6 @@ function isBlankRow(sheet: RawSheet, row: number): boolean {
     if (present(sheet, row, column) || cellAt(sheet, row, column)?.kind === "formula") return false;
   }
   return true;
-}
-
-function isSafeName(name: string): boolean {
-  return name.length > 0 && name.length <= MAX_NAME_LENGTH && !/^[=+@-]/u.test(name);
 }
 
 /**
@@ -398,7 +394,7 @@ function readProduct(
   seenIsins: Set<string>,
 ): { fund: FundPosition; risk: Decimal | null; adjustments: readonly string[] } | null {
   const name = textOf(sheet, row, COLUMN.B);
-  if (!isSafeName(name)) {
+  if (!isSafeFundName(name)) {
     addIssue("unreadable-value", cellRef(row, COLUMN.B), "The product name is empty, too long or starts with a formula character.");
     return null;
   }
