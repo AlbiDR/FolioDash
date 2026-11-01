@@ -1,7 +1,7 @@
 import type { Decimal } from "../../core/Decimal";
 import { parseIsin } from "../../core/Isin";
 import { type EuroCents, addCents } from "../../core/Money";
-import { type RawSheet, cellAt, cellRef } from "./RawSheet";
+import { type RawSheet, cellAt, cellRef } from "../../core/RawSheet";
 import {
   type Currency,
   type ReadResult,

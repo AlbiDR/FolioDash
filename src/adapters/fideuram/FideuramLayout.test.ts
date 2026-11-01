@@ -14,7 +14,7 @@ import {
   withoutRow,
 } from "../../../tests/fixtures/SyntheticFideuramSheet";
 import { interpretFideuramSheet } from "./FideuramLayout";
-import type { RawSheet } from "./RawSheet";
+import type { RawSheet } from "../../core/RawSheet";
 
 function interpretOk(sheet: RawSheet) {
   const result = interpretFideuramSheet(sheet);

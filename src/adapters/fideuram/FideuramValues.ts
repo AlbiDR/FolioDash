@@ -1,7 +1,7 @@
 import { type Decimal, decimalFromParts, decimalToNumber, decimalsEqual, parseDecimal } from "../../core/Decimal";
 import { type IsoDate, fromSpreadsheetSerial, parseBankDate } from "../../core/IsoDate";
 import { type EuroCents, parseDecimalAsCents, parseItalianAmount, parseUsAmount } from "../../core/Money";
-import type { RawCell } from "./RawSheet";
+import type { RawCell } from "../../core/RawSheet";
 
 export type Currency = "EUR" | "USD" | "OTHER";
 

@@ -1,4 +1,4 @@
-import type { RawCell, RawSheet } from "../../src/adapters/fideuram/RawSheet";
+import type { RawCell, RawSheet } from "../../src/core/RawSheet";
 
 /** Every value here is invented. Nothing comes from a real statement. */
 
