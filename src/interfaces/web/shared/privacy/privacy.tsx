@@ -1,6 +1,7 @@
 import { type ComponentChildren, type JSX, createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import type { EuroCents } from "../../../../core/Money";
+import { Icon } from "../ui/icons";
 import { type PrivacyStorage, amountText, readPrivacyChoice, writePrivacyChoice } from "./privacyChoice";
 
 const PrivacyContext = createContext(true);
@@ -43,7 +44,8 @@ export function PrivacyToggle(props: { readonly hidden: boolean; readonly onChan
         props.onChange(!props.hidden);
       }}
     >
-      <span aria-hidden="true">{props.hidden ? "◉" : "○"}</span> {props.hidden ? "Amounts hidden" : "Amounts shown"}
+      <Icon name={props.hidden ? "eye-off" : "eye"} size={18} />
+      <span class="toggle-label">{props.hidden ? "Amounts hidden" : "Amounts shown"}</span>
       <span class="visually-hidden">. Press to {props.hidden ? "show" : "hide"} amounts.</span>
     </button>
   );

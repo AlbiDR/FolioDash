@@ -26,5 +26,7 @@ describe("navEntryOf", () => {
     expect(navEntryOf({ name: "months" })).toBe("overview");
     expect(navEntryOf({ name: "fund", isin: "US0378331005" })).toBe("overview");
     expect(navEntryOf({ name: "import" })).toBe("import");
+    expect(navEntryOf({ name: "history" })).toBe("import");
+    expect(navEntryOf({ name: "connection" })).toBe("connection");
   });
 });

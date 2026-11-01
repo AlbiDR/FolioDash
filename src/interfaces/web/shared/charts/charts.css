@@ -1,12 +1,13 @@
 .chart {
   margin: 0;
-  padding: var(--space-3);
+  padding: 1.25rem;
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--shape-lg);
+  box-shadow: inset 0 0 0 1px var(--color-border);
 }
 
 .chart-title {
-  font-weight: 600;
+  font-weight: 650;
   margin-bottom: var(--space-2);
 }
 
@@ -15,7 +16,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--space-1) var(--space-3);
-  min-height: 2.75rem;
+  min-height: 4rem;
   margin-bottom: var(--space-2);
   font-variant-numeric: tabular-nums;
 }
@@ -28,11 +29,29 @@
 
 /* A fixed width per item, so the readout wraps the same way whether amounts are shown or hidden. */
 .chart-readout-item {
+  display: inline-grid;
+  gap: 0.1rem;
+  min-width: 10rem;
+}
+
+.chart-readout-label {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-width: 10rem;
+  color: var(--color-muted);
+  font-size: 0.75rem;
   font-weight: 600;
+}
+
+.chart-readout-value {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.chart-subtitle {
+  margin-bottom: var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.875rem;
 }
 
 .chart-svg {
@@ -62,6 +81,21 @@
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
+}
+
+/* The series draws in from the left when the chart appears or its range changes. */
+.chart-series {
+  animation: chart-reveal 720ms var(--ease-standard) both;
+}
+
+@keyframes chart-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 .chart-series path.area {
@@ -156,4 +190,39 @@
 .chart-table th[scope="row"],
 .chart-table thead th:first-child {
   text-align: left;
+}
+
+.bars-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-3);
+  min-height: 2.6rem;
+  margin: 0 0 var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.bars-readout-month {
+  flex-basis: 100%;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.bars-readout-value {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.bars-hit {
+  fill: transparent;
+}
+
+.bars-item .bar {
+  opacity: 0.55;
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+
+.bars-item.is-active .bar {
+  opacity: 1;
 }

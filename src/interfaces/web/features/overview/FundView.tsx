@@ -1,18 +1,15 @@
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
-import { CHART_RANGES, type ChartRange, rangeStart } from "../../app/chartRange";
+import { type ChartRange, rangeStart } from "../../app/chartRange";
 import { LineChart } from "../../shared/charts/LineChart";
 import type { ChartSeries } from "../../shared/charts/lineChartGeometry";
 import { Amount } from "../../shared/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import { RangeSelector } from "../../shared/ui/RangeSelector";
 import { euroLabel, euros, monthLabel, utcTime } from "./chartData";
 import type { OverviewModel } from "./OverviewModel";
 import { Percent, Pill, Signed } from "./parts";
 
-/** One fund: its value and net invested over time, and its latest figures. */
-export function FundView(props: { readonly model: OverviewModel; readonly isin: string }): JSX.Element {
-  const [range, setRange] = useState<ChartRange>("All");
+/** One fund: its value and net invested over time, and its latest figures, on the shared time range. */
+export function FundView(props: { readonly model: OverviewModel; readonly isin: string; readonly range: ChartRange }): JSX.Element {
   const fund = props.model.funds.find((entry) => entry.isin === props.isin);
   const back = (
     <a class="back-link" href="#overview">
@@ -24,13 +21,13 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
       <section class="screen" aria-labelledby="fund-heading">
         {back}
         <h2 id="fund-heading" class="screen-title">Fund not found</h2>
-        <p>No fund with that identifier is in the ledger.</p>
+        <div class="card"><p>No fund with that identifier is in the ledger.</p></div>
       </section>
     );
   }
 
   const { dates } = props.model;
-  const start = rangeStart(dates, range);
+  const start = rangeStart(dates, props.range);
   const shown = dates.slice(start);
   const series: ChartSeries[] = [
     { id: "value", label: "Value", points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.values[start + index] ?? null) })) },
@@ -39,44 +36,44 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
   const latest = fund.latest;
 
   return (
-    <section class="screen" aria-labelledby="fund-heading">
-      {back}
-      <header>
-        <p class="eyebrow">{fund.isin}</p>
-        <h2 id="fund-heading" class="screen-title">{fund.name}</h2>
-      </header>
-      <div class="hero">
-        <p class="hero-label">{fund.status === "closed" ? "Closed" : "Value"}</p>
+    <section class="dash" aria-labelledby="fund-heading">
+      <div class="cell-12">{back}</div>
+      <div class="card hero cell-4">
+        <p class="card-label">{fund.isin}</p>
+        <h2 id="fund-heading" class="fund-title">{fund.name}</h2>
         <p class="hero-value"><Amount cents={latest?.value ?? null} /></p>
         <p class="hero-sub">
           <Signed cents={latest?.gain ?? null} />
           <Pill ratio={latest?.gainPercent ?? null} signed />
-          <span>gain</span>
+          <span>gain{fund.status === "closed" ? " · closed" : ""}</span>
         </p>
       </div>
-      <div class="range-row">
-        <RangeSelector label="Chart range" options={CHART_RANGES} value={range} onChange={setRange} />
+      <div class="cell-8">
+        <LineChart
+          id="fund-chart"
+          key={props.range}
+          title="Value and net invested"
+          description="Two lines over time for this fund: its value, and the cash invested in it, dashed."
+          series={series}
+          fillFirst
+          formatTime={monthLabel}
+          formatValue={euroLabel}
+          emptyMessage="This fund has no value to plot yet."
+        />
       </div>
-      <LineChart
-        id="fund-chart"
-        title="Value and net invested"
-        description="Two lines over time for this fund: its value, and the cash invested in it, dashed."
-        series={series}
-        fillFirst
-        formatTime={monthLabel}
-        formatValue={euroLabel}
-        emptyMessage="This fund has no value to plot yet."
-      />
-      <ul class="inset-list stat-list">
-        <li><span>Value</span><Amount cents={latest?.value ?? null} /></li>
-        <li><span>Net invested</span><Amount cents={latest?.netInvested ?? null} /></li>
-        <li><span>Gain</span><Signed cents={latest?.gain ?? null} /></li>
-        <li><span>Gain %</span><Percent ratio={latest?.gainPercent ?? null} signed /></li>
-        <li><span>Month on month</span><Signed cents={latest?.monthlyGain ?? null} /></li>
-        <li><span>Month on month %</span><Percent ratio={latest?.monthlyGainPercent ?? null} signed /></li>
-        <li><span>Share of portfolio</span><Percent ratio={latest?.share ?? null} /></li>
-      </ul>
-      <p class="footnote">Net invested = cumulative cash in minus cash out. Gain % is since invested.</p>
+      <div class="card cell-12">
+        <h3 class="card-title">Latest figures</h3>
+        <dl class="facts grid">
+          <div><dt>Value</dt><dd><Amount cents={latest?.value ?? null} /></dd></div>
+          <div><dt>Net invested</dt><dd><Amount cents={latest?.netInvested ?? null} /></dd></div>
+          <div><dt>Gain</dt><dd><Signed cents={latest?.gain ?? null} /></dd></div>
+          <div><dt>Gain %</dt><dd><Percent ratio={latest?.gainPercent ?? null} signed /></dd></div>
+          <div><dt>Month on month</dt><dd><Signed cents={latest?.monthlyGain ?? null} /></dd></div>
+          <div><dt>Month on month %</dt><dd><Percent ratio={latest?.monthlyGainPercent ?? null} signed /></dd></div>
+          <div><dt>Share of portfolio</dt><dd><Percent ratio={latest?.share ?? null} /></dd></div>
+        </dl>
+        <p class="footnote">Net invested = cumulative cash in minus cash out. Gain % is since invested.</p>
+      </div>
     </section>
   );
 }

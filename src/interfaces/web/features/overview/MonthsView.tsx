@@ -9,7 +9,7 @@ import { Percent, Signed } from "./parts";
 export function MonthsView(props: { readonly model: OverviewModel }): JSX.Element {
   const { dates, funds, months } = props.model;
   return (
-    <section class="screen" aria-labelledby="months-heading">
+    <section class="screen months" aria-labelledby="months-heading">
       <a class="back-link" href="#overview">
         <Icon name="back" size={18} /> Portfolio
       </a>
@@ -18,7 +18,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
         <p>No statements have been imported yet.</p>
       ) : (
         <>
-          <div class="table-scroll">
+          <div class="card"><div class="table-scroll flat">
             <table class="matrix" aria-label="Value and net invested by fund and month">
               <thead>
                 <tr>
@@ -47,9 +47,9 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 ])}
               </tbody>
             </table>
-          </div>
+          </div></div>
 
-          <div class="table-scroll">
+          <div class="card"><div class="table-scroll flat">
             <table class="matrix totals" aria-label="Portfolio totals by month">
               <thead>
                 <tr>
@@ -92,7 +92,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 ])}
               </tbody>
             </table>
-          </div>
+          </div></div>
           <p class="footnote">A dash means the figure cannot be calculated from the statements recorded. Average growth is not shown yet.</p>
         </>
       )}

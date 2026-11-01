@@ -21,7 +21,8 @@ export function routeFrom(hash: string): Route {
   return { name: "overview" };
 }
 
-/** Which main navigation entry a route belongs to: the detail screens belong to the portfolio. */
+/** Which main navigation entry a route belongs to: detail screens belong to the portfolio, and importing a history belongs to Import. */
 export function navEntryOf(route: Route): "overview" | "import" | "history" | "connection" {
-  return route.name === "months" || route.name === "fund" ? "overview" : route.name;
+  if (route.name === "months" || route.name === "fund") return "overview";
+  return route.name === "history" ? "import" : route.name;
 }

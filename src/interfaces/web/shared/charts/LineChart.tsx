@@ -9,6 +9,8 @@ export interface LineChartProps {
   readonly title: string;
   /** One sentence for assistive technology describing what the chart shows. */
   readonly description: string;
+  /** One plain sentence under the title telling anyone what the lines mean. */
+  readonly subtitle?: string;
   readonly series: readonly ChartSeries[];
   readonly formatTime: (time: number) => string;
   readonly formatValue: (value: number) => string;
@@ -87,16 +89,20 @@ export function LineChart(props: LineChartProps): JSX.Element {
       <figcaption class="chart-title" id={titleId}>
         {props.title}
       </figcaption>
+      {props.subtitle !== undefined && <p class="chart-subtitle">{props.subtitle}</p>}
       <div class="chart-readout" aria-hidden="true">
         <span class="chart-readout-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span>
         {geometry.series.map((entry, index) => {
           const point = entry.points.find((candidate) => candidate.time === activeTime);
           return (
             <span key={entry.id} class={`chart-readout-item ${styleClass(index)}${entry.dashed ? " dashed" : ""}`}>
-              <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
-                <line x1="0" x2="32" y1="4" y2="4" />
-              </svg>
-              {point === undefined ? "–" : show(point.value)}
+              <span class="chart-readout-label">
+                <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
+                  <line x1="0" x2="32" y1="4" y2="4" />
+                </svg>
+                {entry.label}
+              </span>
+              <span class="chart-readout-value">{point === undefined ? "–" : show(point.value)}</span>
             </span>
           );
         })}
