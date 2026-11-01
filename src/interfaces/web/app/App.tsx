@@ -1,16 +1,20 @@
 import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
+import { ConnectionView } from "../features/connection/ConnectionView";
 import { ImportView } from "../features/import/ImportView";
 import { OverviewView } from "../features/overview/OverviewView";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
+import { browserConnectionStorage } from "./connectionStorage";
+import { connectToGoogle } from "./googleConnection";
 import { prepareImport } from "./importPreparer";
 import { overviewFromLedger } from "./overviewFromLedger";
 
-type Route = "overview" | "import";
+type Route = "overview" | "import" | "connection";
 
 function routeFrom(hash: string): Route {
-  return hash === "#import" ? "import" : "overview";
+  if (hash === "#import") return "import";
+  return hash === "#connection" ? "connection" : "overview";
 }
 
 export function App(): JSX.Element {
@@ -46,6 +50,11 @@ export function App(): JSX.Element {
                 Import statement
               </a>
             </li>
+            <li>
+              <a href="#connection" aria-current={route === "connection" ? "page" : undefined}>
+                Connection
+              </a>
+            </li>
           </ul>
         </nav>
         {route === "overview" && !recorded && (
@@ -74,14 +83,16 @@ export function App(): JSX.Element {
         )}
       </header>
       <main>
-        {route === "overview" ? <OverviewView model={model} /> : (
-            <ImportView
-              prepare={prepareImport}
-              ledger={ledger}
-              createRevision={() => crypto.randomUUID()}
-              onRecord={setLedger}
-            />
-          )}
+        {route === "overview" && <OverviewView model={model} />}
+        {route === "import" && (
+          <ImportView
+            prepare={prepareImport}
+            ledger={ledger}
+            createRevision={() => crypto.randomUUID()}
+            onRecord={setLedger}
+          />
+        )}
+        {route === "connection" && <ConnectionView connect={connectToGoogle} storage={browserConnectionStorage} />}
       </main>
     </>
   );

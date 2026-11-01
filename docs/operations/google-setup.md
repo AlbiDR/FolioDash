@@ -63,9 +63,15 @@ Google's API for running a script needs a **standard** Cloud project shared by t
 
 Do not send tokens, secrets or screenshots that show them.
 
-## What happens next
+## Trying it
 
-The next piece to build is a small connection screen in FolioDash: it takes the client ID, the deployment ID and the workbook ID, asks Google for a short-lived token for the signed-in owner in the browser, and calls the `foliodashCheck` operation. That is the first real test of gates G2 and G3. It stores the three IDs only in the browser, never in the repository.
+The connection screen is built (it is the **Connection** page of the app) and has been tested only with fakes and in the browser without signing in. To try it once the steps above are done:
+
+1. Run `npm run build`, then `npm run preview`. It serves the build at `http://localhost:4173`, which must match the authorised origin from step 6 exactly: `localhost` and `127.0.0.1` count as different origins.
+2. Open the Connection page, paste the client ID, the script or deployment ID and the spreadsheet ID (you can paste the addresses), and choose **Connect and check**.
+3. Google asks you to sign in and grant spreadsheet access. The app then calls the `foliodashCheck` operation, which only reads. On success it reports whether the ledger tab holds any statements; on any problem it says which step to look at.
+
+The three IDs can be remembered in this browser if you tick the box. A sign-in token is held in memory for the call and never stored. Google's identity script is loaded only when you choose **Connect and check**, not when the page opens; it is the one third-party script the app loads, and it needs an explicit exception if a content security policy is added later.
 
 ## What Google's documentation says to expect
 

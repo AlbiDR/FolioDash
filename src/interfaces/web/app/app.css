@@ -273,3 +273,18 @@ fieldset label {
 .funds td:nth-child(2) {
   text-align: left;
 }
+
+.connection {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.connection h2,
+.connection h3 {
+  margin: 0;
+}
+
+.connection .review-adjustments h3,
+.connection .review-problem h3 {
+  margin-bottom: var(--space-2);
+}
