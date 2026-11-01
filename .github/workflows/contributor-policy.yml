@@ -24,5 +24,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
       - name: Reject unapproved or automated attribution
-        run: node scripts/verify-contributors.mjs
+        run: node scripts/verify-contributors.ts

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findDashes } from "../../scripts/punctuation.mjs";
+import { findDashes } from "../../scripts/punctuation.ts";
 
 // The forbidden characters are built from code points so this file never contains them.
 const EM = String.fromCharCode(0x2014);

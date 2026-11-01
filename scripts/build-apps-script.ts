@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { build } from "esbuild";
 
-export const OPERATIONS = ["foliodashCheck", "foliodashRead", "foliodashCommit", "foliodashOutcome"];
+export const OPERATIONS: readonly string[] = ["foliodashCheck", "foliodashRead", "foliodashCommit", "foliodashOutcome"];
 export const OUTPUT_DIRECTORY = "dist/apps-script";
 
 // Only spreadsheet access. No Drive, no mail, no external requests.
@@ -17,7 +17,12 @@ const MANIFEST = {
   oauthScopes: ["https://www.googleapis.com/auth/spreadsheets"],
 };
 
-export async function buildAppsScript() {
+export interface AppsScriptBuild {
+  readonly code: string;
+  readonly manifest: typeof MANIFEST;
+}
+
+export async function buildAppsScript(): Promise<AppsScriptBuild> {
   const result = await build({
     entryPoints: ["src/interfaces/server/main.ts"],
     bundle: true,
@@ -41,7 +46,7 @@ export async function buildAppsScript() {
   return { code: `${bundle}\n${wrappers}\n`, manifest: MANIFEST };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file://${String(process.argv[1])}`) {
   const { code } = await buildAppsScript();
   process.stdout.write(`Built ${OUTPUT_DIRECTORY}/Code.js (${String(code.length)} bytes) and appsscript.json\n`);
 }

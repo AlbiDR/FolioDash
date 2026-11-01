@@ -7,20 +7,25 @@ import { readFileSync } from "node:fs";
 import process from "node:process";
 import { URL } from "node:url";
 
+interface Human {
+  readonly name?: unknown;
+  readonly emails?: unknown;
+}
+
 const policy = JSON.parse(
   readFileSync(new URL("../.github/allowed-contributors.json", import.meta.url), "utf8"),
-);
+) as { readonly humans?: unknown };
 
 if (!Array.isArray(policy.humans) || policy.humans.length === 0) {
   throw new Error("Contributor policy must contain at least one explicitly allowed human.");
 }
 
-const allowedIdentities = new Set(
-  policy.humans.flatMap(({ name, emails }) => {
+const allowedIdentities = new Set<string>(
+  (policy.humans as Human[]).flatMap(({ name, emails }) => {
     if (typeof name !== "string" || !Array.isArray(emails) || emails.length === 0) {
       throw new Error("Every allowed human requires a name and at least one email address.");
     }
-    return emails.map((email) => `${name}\u0000${String(email).toLowerCase()}`);
+    return (emails as unknown[]).map((email) => `${name}\u0000${String(email).toLowerCase()}`);
   }),
 );
 
@@ -33,7 +38,7 @@ const log = execFileSync(
   { encoding: "utf8" },
 );
 
-const violations = [];
+const violations: string[] = [];
 for (const record of log.split("\u001e")) {
   const normalized = record.replace(/^\s+|\s+$/gu, "");
   if (normalized.length === 0) continue;

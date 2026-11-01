@@ -6,16 +6,16 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import process from "node:process";
-import { findDashes } from "./punctuation.mjs";
+import { findDashes } from "./punctuation.ts";
 
 const files = execFileSync("git", ["ls-files", "-z"], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 })
   .split("\0")
   .filter((file) => file.length > 0);
 
-const problems = [];
+const problems: string[] = [];
 let scanned = 0;
 for (const file of files) {
-  let bytes;
+  let bytes: Buffer;
   try {
     bytes = readFileSync(file);
   } catch {
