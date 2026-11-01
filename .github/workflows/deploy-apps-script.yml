@@ -1,0 +1,73 @@
+name: Deploy Apps Script
+
+# Pushes the built service to the owner's Apps Script project and moves the API
+# executable deployment to the new version. Manual only: it never runs for a pull
+# request and never uses code from one. The values come from the GitHub
+# environment `apps-script-deploy`, the single place they are changed.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-apps-script
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: apps-script-deploy
+    env:
+      CLASP_VERSION: 3.4.1
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify project
+        run: npm run verify
+
+      - name: Build the Apps Script bundle
+        run: npm run build:apps-script
+
+      - name: Write clasp credentials and project link
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          SCRIPT_ID: ${{ vars.APPS_SCRIPT_SCRIPT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$CLASPRC_JSON" && test -n "$SCRIPT_ID"
+          umask 077
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          printf '{"scriptId":"%s","rootDir":"."}' "$SCRIPT_ID" > dist/apps-script/.clasp.json
+
+      - name: Push the bundle
+        working-directory: dist/apps-script
+        run: npx --yes "@google/clasp@${CLASP_VERSION}" push --force
+
+      - name: Move the API executable deployment to the new version
+        working-directory: dist/apps-script
+        env:
+          DEPLOYMENT_ID: ${{ vars.APPS_SCRIPT_DEPLOYMENT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOYMENT_ID"
+          npx --yes "@google/clasp@${CLASP_VERSION}" redeploy "$DEPLOYMENT_ID" -d "FolioDash ${GITHUB_SHA::7}"
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$HOME/.clasprc.json" dist/apps-script/.clasp.json

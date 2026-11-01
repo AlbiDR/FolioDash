@@ -80,10 +80,12 @@ export function ConnectionView(props: {
   readonly connect: ConnectionPort;
   readonly storage: ConnectionStorage;
   /** Called when the spreadsheet answered and its ledger is intact, with the ledger it holds. */
+  /** Public starting values, used only when nothing is remembered on this device. */
+  readonly defaults?: Partial<Record<ConfigField, string>>;
   readonly onConnected?: (config: ConnectionConfig, ledger: LedgerState) => void;
 }): JSX.Element {
   const saved = props.storage.load();
-  const [fields, setFields] = useState<Readonly<Record<ConfigField, string>>>(saved ?? BLANK);
+  const [fields, setFields] = useState<Readonly<Record<ConfigField, string>>>(saved ?? { ...BLANK, ...props.defaults });
   const [remember, setRemember] = useState(saved !== null);
   const [errors, setErrors] = useState<Readonly<Partial<Record<ConfigField, string>>>>({});
   const [phase, setPhase] = useState<Phase>({ name: "idle" });

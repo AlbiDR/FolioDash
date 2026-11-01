@@ -7,6 +7,7 @@ import { HistoryView } from "../features/history/HistoryView";
 import { ImportView } from "../features/import/ImportView";
 import { OverviewView } from "../features/overview/OverviewView";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
+import { buildConnectionDefaults } from "./connectionDefaults";
 import { browserConnectionStorage } from "./connectionStorage";
 import { connectToGoogle } from "./googleConnection";
 import { browserRemoteSave } from "./googleLedger";
@@ -110,6 +111,7 @@ export function App(): JSX.Element {
           <ConnectionView
             connect={connectToGoogle}
             storage={browserConnectionStorage}
+            defaults={buildConnectionDefaults}
             onConnected={(config, loaded) => {
               setConnected(config);
               setLedger(loaded);

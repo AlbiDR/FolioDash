@@ -1,6 +1,6 @@
 # Repository configuration: variables, secrets, environments and the public-release gate
 
-Status: **Draft: nothing described here has been created.**  
+Status: **Draft. The deploy workflow file and the build-time defaults exist in the repository, untested; no GitHub variable, secret or environment has been created.**  
 Created: 2026-11-01  
 Scope: GitHub repository settings, Actions configuration and the checks before the repository becomes public. Related decisions: FD-011 (licence), FD-014 (deployment model), FD-016 (Apps Script sync).
 
@@ -17,7 +17,7 @@ The owner wants every value that can change, whether a secret or a variable, to 
 - **Trade-off to decide:** baking the spreadsheet ID into a build that becomes public names the owner's spreadsheet to every visitor. Access is still enforced by Google, but the owner may prefer to keep it as something each person enters, as the Connection page does today.
 - Anything the repository cannot hold (Google console settings) is recorded in [Google setup](google-setup.md) so it can be recreated; it is not a second source of truth for values.
 
-This direction is recorded here; it is not an accepted decision and nothing in it has been created.
+This direction is recorded here; it is not an accepted decision. `.github/workflows/deploy-apps-script.yml` (manual, `main` only, environment `apps-script-deploy`) and `connectionDefaults.ts` (reads `VITE_GOOGLE_CLIENT_ID` and `VITE_GOOGLE_SCRIPT_ID` at build time) implement it, but neither has run, and the web build has no hosted workflow yet.
 
 ## 2. Configuration contract (planned)
 
