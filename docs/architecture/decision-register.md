@@ -82,7 +82,7 @@ The overview now computes its figures with `computeMetrics` in `src/core/Metrics
 - Year to date is the change in gain since the January statement of the same year, not a return since 1 January. Year on year is the change in gain against the same calendar month one year earlier.
 - Nothing is annualised, time-weighted or money-weighted, and the interface says percentages that depend on cash timing are estimates.
 
-Not yet implemented: the average monthly figures, per-fund chained cumulative returns and the comparison view. The unit tests use figures worked out by hand from stated inputs, independent of any spreadsheet. No parity comparison against the Sheets outputs has been run, so parity sign-off is still pending.
+Not yet implemented: the average monthly figures, per-fund chained cumulative returns and the comparison view. The unit tests use figures worked out by hand from stated inputs, independent of any spreadsheet. Parity evidence, run locally on 2026-11-01 and not reproducible in CI because the data is private: the owner's 17 recorded statements were read from the existing ledger and passed every FolioDash ledger invariant with no issue. The totals, gain, month on month, year to date, year on year (amounts and percentages) and each fund's value and net invested were then compared with the existing Monthly Recap: 289 figures, 0 mismatches, amounts to the cent. This shows the metrics code reproduces the Sheets results for the same recorded cash data. It does not approve the policy, does not test whether the recorded cash movements are right, and leaves out the average monthly figures, which are not implemented. Parity sign-off by the owner is still pending.
 
 ## FD-008: evaluation constraints, not a vendor shortlist
 
