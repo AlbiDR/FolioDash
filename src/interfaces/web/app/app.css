@@ -288,6 +288,21 @@ select:focus-visible {
   font-weight: 600;
 }
 
+a.status-chip {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.status-chip:hover {
+  background: var(--color-accent-soft);
+}
+
+.link-button {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+}
+
 .status-dot {
   width: 0.5rem;
   height: 0.5rem;
@@ -1368,6 +1383,7 @@ button {
 
 .review button:not(.primary),
 .import button:not(.primary),
+.account button:not(.primary),
 .connection button:not(.primary) {
   padding: 0.55rem 1.1rem;
   color: var(--color-accent);
@@ -1493,4 +1509,55 @@ button {
   margin: 0.1rem 0 0;
   color: var(--color-muted);
   font-size: 0.9375rem;
+}
+
+/* ---------- Your data and getting started ---------- */
+
+.account {
+  display: grid;
+  gap: var(--gap);
+}
+
+.account .card {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.account .card > .primary,
+.account .card > button,
+.get-started > .primary {
+  justify-self: start;
+}
+
+.plain-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.steps {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.get-started {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+details.card > summary {
+  cursor: pointer;
+  font-weight: 650;
 }

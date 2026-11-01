@@ -15,6 +15,7 @@ interface TokenClient {
 interface GoogleIdentity {
   readonly accounts: {
     readonly oauth2: {
+      revoke(accessToken: string, done?: () => void): void;
       initTokenClient(config: {
         readonly client_id: string;
         readonly scope: string;
@@ -87,4 +88,13 @@ export async function signIn(clientId: string, scope: string): Promise<SignInRes
     });
     client.requestAccessToken();
   });
+}
+
+/** Asks Google to cancel a token. Best effort: it never blocks or fails the caller. */
+export function revokeToken(accessToken: string): void {
+  try {
+    window.google?.accounts.oauth2.revoke(accessToken);
+  } catch {
+    // The token expires on its own within the hour.
+  }
 }

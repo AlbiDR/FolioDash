@@ -35,6 +35,8 @@ The owner has now selected GitHub-managed frontend delivery with a user-owned pr
 | FD-014 | Authenticated browser-to-Google route | **Proposed; NOT VERIFIED** | User Google OAuth to Apps Script API executable; deployment ownership/scopes and real-browser setup to prove first; no browser GitHub secret | Connection implementation and all real-data access |
 | FD-015 | Lean repository root | **Principle selected by owner; detailed policy proposed** | Root holds essential entry/discovery files only; canonical content homes and justified tool exceptions are in CleanStack section 4.3 | Source scaffolding/root-policy enforcement |
 | FD-016 | Apps Script source sync | **Owner direction; NOT SET UP; details proposed** | GitHub is the source of truth; reviewed merges push the Apps Script code with clasp from CI, one-way, so editor edits are overwritten | FD-014 deployment model, any CI credential, repository creation |
+| FD-017 | Direct browser-to-Google storage (supersedes the Apps Script service for new users) | **Accepted by owner 2026-11-01; NOT yet verified on real Google** | The browser signs the person in once with the narrow `drive.file` permission, creates their spreadsheet itself, finds it again on any device, and reads and writes the ledger through the Sheets API. No script is deployed per person. The checked row protocol and the ledger rules are unchanged; they run in the browser. Replaces FD-014's route and amends FD-013 and FD-016 | Live proof on a real Google account; the Apps Script service and its deploy workflow are removed only after that proof |
+| FD-018 | Browser copy of the ledger | **Accepted by owner 2026-11-01** | The Google spreadsheet is the durable record and the browser copy is a rebuildable accelerator, never financial authority. It is kept as a plain copy on the device with a visible "Forget this device" control; signing out wipes it. Encryption at rest and a passcode were offered and not chosen | Revisit if the threat model changes (shared devices) |
 
 ## FD-003: privacy implications of the selected Google direction
 
@@ -158,6 +160,22 @@ Owner direction, recorded 2026-11-01: Google Sheets stores the data, so FolioDas
 5. Prove the pipeline first with a synthetic script that contains no financial logic.
 
 **Proof required.** A synthetic script is pushed by CI, a redeploy updates the live API executable, the secret is absent from logs and build artifacts, and a pull request from a fork cannot reach it. All NOT RUN.
+
+## FD-017 and FD-018: direct Google storage and the device copy (owner decisions, 2026-11-01)
+
+The owner chose, from the options offered, "direct to Google, no script" for new users, and "a plain copy in the browser plus a Forget this device button" for caching. In the owner's words the sheet is "maintained enough to complete the needed loop": it is the durable record, and the browser copy is only an accelerator.
+
+What this decides:
+
+- **Sign-in:** one Google sign-in with the `drive.file` permission, which Google lists as non-sensitive and recommended. It covers only files this app creates or the person opens with it. It needs no unverified-app warning, no per-person Cloud project and no script deployment.
+- **The sheet:** the app creates the spreadsheet on first sign-in, tags it so it can be found again, keeps a hidden `ledger` tab in the checked row format already built, and keeps a readable tab up to date so the sheet is useful on its own.
+- **The loop closes both ways:** a lost browser copy is rebuilt from the sheet; a lost or trashed sheet can be re-created from the device copy, only after the person confirms; a health check reports the sheet's integrity.
+- **What stays the same:** the ledger rules, the append-only checksummed rows, the idempotent command ids, the stale-review check and fail-closed damaged-ledger handling.
+- **What changes:** with no server lock, two simultaneous saves are guarded by a check immediately before the write, not by a lock. A save is sent as one request, so it is all or nothing; a lost response is resolved by reading the sheet, never by retrying blindly.
+
+Not verified on real Google: that `drive.file` alone lets the Sheets API read and write a spreadsheet the app created (Google's scope list says so; no live test yet), that a file can be found again by its tag across devices, and that text written raw stays text. Each has a fallback or a fail-closed check, and the live proof is the gate for removing the Apps Script service.
+
+Still open under FD-011 and the public-release gate: the licence, the history rewrite, and the decision to make the repository public and publish through GitHub Pages.
 
 ## Decision record template
 

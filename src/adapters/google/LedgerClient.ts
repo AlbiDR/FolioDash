@@ -1,15 +1,16 @@
 import type { CommitRequest } from "../../applications/LedgerService";
-import { type LedgerState, validateLedger } from "../../core/Ledger";
-import { type HttpClient, type RunOutcome, runScriptFunction } from "./ScriptsRun";
+import { parseLedgerState } from "../../core/Ledger";
+import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
+import { type HttpClient, runScriptFunction } from "./ScriptsRun";
 
 /** Who is calling which script about which spreadsheet. The token is used for one call and never returned. */
+export type { RemoteCommit, RemoteOutcome, RemoteRead };
+
 export interface RemoteTarget {
   readonly scriptId: string;
   readonly workbookId: string;
   readonly accessToken: string;
 }
-
-type Failure = Exclude<RunOutcome["status"], "ok">;
 
 function record(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
@@ -19,25 +20,6 @@ function short(value: unknown, fallback: string): string {
   return typeof value === "string" ? value.slice(0, 200) : fallback;
 }
 
-/**
- * A ledger that arrived over the network is untrusted input. It must have the
- * expected shape and pass the same validation that guards every write; anything
- * else is reported as damaged rather than shown.
- */
-export function parseLedgerState(value: unknown): LedgerState | null {
-  const state = record(value);
-  if (state === null || typeof state["revision"] !== "string" || !Array.isArray(state["funds"]) || !Array.isArray(state["snapshots"])) return null;
-  const candidate = state as unknown as LedgerState;
-  return validateLedger(candidate).length === 0 ? candidate : null;
-}
-
-export type RemoteRead =
-  | { readonly status: "ok"; readonly state: LedgerState; readonly ignoredTrailingRows: number }
-  | { readonly status: "damaged"; readonly message: string }
-  | { readonly status: "workbook-unavailable" }
-  | { readonly status: "refused"; readonly message: string }
-  | { readonly status: "call-failed"; readonly failure: Failure; readonly message: string | null }
-  | { readonly status: "unrecognised" };
 
 /** Interprets the service's answer to `check` or `read`. */
 export function interpretRead(result: unknown): RemoteRead {
@@ -68,19 +50,6 @@ export async function readRemoteLedger(http: HttpClient, target: RemoteTarget, f
   return interpretRead(outcome.result);
 }
 
-export type RemoteCommit =
-  | { readonly status: "committed" | "already-committed"; readonly revision: string }
-  /** The reviewed revision is no longer the current one: someone else, or another tab, saved first. */
-  | { readonly status: "stale" }
-  | { readonly status: "rejected"; readonly messages: readonly string[] }
-  | { readonly status: "damaged"; readonly message: string }
-  /** Known not to have been written. Safe to try again with the same command id. */
-  | { readonly status: "not-committed"; readonly message: string }
-  /** The request was refused before the script ran (sign-in, access, or setup). Nothing was written. */
-  | { readonly status: "not-sent"; readonly failure: "unauthorised" | "forbidden" | "not-found" }
-  | { readonly status: "refused"; readonly message: string }
-  /** The request may have reached the script. Check the outcome before trying again. */
-  | { readonly status: "unknown"; readonly message: string };
 
 const UNKNOWN_TEXT = "The save may or may not have been recorded. Check what happened before trying again.";
 
@@ -138,12 +107,6 @@ export async function commitRemote(http: HttpClient, target: RemoteTarget, reque
   return { status: "unknown", message: UNKNOWN_TEXT };
 }
 
-export type RemoteOutcome =
-  | { readonly status: "committed" }
-  | { readonly status: "not-found" }
-  | { readonly status: "damaged"; readonly message: string }
-  /** The outcome itself could not be read. Nothing can be said about the save. */
-  | { readonly status: "unreachable" };
 
 export async function readRemoteCommandOutcome(http: HttpClient, target: RemoteTarget, commandId: string): Promise<RemoteOutcome> {
   const outcome = await runScriptFunction(http, {

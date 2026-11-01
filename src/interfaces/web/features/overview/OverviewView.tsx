@@ -1,18 +1,17 @@
 import type { JSX } from "preact";
-import { formatDateLong, formatMonthShort } from "../../../../core/IsoDate";
+import { formatDateLong } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
-import { type ChartRange, rangeStart } from "../../app/chartRange";
-import { type MonthMetric, allocation, fundRanking, metricSeries } from "../../app/dashboardData";
+import type { ChartRange } from "../../app/chartRange";
+import { type MonthMetric, dashboardFor } from "../../app/dashboardData";
 import { Donut } from "../../shared/charts/Donut";
 import { LineChart } from "../../shared/charts/LineChart";
 import { MonthlyBars } from "../../shared/charts/MonthlyBars";
 import { PerformanceBars } from "../../shared/charts/PerformanceBars";
 import { Sparkline } from "../../shared/charts/Sparkline";
-import type { ChartSeries } from "../../shared/charts/lineChartGeometry";
 import { Amount } from "../../shared/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import { euroLabel, euros, monthLabel, utcTime } from "./chartData";
+import { euroLabel, monthLabel } from "./chartData";
 import type { OverviewKpi, OverviewModel } from "./OverviewModel";
 import { Pill, Signed, tone } from "./parts";
 
@@ -68,7 +67,7 @@ const GLOSSARY: readonly { readonly term: string; readonly meaning: string }[] =
  * period results, allocation, monthly pattern, fund ranking and holdings at once.
  */
 export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange }): JSX.Element {
-  const { dates, funds, totals, kpis, months } = props.model;
+  const { dates, funds, totals, kpis } = props.model;
   const latestTotal = totals[totals.length - 1];
   const lastDate = dates[dates.length - 1];
 
@@ -85,45 +84,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
 
   const kpi = (label: string): OverviewKpi | undefined => kpis.find((entry) => entry.label === label);
   const gain = kpi("Current gain");
-  const start = rangeStart(dates, props.range);
-  const shown = dates.slice(start);
-  const shownTimes = shown.map(utcTime);
-
-  const totalSeries: ChartSeries[] = [
-    {
-      id: "value",
-      label: "Portfolio value",
-      points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.value ?? null) })),
-    },
-    {
-      id: "invested",
-      label: "Net invested",
-      dashed: true,
-      points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.invested ?? null) })),
-    },
-  ];
-  // Each fund's money invested is drawn beneath its value, in the same colour, dotted and faded.
-  const fundSeries: ChartSeries[] = [
-    ...funds.map((fund, slot) => ({
-      id: `${fund.isin}-invested`,
-      label: `${fund.name}: net invested`,
-      slot,
-      muted: true,
-      points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.netInvested[start + index] ?? null) })),
-    })),
-    ...funds.map((fund, slot) => ({
-      id: fund.isin,
-      label: fund.name,
-      slot,
-      points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.values[start + index] ?? null) })),
-    })),
-  ];
-
-  const slices = allocation(props.model);
-  const ranking = fundRanking(props.model);
-  const bars = metricSeries(months, start, "monthlyGain").map((entry) => ({ key: entry.date, label: formatMonthShort(entry.date), value: entry.value }));
-  const held = funds.filter((fund) => fund.status !== "closed");
-  const times = dates.map(utcTime);
+  const d = dashboardFor(props.model, props.range);
+  const { held, slices, ranking, bars } = d;
 
   return (
     <section aria-labelledby="overview-heading" class="dash">
@@ -159,7 +121,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             <dd>{formatDateLong(lastDate)}</dd>
           </div>
         </dl>
-        <Sparkline times={shownTimes} values={shown.map((_, index) => euros(totals[start + index]?.value ?? null))} width={360} height={88} area />
+        <Sparkline times={d.shownTimes} values={d.heroTrend} width={360} height={88} area />
       </div>
 
       <div class="cell-8">
@@ -169,7 +131,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           title="Value and money invested"
           subtitle="Solid line: what your funds are worth. Dashed line: what you have put in, net."
           description="Two lines over time: the value of all funds, and the cash invested in them, dashed."
-          series={totalSeries}
+          series={d.totalSeries}
           fillFirst
           formatTime={monthLabel}
           formatValue={euroLabel}
@@ -181,7 +143,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         const entry = kpi(stat.label);
         return entry === undefined ? null : (
           <div key={stat.label} class="cell-3">
-            <StatCard kpi={entry} caption={stat.caption} unavailable={stat.unavailable} trend={{ times: shownTimes, values: metricSeries(months, start, stat.metric).map((point) => point.value) }} />
+            <StatCard kpi={entry} caption={stat.caption} unavailable={stat.unavailable} trend={{ times: d.shownTimes, values: d.metricTrends[stat.metric] }} />
           </div>
         );
       })}
@@ -249,7 +211,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           title="Value of each fund"
           subtitle="Solid line: a fund's value. Dotted line, same colour: what you have put into it. A gap means it was not held that month."
           description="One solid line per fund showing its value over time, and a faint dotted line in the same colour for the money invested in it. A fund that was not held leaves a gap."
-          series={fundSeries}
+          series={d.fundSeries}
           formatTime={monthLabel}
           formatValue={euroLabel}
           emptyMessage="No fund has a value to plot yet."
@@ -315,13 +277,13 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                 </tr>
               </thead>
               <tbody>
-                {[...held, ...funds.filter((fund) => fund.status === "closed")].map((fund) => (
+                {[...d.held, ...d.closed].map((fund) => (
                   <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
                     <th scope="row">
                       <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>
                       <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
                     </th>
-                    <td class="hide-sm"><Sparkline times={times} values={fund.values.map((value) => euros(value))} /></td>
+                    <td class="hide-sm"><Sparkline times={d.allTimes} values={d.holdingTrends[fund.isin] ?? []} /></td>
                     <td><Amount cents={fund.latest?.value ?? null} /></td>
                     <td class="hide-sm"><Amount cents={fund.latest?.netInvested ?? null} /></td>
                     <td class="hide-sm"><Signed cents={fund.latest?.gain ?? null} /></td>

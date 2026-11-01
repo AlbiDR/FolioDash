@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { CommitRequest } from "../../applications/LedgerService";
-import { EMPTY_LEDGER } from "../../core/Ledger";
+import { EMPTY_LEDGER, parseLedgerState } from "../../core/Ledger";
 import type { IsoDate } from "../../core/IsoDate";
-import { type RemoteTarget, commitRemote, interpretRead, parseLedgerState, readRemoteCommandOutcome, readRemoteLedger } from "./LedgerClient";
+import { type RemoteTarget, commitRemote, interpretRead, readRemoteCommandOutcome, readRemoteLedger } from "./LedgerClient";
 import type { HttpClient } from "./ScriptsRun";
 
 const target: RemoteTarget = { scriptId: "script-id-0000000001", workbookId: "workbook-id-00000001", accessToken: "secret-token" };

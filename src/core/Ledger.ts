@@ -181,3 +181,16 @@ function checkLifecycle(
     if (!kept && !closed) fail("an active fund can only stay active or be explicitly closed.");
   }
 }
+
+/**
+ * A ledger that arrived from outside (the network, the device) is untrusted
+ * input. It must have the expected shape and pass the same validation that
+ * guards every write; anything else is refused, never shown.
+ */
+export function parseLedgerState(value: unknown): LedgerState | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const state = value as Record<string, unknown>;
+  if (typeof state["revision"] !== "string" || !Array.isArray(state["funds"]) || !Array.isArray(state["snapshots"])) return null;
+  const candidate = state as unknown as LedgerState;
+  return validateLedger(candidate).length === 0 ? candidate : null;
+}

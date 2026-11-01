@@ -40,3 +40,34 @@ describe("metricSeries", () => {
     expect(metricSeries(model.months, 3, "gain")[0]?.date).toBe(model.dates[3]);
   });
 });
+
+describe("dashboardFor", () => {
+  it("returns the same object for the same model and range, and a new one when either changes", async () => {
+    const { dashboardFor } = await import("./dashboardData");
+    const model = demoPortfolio("typical");
+    const first = dashboardFor(model, "All");
+    expect(dashboardFor(model, "All")).toBe(first);
+    expect(dashboardFor(model, "3M")).not.toBe(first);
+    expect(dashboardFor(demoPortfolio("many"), "All")).not.toBe(first);
+  });
+
+  it("covers every widget from one model: totals, funds, allocation, ranking, bars and trends", async () => {
+    const { computeDashboard } = await import("./dashboardData");
+    const model = demoPortfolio("typical");
+    const dashboard = computeDashboard(model, "All");
+    expect(dashboard.totalSeries.map((entry) => entry.id)).toEqual(["value", "invested"]);
+    expect(dashboard.fundSeries).toHaveLength(model.funds.length * 2);
+    expect(dashboard.fundSeries.filter((entry) => entry.muted === true)).toHaveLength(model.funds.length);
+    expect(dashboard.bars).toHaveLength(model.dates.length);
+    expect(dashboard.heroTrend).toHaveLength(model.dates.length);
+    expect(Object.keys(dashboard.holdingTrends)).toHaveLength(model.funds.length);
+  });
+
+  it("limits the series to the range but keeps each fund's trend over the whole history", async () => {
+    const { computeDashboard } = await import("./dashboardData");
+    const model = demoPortfolio("typical");
+    const short = computeDashboard(model, "3M");
+    expect(short.shownTimes.length).toBeLessThan(model.dates.length);
+    expect(short.allTimes).toHaveLength(model.dates.length);
+  });
+});

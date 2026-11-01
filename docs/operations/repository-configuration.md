@@ -27,8 +27,8 @@ Names use `UPPER_SNAKE_CASE`. Each item is created only when the workflow that n
 |---|---|---|---|---|
 | `APPS_SCRIPT_SCRIPT_ID` | Variable | Environment `apps-script-deploy` | Identifies the script project to push to. A locator, not a credential, but it names the owner's project, so it is not committed (`.clasp.json` stays ignored and is generated in CI) | First synthetic push |
 | `APPS_SCRIPT_DEPLOYMENT_ID` | Variable | Environment `apps-script-deploy` | Deployment to update, so the API executable keeps its identifier | First synthetic deploy |
-| `VITE_GOOGLE_CLIENT_ID` | Variable | Repository (read by the web build) | The OAuth client ID, injected into the build as the Connection page default. Public by design | First hosted build |
-| `VITE_GOOGLE_SCRIPT_ID` | Variable | Repository (read by the web build) | The script or deployment ID, injected as the Connection page default | First hosted build |
+| `VITE_GOOGLE_CLIENT_ID` | Variable | Repository (read by the web build) | The OAuth client ID the site signs people in with. Public by design | First hosted build |
+| `VITE_GOOGLE_SCRIPT_ID` | Variable | Repository | **Obsolete under FD-017.** The direct route needs no script; the variable stays only until the Apps Script service is removed | Removal after the live proof |
 | `VITE_GOOGLE_WORKBOOK_ID` | Variable | Repository, only if the owner decides in §1a | The default spreadsheet ID. Optional, see the trade-off in §1a | Owner decision |
 | `CLASPRC_JSON` | Secret | Environment `apps-script-deploy` only, never repository-wide | The clasp login token (FD-016) | After the protections in §3 are active |
 

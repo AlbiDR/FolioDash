@@ -123,19 +123,24 @@ const MANY: readonly DemoFundSpec[] = Array.from({ length: 12 }, (_, index) => (
   invested: 3000 + index * 1400,
 }));
 
-export function demoPortfolio(variant: DemoVariant): OverviewModel {
+/** The invented ledger behind a demo variant, built by the real ledger rules. */
+export function demoLedger(variant: DemoVariant): LedgerState {
   switch (variant) {
     case "typical":
-      return overviewFromLedger(ledgerFor(TYPICAL, 8), "demo");
+      return ledgerFor(TYPICAL, 8);
     case "single":
-      return overviewFromLedger(ledgerFor(TYPICAL.slice(0, 1), 6), "demo");
+      return ledgerFor(TYPICAL.slice(0, 1), 6);
     case "many":
-      return overviewFromLedger(ledgerFor(MANY, 10), "demo");
+      return ledgerFor(MANY, 10);
     case "different":
-      return overviewFromLedger(ledgerFor(DIFFERENT, 9), "demo");
+      return ledgerFor(DIFFERENT, 9);
     case "empty":
-      return overviewFromLedger(EMPTY_LEDGER, "demo");
+      return EMPTY_LEDGER;
   }
+}
+
+export function demoPortfolio(variant: DemoVariant): OverviewModel {
+  return overviewFromLedger(demoLedger(variant), "demo");
 }
 
 export function demoVariantFrom(search: string): DemoVariant {

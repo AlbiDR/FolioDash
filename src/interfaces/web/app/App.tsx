@@ -1,8 +1,7 @@
 import type { JSX } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
-import type { ConnectionConfig } from "../features/connection/ConnectionModel";
-import { ConnectionView } from "../features/connection/ConnectionView";
+import { AccountView } from "../features/account/AccountView";
+import { GetStarted } from "../features/account/GetStarted";
 import { HistoryView } from "../features/history/HistoryView";
 import { ImportView } from "../features/import/ImportView";
 import { FundView } from "../features/overview/FundView";
@@ -14,37 +13,43 @@ import { RangeSelector } from "../shared/ui/RangeSelector";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sidebarChoice";
 import { useMediaQuery } from "../shared/ui/useMediaQuery";
 import { Icon, type IconName } from "../shared/ui/icons";
-import { buildConnectionDefaults } from "./connectionDefaults";
-import { browserConnectionStorage } from "./connectionStorage";
-import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
-import { connectToGoogle } from "./googleConnection";
-import { browserRemoteSave } from "./googleLedger";
+import { createBrowserSession } from "./browserSession";
 import { CHART_RANGES, type ChartRange } from "./chartRange";
+import { rememberClientId, resolveClientId } from "./clientId";
+import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
 import { prepareImport } from "./importPreparer";
+import { memoizeLast } from "./memo";
 import { overviewFromLedger } from "./overviewFromLedger";
 import { type Route, navEntryOf, routeFrom } from "./routes";
+import { describeAge } from "./timeAgo";
+import { useNow, useSession } from "./useSession";
 
-const TITLES = { overview: "Portfolio", months: "Month by month", import: "Import a statement", history: "Import a whole history", connection: "Connect your Google Sheet" } as const;
+const TITLES = { overview: "Portfolio", months: "Month by month", import: "Import a statement", history: "Import a whole history", connection: "Your data" } as const;
 
 function titleOf(route: Route, model: OverviewModel): string {
   if (route.name === "fund") return model.funds.find((fund) => fund.isin === route.isin)?.name ?? "Fund";
   return TITLES[route.name];
 }
 
+// The model is redone only when the ledger itself changes, not on a toggle, a range change or a resize.
+const overviewFor = memoizeLast(overviewFromLedger);
+const demoFor = memoizeLast(demoPortfolio);
+
 const browserPrivacyStorage = (): Storage => window.localStorage;
 
 const NAV: readonly { readonly id: ReturnType<typeof navEntryOf>; readonly href: string; readonly label: string; readonly icon: IconName }[] = [
   { id: "overview", href: "#overview", label: "Portfolio", icon: "overview" },
   { id: "import", href: "#import", label: "Import", icon: "import" },
-  { id: "connection", href: "#connection", label: "Google Sheet", icon: "connection" },
+  { id: "connection", href: "#connection", label: "Your data", icon: "connection" },
 ];
 
 export function App(): JSX.Element {
   const [route, setRoute] = useState<Route>(routeFrom(window.location.hash));
-  // Held in memory. Until a spreadsheet is connected it is only this tab; once connected it mirrors the spreadsheet.
-  const [ledger, setLedger] = useState<LedgerState>(EMPTY_LEDGER);
-  const [connected, setConnected] = useState<ConnectionConfig | null>(null);
-  const save = useMemo(() => (connected === null ? undefined : browserRemoteSave(connected)), [connected]);
+  // The person's data: the Google spreadsheet is the record, this device keeps a copy, and the session joins them.
+  const [clientId, setClientId] = useState(() => resolveClientId(import.meta.env.VITE_GOOGLE_CLIENT_ID, browserPrivacyStorage));
+  const session = useMemo(() => createBrowserSession(clientId), [clientId]);
+  const data = useSession(session);
+  const now = useNow(60_000);
   useEffect(() => {
     const update = (): void => {
       setRoute(routeFrom(window.location.hash));
@@ -65,15 +70,19 @@ export function App(): JSX.Element {
     writeSidebarCollapsed(browserPrivacyStorage, sidebarCollapsed);
   }, [sidebarCollapsed]);
   const variant = demoVariantFrom(window.location.search);
-  const recorded = ledger.snapshots.length > 0;
-  const model = recorded ? overviewFromLedger(ledger, "recorded") : demoPortfolio(variant);
+  const recorded = data.mode !== "signed-out" && data.ledger.snapshots.length > 0;
+  const model = recorded ? overviewFor(data.ledger, "recorded") : demoFor(variant);
   const current = navEntryOf(route);
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
-  const source = connected !== null
-    ? { label: "Synced with Google", tone: "synced" }
-    : recorded
-      ? { label: "This tab only", tone: "local" }
-      : { label: "Demo data", tone: "demo" };
+  const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
+  const source = data.mode === "signed-out"
+    ? { label: "Demo data", tone: "demo" }
+    : needsAttention
+      ? { label: "Sheet needs attention", tone: "local" }
+      : data.mode === "online"
+        ? { label: "Synced with Google", tone: "synced" }
+        : { label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" };
+  const clientConfigured = clientId !== "";
 
   return (
     <PrivacyProvider hidden={hidden}>
@@ -112,10 +121,10 @@ export function App(): JSX.Element {
                 <p class="eyebrow">FolioDash</p>
                 <h1>{titleOf(route, model)}</h1>
               </div>
-              <span class={`status-chip ${source.tone}`} role="status">
+              <a class={`status-chip ${source.tone}`} href="#connection" title="Where your data lives">
                 <span class="status-dot" aria-hidden="true" />
                 {source.label}
-              </span>
+              </a>
               <div class="topbar-controls">
                 {(route.name === "overview" || route.name === "fund") && (
                   <>
@@ -126,17 +135,33 @@ export function App(): JSX.Element {
                 <PrivacyToggle hidden={hidden} onChange={setHidden} />
               </div>
             </header>
-            {portfolioScreen && !recorded && (
+            {portfolioScreen && data.mode === "signed-out" && (
               <p class="notice" role="status">
-                Demonstration with invented data. No real portfolio, bank file or Google account is connected.
+                Demonstration with invented data. Nothing here is yours until you continue with Google.
               </p>
             )}
-            {portfolioScreen && recorded && connected === null && (
+            {portfolioScreen && needsAttention && (
               <p class="notice" role="status">
-                Based on the statements you recorded in this browser tab. They are not saved: reloading the page clears them.
+                Your Google Sheet needs attention. <a href="#connection">See what to do</a>
               </p>
             )}
-            {route.name === "overview" && !recorded && (
+            {route.name === "overview" && data.mode === "signed-out" && (
+              <GetStarted
+                clientConfigured={clientConfigured}
+                connect={() => session.connect()}
+                onReady={() => {
+                  window.location.hash = "#import";
+                }}
+              />
+            )}
+            {route.name === "overview" && data.mode !== "signed-out" && data.ledger.snapshots.length === 0 && (
+              <div class="card get-started">
+                <h3 class="card-title">Your Google Sheet is ready</h3>
+                <p class="card-subtitle">Next: import your first bank statement.</p>
+                <a class="primary link-button" href="#import">Import a statement</a>
+              </div>
+            )}
+            {route.name === "overview" && data.mode === "signed-out" && (
               <nav aria-label="Demonstration portfolios">
                 <ul class="demo-nav">
                   <li class="demo-label">Demo portfolios:</li>
@@ -159,9 +184,14 @@ export function App(): JSX.Element {
                 <p class="hint">Import one bank file, or restore many months at once from a history file.</p>
               </div>
             )}
-            {(route.name === "import" || route.name === "history") && connected === null && (
+            {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
               <p class="notice" role="status">
-                Not connected to Google, so nothing you import here is kept after you reload. <a href="#connection">Connect your Google Sheet</a> first to save it.
+                Nothing can be saved yet. <a href="#connection">Continue with Google</a> first, which takes one click.
+              </p>
+            )}
+            {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
+              <p class="notice" role="status">
+                Saving will ask you to sign in with Google first.
               </p>
             )}
             <main>
@@ -171,21 +201,30 @@ export function App(): JSX.Element {
               {route.name === "import" && (
                 <ImportView
                   prepare={prepareImport}
-                  ledger={ledger}
+                  ledger={data.ledger}
                   createRevision={() => crypto.randomUUID()}
-                  onRecord={setLedger}
-                  {...(save === undefined ? {} : { save })}
+                  onRecord={() => undefined}
+                  save={session.save}
                 />
               )}
-              {route.name === "history" && <HistoryView ledger={ledger} onLedger={setLedger} {...(save === undefined ? {} : { save })} />}
+              {route.name === "history" && <HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} />}
               {route.name === "connection" && (
-                <ConnectionView
-                  connect={connectToGoogle}
-                  storage={browserConnectionStorage}
-                  defaults={buildConnectionDefaults}
-                  onConnected={(config, loaded) => {
-                    setConnected(config);
-                    setLedger(loaded);
+                <AccountView
+                  state={data}
+                  now={now}
+                  clientConfigured={clientConfigured}
+                  actions={{
+                    connect: () => session.connect(),
+                    refresh: () => session.refresh(),
+                    restore: () => session.restoreFromDevice(),
+                    forget: () => {
+                      session.forget();
+                    },
+                    setClientId: (text) => {
+                      const kept = rememberClientId(text, browserPrivacyStorage);
+                      if (kept) setClientId(text.trim());
+                      return kept;
+                    },
                   }}
                 />
               )}

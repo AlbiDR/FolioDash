@@ -1,5 +1,5 @@
 import type { JSX, TargetedPointerEvent } from "preact";
-import { useState } from "preact/hooks";
+import { useMemo, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacyChoice";
 import { type ChartSeries, computeLineChart } from "./lineChartGeometry";
@@ -46,7 +46,9 @@ function styleClass(index: number, slot: number | null): string {
 export function LineChart(props: LineChartProps): JSX.Element {
   const hidden = usePrivacy();
   const [scrubbed, setScrubbed] = useState<number | null>(null);
-  const geometry = computeLineChart(props.series, { ...LAYOUT, includeZero: props.includeZero ?? false });
+  // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
+  const includeZero = props.includeZero ?? false;
+  const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, includeZero }), [props.series, includeZero]);
   const titleId = `${props.id}-title`;
   const descriptionId = `${props.id}-description`;
 

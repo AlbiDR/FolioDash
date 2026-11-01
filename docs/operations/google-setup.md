@@ -1,8 +1,23 @@
 # Google setup for the first live proof (owner steps)
 
-Status: **Performed once by the owner on 2026-11-01, with one synthetic spreadsheet. The Connection page's read-only `foliodashCheck` call then succeeded against Google (sign-in, `scripts.run`, spreadsheet access). Commit and read-back were not exercised. Google's console wording changes.**  
+Status: **The route below is superseded by FD-017 (see the section above). It was performed once by the owner on 2026-11-01, with one synthetic spreadsheet. The Connection page's read-only `foliodashCheck` call then succeeded against Google (sign-in, `scripts.run`, spreadsheet access). Commit and read-back were not exercised. Google's console wording changes.**  
 Order found in practice: the consent screen must exist before the script can be linked to the project, and the consent screen's scope list and test user are added afterwards. Creating a web client also generates a client secret that the browser flow never uses; it is not kept.  
 Scope: what the owner does in their own Google account so FolioDash can make its first authenticated call to the Apps Script service, using a **synthetic** spreadsheet. This proves gates G2 and G3 of the [Google-backed architecture](../architecture/google-sheets-backend.md); it does not choose between the deployment models of FD-014.
+
+## The current route (FD-017): sign in once, no script
+
+Decided by the owner on 2026-11-01 and **built and tested only against a stand-in for Google, not yet on real Google**. The browser signs the person in with the narrow `drive.file` permission, creates their spreadsheet itself, and reads and writes it through the Sheets API. There is no script to deploy per person and no unverified-app warning.
+
+What the owner's Google Cloud project needs for this route:
+
+1. **Enable two APIs** for the project: the Google Sheets API and the Google Drive API. Without them every call is refused.
+2. **Add the `drive.file` scope** under Data Access on the consent screen. Google lists it as non-sensitive. The earlier `spreadsheets` scope is no longer used.
+3. **Keep the OAuth web client** and add every address the app is served from as an authorised JavaScript origin: `http://localhost:4173` for local use and, once published, the GitHub Pages address.
+4. **Give the site its client ID.** A hosted build reads the repository variable `VITE_GOOGLE_CLIENT_ID`. A build without one asks the person on the Your data screen (Advanced) and remembers it on that device.
+
+To try it: open the app, choose Continue with Google, allow the permission, then import a synthetic statement from Import. Reload and the figures open instantly from the copy on the device; Sync now checks them against the sheet. The first live run must also confirm the three things documentation did not settle: that `drive.file` alone lets the Sheets API read and write the sheet the app created, that the sheet is found again by its tag on another device, and that text written raw stays text. The Apps Script service and its deploy workflow stay in place until that run passes, then they are removed.
+
+The sections below describe the previous route (a shared or per-person script) and are kept until that removal.
 
 ## Ground rules
 
