@@ -88,3 +88,8 @@ export function formatEuro(amount: EuroCents): string {
   const cents = (magnitude % 100n).toString().padStart(2, "0");
   return `${amount < 0 ? "-" : ""}${euros},${cents} €`;
 }
+
+/** Display only, with an explicit sign for gains and losses, for example `+70,00 €`. */
+export function formatSignedEuro(amount: EuroCents): string {
+  return amount > 0 ? `+${formatEuro(amount)}` : formatEuro(amount);
+}

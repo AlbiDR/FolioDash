@@ -1,9 +1,10 @@
 import type { JSX } from "preact";
 import { type IsoDate, formatMonthYear, toIsoDate } from "../../../../core/IsoDate";
-import { type EuroCents, formatEuro, toEuroCents } from "../../../../core/Money";
+import { type EuroCents, formatEuro, formatSignedEuro, toEuroCents } from "../../../../core/Money";
+import { formatPercent } from "../../../../core/Percent";
 import { LineChart } from "../../shared/charts/LineChart";
 import type { ChartSeries } from "../../shared/charts/lineChartGeometry";
-import type { OverviewModel } from "./OverviewModel";
+import type { OverviewKpi, OverviewModel } from "./OverviewModel";
 
 function utcTime(date: IsoDate): number {
   return Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10)));
@@ -24,11 +25,27 @@ function euros(cents: EuroCents | null): number | null {
   return cents === null ? null : cents / 100;
 }
 
-export function OverviewView(props: { readonly model: OverviewModel }): JSX.Element {
-  const { dates, funds, totals } = props.model;
-  const latest = totals[totals.length - 1];
+function Kpi(props: { readonly kpi: OverviewKpi }): JSX.Element {
+  const { kpi } = props;
+  const amount =
+    kpi.amount === null ? "–" : kpi.signed ? formatSignedEuro(kpi.amount) : formatEuro(kpi.amount);
+  return (
+    <div>
+      <dt>{kpi.label}</dt>
+      <dd>
+        {amount}
+        {kpi.signed && kpi.percent !== null && <span class="kpi-percent"> {formatPercent(kpi.percent, { signed: true })}</span>}
+      </dd>
+    </div>
+  );
+}
 
-  if (dates.length === 0 || latest === undefined) {
+export function OverviewView(props: { readonly model: OverviewModel }): JSX.Element {
+  const { dates, funds, totals, kpis } = props.model;
+  const latestTotal = totals[totals.length - 1];
+  const lastDate = dates[dates.length - 1];
+
+  if (dates.length === 0 || latestTotal === undefined) {
     return (
       <section aria-labelledby="overview-heading">
         <h2 id="overview-heading">Overview</h2>
@@ -56,29 +73,35 @@ export function OverviewView(props: { readonly model: OverviewModel }): JSX.Elem
     label: fund.name,
     points: dates.map((date, index) => ({ time: utcTime(date), value: euros(fund.values[index] ?? null) })),
   }));
-  const lastDate = dates[dates.length - 1];
 
   return (
     <section aria-labelledby="overview-heading" class="overview">
       <h2 id="overview-heading">Overview</h2>
+      <p class="hint">
+        As of the statement of {lastDate === undefined ? "" : formatMonthYear(lastDate)}.
+        {props.model.estimated &&
+          " Percentages that depend on when you moved cash are estimates, and none of them is annualised."}
+      </p>
       <dl class="kpis">
-        <div>
-          <dt>Portfolio value</dt>
-          <dd>{formatEuro(latest.value)}</dd>
-        </div>
-        <div>
-          <dt>Net invested</dt>
-          <dd>{formatEuro(latest.invested)}</dd>
-        </div>
-        <div>
-          <dt>Latest statement</dt>
-          <dd>{lastDate === undefined ? "" : formatMonthYear(lastDate)}</dd>
-        </div>
-        <div>
-          <dt>Funds</dt>
-          <dd>{funds.filter((fund) => fund.status === "active").length} active</dd>
-        </div>
+        {kpis.map((kpi) => (
+          <Kpi key={kpi.label} kpi={kpi} />
+        ))}
       </dl>
+      <details class="definitions">
+        <summary>How these figures are defined</summary>
+        <dl>
+          {kpis.map((kpi) => (
+            <div key={kpi.label}>
+              <dt>{kpi.label}</dt>
+              <dd>{kpi.note}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="hint">
+          These follow the definitions of the earlier spreadsheet so the results can be compared with it. A dash means
+          the figure cannot be calculated from the statements recorded.
+        </p>
+      </details>
 
       <LineChart
         id="total-chart"
@@ -94,29 +117,37 @@ export function OverviewView(props: { readonly model: OverviewModel }): JSX.Elem
       {funds.length === 0 ? (
         <p>No funds are held.</p>
       ) : (
-        <table class="funds" aria-labelledby="funds-heading">
-          <thead>
-            <tr>
-              <th scope="col">Fund</th>
-              <th scope="col">ISIN</th>
-              <th scope="col">Status</th>
-              <th scope="col">Latest value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {funds.map((fund) => {
-              const value = fund.values[fund.values.length - 1] ?? null;
-              return (
+        <div class="table-scroll">
+          <table class="funds" aria-labelledby="funds-heading">
+            <thead>
+              <tr>
+                <th scope="col">Fund</th>
+                <th scope="col">Status</th>
+                <th scope="col">Value</th>
+                <th scope="col">Net invested</th>
+                <th scope="col">Gain</th>
+                <th scope="col">Gain %</th>
+                <th scope="col">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              {funds.map((fund) => (
                 <tr key={fund.isin}>
-                  <th scope="row">{fund.name}</th>
-                  <td>{fund.isin}</td>
+                  <th scope="row">
+                    {fund.name}
+                    <span class="isin"> {fund.isin}</span>
+                  </th>
                   <td>{fund.status === "closed" ? "Closed" : "Active"}</td>
-                  <td>{value === null ? "–" : formatEuro(value)}</td>
+                  <td>{fund.latest === null ? "–" : formatEuro(fund.latest.value)}</td>
+                  <td>{fund.latest === null ? "–" : formatEuro(fund.latest.netInvested)}</td>
+                  <td>{fund.latest === null ? "–" : formatSignedEuro(fund.latest.gain)}</td>
+                  <td>{formatPercent(fund.latest?.gainPercent ?? null, { signed: true })}</td>
+                  <td>{formatPercent(fund.latest?.share ?? null)}</td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <LineChart

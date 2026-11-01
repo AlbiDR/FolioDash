@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addCents,
   formatEuro,
+  formatSignedEuro,
   parseDecimalAsCents,
   parseItalianAmount,
   parseUsAmount,
@@ -115,5 +116,13 @@ describe("formatEuro", () => {
     for (const value of [0, 1, 99, 100, 12345, 100000, 123456789, -1, -123456789]) {
       expect(parseItalianAmount(formatEuro(cents(value)))).toBe(value);
     }
+  });
+});
+
+describe("formatSignedEuro", () => {
+  it("shows a plus for gains, a minus for losses and no sign for zero", () => {
+    expect(formatSignedEuro(cents(7000))).toBe("+70,00 €");
+    expect(formatSignedEuro(cents(-5000))).toBe("-50,00 €");
+    expect(formatSignedEuro(cents(0))).toBe("0,00 €");
   });
 });

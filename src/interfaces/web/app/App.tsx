@@ -5,6 +5,7 @@ import { ImportView } from "../features/import/ImportView";
 import { OverviewView } from "../features/overview/OverviewView";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
 import { prepareImport } from "./importPreparer";
+import { overviewFromLedger } from "./overviewFromLedger";
 
 type Route = "overview" | "import";
 
@@ -27,6 +28,8 @@ export function App(): JSX.Element {
   }, []);
 
   const variant = demoVariantFrom(window.location.search);
+  const recorded = ledger.snapshots.length > 0;
+  const model = recorded ? overviewFromLedger(ledger, "recorded") : demoPortfolio(variant);
   return (
     <>
       <header class="app-header">
@@ -45,7 +48,7 @@ export function App(): JSX.Element {
             </li>
           </ul>
         </nav>
-        {route === "overview" && (
+        {route === "overview" && !recorded && (
           <>
             <p class="notice" role="status">
               Demonstration with invented data. No real portfolio, bank file or Google account is connected.
@@ -63,9 +66,15 @@ export function App(): JSX.Element {
             </nav>
           </>
         )}
+        {route === "overview" && recorded && (
+          <p class="notice" role="status">
+            Based on the statements you recorded in this browser tab. They are not saved: reloading the page clears
+            them.
+          </p>
+        )}
       </header>
       <main>
-        {route === "overview" ? <OverviewView model={demoPortfolio(variant)} /> : (
+        {route === "overview" ? <OverviewView model={model} /> : (
             <ImportView
               prepare={prepareImport}
               ledger={ledger}

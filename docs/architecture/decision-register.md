@@ -25,7 +25,7 @@ The owner has now selected GitHub-managed frontend delivery with a user-owned pr
 | FD-004 | Original-source retention | **Open details** | Native bank import tabs in the user's workbook; exact retained fields/full-XLSX Drive archive still undecided | Import payload and document storage |
 | FD-005 | Authentication and sessions | **Open** | Established auth, explicit credential ownership, revocation/recovery, account isolation | Account/backend implementation |
 | FD-006 | Snapshot granularity | Proposed | One coherent snapshot per date; multiple per month; explicit same-date revision | Temporal model and import schema |
-| FD-007 | Financial reporting and migration policy | **Open** | Preserve labelled legacy definitions for parity; approve granular/monthly baselines explicitly | Public calculation contract and parity sign-off |
+| FD-007 | Financial reporting and migration policy | **Open; parity policy `legacy-parity-v1` implemented, not approved** | Preserve labelled legacy definitions for parity; approve granular/monthly baselines explicitly | Public calculation contract and parity sign-off |
 | FD-008 | Stack, hosting and dependencies | Partially selected by FD-013; language chosen by owner | GitHub frontend and Google service/storage; TypeScript, npm, Vitest, ESLint with typescript-eslint and esbuild (owner-agreed 2026-11-01, versions and licences to be verified at scaffold); Preact with Vite for the UI and SVG charts drawn with `d3-scale`, `d3-shape` and `d3-array` (both owner-agreed 2026-11-01); PWA tooling, Pages visibility/plan, origin and deployment tooling still open | UI scaffolding and publication |
 | FD-009 | Backup, restore, deletion and retention | **Open** | Complete portable backup, tested restore, explicit retention/expiry and recovery targets | Production persistence/deletion release |
 | FD-010 | Offline and update behaviour | Proposed | Offline viewing only; online confirmation/corrections; account-scoped caches and non-disruptive updates | PWA cache/service-worker implementation |
@@ -71,6 +71,18 @@ Checksums are equality checks, not document backups or proof that a statement wa
 - What can the UI legitimately call performance when cash timing is unknown?
 
 Do not change the financial policy while claiming a visual-only migration. Methods must be versioned, explained and tested with independently worked examples.
+
+### Implemented state, 2026-11-01
+
+The overview now computes its figures with `computeMetrics` in `src/core/Metrics.ts`, under the policy named `legacy-parity-v1`. It is the definitions of the existing Sheets project, kept and labelled so results can be compared with it, following this register's recommended direction. It is **not an approved decision**, and every question above stays open:
+
+- Net invested is cumulative cash in minus cash out; a sold fund keeps its result in the totals.
+- Gain is value minus net invested; a percentage needs a positive denominator and is otherwise shown as a dash, never zero.
+- Month on month needs the previous statement in the immediately preceding calendar month; its percentage uses the previous total plus the period's net cash as denominator (cash assumed to move before the return).
+- Year to date is the change in gain since the January statement of the same year, not a return since 1 January. Year on year is the change in gain against the same calendar month one year earlier.
+- Nothing is annualised, time-weighted or money-weighted, and the interface says percentages that depend on cash timing are estimates.
+
+Not yet implemented: the average monthly figures, per-fund chained cumulative returns and the comparison view. The unit tests use figures worked out by hand from stated inputs, independent of any spreadsheet. No parity comparison against the Sheets outputs has been run, so parity sign-off is still pending.
 
 ## FD-008: evaluation constraints, not a vendor shortlist
 
