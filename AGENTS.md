@@ -14,4 +14,4 @@ Read `docs/README.md`, `docs/architecture/cleanstack.md`, the relevant decision 
 - Distinguish unknown write outcomes from failures known not to have committed. Do not blindly retry financial writes.
 - Financial imports, corrections, restoration and destructive actions require the documented user consent and recovery path.
 - Cloud provisioning, publication, real-data migration, repository visibility changes and licensing need explicit task authority; documents are not blanket authorization.
-- Report what was implemented, what was checked and what remains unverified. No runnable application or CI gate exists at this stage.
+- Report what was implemented, what was checked and what remains unverified. The application runs locally and CI runs `npm run verify`, but nothing is hosted and no branch or environment protection is enforced yet.

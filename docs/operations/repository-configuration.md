@@ -21,7 +21,7 @@ This direction is recorded here; it is not an accepted decision. `.github/workfl
 
 ## 2. Configuration contract (planned)
 
-Names use `UPPER_SNAKE_CASE`. Each item is created only when the workflow that needs it exists. The owner enters secret values; an assistant never handles them. No item below exists yet.
+Names use `UPPER_SNAKE_CASE`. Each item is created only when the workflow that needs it exists. The owner enters secret values; an assistant never handles them. As of 2026-11-01 these exist: variables `APPS_SCRIPT_SCRIPT_ID` and `APPS_SCRIPT_DEPLOYMENT_ID` (environment `apps-script-deploy`), variables `VITE_GOOGLE_CLIENT_ID` and `VITE_GOOGLE_SCRIPT_ID` (repository), and the secret `CLASPRC_JSON` (environment `apps-script-deploy`). `VITE_GOOGLE_WORKBOOK_ID` does not exist, by the owner-decision note in 1a.
 
 | Name | Kind | Scope | Purpose | Created when |
 |---|---|---|---|---|
