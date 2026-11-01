@@ -1,0 +1,155 @@
+/*
+ * The single source of colour, shape, motion and type. Components use these names, never raw values.
+ *
+ * Two ideas meet here. From Apple's Liquid Glass: translucent, blurred material for the navigation
+ * layer only (sidebar, toolbar, tab bar), concentric corner radii, capsule controls. From Material 3
+ * Expressive: tonal surface containers, large expressive shapes, spring motion, deeper tonal colour.
+ * Content cards stay solid so figures are always read against a stable background.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces, lightest to most elevated tone (Material's surface container roles). */
+  --color-background: #eceff6;
+  --color-surface: #ffffff;
+  --surface-low: #f6f8fc;
+  --color-surface-2: #eef1f8;
+  --surface-high: #e5e9f4;
+  --color-text: #10131c;
+  --color-muted: #5a6072;
+  --color-border: rgba(16, 19, 28, 0.1);
+  --color-grid: rgba(16, 19, 28, 0.1);
+
+  /* Dynamic accent: a primary, its tonal container, and a quiet secondary and tertiary. */
+  --color-accent: #0b5fff;
+  --color-accent-soft: rgba(11, 95, 255, 0.12);
+  --color-on-accent: #ffffff;
+  --primary-container: #dce7ff;
+  --on-primary-container: #00205c;
+  --secondary: #00897b;
+  --tertiary: #7c4dff;
+
+  --color-gain: #0f7b53;
+  --color-loss: #c62850;
+  --color-error: #c62850;
+  --color-notice: rgba(255, 149, 0, 0.14);
+  --color-notice-text: #8a4b00;
+
+  /* Glass: only for bars and floating controls. */
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 10px 40px rgba(16, 19, 28, 0.1);
+  --glass-blur: blur(28px) saturate(190%);
+  --nav-background: var(--glass);
+
+  --ambient-a: rgba(11, 95, 255, 0.16);
+  --ambient-b: rgba(124, 77, 255, 0.12);
+  --ambient-c: rgba(0, 137, 123, 0.1);
+
+  --series-0: #0b5fff;
+  --series-1: #00a884;
+  --series-2: #ff8a00;
+  --series-3: #8e5cff;
+  --series-4: #ff3d71;
+  --series-5: #00a7c4;
+  --series-6: #4a56e2;
+  --series-7: #a2845e;
+
+  /* Shapes: concentric steps, so an inner radius is its container's radius minus the padding. */
+  --shape-xs: 8px;
+  --shape-sm: 12px;
+  --shape-md: 16px;
+  --shape-lg: 24px;
+  --shape-xl: 32px;
+  --shape-full: 999px;
+  --radius: var(--shape-sm);
+  --radius-lg: var(--shape-lg);
+
+  /* Motion: standard for movement, spring for emphasis. Both are removed for reduced motion. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-short: 180ms;
+  --duration-medium: 380ms;
+
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto, sans-serif;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --page-inset: clamp(0.75rem, 2.4vw, 1.5rem);
+  --gap: clamp(0.75rem, 1.4vw, 1rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #07080d;
+    --color-surface: #14161f;
+    --surface-low: #0f1119;
+    --color-surface-2: #1b1e29;
+    --surface-high: #232736;
+    --color-text: #f2f4fa;
+    --color-muted: #9aa1b5;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-grid: rgba(255, 255, 255, 0.1);
+
+    --color-accent: #6ea0ff;
+    --color-accent-soft: rgba(110, 160, 255, 0.18);
+    --color-on-accent: #00143d;
+    --primary-container: #0f2a66;
+    --on-primary-container: #d8e4ff;
+    --secondary: #4fd8c4;
+    --tertiary: #b69cff;
+
+    --color-gain: #3ddc97;
+    --color-loss: #ff6b8a;
+    --color-error: #ff6b8a;
+    --color-notice: rgba(255, 159, 10, 0.18);
+    --color-notice-text: #ffc65a;
+
+    --glass: rgba(30, 33, 46, 0.55);
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+    --ambient-a: rgba(80, 130, 255, 0.22);
+    --ambient-b: rgba(150, 100, 255, 0.16);
+    --ambient-c: rgba(40, 200, 170, 0.12);
+
+    --series-0: #6ea0ff;
+    --series-1: #3ddc97;
+    --series-2: #ffb340;
+    --series-3: #b69cff;
+    --series-4: #ff6b8a;
+    --series-5: #4fd8e8;
+    --series-6: #8590ff;
+    --series-7: #ac8e68;
+  }
+}
+
+/* Where blur is unavailable, glass becomes an opaque surface so nothing is unreadable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass: var(--color-surface);
+    --nav-background: var(--color-surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: var(--color-surface);
+    --nav-background: var(--color-surface);
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --series-0: CanvasText;
+    --series-1: CanvasText;
+    --series-2: CanvasText;
+    --series-3: CanvasText;
+    --series-4: CanvasText;
+    --series-5: CanvasText;
+    --series-6: CanvasText;
+    --series-7: CanvasText;
+  }
+}

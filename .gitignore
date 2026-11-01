@@ -1,0 +1,45 @@
+# Local dependencies and generated application output.
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.cache/
+.DS_Store
+
+# Secrets: examples may contain names/placeholders only, never real values.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.clasp.json
+.clasprc.json
+
+# Private local data must never become repository content.
+private/
+local-data/
+backups/
+imports/
+.Montly Exports/
+.Monthly Exports/
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+*.pdf
+*.sqlite
+*.sqlite3
+*.db
+*.log
+Screenshot*.png
+Screenshot*.jpg
+Screenshot*.jpeg
+
+# Legacy Google Sheets implementation: kept local until the FD-011 provenance review.
+App Scripts/
+
+# Future synthetic binary fixtures require a documented, reviewed exception.
+# These rules do not detect sensitive content in allowed files or existing Git history.
+.claude/

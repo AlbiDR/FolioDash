@@ -1,0 +1,99 @@
+declare const euroCentsBrand: unique symbol;
+
+/** Euro money as a whole number of cents. Never a binary-float amount of euros. */
+export type EuroCents = number & { readonly [euroCentsBrand]: true };
+
+const MAX_CENTS = BigInt(Number.MAX_SAFE_INTEGER);
+const ITALIAN_AMOUNT = /^([+-]?)(\d+|[1-9]\d{0,2}(?:\.\d{3})+)(?:,(\d{1,2}))?$/u;
+const US_AMOUNT = /^([+-]?)(\d+|\d{1,3}(?:,\d{3})+)(?:\.(\d{1,2}))?$/u;
+const PLAIN_DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?$/u;
+
+// Apps Script's file parser rejects BigInt literals such as `100n`, so these
+// constants are built with BigInt(). Keep literals out of code the server bundles.
+const TWO = BigInt(2);
+const HUNDRED = BigInt(100);
+// Decimal text is scaled to 1e-12 euro, so one cent is 1e10 units.
+const DECIMAL_DIGITS = 12;
+const CENT_UNITS = BigInt(10) ** BigInt(10);
+// Float noise from a double (for example 1234.560000000001) is far below 1e-6 euro.
+const NOISE_LIMIT_UNITS = BigInt(10) ** BigInt(6);
+
+function fromBigInt(value: bigint): EuroCents | null {
+  if (value > MAX_CENTS || value < -MAX_CENTS) return null;
+  return Number(value) as EuroCents;
+}
+
+/** Zero euros. */
+export const ZERO_CENTS = 0 as EuroCents;
+
+/** Accepts only safe whole numbers of cents. */
+export function toEuroCents(value: number): EuroCents | null {
+  if (!Number.isSafeInteger(value)) return null;
+  return (value === 0 ? 0 : value) as EuroCents;
+}
+
+export function addCents(left: EuroCents, right: EuroCents): EuroCents | null {
+  return toEuroCents(left + right);
+}
+
+export function subtractCents(left: EuroCents, right: EuroCents): EuroCents | null {
+  return toEuroCents(left - right);
+}
+
+/**
+ * Parses an amount typed by a person in Italian notation: dot for thousands,
+ * comma for at most two decimals, optional sign and euro sign. Ambiguous or
+ * foreign forms such as `1.5` or `1,000.50` are rejected, not guessed.
+ */
+export function parseItalianAmount(text: string): EuroCents | null {
+  const match = ITALIAN_AMOUNT.exec(text.replace(/[\s€]/gu, ""));
+  if (!match) return null;
+  const whole = (match[2] ?? "").replaceAll(".", "");
+  const fraction = (match[3] ?? "").padEnd(2, "0");
+  const cents = BigInt(whole) * HUNDRED + BigInt(fraction);
+  return fromBigInt(match[1] === "-" ? -cents : cents);
+}
+
+/**
+ * Parses an amount in US notation (comma for thousands, dot for at most two
+ * decimals). Only used to recognise a re-saved bank file, never for typed input.
+ */
+export function parseUsAmount(text: string): EuroCents | null {
+  const match = US_AMOUNT.exec(text.replace(/[\s€]/gu, ""));
+  if (!match) return null;
+  const whole = (match[2] ?? "").replaceAll(",", "");
+  const fraction = (match[3] ?? "").padEnd(2, "0");
+  const cents = BigInt(whole) * HUNDRED + BigInt(fraction);
+  return fromBigInt(match[1] === "-" ? -cents : cents);
+}
+
+/**
+ * Reads a plain decimal such as `1234.56` exactly, without binary floating
+ * point, and returns whole cents. Float noise far below a cent is absorbed;
+ * a value that genuinely needs more than two decimals, or uses an exponent, is
+ * rejected.
+ */
+export function parseDecimalAsCents(text: string): EuroCents | null {
+  const match = PLAIN_DECIMAL.exec(text.trim());
+  if (!match) return null;
+  const fraction = (match[3] ?? "").slice(0, DECIMAL_DIGITS).padEnd(DECIMAL_DIGITS, "0");
+  const units = BigInt((match[2] ?? "") + fraction);
+  const cents = (units + CENT_UNITS / TWO) / CENT_UNITS;
+  const exact = cents * CENT_UNITS;
+  const residual = units > exact ? units - exact : exact - units;
+  if (residual > NOISE_LIMIT_UNITS) return null;
+  return fromBigInt(match[1] === "-" ? -cents : cents);
+}
+
+/** Display form only. Never parse this string back to obtain a stored value. */
+export function formatEuro(amount: EuroCents): string {
+  const magnitude = BigInt(Math.abs(amount));
+  const euros = (magnitude / HUNDRED).toString().replace(/\B(?=(\d{3})+(?!\d))/gu, ".");
+  const cents = (magnitude % HUNDRED).toString().padStart(2, "0");
+  return `${amount < 0 ? "-" : ""}${euros},${cents} €`;
+}
+
+/** Display only, with an explicit sign for gains and losses, for example `+70,00 €`. */
+export function formatSignedEuro(amount: EuroCents): string {
+  return amount > 0 ? `+${formatEuro(amount)}` : formatEuro(amount);
+}
