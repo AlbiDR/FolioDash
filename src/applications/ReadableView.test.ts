@@ -8,4 +8,8 @@ describe("readableView", () => {
     expect(lines.flat().join(" ")).toContain("No statements recorded yet");
     expect(lines.flat().join(" ")).toContain("rebuilt");
   });
+
+  it("titles the sheet simply FolioDash", () => {
+    expect(readableView(EMPTY_LEDGER)[0]).toEqual(["FolioDash"]);
+  });
 });

@@ -57,6 +57,12 @@ describe("ensureWorkbook: starting from scratch", () => {
     expect(result.workbook.url).toContain(result.workbook.id);
   });
 
+  it("names the new spreadsheet simply FolioDash", async () => {
+    const { google } = setup();
+    await readyWorkbook(google);
+    expect([...google.files.values()].map((file) => file.name)).toEqual(["FolioDash"]);
+  });
+
   it("finds the same spreadsheet again instead of creating another, on any device", async () => {
     const { google } = setup();
     const created = await readyWorkbook(google);

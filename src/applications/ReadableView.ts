@@ -15,10 +15,10 @@ export function readableView(state: LedgerState): ViewCell[][] {
   const notice = "This tab is rebuilt by FolioDash every time you save. Do not edit it: changes are overwritten. Your records are kept in the hidden tab _FolioDash ledger.";
   const metrics = computeMetrics(state);
   const latest = metrics[metrics.length - 1];
-  if (latest === undefined) return [["FolioDash portfolio"], [notice], [], ["No statements recorded yet."]];
+  if (latest === undefined) return [["FolioDash"], [notice], [], ["No statements recorded yet."]];
 
   const lines: ViewCell[][] = [
-    ["FolioDash portfolio"],
+    ["FolioDash"],
     [notice],
     [],
     ["Latest statement", latest.date],
