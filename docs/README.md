@@ -12,7 +12,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Google setup](operations/google-setup.md) | Owner steps in the owner's Google account for the first live proof with a synthetic spreadsheet | Performed once on 2026-11-01 with a synthetic sheet; read-only check passed; commit and read-back not yet exercised |
 | [Installable app](operations/pwa.md) | Manifest, icons, service worker, offline behaviour and what is and is not verified | Built and checked in desktop Chrome (2026-11-02); not yet checked on Android or iOS |
 | [Microanimations and interactions](operations/interactions.md) | Numbered inventory of the 92 interaction/motion touchpoints, reduced-motion policy and verification | Implemented locally; physical Android and screen-reader verification pending |
-| [Lighthouse verification](operations/lighthouse.md) | Reproducible audit settings, startup loading changes and measured evidence | Local improvements verified; optimized production audit pending |
+| [Lighthouse verification](operations/lighthouse.md) | Reproducible audit settings, startup loading changes and measured evidence | Full production audits reached 100 in all four categories on mobile and desktop; mobile Performance varied 98-100 across runs |
 | [Web quality contract](operations/web-quality.md) | User journeys, accessible presentation, measurement methods and release evidence | Proposed acceptance requirements |
 
 ## Authority and amendment
