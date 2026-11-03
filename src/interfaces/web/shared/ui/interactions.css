@@ -1,4 +1,4 @@
-/* The numbered inventory in docs/operations/interactions.md owns the 32 additions.
+/* The numbered inventory in docs/operations/interactions.md owns the 42 additions.
  * This layer only changes feedback. It never delays an action or interpolates money.
  */
 
@@ -167,6 +167,46 @@ details[open] > summary::before { transform: rotate(45deg); }
 /* 32: Monthly bar pinning by tap/Enter/Space lives in MonthlyBars. */
 .bars-item[aria-pressed="true"] .bar { stroke: var(--color-text); stroke-width: 1; }
 .bars-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* 33: Inspection crosshair entrance, with no interpolation of its date/coordinates. */
+.chart-guide { animation: guide-appear var(--duration-short) var(--ease-standard); }
+@keyframes guide-appear { from { opacity: 0; } to { opacity: 1; } }
+
+/* 34: Selected legend swatch confirms the chosen line once. */
+.chart-legend-button[aria-pressed="true"] .chart-swatch { transform-origin: left center; animation: swatch-confirm var(--duration-feedback) var(--ease-standard); }
+@keyframes swatch-confirm { from { transform: scaleX(0.65); } to { transform: scaleX(1); } }
+
+/* 35: Back-link arrow gently points towards the parent screen. */
+.back-link:focus-visible > svg { animation: back-cue var(--duration-feedback) var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .back-link:hover > svg { animation: back-cue var(--duration-feedback) var(--ease-standard); } }
+@keyframes back-cue { 50% { transform: translateX(-3px); } }
+
+/* 36: Changed statement month receives a brief border confirmation, not a number tween. */
+.month-summary { animation: month-confirm var(--duration-feedback) var(--ease-standard); }
+@keyframes month-confirm { from { box-shadow: inset 0 0 0 2px var(--color-accent); } to { box-shadow: inset 0 0 0 1px var(--color-border); } }
+
+/* 37: A restored fund card briefly changes tone so Undo's result is easy to locate. */
+.manual-fund.restored-fund { animation: feedback-enter var(--duration-short) var(--ease-standard), restored-confirm var(--duration-medium) var(--ease-standard); }
+@keyframes restored-confirm { from { background-color: var(--color-accent-soft); } to { background-color: var(--color-surface-2); } }
+
+/* Functional additions 38-42 live in MonthsView, LineChart, FundView and OverviewView. */
+.month-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.month-actions button, .quiet-action {
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--shape-sm);
+  font: inherit;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  cursor: pointer;
+}
+.month-actions button:disabled, .quiet-action:disabled { opacity: 0.5; cursor: default; }
+.fund-identity { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.isin-code { user-select: all; overflow-wrap: anywhere; }
+.copy-feedback { min-height: 1.4em; }
+.hero .copy-feedback { color: inherit; }
+.chart-reset { margin-top: var(--space-2); }
 
 /* This final rule wins over every motion rule, including layers imported earlier. */
 @media (prefers-reduced-motion: reduce) {

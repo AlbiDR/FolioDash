@@ -212,6 +212,10 @@ export function LineChart(props: LineChartProps): JSX.Element {
           ),
         )}
       </ul>
+      <button class="quiet-action chart-reset" type="button" disabled={scrubbed === null && highlight === null} onClick={() => {
+        setScrubbed(null);
+        setHighlighted(null);
+      }}>Reset chart inspection</button>
       <p class="footnote">Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.</p>
       <details class="chart-table">
         <summary>Show the values as a table</summary>

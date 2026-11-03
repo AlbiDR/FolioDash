@@ -32,6 +32,7 @@ export function ManualEntry(props: {
   const [saveLocked, setSaveLocked] = useState(false);
   const [emptyConfirmed, setEmptyConfirmed] = useState(false);
   const [removed, setRemoved] = useState<{ row: EntryRow; index: number } | null>(null);
+  const [restoredId, setRestoredId] = useState<string | null>(null);
   const [savedDate, setSavedDate] = useState("");
   const [review, setReview] = useState<{ statement: ReviewStatement; date: NonNullable<ReturnType<typeof parseIsoDate>>; key: string } | null>(null);
   const result = prepareManualStatement(rows);
@@ -76,7 +77,7 @@ export function ManualEntry(props: {
       <div class="manual-funds">{rows.map((row, index) => {
         const checked = prepareManualStatement([row]);
         const errors = attempted && !checked.ok ? checked.errors : [];
-        return <fieldset key={row.id} class="manual-fund">
+        return <fieldset key={row.id} class={`manual-fund${restoredId === row.id ? " restored-fund" : ""}`}>
           <legend>{row.known ? row.name : `New fund ${String(index + 1)}`}</legend>
           {row.known ? <p class="hint">{row.isin}</p> : <>
             <div class="field"><label for={`${row.id}-name`}>Fund name</label><input id={`${row.id}-name`} required value={row.name} onInput={event => { update(row.id, "name", event.currentTarget.value); }} /></div>
@@ -91,7 +92,7 @@ export function ManualEntry(props: {
         </fieldset>;
       })}</div>
       {removed !== null && <div class="notice" role="status">{removed.row.name || "Fund"} removed from this entry only. History is unchanged; sales are reviewed next.
-        <button id="undo-removed-fund" type="button" onClick={() => { pendingFocus.current = `${removed.row.id}-${removed.row.known ? "value" : "name"}`; setRows(current => [...current.slice(0, removed.index), removed.row, ...current.slice(removed.index)]); setRemoved(null); }}>Undo removal</button>
+        <button id="undo-removed-fund" type="button" onClick={() => { pendingFocus.current = `${removed.row.id}-${removed.row.known ? "value" : "name"}`; setRestoredId(removed.row.id); setRows(current => [...current.slice(0, removed.index), removed.row, ...current.slice(removed.index)]); setRemoved(null); }}>Undo removal</button>
       </div>}
       <button type="button" onClick={() => { const row = blank(); pendingFocus.current = `${row.id}-name`; setRows(current => [...current, row]); }}>Add another fund</button>
       {rows.length === 0 && <label><input type="checkbox" checked={emptyConfirmed} onChange={event => { setEmptyConfirmed(event.currentTarget.checked); }} /> I hold no funds on this date. Review closures and full proceeds next.</label>}

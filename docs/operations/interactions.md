@@ -1,6 +1,6 @@
 # Microanimations and interactions
 
-This change adds exactly **32** named behaviours. This inventory counts user-visible behaviours, not CSS declarations, keyframes or every component instance. Existing chart reveals, card entry animations and mobile date sliders are outside this count.
+The inventory contains **42** named behaviours: the original 32, followed by exactly five additional microanimations (33-37) and five additional functional microinteractions (38-42). This inventory counts user-visible behaviours, not CSS declarations, keyframes or every component instance. Existing chart reveals, card entry animations and mobile date sliders are outside this count.
 
 The shared presentation layer is `src/interfaces/web/shared/ui/interactions.css`, imported after the base styles. Motion durations and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
 
@@ -38,6 +38,16 @@ The shared presentation layer is `src/interfaces/web/shared/ui/interactions.css`
 | 30 | Chart legend spotlight | Select a legend name; other lines soften. Select it again to clear. Every observation and axis bound stays unchanged |
 | 31 | Active chart-point emphasis | Explore chart dates; active markers grow subtly without animating financial coordinates |
 | 32 | Monthly bar pin/unpin | Tap/click a bar or activate it with Enter/Space; the selected month remains after the pointer leaves. Activate it again to release it |
+| 33 | Animation: inspection crosshair entrance | Explore a chart date; the guide fades in without tweening its coordinates |
+| 34 | Animation: selected legend swatch | Highlight a chart line; its legend swatch briefly extends to its full width |
+| 35 | Animation: back-link directional cue | Hover or keyboard-focus Portfolio on a detail screen; its arrow briefly nudges left |
+| 36 | Animation: changed-month boundary | Choose a statement month; the summary border briefly confirms the change |
+| 37 | Animation: restored-fund tone | Undo a fund removal; the restored card briefly changes tone |
+| 38 | Interaction: adjacent statement navigation | Use Previous/Next on the phone month view. They follow recorded dates, skip absent months, and disable at the ends |
+| 39 | Interaction: latest-statement shortcut | Use Latest to return directly to the newest recorded month |
+| 40 | Interaction: reset chart inspection | Reset the inspected date and highlighted line together; the time range and axes stay unchanged |
+| 41 | Interaction: copy a fund's ISIN | Copy ISIN on a fund page; a persistent live status reports success or an actionable clipboard failure |
+| 42 | Interaction: fund-list search | Search holdings by name or ISIN on phone/desktop. A result count and empty state explain the filter; portfolio totals and charts remain unchanged |
 
 ## Behaviour limits
 
@@ -65,3 +75,5 @@ Local browser evidence (headless desktop Chrome, synthetic portfolio, 2026-11-03
 | Five main screens at 320/390/430/844/1440px, narrow touch-target checks, short viewport and doubled root text | PASS: the prior mobile layout checks remain green |
 
 Physical touch feel, Android software-keyboard behaviour, screen-reader announcements and live Google saving are NOT RUN here. The feedback layer also needs a visual judgement on the actual phone; a computed-style or synthetic interaction check cannot establish that it feels right there.
+
+Follow-up for additions 33-42 (same local synthetic environment): the inventory check passes with 42 unique sequential entries, exactly five new animations and five new interactions. Browser checks pass for Previous/Next end boundaries, Latest, search/no-result/clear, chart reset with unchanged geometry, and clipboard success/failure feedback using a stubbed Clipboard API. Computed animation names confirm crosshair, swatch, month summary and undo feedback; actual Tab/Shift-Tab focus confirms the back-arrow cue. Reduced motion disables restored-card animation. The prior motion/focus and five-width mobile checks also pass. Native clipboard permissions and physical Android clipboard use remain NOT RUN.

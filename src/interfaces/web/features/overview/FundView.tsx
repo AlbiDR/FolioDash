@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { useState } from "preact/hooks";
 import { type ChartRange, rangeStart } from "../../app/chartRange";
 import { LineChart } from "../../shared/charts/LineChart";
 import type { ChartSeries } from "../../shared/charts/lineChartGeometry";
@@ -10,6 +11,15 @@ import { Percent, Pill, Signed } from "./parts";
 
 /** One fund: its value and net invested over time, and its latest figures, on the shared time range. */
 export function FundView(props: { readonly model: OverviewModel; readonly isin: string; readonly range: ChartRange }): JSX.Element {
+  const [copyFeedback, setCopyFeedback] = useState<{ isin: string; message: string } | null>(null);
+  async function copyIsin(isin: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(isin);
+      setCopyFeedback({ isin, message: "ISIN copied." });
+    } catch {
+      setCopyFeedback({ isin, message: "Could not copy. Select and copy the ISIN above." });
+    }
+  }
   const fund = props.model.funds.find((entry) => entry.isin === props.isin);
   const back = (
     <a class="back-link" href="#overview">
@@ -39,7 +49,11 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
     <section class="dash" aria-labelledby="fund-heading">
       <div class="cell-12">{back}</div>
       <div class="card hero cell-4">
-        <p class="card-label">{fund.isin}</p>
+        <div class="fund-identity">
+          <p class="card-label isin-code">{fund.isin}</p>
+          <button class="quiet-action" type="button" onClick={() => { void copyIsin(fund.isin); }}>Copy ISIN</button>
+        </div>
+        <p class="copy-feedback hint" role="status">{copyFeedback?.isin === fund.isin ? copyFeedback.message : ""}</p>
         <h2 id="fund-heading" class="fund-title">{fund.name}</h2>
         <p class="hero-value"><Amount cents={latest?.value ?? null} /></p>
         <p class="hero-sub">

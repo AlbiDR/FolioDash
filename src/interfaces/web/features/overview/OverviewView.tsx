@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { useState } from "preact/hooks";
 import { formatDateLong } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
@@ -67,6 +68,7 @@ const GLOSSARY: readonly { readonly term: string; readonly meaning: string }[] =
  * period results, allocation, monthly pattern, fund ranking and holdings at once.
  */
 export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange }): JSX.Element {
+  const [fundQuery, setFundQuery] = useState("");
   const { dates, funds, totals, kpis } = props.model;
   const latestTotal = totals[totals.length - 1];
   const lastDate = dates[dates.length - 1];
@@ -86,6 +88,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   const gain = kpi("Current gain");
   const d = dashboardFor(props.model, props.range);
   const { held, slices, ranking, bars } = d;
+  const query = fundQuery.trim().toLocaleLowerCase("en");
+  const listedFunds = [...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query));
 
   return (
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
@@ -151,8 +155,14 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       <div class="card cell-12 portfolio-holdings">
         <h3 class="card-title">Your funds</h3>
         <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
+        {funds.length > 0 && <div class="field fund-search">
+          <label for="fund-search">Find a fund</label>
+          <input id="fund-search" type="search" placeholder="Name or ISIN" value={fundQuery} onInput={(event) => { setFundQuery(event.currentTarget.value); }} aria-describedby="fund-search-help" />
+          <p id="fund-search-help" class="hint" role="status">{listedFunds.length} of {funds.length} funds. Filters this list only.</p>
+        </div>}
+        {funds.length > 0 && listedFunds.length === 0 && <p class="empty-note">No funds match. Try another name or ISIN.</p>}
         <ul class="mobile-holdings">
-          {[...d.held, ...d.closed].map((fund) => (
+          {listedFunds.map((fund) => (
             <li key={fund.isin}>
               <a href={`#fund/${fund.isin}`}>
                 <span class="mobile-holding-name">{fund.name}<span class="holding-meta">{fund.status === "closed" ? "Closed" : "View fund"}</span></span>
@@ -182,7 +192,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                 </tr>
               </thead>
               <tbody>
-                {[...d.held, ...d.closed].map((fund) => (
+                {listedFunds.map((fund) => (
                   <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
                     <th scope="row">
                       <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>

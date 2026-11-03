@@ -31,7 +31,12 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 {[...dates].reverse().map((entry) => <option key={entry} value={entry}>{formatMonthShort(entry)}</option>)}
               </select>
             </label>
-            {month !== undefined && <div class="card">
+            <div class="month-actions" role="group" aria-label="Browse statement months">
+              <button type="button" disabled={index <= 0} onClick={() => { setSelected(dates[index - 1] ?? ""); }}>Previous</button>
+              <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates[index + 1] ?? ""); }}>Next</button>
+              <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates.at(-1) ?? ""); }}>Latest</button>
+            </div>
+            {month !== undefined && <div class="card month-summary" key={month.date}>
               <h3 class="card-title">{formatMonthShort(month.date)}</h3>
               <dl class="facts stacked">
                 <div><dt>Fund value</dt><dd><Amount cents={month.value} /></dd></div>
