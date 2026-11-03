@@ -13,6 +13,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Installable app](operations/pwa.md) | Manifest, icons, service worker, offline behaviour and what is and is not verified | Built and checked in desktop Chrome (2026-11-02); not yet checked on Android or iOS |
 | [Microanimations and interactions](operations/interactions.md) | Original 92 interaction/motion touchpoints, shared surface feedback, allocation inspection and reduced-motion verification | Implemented locally; physical Android and screen-reader verification pending |
 | [Lighthouse verification](operations/lighthouse.md) | Reproducible audit settings, startup loading changes and measured evidence | Full production audits reached 100 in all four categories on mobile and desktop; mobile Performance varied 98-100 across runs |
+| [Dependency maintenance](operations/dependencies.md) | Security override rationale, removal conditions and dependency verification | minimatch alert patched; audit fails on moderate or greater severity |
 | [Web quality contract](operations/web-quality.md) | User journeys, accessible presentation, measurement methods and release evidence | Proposed acceptance requirements |
 
 ## Authority and amendment

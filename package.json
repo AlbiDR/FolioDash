@@ -13,7 +13,7 @@
     "typecheck": "tsc --project config/tsconfig.json && tsc --project config/tsconfig.web.json && tsc --project config/tsconfig.scripts.json && tsc --project config/tsconfig.worker.json",
     "lint": "eslint --flag unstable_native_nodejs_ts_config --config config/eslint.config.ts src tests scripts config/eslint.config.ts",
     "test": "vitest run --config config/vitest.config.ts",
-    "audit:dependencies": "npm audit --audit-level=high",
+    "audit:dependencies": "npm audit --audit-level=moderate",
     "build:apps-script": "node scripts/build-apps-script.ts",
     "verify:pwa": "node scripts/verify-pwa.ts",
     "verify:apps-script": "node scripts/verify-apps-script-bundle.ts",
@@ -34,6 +34,9 @@
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "minimatch@^10.0.0": "11.0.1"
   },
   "dependencies": {
     "d3-array": "^3.2.4",
