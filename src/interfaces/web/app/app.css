@@ -491,6 +491,7 @@ a.status-chip:hover {
 
 .hero {
   --hero-gain: #0a6a46;
+  container-type: inline-size;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -576,7 +577,7 @@ a.status-chip:hover {
 }
 
 .hero-value {
-  font-size: clamp(2.25rem, 3.7vw, 3.5rem);
+  font-size: clamp(1.75rem, 10cqi, 3.5rem);
   line-height: 1.03;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -648,6 +649,8 @@ a.status-chip:hover {
 }
 
 .stat-value {
+  min-width: 0;
+  max-width: 100%;
   font-size: 1.75rem;
   line-height: 1.1;
   font-weight: 700;
@@ -922,6 +925,8 @@ a.status-chip:hover {
 }
 
 .perf {
+  container-type: inline-size;
+  min-width: 0;
   display: grid;
   gap: 0.15rem;
   margin: 0;
@@ -931,7 +936,7 @@ a.status-chip:hover {
 
 .perf-row {
   display: grid;
-  grid-template-columns: minmax(7rem, 1.3fr) minmax(3rem, 1fr) auto;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
   padding: 0.45rem 0;
@@ -1018,11 +1023,17 @@ a.status-chip:hover {
 }
 
 .hero-value .amount {
-  min-width: 7ch;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .stat-value .amount {
-  min-width: 5ch;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .masked {
@@ -1685,8 +1696,8 @@ details.card > summary {
   .topbar > .status-chip { grid-column: 1; grid-row: 2; justify-self: start; max-width: 100%; }
   .topbar-controls { display: contents; }
   .topbar .privacy-toggle { grid-column: 2; grid-row: 1 / span 2; width: var(--touch-target); height: var(--touch-target); }
-  .topbar .control-label { display: none; }
-  .topbar .segmented { grid-column: 1 / -1; grid-row: 3; width: 100%; }
+  .topbar .control-label { display: block; grid-column: 1 / -1; grid-row: 3; color: var(--color-muted); font-size: 0.8125rem; }
+  .topbar .segmented { grid-column: 1 / -1; grid-row: 4; width: 100%; }
 
   .segmented button,
   .segmented a { min-width: 0; min-height: var(--touch-target); height: auto; padding-inline: var(--space-2); }
@@ -1699,11 +1710,11 @@ details.card > summary {
   .hero .sparkline { width: calc(100% + 2.5rem); margin: var(--space-2) -1.25rem -1.25rem; height: 3.5rem; }
   .fund-title { font-size: 1.25rem; overflow-wrap: anywhere; }
 
-  .dash > .kpi-cell { grid-column: span 6; }
+  .dash > .kpi-cell { grid-column: span 12; }
   .kpi-cell .stat { height: 100%; gap: var(--space-2); }
-  .kpi-cell .stat-value { font-size: 1.2rem; }
+  .kpi-cell .stat-value { font-size: 1.75rem; }
   .kpi-cell .sparkline { width: calc(100% + 2rem); margin: auto -1rem -1rem; height: 2.25rem; }
-  .kpi-cell .stat-caption { font-size: 0.75rem; }
+  .kpi-cell .stat-caption { font-size: 0.875rem; line-height: 1.5; }
 
   .desktop-holdings { display: none; }
   .mobile-months { display: grid; gap: var(--gap); }
@@ -1748,6 +1759,49 @@ details.card > summary {
   .matrix th, .matrix td { padding: 0.6rem var(--space-2); }
 }
 
-@media (max-width: 22.5rem) {
-  .dash > .kpi-cell { grid-column: span 12; }
+/* Keep secondary guidance available without making it compete with the portfolio. */
+.setup-details > summary,
+.demo-picker > summary,
+.dashboard-glossary > summary {
+  min-height: var(--touch-target);
+  align-content: center;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.demo-picker .demo-nav { padding-block: var(--space-2); }
+
+@media (max-width: 47.5rem) {
+  .topbar > .status-chip { min-height: var(--touch-target); }
+  .card-subtitle, .hero-caption { line-height: 1.5; }
+  .card-title, .chart-title { font-size: 1.125rem; }
+  .card-label, .facts dt { font-size: 0.875rem; }
+  .hero-sub { flex-wrap: wrap; row-gap: var(--space-2); }
+  .hero .facts { grid-template-columns: 1fr; gap: var(--space-3); }
+  .hero .facts > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-2); }
+  .hero .facts .facts-note { flex-basis: 100%; }
+  .facts.grid { grid-template-columns: 1fr; }
+  .facts > div, .stat > *, .mobile-holdings dd { min-width: 0; max-width: 100%; }
+  .facts.stacked > div { flex-wrap: wrap; }
+  .hero-value .amount, .stat-value .amount, .facts .amount, .mobile-holdings .amount {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .hero .sparkline { margin-top: var(--space-3); }
+  .kpi-cell .sparkline { margin-top: var(--space-2); }
+  .fund-identity { flex-wrap: wrap; gap: var(--space-2); }
+  .legend a { padding-block: var(--space-2); }
+  .legend-name { min-width: 0; }
+  .import button, .review button, .account button { max-width: 100%; }
+}
+
+
+/* A narrow ranking card needs the same composition at desktop zoom as on a phone. */
+@container (max-width: 20rem) {
+  .perf-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .perf-name { white-space: normal; overflow-wrap: anywhere; }
+  .perf-track { grid-row: 2; grid-column: 1 / -1; }
+  .perf-value { grid-column: 2; grid-row: 1; }
 }

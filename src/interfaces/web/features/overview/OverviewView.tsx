@@ -345,8 +345,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         </details>
       </div>
 
-      <div class="card cell-12">
-        <h3 class="card-title">What the numbers mean</h3>
+      <details class="card cell-12 dashboard-glossary">
+        <summary>What the numbers mean</summary>
         <dl class="glossary">
           {GLOSSARY.map((entry) => (
             <div key={entry.term}>
@@ -355,7 +355,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             </div>
           ))}
         </dl>
-      </div>
+      </details>
     </section>
   );
 }

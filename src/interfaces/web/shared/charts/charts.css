@@ -258,8 +258,15 @@
   .chart-readout-date { grid-column: 1 / -1; }
   .chart-readout-item { min-width: 0; }
   .chart-readout-label { overflow-wrap: anywhere; }
-  .chart-readout-value { font-size: 0.9375rem; overflow-wrap: anywhere; }
+  .chart-readout-value { font-size: 1rem; overflow-wrap: anywhere; }
   .chart-legend { gap: var(--space-2); font-size: 0.8125rem; }
   .chart-legend-item { min-width: 0; overflow-wrap: anywhere; }
   .chart-swatch { flex-shrink: 0; }
+}
+
+/* Readout values need their own line when two columns no longer fit comfortably. */
+@media (max-width: 25rem) {
+  .chart-readout { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .chart-date-control { grid-template-columns: minmax(0, 1fr); }
+  .chart-date-control input { grid-row: auto; }
 }

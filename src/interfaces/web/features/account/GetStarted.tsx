@@ -28,15 +28,18 @@ export function GetStarted(props: { readonly clientConfigured: boolean; readonly
   return (
     <div class="card get-started">
       <h2 class="card-title">Start your own portfolio</h2>
-      <p class="card-subtitle">Two steps. About a minute.</p>
-      <ol class="steps">
-        <li>
-          <strong>Continue with Google.</strong> FolioDash creates one private spreadsheet in your own Google Drive. It can only ever see that one file.
-        </li>
-        <li>
-          <strong>Import your first bank statement.</strong> Drop in the Excel file from your bank. Your figures appear straight away.
-        </li>
-      </ol>
+      <p class="card-subtitle">Connect Google, then import your first statement.</p>
+      <details class="setup-details">
+        <summary>How setup works</summary>
+        <ol class="steps">
+          <li>
+            <strong>Continue with Google.</strong> FolioDash creates one private spreadsheet in your own Google Drive. It can only ever see that one file.
+          </li>
+          <li>
+            <strong>Import your first bank statement.</strong> Drop in the Excel file from your bank. Your figures appear straight away.
+          </li>
+        </ol>
+      </details>
       <button type="button" class="primary" data-working={busy} disabled={busy || !props.clientConfigured} onClick={() => void go()}>
         {busy ? "Waiting for Google…" : "Continue with Google"}
       </button>

@@ -155,8 +155,8 @@ export function App(): JSX.Element {
               <div class="topbar-controls">
                 {(route.name === "overview" || route.name === "fund") && (
                   <>
-                    <span class="control-label" aria-hidden="true">Period</span>
-                    <RangeSelector label="Time range" options={CHART_RANGES} value={range} onChange={setRange} />
+                    <span class="control-label">Chart period</span>
+                    <RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} />
                   </>
                 )}
                 <PrivacyToggle hidden={hidden} onChange={setHidden} />
@@ -197,18 +197,21 @@ export function App(): JSX.Element {
               </div>
             )}
             {route.name === "overview" && data.mode === "signed-out" && (
-              <nav aria-label="Demonstration portfolios">
-                <ul class="demo-nav">
-                  <li class="demo-label">Demo portfolios:</li>
-                  {DEMO_VARIANTS.map((entry) => (
-                    <li key={entry.id}>
-                      <a href={`?demo=${entry.id}#overview`} aria-current={entry.id === variant ? "page" : undefined}>
-                        {entry.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
+              <details class="demo-picker">
+                <summary>Explore demo portfolios</summary>
+                <nav aria-label="Demonstration portfolios">
+                  <ul class="demo-nav">
+                    <li class="demo-label">Demo portfolios:</li>
+                    {DEMO_VARIANTS.map((entry) => (
+                      <li key={entry.id}>
+                        <a href={`?demo=${entry.id}#overview`} aria-current={entry.id === variant ? "page" : undefined}>
+                          {entry.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </details>
             )}
             {(route.name === "import" || route.name === "history") && (
               <div class="mode-row">
