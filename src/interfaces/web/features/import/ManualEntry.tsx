@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import { Amount } from "../../shared/privacy/privacy";
@@ -20,6 +20,7 @@ export function ManualEntry(props: {
   readonly onSaveLock?: (locked: boolean) => void;
 }): JSX.Element {
   const sequence = useRef(0);
+  const pendingFocus = useRef<string | null>(null);
   const blank = (): EntryRow => ({ id: `new-${String(++sequence.current)}`, known: false, name: "", isin: "", amount: "" });
   const [rows, setRows] = useState<EntryRow[]>(() => {
     const held = startingRows(props.ledger);
@@ -35,6 +36,14 @@ export function ManualEntry(props: {
   const [review, setReview] = useState<{ statement: ReviewStatement; date: NonNullable<ReturnType<typeof parseIsoDate>>; key: string } | null>(null);
   const result = prepareManualStatement(rows);
   const chosen = parseIsoDate(date);
+  useEffect(() => {
+    if (pendingFocus.current === null) return;
+    const node = document.getElementById(pendingFocus.current);
+    if (node === null) return;
+    node.focus({ preventScroll: true });
+    node.scrollIntoView({ block: "nearest", behavior: "instant" });
+    pendingFocus.current = null;
+  }, [rows, removed]);
 
   function update(id: string, field: keyof ManualRow, value: string): void {
     setRows(current => current.map(row => row.id === id ? { ...row, [field]: value } : row));
@@ -78,13 +87,13 @@ export function ManualEntry(props: {
             <p id={`${row.id}-help`} class="hint">Comma for decimals. Enter 0 explicitly for a zero value.</p>
           </div>
           {errors.length > 0 && <ul class="field-error">{errors.map(error => <li key={error}>{error.replace("Fund 1: ", "")}</li>)}</ul>}
-          <button type="button" onClick={() => { setRemoved({ row, index }); setRows(current => current.filter(item => item.id !== row.id)); setEmptyConfirmed(false); }}>Not held on this date</button>
+          <button type="button" onClick={() => { pendingFocus.current = "undo-removed-fund"; setRemoved({ row, index }); setRows(current => current.filter(item => item.id !== row.id)); setEmptyConfirmed(false); }}>Not held on this date</button>
         </fieldset>;
       })}</div>
       {removed !== null && <div class="notice" role="status">{removed.row.name || "Fund"} removed from this entry only. History is unchanged; sales are reviewed next.
-        <button type="button" onClick={() => { setRows(current => [...current.slice(0, removed.index), removed.row, ...current.slice(removed.index)]); setRemoved(null); }}>Undo removal</button>
+        <button id="undo-removed-fund" type="button" onClick={() => { pendingFocus.current = `${removed.row.id}-${removed.row.known ? "value" : "name"}`; setRows(current => [...current.slice(0, removed.index), removed.row, ...current.slice(removed.index)]); setRemoved(null); }}>Undo removal</button>
       </div>}
-      <button type="button" onClick={() => { setRows(current => [...current, blank()]); }}>Add another fund</button>
+      <button type="button" onClick={() => { const row = blank(); pendingFocus.current = `${row.id}-name`; setRows(current => [...current, row]); }}>Add another fund</button>
       {rows.length === 0 && <label><input type="checkbox" checked={emptyConfirmed} onChange={event => { setEmptyConfirmed(event.currentTarget.checked); }} /> I hold no funds on this date. Review closures and full proceeds next.</label>}
       {attempted && !result.ok && <div class="review-problem" role="alert"><h4>Check your entries</h4><ul>{result.errors.map(error => <li key={error}>{error}</li>)}</ul></div>}
       {attempted && rows.length === 0 && !emptyConfirmed && <p role="alert">Confirm that no funds are held, or add a fund.</p>}

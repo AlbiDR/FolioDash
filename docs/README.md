@@ -11,6 +11,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Repository configuration](operations/repository-configuration.md) | GitHub variables, secrets, environments, workflow rules and the public-release gate | Draft; environment, four variables, one secret and the deploy workflow exist and ran once (2026-11-01); no branch or environment protection |
 | [Google setup](operations/google-setup.md) | Owner steps in the owner's Google account for the first live proof with a synthetic spreadsheet | Performed once on 2026-11-01 with a synthetic sheet; read-only check passed; commit and read-back not yet exercised |
 | [Installable app](operations/pwa.md) | Manifest, icons, service worker, offline behaviour and what is and is not verified | Built and checked in desktop Chrome (2026-11-02); not yet checked on Android or iOS |
+| [Microanimations and interactions](operations/interactions.md) | Numbered inventory of the 32 interaction additions, reduced-motion policy and verification | Implemented locally; physical Android and screen-reader verification pending |
 | [Web quality contract](operations/web-quality.md) | User journeys, accessible presentation, measurement methods and release evidence | Proposed acceptance requirements |
 
 ## Authority and amendment

@@ -1,0 +1,174 @@
+/* The numbered inventory in docs/operations/interactions.md owns the 32 additions.
+ * This layer only changes feedback. It never delays an action or interpolates money.
+ */
+
+/* 01: Enabled button press. */
+button:not(:disabled) {
+  transition: transform var(--duration-press) var(--ease-standard), background var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled):active { transform: scale(0.98); }
+
+/* 02: Primary action lift, only on devices with a real hover pointer. */
+@media (hover: hover) and (pointer: fine) {
+  .primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--color-accent-soft); }
+  .primary:not(:disabled):hover:active { transform: scale(0.98); }
+}
+
+/* 03: Keyboard button focus halo; the existing outline is retained. */
+button:focus-visible { box-shadow: 0 0 0 5px var(--color-accent-soft); }
+
+/* 04: Selected navigation icon settles once when its destination changes. */
+.nav-link[aria-current="page"] > svg { animation: icon-settle var(--duration-feedback) var(--ease-spring); }
+@keyframes icon-settle { from { transform: translateY(3px) scale(0.88); } to { transform: none; } }
+
+/* 05: The navigation icon acknowledges a press independently of the tab surface. */
+.nav-link > svg { transition: transform var(--duration-press) var(--ease-standard); }
+.nav-link:active > svg { transform: translateY(2px); }
+
+/* 06: One moving selection pill. Keyboard interactions 07 and 08 live in RangeSelector. */
+.range-selector { position: relative; isolation: isolate; }
+.range-selector::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px - (var(--segment-count) - 1) * 2px) / var(--segment-count));
+  border-radius: inherit;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px var(--color-border);
+  transform: translateX(calc(var(--segment-index) * (100% + 2px)));
+  transition: transform var(--duration-feedback) var(--ease-standard), width var(--duration-short) var(--ease-standard);
+}
+.range-selector button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+.range-selector button { position: relative; }
+
+/* 09: Privacy icon swap; amounts themselves are replaced immediately. */
+.privacy-icon { display: inline-flex; animation: icon-swap var(--duration-short) var(--ease-standard); }
+@keyframes icon-swap { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+
+/* 10: Privacy-state halo. */
+.privacy-toggle { transition: background var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
+.privacy-toggle[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--color-accent); }
+
+/* 11: Phone holding row press. */
+.mobile-holdings a { transition: background var(--duration-press) var(--ease-standard); border-radius: var(--shape-sm); }
+.mobile-holdings a:active { background: var(--color-accent-soft); }
+
+/* 12: Action chevrons acknowledge hover and keyboard focus. */
+.row-link > svg, .mobile-holdings a > svg { flex-shrink: 0; transition: transform var(--duration-short) var(--ease-standard); }
+.row-link:focus-visible > svg, .mobile-holdings a:focus-visible > svg { transform: translateX(3px); }
+@media (hover: hover) and (pointer: fine) {
+  .row-link:hover > svg, .mobile-holdings a:hover > svg { transform: translateX(3px); }
+}
+
+/* 13: Keyboard ranking-row emphasis. */
+.perf-row { border-radius: var(--shape-sm); transition: background var(--duration-short) var(--ease-standard); }
+.perf-row:focus-visible { background: var(--color-accent-soft); }
+
+/* 14: Allocation legend row feedback. */
+.legend a { border-radius: var(--shape-sm); transition: background var(--duration-short) var(--ease-standard); }
+.legend a:focus-visible { background: var(--color-accent-soft); }
+@media (hover: hover) and (pointer: fine) { .legend a:hover { background: var(--color-accent-soft); } }
+
+/* 15: Input hover border. 16: Input focus halo. */
+.field input, .field select { transition: border-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .field input:not(:disabled):hover, .field select:not(:disabled):hover { border-color: var(--color-muted); } }
+.field input:focus-visible, .field select:focus-visible { box-shadow: 0 0 0 4px var(--color-accent-soft); }
+.field input[aria-invalid="true"] { border-color: var(--color-error); }
+
+/* 17: The active fund/question group gains a quiet boundary. */
+.manual-fund, .fund-question { transition: box-shadow var(--duration-short) var(--ease-standard); }
+.manual-fund:focus-within, .fund-question:focus-within { box-shadow: inset 0 0 0 1px var(--color-accent); }
+
+/* 18: Checked answers retain a visible selected surface. */
+fieldset > label:has(input[type="radio"]), label.check {
+  border-radius: var(--shape-sm);
+  transition: background var(--duration-short) var(--ease-standard);
+}
+fieldset > label:has(input:checked), label.check:has(input:checked) { background: var(--color-accent-soft); }
+
+/* 19: Date slider thumb halo, including keyboard focus and touch dragging. */
+.chart-date-control input { border-radius: var(--shape-sm); transition: box-shadow var(--duration-short) var(--ease-standard); }
+.chart-date-control input:focus-visible, .chart-date-control input:active { box-shadow: 0 0 0 4px var(--color-accent-soft); }
+
+/* 20: Newly mounted fund cards enter without moving existing cards. */
+.manual-fund { animation: feedback-enter var(--duration-short) var(--ease-standard); }
+
+/* 21, 22, 23: Add, remove and undo focus handoffs live in ManualEntry. */
+
+/* 24: Entry-method panel transition. 25: Values/review transition, with drafts mounted. */
+.entry-panel:not([hidden]), .manual-entry > form:not([hidden]), .manual-entry > .review:not([hidden]) {
+  animation: feedback-enter var(--duration-short) var(--ease-standard);
+}
+@keyframes feedback-enter { from { opacity: 0.55; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+/* 26: Disclosure content fades in. 27: A stable, rotating disclosure indicator. */
+details[open] > :not(summary) { animation: disclosure-enter var(--duration-short) var(--ease-standard); }
+@keyframes disclosure-enter { from { opacity: 0.5; } to { opacity: 1; } }
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: 0 0.65rem 0 0.1rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+details[open] > summary::before { transform: rotate(45deg); }
+
+/* 28: Only actual reading/saving work gets a spinner, never a simulated percentage. */
+.status[data-busy="true"] > p::before {
+  content: "";
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: var(--space-2);
+  border: 2px solid var(--color-accent-soft);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  vertical-align: -0.1rem;
+  animation: busy-turn var(--duration-busy) linear infinite;
+}
+@keyframes busy-turn { to { transform: rotate(360deg); } }
+
+/* 29: New notices and validation messages enter once; they never auto-dismiss. */
+.notice, .field-error, .review-problem { animation: disclosure-enter var(--duration-short) var(--ease-standard); }
+
+/* 30: Chart legend spotlight (bounds and every plotted observation stay unchanged). */
+.chart-legend-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--shape-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.chart-legend-button[aria-pressed="true"] { background: var(--color-accent-soft); border-color: var(--color-accent); }
+.chart-series { transition: opacity var(--duration-short) var(--ease-standard); }
+.chart-series.unfocused { opacity: 0.25; }
+
+/* 31: Active chart observations gain emphasis without tweening financial coordinates. */
+.chart-series circle { transition: opacity var(--duration-press) var(--ease-standard), r var(--duration-press) var(--ease-standard); }
+.chart-series circle.is-active { r: 6px; }
+
+/* 32: Monthly bar pinning by tap/Enter/Space lives in MonthlyBars. */
+.bars-item[aria-pressed="true"] .bar { stroke: var(--color-text); stroke-width: 1; }
+.bars-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* This final rule wins over every motion rule, including layers imported earlier. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

@@ -336,10 +336,10 @@ export function ImportView(props: {
         <button type="button" disabled={saveLocked} aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
         <button type="button" disabled={saveLocked} aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
       </div>
-      <div hidden={method !== "manual"}>
+      <div class="entry-panel" hidden={method !== "manual"}>
         {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
       </div>
-      <div hidden={method !== "file"}>
+      <div class="entry-panel" hidden={method !== "file"}>
       <p>
         Choose the Excel file exactly as the bank exported it. It is read and checked in this browser; it is not
         uploaded.
@@ -360,7 +360,7 @@ export function ImportView(props: {
         />
       </div>
 
-      <div aria-live="polite" class="status">
+      <div aria-live="polite" data-busy={phase.name === "reading"} class="status">
         {phase.name === "reading" && <p>Reading and checking the file…</p>}
         {phase.name === "reviewed" && (
           <p>

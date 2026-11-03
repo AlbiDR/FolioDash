@@ -11,6 +11,7 @@ Read `docs/README.md`, `docs/architecture/cleanstack.md`, the relevant decision 
 - Keep the root lean under CleanStack section 4.3. Documentation, source, scripts, configuration and assets go to their designated folders; root-level tool exceptions need a documented discovery/entry-point reason. No root scratch files, release ZIPs, private exports or parallel legacy implementations. Do not relocate user-supplied legacy/private folders without a scoped inventory and explicit migration authority.
 - Keep one terminology, naming, token and error contract. Feature interfaces do not import other feature interfaces.
 - Do not bypass a required check, weaken integrity validation to make a test pass, or call a mock/synthetic rendering a live product verification.
+- After completing requested changes and the required checks, commit and push to the current branch's configured upstream by default. The owner explicitly requested this workflow. Do not force-push or treat this as authorisation for separate cloud provisioning, visibility changes or real-data migration.
 - Distinguish unknown write outcomes from failures known not to have committed. Do not blindly retry financial writes.
 - Financial imports, corrections, restoration and destructive actions require the documented user consent and recovery path.
 - Cloud provisioning, publication, real-data migration, repository visibility changes and licensing need explicit task authority; documents are not blanket authorization.

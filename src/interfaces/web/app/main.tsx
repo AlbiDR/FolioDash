@@ -2,6 +2,7 @@ import { render } from "preact";
 import "../shared/tokens.css";
 import "../shared/charts/charts.css";
 import "./app.css";
+import "../shared/ui/interactions.css";
 import { App } from "./App";
 
 const mount = document.getElementById("app");

@@ -44,7 +44,7 @@ export function PrivacyToggle(props: { readonly hidden: boolean; readonly onChan
         props.onChange(!props.hidden);
       }}
     >
-      <Icon name={props.hidden ? "eye-off" : "eye"} size={18} />
+      <span key={props.hidden ? "hidden" : "shown"} class="privacy-icon"><Icon name={props.hidden ? "eye-off" : "eye"} size={18} /></span>
       <span class="toggle-label">{props.hidden ? "Amounts hidden" : "Amounts shown"}</span>
       <span class="visually-hidden">. Press to {props.hidden ? "show" : "hide"} amounts.</span>
     </button>

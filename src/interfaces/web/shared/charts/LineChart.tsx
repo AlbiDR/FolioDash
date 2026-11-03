@@ -46,6 +46,7 @@ function styleClass(index: number, slot: number | null): string {
 export function LineChart(props: LineChartProps): JSX.Element {
   const hidden = usePrivacy();
   const [scrubbed, setScrubbed] = useState<number | null>(null);
+  const [highlighted, setHighlighted] = useState<string | null>(null);
   const container = useRef<HTMLElement>(null);
   const [width, setWidth] = useState<number>(LAYOUT.width);
   useEffect(() => {
@@ -63,6 +64,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height, includeZero }), [props.series, includeZero, width]);
   const titleId = `${props.id}-title`;
   const descriptionId = `${props.id}-description`;
+  const highlight = geometry.series.some(entry => entry.id === highlighted) ? highlighted : null;
 
   if (geometry.empty) {
     return (
@@ -160,7 +162,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
           <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />
         )}
         {geometry.series.map((entry, index) => (
-          <g key={entry.id} class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}`} data-series={entry.id}>
+          <g key={entry.id} class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`} data-series={entry.id}>
             {props.fillFirst === true && index === 0 && entry.areas.map((area) => <path key={area} class="area" d={area} />)}
             {entry.paths.map((path) => (
               <path key={path} class="line" d={path} fill="none" />
@@ -198,14 +200,19 @@ export function LineChart(props: LineChartProps): JSX.Element {
         {geometry.series.map((entry, index) =>
           entry.muted ? null : (
             <li key={entry.id} class={`chart-legend-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
+              <button type="button" class="chart-legend-button" aria-pressed={highlight === entry.id} aria-label={`Highlight ${entry.label}`} onClick={() => {
+                setHighlighted(current => current === entry.id ? null : entry.id);
+              }}>
               <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
                 <line x1="0" x2="32" y1="4" y2="4" />
               </svg>
               {entry.label}
+              </button>
             </li>
           ),
         )}
       </ul>
+      <p class="footnote">Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.</p>
       <details class="chart-table">
         <summary>Show the values as a table</summary>
         <table>

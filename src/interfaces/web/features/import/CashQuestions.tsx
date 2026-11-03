@@ -398,7 +398,7 @@ export function CashQuestions(props: {
         Confirm and record this statement
       </button>
       {hasErrors && attempted && <p class="field-error" role="alert">Some questions above still need an answer.</p>}
-      <div aria-live="polite" class="status">
+      <div aria-live="polite" data-busy={saving.name === "saving"} class="status">
         {saving.name === "saving" && <p>Saving to your spreadsheet…</p>}
       </div>
       {saving.name === "not-saved" && (

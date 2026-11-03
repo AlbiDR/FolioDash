@@ -29,6 +29,7 @@ export function MonthlyBars(props: {
 }): JSX.Element {
   const hidden = usePrivacy();
   const [active, setActive] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<string | null>(null);
   const present = props.bars.flatMap((bar) => (bar.value === null ? [] : [bar.value]));
   const top = Math.max(0, ...present);
   const bottom = Math.min(0, ...present);
@@ -44,7 +45,7 @@ export function MonthlyBars(props: {
     return <p class="empty-note">No month has a figure to show yet.</p>;
   }
   const latest = [...props.bars].reverse().find((bar) => bar.value !== null);
-  const shown = props.bars.find((bar) => bar.key === active) ?? latest;
+  const shown = props.bars.find((bar) => bar.key === (active ?? pinned)) ?? latest;
   return (
     <figure class="bars">
       <p class="bars-readout" aria-hidden="true">
@@ -53,7 +54,7 @@ export function MonthlyBars(props: {
           {shown?.value === undefined || shown.value === null ? "-" : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
         </span>
       </p>
-      <svg viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`} role="img" aria-label={props.description}>
+      <svg viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`} role="group" aria-label={props.description}>
         <line class="bars-zero" x1={PAD.side} x2={WIDTH - PAD.side} y1={zeroY} y2={zeroY} />
         {props.bars.map((bar, index) => {
           const x = PAD.side + band * index + (band - barWidth) / 2;
@@ -65,6 +66,16 @@ export function MonthlyBars(props: {
             <g
               key={bar.key}
               class={`bars-item${bar.key === shown?.key ? " is-active" : ""}`}
+              role="button"
+              tabIndex={0}
+              aria-label={`${bar.label}: ${value === null ? "Unavailable" : show(value)}`}
+              aria-pressed={pinned === bar.key}
+              onClick={() => { setPinned(current => current === bar.key ? null : bar.key); }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                setPinned(current => current === bar.key ? null : bar.key);
+              }}
               onPointerEnter={() => {
                 setActive(bar.key);
               }}
@@ -98,7 +109,7 @@ export function MonthlyBars(props: {
           disabled={props.bars.length < 2}
           aria-label={`${props.title}: month`}
           aria-valuetext={shown?.label ?? "No observation"}
-          onInput={(event) => { setActive(props.bars[Number(event.currentTarget.value)]?.key ?? null); }}
+          onInput={(event) => { setActive(null); setPinned(props.bars[Number(event.currentTarget.value)]?.key ?? null); }}
         />
         <output aria-live="polite">{shown?.label ?? ""}</output>
       </label>
