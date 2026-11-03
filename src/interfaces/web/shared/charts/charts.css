@@ -233,3 +233,33 @@
 .bars-item.is-active .bar {
   opacity: 1;
 }
+
+.chart-date-control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  margin-top: var(--space-2);
+}
+
+.chart-date-control input {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: var(--touch-target);
+  margin: 0;
+  accent-color: var(--color-accent);
+  touch-action: pan-y;
+}
+
+@media (max-width: 47.5rem) {
+  .chart-readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chart-readout-date { grid-column: 1 / -1; }
+  .chart-readout-item { min-width: 0; }
+  .chart-readout-label { overflow-wrap: anywhere; }
+  .chart-readout-value { font-size: 0.9375rem; overflow-wrap: anywhere; }
+  .chart-legend { gap: var(--space-2); font-size: 0.8125rem; }
+  .chart-legend-item { min-width: 0; overflow-wrap: anywhere; }
+  .chart-swatch { flex-shrink: 0; }
+}

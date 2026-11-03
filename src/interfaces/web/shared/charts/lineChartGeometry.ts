@@ -156,7 +156,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
   return {
     empty: false,
     plot,
-    xTicks: xScale.ticks(TICK_TARGET).map((date) => ({ time: date.getTime(), x: round(xScale(date)) })),
+    xTicks: xScale.ticks(Math.max(2, Math.min(TICK_TARGET, Math.floor(plot.width / 110)))).map((date) => ({ time: date.getTime(), x: round(xScale(date)) })),
     yTicks: yTickValues.map((value) => ({ value, y: round(yScale(value)) })),
     series: plotted,
   };

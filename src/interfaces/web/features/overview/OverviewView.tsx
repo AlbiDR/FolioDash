@@ -88,7 +88,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   const { held, slices, ranking, bars } = d;
 
   return (
-    <section aria-labelledby="overview-heading" class="dash">
+    <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
       <h2 id="overview-heading" class="visually-hidden">Portfolio dashboard</h2>
 
       <div class="card hero cell-4">
@@ -124,7 +124,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         <Sparkline times={d.shownTimes} values={d.heroTrend} width={360} height={88} area />
       </div>
 
-      <div class="cell-8">
+      <div class="cell-8 portfolio-trend">
         <LineChart
           id="total-chart"
           key={props.range}
@@ -142,11 +142,68 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       {STATS.map((stat) => {
         const entry = kpi(stat.label);
         return entry === undefined ? null : (
-          <div key={stat.label} class="cell-3">
+          <div key={stat.label} class="cell-3 kpi-cell">
             <StatCard kpi={entry} caption={stat.caption} unavailable={stat.unavailable} trend={{ times: d.shownTimes, values: d.metricTrends[stat.metric] }} />
           </div>
         );
       })}
+
+      <div class="card cell-12 portfolio-holdings">
+        <h3 class="card-title">Your funds</h3>
+        <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
+        <ul class="mobile-holdings">
+          {[...d.held, ...d.closed].map((fund) => (
+            <li key={fund.isin}>
+              <a href={`#fund/${fund.isin}`}>
+                <span class="mobile-holding-name">{fund.name}<span class="holding-meta">{fund.status === "closed" ? "Closed" : "View fund"}</span></span>
+                <Icon name="chevron" size={18} />
+                <dl>
+                  <div><dt>Value</dt><dd><Amount cents={fund.latest?.value ?? null} /></dd></div>
+                  <div><dt>Gain</dt><dd><Signed cents={fund.latest?.gain ?? null} /> <Pill ratio={fund.latest?.gainPercent ?? null} signed /></dd></div>
+                </dl>
+              </a>
+            </li>
+          ))}
+        </ul>
+        {funds.length === 0 ? (
+          <p class="empty-note">No funds are held.</p>
+        ) : (
+          <div class="table-scroll flat desktop-holdings" role="region" aria-label="Fund holdings" tabIndex={0}>
+            <table class="holdings-table">
+              <thead>
+                <tr>
+                  <th scope="col">Fund</th>
+                  <th scope="col" class="hide-sm">Trend</th>
+                  <th scope="col">Value</th>
+                  <th scope="col" class="hide-sm">Net invested</th>
+                  <th scope="col" class="hide-sm">Gain</th>
+                  <th scope="col">Gain %</th>
+                  <th scope="col" class="hide-md">Share of portfolio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...d.held, ...d.closed].map((fund) => (
+                  <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
+                    <th scope="row">
+                      <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>
+                      <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
+                    </th>
+                    <td class="hide-sm"><Sparkline times={d.allTimes} values={d.holdingTrends[fund.isin] ?? []} /></td>
+                    <td><Amount cents={fund.latest?.value ?? null} /></td>
+                    <td class="hide-sm"><Amount cents={fund.latest?.netInvested ?? null} /></td>
+                    <td class="hide-sm"><Signed cents={fund.latest?.gain ?? null} /></td>
+                    <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
+                    <td class="hide-md">
+                      <span class="share-bar" aria-hidden="true"><span style={{ width: `${((fund.latest?.share ?? 0) * 100).toFixed(1)}%` }} /></span>
+                      {formatPercent(fund.latest?.share ?? null)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       <div class="card cell-4">
         <h3 class="card-title">Where your money is</h3>
@@ -255,49 +312,6 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           </dl>
           <p class="hint">These follow the definitions of the earlier spreadsheet so the results can be compared with it. A dash means the figure cannot be calculated from the statements recorded.</p>
         </details>
-      </div>
-
-      <div class="card cell-12">
-        <h3 class="card-title">Your funds</h3>
-        <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
-        {funds.length === 0 ? (
-          <p class="empty-note">No funds are held.</p>
-        ) : (
-          <div class="table-scroll flat">
-            <table class="holdings-table">
-              <thead>
-                <tr>
-                  <th scope="col">Fund</th>
-                  <th scope="col" class="hide-sm">Trend</th>
-                  <th scope="col">Value</th>
-                  <th scope="col" class="hide-sm">Net invested</th>
-                  <th scope="col" class="hide-sm">Gain</th>
-                  <th scope="col">Gain %</th>
-                  <th scope="col" class="hide-md">Share of portfolio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...d.held, ...d.closed].map((fund) => (
-                  <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
-                    <th scope="row">
-                      <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>
-                      <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
-                    </th>
-                    <td class="hide-sm"><Sparkline times={d.allTimes} values={d.holdingTrends[fund.isin] ?? []} /></td>
-                    <td><Amount cents={fund.latest?.value ?? null} /></td>
-                    <td class="hide-sm"><Amount cents={fund.latest?.netInvested ?? null} /></td>
-                    <td class="hide-sm"><Signed cents={fund.latest?.gain ?? null} /></td>
-                    <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
-                    <td class="hide-md">
-                      <span class="share-bar" aria-hidden="true"><span style={{ width: `${((fund.latest?.share ?? 0) * 100).toFixed(1)}%` }} /></span>
-                      {formatPercent(fund.latest?.share ?? null)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       <div class="card cell-12">

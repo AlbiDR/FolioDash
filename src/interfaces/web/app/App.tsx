@@ -55,6 +55,7 @@ export function App(): JSX.Element {
     const update = (): void => {
       setRoute(routeFrom(window.location.hash));
       window.scrollTo(0, 0);
+      requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
     };
     window.addEventListener("hashchange", update);
     return () => {
@@ -92,10 +93,18 @@ export function App(): JSX.Element {
         ? { label: "Synced with Google", tone: "synced" }
         : { label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" };
   const clientConfigured = clientId !== "";
+  const pageTitle = titleOf(route, model);
+  useEffect(() => {
+    document.title = `${pageTitle} · FolioDash`;
+  }, [pageTitle]);
 
   return (
     <PrivacyProvider hidden={hidden}>
       <div class="shell" data-nav={sidebarHidden ? "collapsed" : "open"}>
+        <a class="skip-link" href="#main-content" onClick={(event) => {
+          event.preventDefault();
+          document.getElementById("main-content")?.focus();
+        }}>Skip to content</a>
         <nav class="main-nav" id="main-nav" aria-label="Main" inert={sidebarHidden}>
           <p class="brand">FolioDash</p>
           <ul class="nav-list">
@@ -211,7 +220,7 @@ export function App(): JSX.Element {
                 Saving will ask you to sign in with Google first.
               </p>
             )}
-            <main>
+            <main id="main-content" tabIndex={-1}>
               {route.name === "overview" && <OverviewView model={model} range={range} />}
               {route.name === "months" && <MonthsView model={model} />}
               {route.name === "fund" && <FundView model={model} isin={route.isin} range={range} />}

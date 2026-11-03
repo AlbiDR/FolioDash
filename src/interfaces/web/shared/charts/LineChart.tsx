@@ -1,5 +1,5 @@
 import type { JSX, TargetedPointerEvent } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacyChoice";
 import { type ChartSeries, computeLineChart } from "./lineChartGeometry";
@@ -46,15 +46,27 @@ function styleClass(index: number, slot: number | null): string {
 export function LineChart(props: LineChartProps): JSX.Element {
   const hidden = usePrivacy();
   const [scrubbed, setScrubbed] = useState<number | null>(null);
+  const container = useRef<HTMLElement>(null);
+  const [width, setWidth] = useState<number>(LAYOUT.width);
+  useEffect(() => {
+    const node = container.current;
+    if (node === null) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry !== undefined && entry.contentRect.width > 0) setWidth(Math.max(200, Math.round(entry.contentRect.width)));
+    });
+    observer.observe(node);
+    return () => { observer.disconnect(); };
+  }, []);
+  const layout = { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height };
   // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
   const includeZero = props.includeZero ?? false;
-  const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, includeZero }), [props.series, includeZero]);
+  const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height, includeZero }), [props.series, includeZero, width]);
   const titleId = `${props.id}-title`;
   const descriptionId = `${props.id}-description`;
 
   if (geometry.empty) {
     return (
-      <figure class="chart chart-empty">
+      <figure ref={container} class="chart chart-empty">
         <figcaption class="chart-title">{props.title}</figcaption>
         <p>{props.emptyMessage}</p>
       </figure>
@@ -74,7 +86,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   function scrubTo(event: TargetedPointerEvent<SVGSVGElement>): void {
     const box = event.currentTarget.getBoundingClientRect();
     if (box.width === 0) return;
-    const x = ((event.clientX - box.left) * LAYOUT.width) / box.width;
+    const x = ((event.clientX - box.left) * layout.width) / box.width;
     let nearest: number | null = null;
     let distance = Number.POSITIVE_INFINITY;
     for (const [time, at] of xByTime) {
@@ -87,7 +99,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   }
 
   return (
-    <figure class="chart">
+    <figure ref={container} class="chart">
       <figcaption class="chart-title" id={titleId}>
         {props.title}
       </figcaption>
@@ -112,11 +124,12 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </div>
       <svg
         class="chart-svg"
-        viewBox={`0 0 ${String(LAYOUT.width)} ${String(LAYOUT.height)}`}
+        viewBox={`0 0 ${String(layout.width)} ${String(layout.height)}`}
         role="img"
         aria-labelledby={`${titleId} ${descriptionId}`}
         onPointerMove={scrubTo}
         onPointerDown={scrubTo}
+        onPointerCancel={() => { setScrubbed(null); }}
         onPointerLeave={() => {
           setScrubbed(null);
         }}
@@ -166,6 +179,21 @@ export function LineChart(props: LineChartProps): JSX.Element {
           </g>
         ))}
       </svg>
+      <label class="chart-date-control">
+        <span>Explore dates</span>
+        <input
+          type="range"
+          min={0}
+          max={Math.max(0, times.length - 1)}
+          step={1}
+          value={Math.max(0, times.indexOf(activeTime ?? 0))}
+          disabled={times.length < 2}
+          aria-label={`${props.title}: observation date`}
+          aria-valuetext={activeTime === undefined ? "No observation" : props.formatTime(activeTime)}
+          onInput={(event) => { setScrubbed(times[Number(event.currentTarget.value)] ?? null); }}
+        />
+        <output aria-live="polite">{activeTime === undefined ? "" : props.formatTime(activeTime)}</output>
+      </label>
       <ul class="chart-legend">
         {geometry.series.map((entry, index) =>
           entry.muted ? null : (

@@ -81,6 +81,19 @@ describe("computeLineChart", () => {
     expect(computeLineChart(data, layout)).toEqual(computeLineChart(data, layout));
   });
 
+  it("reduces date labels at phone widths while preserving every observation and value bound", () => {
+    const data = [series("fund", [100, 105, 102, 110], [0, 31, 62, 365])];
+    const phone = computeLineChart(data, { ...layout, width: 260, includeZero: false });
+    const desktop = computeLineChart(data, { ...layout, width: 900, includeZero: false });
+    expect(phone.xTicks.length).toBeLessThan(desktop.xTicks.length);
+    expect(phone.series[0]?.points.map((point) => [point.time, point.value])).toEqual(desktop.series[0]?.points.map((point) => [point.time, point.value]));
+    expect(phone.yTicks.map((tick) => tick.value)).toEqual(desktop.yTicks.map((tick) => tick.value));
+    for (const point of phone.series[0]?.points ?? []) {
+      expect(point.x).toBeGreaterThanOrEqual(phone.plot.left);
+      expect(point.x).toBeLessThanOrEqual(phone.plot.left + phone.plot.width);
+    }
+  });
+
   describe("fitted value axis", () => {
     const fitted: ChartLayout = { ...layout, includeZero: false };
     const data = [series("a", [50_000, 52_000, 56_000], [0, 31, 62]), series("b", [43_000, 43_500, 50_500], [0, 31, 62])];

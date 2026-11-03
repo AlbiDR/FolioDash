@@ -1,13 +1,20 @@
 import type { JSX } from "preact";
+import { useState } from "preact/hooks";
 import { formatMonthShort } from "../../../../core/IsoDate";
 import { Amount } from "../../shared/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
+import { useMediaQuery } from "../../shared/ui/useMediaQuery";
 import type { OverviewModel } from "./OverviewModel";
 import { Percent, Signed } from "./parts";
 
 /** The earlier spreadsheet's month-by-month matrix, kept whole, on its own screen. */
 export function MonthsView(props: { readonly model: OverviewModel }): JSX.Element {
   const { dates, funds, months } = props.model;
+  const wide = useMediaQuery("(min-width: 47.5rem)");
+  const [selected, setSelected] = useState("");
+  const date = dates.find((entry) => entry === selected) ?? dates[dates.length - 1];
+  const index = dates.findIndex((entry) => entry === date);
+  const month = months[index];
   return (
     <section class="screen months" aria-labelledby="months-heading">
       <a class="back-link" href="#overview">
@@ -18,7 +25,34 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
         <p>No statements have been imported yet.</p>
       ) : (
         <>
-          <div class="card"><div class="table-scroll flat">
+          <div class="mobile-months">
+            <label class="field">Statement month
+              <select value={date} onChange={(event) => { setSelected(event.currentTarget.value); }}>
+                {[...dates].reverse().map((entry) => <option key={entry} value={entry}>{formatMonthShort(entry)}</option>)}
+              </select>
+            </label>
+            {month !== undefined && <div class="card">
+              <h3 class="card-title">{formatMonthShort(month.date)}</h3>
+              <dl class="facts stacked">
+                <div><dt>Fund value</dt><dd><Amount cents={month.value} /></dd></div>
+                <div><dt>Gain since invested</dt><dd><Signed cents={month.gain} /></dd></div>
+                <div><dt>Month on month</dt><dd><Signed cents={month.monthlyGain} /></dd></div>
+                <div><dt>Year to date</dt><dd><Signed cents={month.yearToDateGain} /></dd></div>
+                <div><dt>Year on year</dt><dd><Signed cents={month.yearOverYearGain} /></dd></div>
+              </dl>
+            </div>}
+            {funds.map((fund) => <div class="card" key={fund.isin}>
+              <a class="row-link" href={`#fund/${fund.isin}`}>{fund.name}<Icon name="chevron" size={18} /></a>
+              <dl class="facts stacked">
+                <div><dt>Value</dt><dd><Amount cents={fund.values[index] ?? null} /></dd></div>
+                <div><dt>Net invested</dt><dd><Amount cents={fund.netInvested[index] ?? null} /></dd></div>
+              </dl>
+            </div>)}
+          </div>
+          <p class="hint">The complete tables below scroll horizontally. Swipe inside a table to compare months.</p>
+          <details class="month-matrices" open={wide}>
+          <summary>Compare all months in tables</summary>
+          <div class="card"><div class="table-scroll flat" role="region" aria-label="Fund history by month" tabIndex={0}>
             <table class="matrix" aria-label="Value and net invested by fund and month">
               <thead>
                 <tr>
@@ -49,7 +83,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
             </table>
           </div></div>
 
-          <div class="card"><div class="table-scroll flat">
+          <div class="card"><div class="table-scroll flat" role="region" aria-label="Portfolio totals by month" tabIndex={0}>
             <table class="matrix totals" aria-label="Portfolio totals by month">
               <thead>
                 <tr>
@@ -93,6 +127,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               </tbody>
             </table>
           </div></div>
+          </details>
           <p class="footnote">A dash means the figure cannot be calculated from the statements recorded. Average growth is not shown yet.</p>
         </>
       )}

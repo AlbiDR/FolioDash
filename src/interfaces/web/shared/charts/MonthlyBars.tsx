@@ -44,7 +44,7 @@ export function MonthlyBars(props: {
     return <p class="empty-note">No month has a figure to show yet.</p>;
   }
   const latest = [...props.bars].reverse().find((bar) => bar.value !== null);
-  const shown = props.bars.find((bar) => bar.key === active && bar.value !== null) ?? latest;
+  const shown = props.bars.find((bar) => bar.key === active) ?? latest;
   return (
     <figure class="bars">
       <p class="bars-readout" aria-hidden="true">
@@ -87,6 +87,21 @@ export function MonthlyBars(props: {
           );
         })}
       </svg>
+      <label class="chart-date-control">
+        <span>Explore months</span>
+        <input
+          type="range"
+          min={0}
+          max={Math.max(0, props.bars.length - 1)}
+          step={1}
+          value={Math.max(0, props.bars.findIndex((bar) => bar.key === shown?.key))}
+          disabled={props.bars.length < 2}
+          aria-label={`${props.title}: month`}
+          aria-valuetext={shown?.label ?? "No observation"}
+          onInput={(event) => { setActive(props.bars[Number(event.currentTarget.value)]?.key ?? null); }}
+        />
+        <output aria-live="polite">{shown?.label ?? ""}</output>
+      </label>
       <details class="chart-table">
         <summary>Show the values as a table</summary>
         <table>
