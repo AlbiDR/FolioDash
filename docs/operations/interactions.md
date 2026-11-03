@@ -1,8 +1,8 @@
 # Microanimations and interactions
 
-The inventory contains **42** named behaviours: the original 32, followed by exactly five additional microanimations (33-37) and five additional functional microinteractions (38-42). This inventory counts user-visible behaviours, not CSS declarations, keyframes or every component instance. Existing chart reveals, card entry animations and mobile date sliders are outside this count.
+The inventory contains **92** named behaviours: the original 32, five additional microanimations (33-37), five additional functional microinteractions (38-42), and two further sets of 25 motion touchpoints (43-67 and 68-92). A touchpoint means a particular control/state receiving motion feedback, not a unique keyframe: related controls deliberately share easing and choreography. Existing chart reveals, card entry animations and mobile date sliders are outside this count.
 
-The shared presentation layer is `src/interfaces/web/shared/ui/interactions.css`, imported after the base styles. Motion durations and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
+The shared presentation layers are `src/interfaces/web/shared/ui/interactions.css` and `motion.css`, imported after the base styles. Motion durations, distances and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
 
 | # | Addition | How to exercise it |
 | --- | --- | --- |
@@ -48,6 +48,56 @@ The shared presentation layer is `src/interfaces/web/shared/ui/interactions.css`
 | 40 | Interaction: reset chart inspection | Reset the inspected date and highlighted line together; the time range and axes stay unchanged |
 | 41 | Interaction: copy a fund's ISIN | Copy ISIN on a fund page; a persistent live status reports success or an actionable clipboard failure |
 | 42 | Interaction: fund-list search | Search holdings by name or ISIN on phone/desktop. A result count and empty state explain the filter; portfolio totals and charts remain unchanged |
+| 43 | Main-navigation selection glide | Switch destinations; the shared selected surface moves horizontally on phones and vertically in the sidebar |
+| 44 | Sidebar-toggle direction | Collapse/expand the desktop sidebar; its icon smoothly mirrors direction |
+| 45 | Source-chip hover boundary | Hover the source link with a fine pointer |
+| 46 | Source-dot state settlement | An actual source tone change remounts only the dot for a short scale settlement |
+| 47 | Toolbar-icon hover boundary | Hover the sidebar control with a fine pointer |
+| 48 | Page-title arrival | Navigate between pages; only the new heading gets a short two-pixel arrival |
+| 49 | Import-mode destination marker | Switch One statement/Whole history; the destination marker extends |
+| 50 | Filter-result count cue | Change the search result count; only the count text receives a short fade |
+| 51 | Active field label | Focus a labelled field; the label transitions to accent |
+| 52 | Active field instructions | Focus a field with instructions; the instructions gain text contrast |
+| 53 | Focused placeholder recession | Focus a field with a placeholder; its example becomes quieter while its label stays visible |
+| 54 | Native file-picker hover | Hover the file input; its native picker button changes tone |
+| 55 | Valid manual subtotal boundary | Complete valid values; the total gains a boundary without tweening the amount |
+| 56 | Validation-label colour | Enter/resolve an invalid field state; its label transitions to/from error colour |
+| 57 | Checkbox selection settlement | Check a checkbox; only the small native glyph settles |
+| 58 | Radio selection settlement | Select a radio answer; its glyph settles within the unchanged label target |
+| 59 | Action availability fade | An action enables/disables; opacity follows its actual state |
+| 60 | Workbook-link underline | Hover or focus Open in Google Sheets; its secondary underline extends |
+| 61 | Disclosure hover surface | Hover a disclosure summary with a fine pointer |
+| 62 | Disclosure focus boundary | Keyboard-focus a disclosure summary; its boundary transitions in |
+| 63 | Clipboard-result arrival | A real clipboard result updates text inside the retained live region |
+| 64 | Search-empty explanation | A search with no matches reveals its explanation gently |
+| 65 | Returning search rows | Newly matching rows appear; existing matching rows are not remounted |
+| 66 | Review-ready edge | A ready/review panel appears with a short edge confirmation |
+| 67 | Local-record summary settlement | The existing browser-only recorded summary settles after an actual local record |
+| 68 | Chart-legend hover surface | Hover a legend action; its surface blends in |
+| 69 | Chart-legend keyboard swatch | Keyboard-focus a legend action; its swatch nudges slightly |
+| 70 | Highlighted readout label | Spotlight a line; its readout label changes tone, with amounts untouched |
+| 71 | Slider-thumb press | Hold a native chart slider thumb; only the thumb grows slightly |
+| 72 | Slider-label focus | Focus a chart date slider; the label gains contrast |
+| 73 | Inspected date cue | Inspect another chart date; the date text receives a short fade |
+| 74 | Pinned-bar outline | Pin/release a monthly bar; its outline opacity transitions |
+| 75 | Bar keyboard hit surface | Keyboard-focus a bar; its hit region receives a subtle surface |
+| 76 | Inspected bar-month cue | Change the inspected bar month; only the month label fades |
+| 77 | Allocation-dot hover/focus | Hover or focus an allocation link; its dot grows slightly |
+| 78 | Allocation-dot press | Press an allocation link; its dot compresses |
+| 79 | Ranking-bar hover contrast | Hover a ranking link; its bar brightens without changing length |
+| 80 | Ranking-track keyboard boundary | Focus a ranking link; its track gains a boundary |
+| 81 | Holdings-share inspection | Hover/focus a holdings row; its share fill gains contrast, retaining width |
+| 82 | Holdings keyboard row surface | Focus a table fund link; the row surface follows the existing transition |
+| 83 | Wide-table focus boundary | Focus a scrollable table region; its boundary appears |
+| 84 | Phone holding-name focus/hover | Hover/focus a phone holding link; its name gains accent |
+| 85 | Month-step arrow cue | Hover/focus Previous/Next; the arrow moves in the matching direction |
+| 86 | Monthly fund-card focus boundary | Focus a fund link in the monthly phone view; its card gains a boundary |
+| 87 | Source-status text change | Actual source/status wording updates with a short fade |
+| 88 | Chart-reset availability cue | Begin chart inspection; the newly available reset action gets one edge cue |
+| 89 | Account-result heading | A successful account result reveals its heading gently |
+| 90 | Confirmed history progress | The fill transitions only to the actual number of confirmed saved statements; accessible counts update immediately |
+| 91 | Google-consent waiting edge | A real waiting state produces a single boundary cue, without repeating pulses |
+| 92 | Available-update arrival | An actual update notice enters from above; reload still requires the person's action |
 
 ## Behaviour limits
 
@@ -56,6 +106,9 @@ The shared presentation layer is `src/interfaces/web/shared/ui/interactions.css`
 - Reduced motion disables animations and transitions, including pseudo-elements such as the spinner and selection pill. All selections, focus changes, disclosures and chart controls remain functional.
 - Chart spotlight changes opacity only. It does not filter series, refit axes, rewrite history or change any metric. Monthly pinning changes only the inspected observation.
 - Save-state feedback uses `data-busy` rather than suppressing the live status region with `aria-busy`, so work announcements remain available.
+- The additional 50 touchpoints share a small motion vocabulary. Most are hover/focus/state transitions, not entrance animations. There are no staggered animation queues, added timers, animation dependencies or repeating decorative pulses. The existing actual-work spinner remains the only repeating motion.
+- Most added cues take 150-220ms and move at most 2px. Interactive transforms never change the dimensions of a financial bar, series, axis, amount or hit target. Native choice/slider glyphs can scale inside their existing hit regions.
+- History progress animates a presentation width towards the actual confirmed count. It never advances while waiting for an acknowledgement; its accessible count and accompanying status update immediately. It is not a financial value animation.
 
 ## Verification
 
@@ -77,3 +130,17 @@ Local browser evidence (headless desktop Chrome, synthetic portfolio, 2026-11-03
 Physical touch feel, Android software-keyboard behaviour, screen-reader announcements and live Google saving are NOT RUN here. The feedback layer also needs a visual judgement on the actual phone; a computed-style or synthetic interaction check cannot establish that it feels right there.
 
 Follow-up for additions 33-42 (same local synthetic environment): the inventory check passes with 42 unique sequential entries, exactly five new animations and five new interactions. Browser checks pass for Previous/Next end boundaries, Latest, search/no-result/clear, chart reset with unchanged geometry, and clipboard success/failure feedback using a stubbed Clipboard API. Computed animation names confirm crosshair, swatch, month summary and undo feedback; actual Tab/Shift-Tab focus confirms the back-arrow cue. Reduced motion disables restored-card animation. The prior motion/focus and five-width mobile checks also pass. Native clipboard permissions and physical Android clipboard use remain NOT RUN.
+
+## Evidence for the further two sets of 25
+
+The inventory/source-marker check confirms exactly 50 additional touchpoints, numbered 43-92, and 92 total entries. The implementation adds no dependencies, timers or financial calculations. The new motion module is separate from the original interaction layer and uses the same semantic tokens.
+
+Local headless Chrome with synthetic portfolios checks:
+
+- The moving main-navigation surface finishes within 2 CSS pixels of the selected link's centre on phone and desktop, in the appropriate direction. Its count comes from the actual navigation entries, not a fixed number of destinations. Links share their row height so enlarged labels do not detach the indicator.
+- Manual totals gain readiness only when valid, with 180ms boundary, label and instruction transitions. Amount text changes immediately.
+- Reduced motion leaves zero running document animations and zero transition duration on the navigation indicator, native file button and native slider thumb. Native-control pseudo-elements have explicit overrides.
+- A presentation-only progress fixture finishes at exactly the supplied confirmed fraction. This checks the fill, not a live history import; the production fraction is supplied by the existing confirmed-save callback, with no simulated increments.
+- Earlier keyboard, chart highlight/reset and unchanged geometry, pinning, copy-feedback stub, add/remove/undo focus, draft retention and five-width mobile checks are rerun. Visual inspection uses the actual production renderer with invented data.
+
+This evidence does not measure frame rate on the person's phone or prove physical Android smoothness, screen-reader use, native clipboard consent, actual Google sign-in/waiting, history saving or service-worker update arrival. Conditional feedback for those journeys is implemented but its live-provider/device acceptance remains pending. No new support claim follows from the number of motion touchpoints.

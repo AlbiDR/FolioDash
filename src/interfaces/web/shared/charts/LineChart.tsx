@@ -112,7 +112,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
           if (entry.muted) return null;
           const point = entry.points.find((candidate) => candidate.time === activeTime);
           return (
-            <span key={entry.id} class={`chart-readout-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
+            <span key={entry.id} data-highlighted={highlight === entry.id} class={`chart-readout-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
               <span class="chart-readout-label">
                 <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
                   <line x1="0" x2="32" y1="4" y2="4" />
@@ -194,7 +194,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
           aria-valuetext={activeTime === undefined ? "No observation" : props.formatTime(activeTime)}
           onInput={(event) => { setScrubbed(times[Number(event.currentTarget.value)] ?? null); }}
         />
-        <output aria-live="polite">{activeTime === undefined ? "" : props.formatTime(activeTime)}</output>
+        <output aria-live="polite"><span key={activeTime} class="inspection-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span></output>
       </label>
       <ul class="chart-legend">
         {geometry.series.map((entry, index) =>

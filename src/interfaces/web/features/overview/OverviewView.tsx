@@ -158,10 +158,10 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         {funds.length > 0 && <div class="field fund-search">
           <label for="fund-search">Find a fund</label>
           <input id="fund-search" type="search" placeholder="Name or ISIN" value={fundQuery} onInput={(event) => { setFundQuery(event.currentTarget.value); }} aria-describedby="fund-search-help" />
-          <p id="fund-search-help" class="hint" role="status">{listedFunds.length} of {funds.length} funds. Filters this list only.</p>
+          <p id="fund-search-help" class="hint" role="status"><span key={listedFunds.length} class="filter-count">{listedFunds.length} of {funds.length} funds.</span> Filters this list only.</p>
         </div>}
-        {funds.length > 0 && listedFunds.length === 0 && <p class="empty-note">No funds match. Try another name or ISIN.</p>}
-        <ul class="mobile-holdings">
+        {funds.length > 0 && listedFunds.length === 0 && <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>}
+        <ul class="mobile-holdings" data-filtered={query.length > 0}>
           {listedFunds.map((fund) => (
             <li key={fund.isin}>
               <a href={`#fund/${fund.isin}`}>
@@ -179,7 +179,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           <p class="empty-note">No funds are held.</p>
         ) : (
           <div class="table-scroll flat desktop-holdings" role="region" aria-label="Fund holdings" tabIndex={0}>
-            <table class="holdings-table">
+            <table class="holdings-table" data-filtered={query.length > 0}>
               <thead>
                 <tr>
                   <th scope="col">Fund</th>

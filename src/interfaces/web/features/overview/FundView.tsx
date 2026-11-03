@@ -53,7 +53,7 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
           <p class="card-label isin-code">{fund.isin}</p>
           <button class="quiet-action" type="button" onClick={() => { void copyIsin(fund.isin); }}>Copy ISIN</button>
         </div>
-        <p class="copy-feedback hint" role="status">{copyFeedback?.isin === fund.isin ? copyFeedback.message : ""}</p>
+        <p class="copy-feedback hint" role="status">{copyFeedback?.isin === fund.isin && <span key={copyFeedback.message} class="copy-result">{copyFeedback.message}</span>}</p>
         <h2 id="fund-heading" class="fund-title">{fund.name}</h2>
         <p class="hero-value"><Amount cents={latest?.value ?? null} /></p>
         <p class="hero-sub">

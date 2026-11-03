@@ -72,6 +72,10 @@
   --duration-press: 100ms;
   --duration-feedback: 220ms;
   --duration-busy: 900ms;
+  --duration-cue: 150ms;
+  --motion-nudge: 2px;
+  --motion-press: 0.98;
+  --motion-reveal-opacity: 0.85;
   --duration-medium: 380ms;
 
   --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto, sans-serif;

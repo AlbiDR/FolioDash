@@ -107,7 +107,7 @@ export function App(): JSX.Element {
         }}>Skip to content</a>
         <nav class="main-nav" id="main-nav" aria-label="Main" inert={sidebarHidden}>
           <p class="brand">FolioDash</p>
-          <ul class="nav-list">
+          <ul class="nav-list" style={{ "--nav-count": NAV.length, "--nav-index": Math.max(0, NAV.findIndex(entry => entry.id === current)) }}>
             {NAV.map((entry) => (
               <li key={entry.id}>
                 <a class="nav-link" href={entry.href} aria-current={current === entry.id ? "page" : undefined}>
@@ -124,7 +124,7 @@ export function App(): JSX.Element {
               {wide && (
                 <button
                   type="button"
-                  class="icon-button"
+                  class="icon-button sidebar-toggle"
                   aria-controls="main-nav"
                   aria-expanded={!sidebarCollapsed}
                   onClick={() => {
@@ -137,11 +137,11 @@ export function App(): JSX.Element {
               )}
               <div class="topbar-title">
                 <p class="eyebrow">FolioDash</p>
-                <h1>{titleOf(route, model)}</h1>
+                <h1 key={pageTitle} class="page-title-arrival">{pageTitle}</h1>
               </div>
               <a class={`status-chip ${source.tone}`} href="#connection" title="Where your data lives">
-                <span class="status-dot" aria-hidden="true" />
-                {source.label}
+                <span key={source.tone} class="status-dot" aria-hidden="true" />
+                <span key={source.label} class="source-label">{source.label}</span>
               </a>
               <div class="topbar-controls">
                 {(route.name === "overview" || route.name === "fund") && (
@@ -154,7 +154,7 @@ export function App(): JSX.Element {
               </div>
             </header>
             {applyUpdate !== null && (
-              <p class="notice" role="status">
+              <p class="notice app-update" role="status">
                 A new version of FolioDash is ready.{" "}
                 <button type="button" onClick={applyUpdate}>
                   Reload to update

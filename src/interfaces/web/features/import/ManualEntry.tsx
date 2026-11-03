@@ -98,7 +98,7 @@ export function ManualEntry(props: {
       {rows.length === 0 && <label><input type="checkbox" checked={emptyConfirmed} onChange={event => { setEmptyConfirmed(event.currentTarget.checked); }} /> I hold no funds on this date. Review closures and full proceeds next.</label>}
       {attempted && !result.ok && <div class="review-problem" role="alert"><h4>Check your entries</h4><ul>{result.errors.map(error => <li key={error}>{error}</li>)}</ul></div>}
       {attempted && rows.length === 0 && !emptyConfirmed && <p role="alert">Confirm that no funds are held, or add a fund.</p>}
-      <div class="manual-total" aria-live="polite"><span>{rows.length} {rows.length === 1 ? "fund" : "funds"}</span><strong>{result.ok ? <Amount cents={result.statement.fundsSubtotal} /> : "Complete the values to see the total"}</strong></div>
+      <div class="manual-total" data-complete={result.ok} aria-live="polite"><span>{rows.length} {rows.length === 1 ? "fund" : "funds"}</span><strong>{result.ok ? <Amount cents={result.statement.fundsSubtotal} /> : "Complete the values to see the total"}</strong></div>
       <p class="hint">No bank document is attached. Nothing is saved until final confirmation. Switching entry methods preserves this page's draft; leaving or reloading can discard it.</p>
       <button class="primary" type="submit">Continue to movements and review</button>
     </form>

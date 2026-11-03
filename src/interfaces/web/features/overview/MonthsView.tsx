@@ -32,8 +32,8 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               </select>
             </label>
             <div class="month-actions" role="group" aria-label="Browse statement months">
-              <button type="button" disabled={index <= 0} onClick={() => { setSelected(dates[index - 1] ?? ""); }}>Previous</button>
-              <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates[index + 1] ?? ""); }}>Next</button>
+              <button type="button" class="month-step previous" disabled={index <= 0} onClick={() => { setSelected(dates[index - 1] ?? ""); }}><Icon name="back" size={16} />Previous</button>
+              <button type="button" class="month-step next" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates[index + 1] ?? ""); }}>Next<Icon name="chevron" size={16} /></button>
               <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates.at(-1) ?? ""); }}>Latest</button>
             </div>
             {month !== undefined && <div class="card month-summary" key={month.date}>

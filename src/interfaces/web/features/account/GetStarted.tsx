@@ -37,7 +37,7 @@ export function GetStarted(props: { readonly clientConfigured: boolean; readonly
           <strong>Import your first bank statement.</strong> Drop in the Excel file from your bank. Your figures appear straight away.
         </li>
       </ol>
-      <button type="button" class="primary" disabled={busy || !props.clientConfigured} onClick={() => void go()}>
+      <button type="button" class="primary" data-working={busy} disabled={busy || !props.clientConfigured} onClick={() => void go()}>
         {busy ? "Waiting for Google…" : "Continue with Google"}
       </button>
       {!props.clientConfigured && <p class="hint">This site has no Google client set up yet. Add it on the Your data screen.</p>}

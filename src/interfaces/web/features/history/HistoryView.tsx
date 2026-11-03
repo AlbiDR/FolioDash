@@ -211,9 +211,12 @@ export function HistoryView(props: {
       <div aria-live="polite" class="status">
         {phase.name === "attaching" && <p>Checking which bank statements are stored, and attaching the missing ones… Keep this page open.</p>}
         {phase.name === "saving" && (
+          <div>
           <p>
             Saving… {phase.saved} of {phase.total} saved. Keep this page open.
           </p>
+          <div class="history-progress" role="progressbar" aria-label="Statements confirmed saved" aria-valuemin={0} aria-valuemax={Math.max(1, phase.total)} aria-valuenow={phase.saved} style={{ "--completion": `${String((phase.saved / Math.max(1, phase.total)) * 100)}%` }} />
+          </div>
         )}
         {phase.name === "done" && (
           <p>
