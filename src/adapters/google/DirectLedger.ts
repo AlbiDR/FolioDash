@@ -106,11 +106,18 @@ async function writeOnce(
   // Nothing has been written yet. Make sure the sheet has not changed since it was read.
   const again = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!again.ok) return notWritten(again.failure);
-  if ("notALedger" in again.value || again.value.rows.length !== before.value.rows.length) return { status: "stale" };
+  if ("notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows)) return { status: "stale" };
 
   const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending);
-  if (sent.ok) return result;
-  return sent.failure === "unavailable" || sent.failure === "network" ? { status: "unknown", message: LOST } : notWritten(sent.failure);
+  if (sent.ok) {
+    const verified = await readLedgerRows(deps.rest, accessToken, workbookId);
+    if (!verified.ok || "notALedger" in verified.value) return { status: "unknown", message: LOST };
+    const loaded = storeOf(verified.value.rows).store.load();
+    const expected = store.load();
+    if (loaded.status !== "ok" || expected.status !== "ok" || canonicalJson(loaded.state) !== canonicalJson(expected.state)) return { status: "unknown", message: LOST };
+    return result;
+  }
+  return sent.failure === "unavailable" || sent.failure === "network" || sent.failure === "unexpected" ? { status: "unknown", message: LOST } : notWritten(sent.failure);
 }
 
 /** Saves one reviewed statement. */
@@ -214,7 +221,7 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
   if (!sent.ok) return { status: "failed", failure: sent.failure, workbook };
 
   const back = await readDirect(deps.rest, accessToken, workbook.id);
-  if (back.status !== "ok" || back.state.snapshots.length !== valid.snapshots.length) {
+  if (back.status !== "ok" || canonicalJson({ ...back.state, revision: "" }) !== canonicalJson({ ...valid, revision: "" })) {
     return { status: "failed", failure: "unexpected", workbook };
   }
   return { status: "restored", workbook, ledger: back.state };

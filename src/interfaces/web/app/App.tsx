@@ -25,7 +25,7 @@ import { watchForUpdate } from "./serviceWorker";
 import { describeAge } from "./timeAgo";
 import { useNow, useSession } from "./useSession";
 
-const TITLES = { overview: "Portfolio", months: "Month by month", import: "Import a statement", history: "Import a whole history", connection: "Your data" } as const;
+const TITLES = { overview: "Portfolio", months: "Month by month", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
 
 function titleOf(route: Route, model: OverviewModel): string {
   if (route.name === "fund") return model.funds.find((fund) => fund.isin === route.isin)?.name ?? "Fund";
@@ -198,7 +198,7 @@ export function App(): JSX.Element {
                   <a href="#import" aria-current={route.name === "import" ? "page" : undefined}>One statement</a>
                   <a href="#history" aria-current={route.name === "history" ? "page" : undefined}>Whole history</a>
                 </nav>
-                <p class="hint">Import one bank file, or restore many months at once from a history file.</p>
+                <p class="hint">Add values manually or from Excel. Use Whole history to restore many months at once.</p>
               </div>
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (

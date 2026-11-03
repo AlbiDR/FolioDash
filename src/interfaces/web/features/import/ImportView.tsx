@@ -1,10 +1,11 @@
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import { Amount } from "../../shared/privacy/privacy";
 import type { DateSource } from "../../../../core/StatementDate";
 import { CashQuestions } from "./CashQuestions";
+import { ManualEntry } from "./ManualEntry";
 import type {
   ImportFile,
   ImportPreparer,
@@ -167,6 +168,8 @@ function Review(props: {
   readonly createRevision: () => string;
   readonly onRecord: (next: LedgerState, date: IsoDate) => void;
   readonly save?: RemoteSave;
+  readonly onSaveLock?: (locked: boolean) => void;
+  readonly locked?: boolean;
 }): JSX.Element {
   const { review, sheetIndex, date } = props;
   const chosen = parseIsoDate(date);
@@ -178,7 +181,7 @@ function Review(props: {
 
       <div class="field">
         <label for="statement-date">Statement date</label>
-        <input id="statement-date" type="date" value={date} onInput={(event) => {
+        <input id="statement-date" type="date" disabled={props.locked} value={date} onInput={(event) => {
             props.onDate(event.currentTarget.value);
           }}
         />
@@ -205,6 +208,7 @@ function Review(props: {
               <label for="sheet-choice">Sheet to import</label>
               <select
                 id="sheet-choice"
+                disabled={props.locked}
                 value={String(sheetIndex)}
                 onChange={(event) => {
                   props.onSheet(Number(event.currentTarget.value));
@@ -233,6 +237,7 @@ function Review(props: {
                   createRevision={props.createRevision}
                   source={{ sheetName: sheet.name, sheet: sheet.raw }}
                   {...(props.save === undefined ? {} : { save: props.save })}
+                  {...(props.onSaveLock === undefined ? {} : { onSaveLock: props.onSaveLock })}
                   onRecord={(next) => {
                     props.onRecord(next, chosen);
                   }}
@@ -298,8 +303,13 @@ export function ImportView(props: {
   const [phase, setPhase] = useState<Phase>(props.initialPhase ?? { name: "idle" });
   const [sheetIndex, setSheetIndex] = useState(0);
   const [date, setDate] = useState("");
+  const [method, setMethod] = useState<"file" | "manual">("file");
+  const [manualStarted, setManualStarted] = useState(false);
+  const [saveLocked, setSaveLocked] = useState(false);
+  const fileSelection = useRef(0);
 
   async function choose(file: File): Promise<void> {
+    const selection = ++fileSelection.current;
     setPhase({ name: "reading" });
     const wrapped: ImportFile = {
       name: file.name,
@@ -309,17 +319,27 @@ export function ImportView(props: {
     };
     try {
       const review = await props.prepare(wrapped);
+      if (selection !== fileSelection.current) return;
       setSheetIndex(Math.max(0, review.status === "reviewed" ? review.sheets.findIndex((entry) => entry.outcome.ok) : 0));
       setDate(review.status === "reviewed" ? (review.dateCandidate?.date ?? "") : "");
       setPhase({ name: "reviewed", review });
     } catch {
+      if (selection !== fileSelection.current) return;
       setPhase({ name: "reviewed", review: { status: "unreadable-file", message: "The file could not be read." } });
     }
   }
 
   return (
     <section aria-labelledby="import-heading" class="import">
-      <h2 id="import-heading">Import a bank statement</h2>
+      <h2 id="import-heading">Add a portfolio update</h2>
+      <div class="segmented entry-methods" role="group" aria-label="Entry method">
+        <button type="button" disabled={saveLocked} aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
+        <button type="button" disabled={saveLocked} aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
+      </div>
+      <div hidden={method !== "manual"}>
+        {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
+      </div>
+      <div hidden={method !== "file"}>
       <p>
         Choose the Excel file exactly as the bank exported it. It is read and checked in this browser; it is not
         uploaded.
@@ -328,6 +348,7 @@ export function ImportView(props: {
         <label for="statement-file">Statement file (.xlsx)</label>
         <input
           id="statement-file"
+          disabled={saveLocked}
           type="file"
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           onChange={(event) => {
@@ -364,6 +385,8 @@ export function ImportView(props: {
             onSheet={setSheetIndex}
             date={date}
             onDate={setDate}
+            onSaveLock={setSaveLocked}
+            locked={saveLocked}
             ledger={props.ledger}
             createRevision={props.createRevision}
             {...(props.save === undefined ? {} : { save: props.save })}
@@ -373,7 +396,8 @@ export function ImportView(props: {
             }}
           />
         ))}
-      <RecordedSummary ledger={props.ledger} />
+      </div>
+      {props.save === undefined && <RecordedSummary ledger={props.ledger} />}
     </section>
   );
 }

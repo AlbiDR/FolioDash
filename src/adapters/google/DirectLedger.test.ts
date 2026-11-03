@@ -180,6 +180,42 @@ describe("commitDirect: saving", () => {
     expect(google.callsMatching(/:append$/u)).toHaveLength(0);
   });
 
+  it("detects same-length content edits between reads without appending", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    google.afterRead = { count: google.calls.filter(call => call.startsWith("GET ") && call.includes("/values/")).length + 1, run: () => {
+      const rows = google.tab(workbook.id, LEDGER_TAB)?.rows;
+      if (rows?.[1] !== undefined) rows[1][2] = "changed without adding rows";
+    } };
+    const before = google.callsMatching(/:append$/u).length;
+    expect((await commitDirect(deps, google.token, workbook.id, second("revision-0001"))).status).toBe("stale");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(before);
+  });
+
+  it("does not call an acknowledged append successful when verification cannot be read", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    let appended = false;
+    const rest: DirectDeps["rest"] = async request => {
+      if (appended && request.method === "GET") throw new Error("verification connection lost");
+      const response = await google.client(request);
+      if (request.method === "POST" && request.url.includes(":append?")) appended = true;
+      return response;
+    };
+    expect((await commitDirect({ ...deps, rest }, google.token, workbook.id, first())).status).toBe("unknown");
+    expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe("committed");
+    expect(google.callsMatching(/:append$/u)).toHaveLength(1);
+  });
+
+  it("treats an unexpected response after an applied append as unknown", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    google.faults.push({ match: /:append$/u, status: 418, applyFirst: true });
+    expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("unknown");
+    expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe("committed");
+  });
+
   it("treats a refusal Google made before doing anything as not written, and the retry then works", async () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);

@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
 import type { StatementSource } from "../../../../applications/LedgerService";
 import type { CheckResult, RecordResult, RemoteSave } from "./ImportModel";
@@ -144,8 +144,12 @@ export function CashQuestions(props: {
   readonly save?: RemoteSave;
   /** The bank statement being imported, saved with the month so the ledger can always be rebuilt from it. */
   readonly source?: StatementSource;
+  readonly onSaveLock?: (locked: boolean) => void;
 }): JSX.Element {
   const [saving, setSaving] = useState<SaveState>({ name: "idle" });
+  useEffect(() => {
+    props.onSaveLock?.(saving.name === "saving" || saving.name === "unknown" || saving.name === "saved-not-reloaded");
+  }, [saving.name, props.onSaveLock]);
   // One id per user action. It is kept across a failed attempt so a retry cannot be recorded twice.
   const [commandId, setCommandId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Readonly<Record<string, Answer>>>({});

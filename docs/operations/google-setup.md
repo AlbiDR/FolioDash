@@ -6,6 +6,20 @@ Scope: what the owner does in their own Google account so FolioDash can make its
 
 ## The current route (FD-017): sign in once, no script
 
+### Entry and write hardening (2026-11-03)
+
+The Import screen now offers Excel and manual valuation entry. Manual entry pre-fills known active fund names/ISINs, requires fresh explicit market values and a valuation date, validates Italian cent amounts and identifiers, and uses the existing opening/cash/lifecycle review and final save. An explicitly confirmed empty portfolio proceeds to the normal closure/proceeds questions. Removing a fund from the entry does not delete its historical records.
+
+Manual entries have no bank-source attachment; they must not be described as bank-verified evidence. Their figures remain in the ledger and readable summary. A corresponding bank source may later be attached through the existing reconciliation workflow. Drafts are in component memory, not promised recoverable across page reload/navigation. Interactive Mac/Android acceptance remains pending.
+
+The manual-entry UX uses stable fund-row identities, existing-fund cards, live validated totals and undo for the last removed row. Going back from cash review retains its answers when values/date are unchanged; changed values start a fresh review. Method switches retain in-page drafts and are disabled while saving or reconciling an uncertain result. Successful entry resets to fresh values for the next observation. Competing Excel reads use a selection generation so an older result cannot replace a newer choice. Field/card layouts adapt to narrow screens; physical-device and live-Google acceptance remain separate from local headless-browser checks.
+
+Before appending, the direct writer now compares complete ledger rows rather than only row count. After an acknowledged append it reads and validates the complete expected state; an unreadable/different result is uncertain, not a success or invitation to blindly retry. Unexpected write responses are uncertain too. Restore read-back compares complete financial state rather than just the number of months.
+
+**Concurrency limitation:** these are detection/reconciliation improvements, not an atomic compare-and-swap. Another device can still write after the final read and before the append. Direct Sheets API storage has no shared service lock in this design. Do not claim this release makes simultaneous cross-device financial writes safe. A properly verified serialization/conditional-write mechanism needs a further architecture decision before that guarantee. Real Google write/read-back and interactive-device proof are not supplied by unit tests.
+
+### Connection configuration
+
 Decided by the owner on 2026-11-01 and **built and tested only against a stand-in for Google, not yet on real Google**. The browser signs the person in with the narrow `drive.file` permission, creates their spreadsheet itself, and reads and writes it through the Sheets API. There is no script to deploy per person and no unverified-app warning.
 
 What the owner's Google Cloud project needs for this route:
