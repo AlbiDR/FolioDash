@@ -4,7 +4,7 @@ import { formatDateLong } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
 import type { ChartRange } from "../../app/chartRange";
-import { type MonthMetric, dashboardFor } from "../../app/dashboardData";
+import { type AllocationSlice, type MonthMetric, dashboardFor } from "../../app/dashboardData";
 import { Donut } from "../../shared/charts/Donut";
 import { LineChart } from "../../shared/charts/LineChart";
 import { MonthlyBars } from "../../shared/charts/MonthlyBars";
@@ -61,6 +61,57 @@ const GLOSSARY: readonly { readonly term: string; readonly meaning: string }[] =
   { term: "Year on year", meaning: "How much the gain changed since the same month last year." },
   { term: "Percentages", meaning: "A gain divided by net invested. They are not yearly rates." },
 ];
+
+/** Keep allocation inspection local, so pointer movement does not rerender the other charts. */
+function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }): JSX.Element {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [focused, setFocused] = useState<string | null>(null);
+  const active = props.slices.find(slice => slice.isin === (hovered ?? focused));
+  function focusSlice(id: string | null): void {
+    setFocused(id);
+    if (id !== null) setHovered(null);
+  }
+  return (
+    <div class="card cell-4 allocation-card">
+      <h3 class="card-title">Where your money is</h3>
+      <p class="card-subtitle">Share of today's fund value, by fund. Select a fund to see its history.</p>
+      {props.slices.length === 0 ? <p class="empty-note">No fund is held.</p> : <>
+        <Donut
+          label="Share of the portfolio by fund"
+          slices={props.slices.map(slice => ({
+            id: slice.isin, label: slice.name, value: slice.value,
+            href: `#fund/${slice.isin}`, description: `${slice.name}: ${formatPercent(slice.share)}. View fund.`,
+          }))}
+          activeId={active?.isin ?? null}
+          onHover={setHovered}
+          onFocus={focusSlice}
+          centre={<>
+            <span class="donut-number">{active === undefined ? props.slices.length : formatPercent(active.share)}</span>
+            <span class="donut-caption">{active === undefined ? (props.slices.length === 1 ? "fund" : "funds") : "of portfolio"}</span>
+          </>}
+        />
+        <ul class="legend" data-inspecting={active !== undefined}>
+          {props.slices.map((slice, index) => (
+            <li key={slice.isin}>
+              <a
+                href={`#fund/${slice.isin}`}
+                data-active={active?.isin === slice.isin}
+                onPointerEnter={(event) => { if (event.pointerType !== "touch") setHovered(slice.isin); }}
+                onPointerLeave={() => { setHovered(null); }}
+                onFocus={() => { focusSlice(slice.isin); }}
+                onBlur={() => { focusSlice(null); }}
+              >
+                <span class={`dot series-${String(index % 8)}`} aria-hidden="true" />
+                <span class="legend-name">{slice.name}</span>
+                <span class="legend-value">{formatPercent(slice.share)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>}
+    </div>
+  );
+}
 
 /**
  * The dashboard: every widget reads from one model and one time range, and
@@ -215,37 +266,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         )}
       </div>
 
-      <div class="card cell-4">
-        <h3 class="card-title">Where your money is</h3>
-        <p class="card-subtitle">Share of today's fund value, by fund.</p>
-        {slices.length === 0 ? (
-          <p class="empty-note">No fund is held.</p>
-        ) : (
-          <>
-            <Donut
-              label="Share of the portfolio by fund"
-              slices={slices.map((slice) => ({ id: slice.isin, label: slice.name, value: slice.value }))}
-              centre={
-                <>
-                  <span class="donut-number">{slices.length}</span>
-                  <span class="donut-caption">{slices.length === 1 ? "fund" : "funds"}</span>
-                </>
-              }
-            />
-            <ul class="legend">
-              {slices.map((slice, index) => (
-                <li key={slice.isin}>
-                  <a href={`#fund/${slice.isin}`}>
-                    <span class={`dot series-${String(index % 8)}`} aria-hidden="true" />
-                    <span class="legend-name">{slice.name}</span>
-                    <span class="legend-value">{formatPercent(slice.share)}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
+      <AllocationCard slices={slices} />
 
       <div class="card cell-4">
         <h3 class="card-title">Monthly growth</h3>

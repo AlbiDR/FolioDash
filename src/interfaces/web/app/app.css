@@ -820,6 +820,7 @@ a.status-chip:hover {
 
 .donut {
   position: relative;
+  container-type: inline-size;
   width: min(100%, 11.25rem);
   aspect-ratio: 1;
   margin: 0 auto 0.9rem;
@@ -852,7 +853,7 @@ a.status-chip:hover {
 
 .donut-caption {
   color: var(--color-muted);
-  font-size: 0.75rem;
+  font-size: min(0.75rem, 7cqi);
   font-weight: 600;
 }
 

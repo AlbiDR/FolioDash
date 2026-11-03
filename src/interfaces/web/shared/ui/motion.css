@@ -253,10 +253,73 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .app-update { animation: motion-update var(--duration-feedback) var(--ease-standard); }
 @keyframes motion-update { from { opacity: var(--motion-reveal-opacity); transform: translateY(calc(-1 * var(--motion-nudge))); } to { opacity: 1; transform: none; } }
 
+/* Surface feedback is shared across screens, including cards without controls.
+ * Elevation does not move charts, forms or their hit targets. Only the decorative
+ * stat cards lift; they retain normal text semantics and the default cursor.
+ */
+.card, .chart {
+  transition: box-shadow var(--duration-feedback) var(--ease-standard), background-color var(--duration-feedback) var(--ease-standard);
+}
+.card:focus-within, .chart:focus-within { box-shadow: var(--shadow-inspect); }
+.card:active, .chart:active { box-shadow: inset 0 0 0 1px var(--color-accent); }
+.stat { transition: translate var(--duration-feedback) var(--ease-standard), box-shadow var(--duration-feedback) var(--ease-standard); }
+.stat .card-label { transition: color var(--duration-short) var(--ease-standard); }
+.spark-area { transition: opacity var(--duration-feedback) var(--ease-standard); }
+.spark-line { transition: stroke-width var(--duration-feedback) var(--ease-standard); }
+.hero::before, .hero::after { transition: translate var(--duration-medium) var(--ease-standard); }
+.hero:focus-within::before { translate: var(--motion-nudge) var(--motion-nudge); }
+
+/* Inspection is an opacity/stroke treatment; allocation angles never change. */
+.donut-centre { pointer-events: none; }
+.donut[data-inspecting="true"] .donut-number { font-size: min(1.5rem, 13cqi); }
+.donut-slice {
+  stroke: var(--color-surface);
+  stroke-width: 0;
+  transition: opacity var(--duration-short) var(--ease-standard), stroke-width var(--duration-short) var(--ease-standard);
+}
+.donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) { opacity: 0.4; }
+.donut-slice[data-active="true"] { stroke-width: 2; }
+.donut a:focus-visible { outline: none; }
+.donut a:focus-visible .donut-slice { stroke: var(--color-text); stroke-width: 3; }
+.donut a:active .donut-slice { opacity: 0.7; }
+.allocation-card .legend a { min-height: var(--touch-target); }
+.allocation-card .legend a[data-active="true"] { background: var(--color-accent-soft); }
+.allocation-card .legend a[data-active="true"] .dot { transform: scale(1.12); }
+.allocation-card .legend-name { white-space: normal; overflow-wrap: anywhere; }
+
+/* Readable data rows acknowledge inspection without moving the figures. */
+.facts > div, .glossary > div, .kpis > div {
+  border-radius: var(--shape-xs);
+  transition: background-color var(--duration-short) var(--ease-standard);
+}
+.facts > div:focus-within, .glossary > div:focus-within, .kpis > div:focus-within { background-color: var(--color-accent-soft); }
+.matrix tbody tr { transition: background-color var(--duration-short) var(--ease-standard); }
+.matrix tbody tr:focus-within { background-color: var(--color-accent-soft); }
+.row-link, .demo-nav a, .link-button {
+  transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard);
+}
+.link-button:active { transform: scale(var(--motion-press)); }
+.perf-row:active, .row-link:active, .demo-nav a:active { background-color: var(--color-accent-soft); }
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover, .chart:hover { box-shadow: var(--shadow-inspect); }
+  .stat:hover { translate: 0 var(--motion-lift); }
+  .stat:hover .card-label { color: var(--color-accent); }
+  .stat:hover .spark-area, .hero:hover .spark-area { opacity: 0.24; }
+  .stat:hover .spark-line, .hero:hover .spark-line { stroke-width: 2.5; }
+  .hero:hover::before { translate: var(--motion-nudge) var(--motion-nudge); }
+  .hero:hover::after { translate: calc(-1 * var(--motion-nudge)) calc(-1 * var(--motion-nudge)); }
+  .facts > div:hover, .glossary > div:hover, .kpis > div:hover, .matrix tbody tr:hover { background-color: var(--color-accent-soft); }
+  .perf-row:hover, .row-link:hover { background-color: var(--color-accent-soft); }
+  .mobile-holdings a:hover { background-color: var(--color-accent-soft); }
+  .link-button:hover { box-shadow: var(--shadow-inspect); }
+}
+
 /* Native-control pseudo-elements are not covered by the universal element override. */
 @media (prefers-reduced-motion: reduce) {
   .field input::placeholder { transition: none !important; }
   .field input::file-selector-button { transition: none !important; }
   .chart-date-control input::-webkit-slider-thumb { transition: none !important; transform: none !important; }
   .chart-date-control input::-moz-range-thumb { transition: none !important; transform: none !important; }
+  .stat:hover, .hero::before, .hero::after { translate: none !important; }
 }

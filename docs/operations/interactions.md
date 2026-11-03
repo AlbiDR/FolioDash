@@ -4,6 +4,18 @@ The inventory contains **92** named behaviours: the original 32, five additional
 
 The shared presentation layers are `src/interfaces/web/shared/ui/interactions.css` and `motion.css`, imported after the base styles. Motion durations, distances and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
 
+## Shared surface feedback and allocation inspection
+
+The follow-up on 2026-11-04 covers gaps between the original numbered touchpoints. This is a shared presentation rule rather than another fixed animation quota:
+
+- Every card and chart panel acknowledges hover with an accent edge and soft elevation. Keyboard focus within a panel has the same boundary, and touch press has an immediate edge. Chart and form panels stay in place while being used.
+- Current gain, Month on month, Year to date and Year on year additionally lift by two pixels on a fine-pointer hover. Their labels gain accent and available sparklines gain emphasis. An unavailable metric keeps its reason and still receives surface feedback. These information cards keep normal text semantics and are not extra keyboard stops.
+- The portfolio and fund hero cards share panel feedback. The portfolio hero also emphasizes its sparkline and gently shifts its existing decorative gradients.
+- Allocation segments are fund links with names and shares in their accessible labels. Hovering a segment or legend link, or focusing either by keyboard, highlights that segment and legend row and shows the exact share in the centre. Leaving inspection restores the fund count. Pressing a segment or legend link opens the fund, including on touch. Legend links have full 48px targets and wrap long fund names. Keyboard focus clears stale pointer inspection; pointer exit restores any remaining focused fund.
+- Facts, glossary entries, import-review KPIs and monthly matrix rows gain a subtle inspection surface. Ranking rows, linked action rows, phone holdings and link-style buttons share hover/press feedback.
+
+Allocation inspection stays inside its own component, so pointer movement does not rerender the rest of the dashboard. Segment angles, plotted paths, values, axis bounds and financial calculations do not animate or change. Reduced motion removes the stat lift and gradient movement in addition to all transitions and animations; the selected fund remains readable immediately.
+
 | # | Addition | How to exercise it |
 | --- | --- | --- |
 | 01 | Consistent enabled-button press feedback | Hold a button; disabled buttons do not compress |
@@ -144,3 +156,16 @@ Local headless Chrome with synthetic portfolios checks:
 - Earlier keyboard, chart highlight/reset and unchanged geometry, pinning, copy-feedback stub, add/remove/undo focus, draft retention and five-width mobile checks are rerun. Visual inspection uses the actual production renderer with invented data.
 
 This evidence does not measure frame rate on the person's phone or prove physical Android smoothness, screen-reader use, native clipboard consent, actual Google sign-in/waiting, history saving or service-worker update arrival. Conditional feedback for those journeys is implemented but its live-provider/device acceptance remains pending. No new support claim follows from the number of motion touchpoints.
+
+## Evidence for shared surface feedback
+
+Local production build, headless desktop Chrome and touch emulation, synthetic portfolios, 2026-11-04:
+
+- All four gain cards finish their hover at a two-pixel lift with the shared edge/elevation. Available sparkline fills gain emphasis, including when the portfolio has an unavailable year-on-year metric.
+- Allocation legend hover and keyboard focus highlight the matching segment and show the same formatted share as the legend. Keyboard focus replaces an earlier pointer selection; pointer exit retains any focused fund; leaving both restores the count. Segment focus has a visible stroke and Enter opens its fund. Touching a segment also opens its fund.
+- Amount text, allocation path data, line path data and axis tick text are identical before and after inspection. No browser page errors occur.
+- Portfolio, month, import, history and account screens have no page-level horizontal overflow at 320, 390, 430, 844 and 1440 CSS pixels. Touch emulation covers typical, single-fund, many-fund, different-fund and empty portfolios; all allocation legend targets measure at least 48 by 48 pixels.
+- The 100-percent centre label fits inside the ring in dark mode and at doubled root text size on a 320px viewport. Allocation typography follows its actual container width.
+- Reduced motion has zero running document animations, zero panel/segment transition durations and no stat-card translation, while focus/selection remain functional.
+
+These checks exercise the actual local production renderer, with service workers blocked to ensure the tested build is current. They do not establish physical Android feel, other browser-engine support, screen-reader announcements or live Google integration.

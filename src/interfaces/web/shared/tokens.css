@@ -19,6 +19,8 @@
   --color-muted: #5a6072;
   --color-border: rgba(16, 19, 28, 0.1);
   --color-grid: rgba(16, 19, 28, 0.1);
+  --color-inspect-edge: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  --shadow-inspect: inset 0 0 0 1px var(--color-inspect-edge), 0 6px 18px var(--color-accent-soft);
 
   /* Dynamic accent: a primary, its tonal container, and a quiet secondary and tertiary. */
   --color-accent: #0b5fff;
@@ -74,6 +76,7 @@
   --duration-busy: 900ms;
   --duration-cue: 150ms;
   --motion-nudge: 2px;
+  --motion-lift: -2px;
   --motion-press: 0.98;
   --motion-reveal-opacity: 0.85;
   --duration-medium: 380ms;
