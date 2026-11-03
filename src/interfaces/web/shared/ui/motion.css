@@ -285,6 +285,7 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .allocation-card .legend a { min-height: var(--touch-target); }
 .allocation-card .legend a[data-active="true"] { background: var(--color-accent-soft); }
 .allocation-card .legend a[data-active="true"] .dot { transform: scale(1.12); }
+.allocation-card .legend a:active .dot { transform: scale(0.9); }
 .allocation-card .legend-name { white-space: normal; overflow-wrap: anywhere; }
 
 /* Readable data rows acknowledge inspection without moving the figures. */
