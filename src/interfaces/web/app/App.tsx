@@ -1,15 +1,15 @@
 import type { JSX } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { AccountView } from "../features/account/AccountView";
+import { lazy } from "preact/compat";
 import { GetStarted } from "../features/account/GetStarted";
-import { HistoryView } from "../features/history/HistoryView";
-import { ImportView } from "../features/import/ImportView";
+import type { ImportPreparer } from "../features/import/ImportModel";
 import { FundView } from "../features/overview/FundView";
 import { MonthsView } from "../features/overview/MonthsView";
 import type { OverviewModel } from "../features/overview/OverviewModel";
 import { OverviewView } from "../features/overview/OverviewView";
 import { PrivacyProvider, PrivacyToggle, usePrivacyChoice } from "../shared/privacy/privacy";
 import { RangeSelector } from "../shared/ui/RangeSelector";
+import { DeferredView } from "../shared/ui/DeferredView";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sidebarChoice";
 import { useMediaQuery } from "../shared/ui/useMediaQuery";
 import { Icon, type IconName } from "../shared/ui/icons";
@@ -17,7 +17,6 @@ import { createBrowserSession } from "./browserSession";
 import { CHART_RANGES, type ChartRange } from "./chartRange";
 import { rememberClientId, resolveClientId } from "./clientId";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
-import { prepareImport } from "./importPreparer";
 import { memoizeLast } from "./memo";
 import { overviewFromLedger } from "./overviewFromLedger";
 import { type Route, navEntryOf, routeFrom } from "./routes";
@@ -26,6 +25,16 @@ import { describeAge } from "./timeAgo";
 import { useNow, useSession } from "./useSession";
 
 const TITLES = { overview: "Portfolio", months: "Month by month", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
+const AccountView = lazy(async () => ({ default: (await import("../features/account/AccountView")).AccountView }));
+const HistoryView = lazy(async () => ({ default: (await import("../features/history/HistoryView")).HistoryView }));
+const ImportView = lazy(async () => ({ default: (await import("../features/import/ImportView")).ImportView }));
+const prepareImport: ImportPreparer = async (file) => {
+  try {
+    return await (await import("./importPreparer")).prepareImport(file);
+  } catch {
+    return { status: "unreadable-file", message: "The import tools or file could not be loaded. Check your connection, then select the file again." };
+  }
+};
 
 function titleOf(route: Route, model: OverviewModel): string {
   if (route.name === "fund") return model.funds.find((fund) => fund.isin === route.isin)?.name ?? "Fund";
@@ -182,7 +191,7 @@ export function App(): JSX.Element {
             )}
             {route.name === "overview" && data.mode !== "signed-out" && data.ledger.snapshots.length === 0 && (
               <div class="card get-started">
-                <h3 class="card-title">Your Google Sheet is ready</h3>
+                <h2 class="card-title">Your Google Sheet is ready</h2>
                 <p class="card-subtitle">Next: import your first bank statement.</p>
                 <a class="primary link-button" href="#import">Import a statement</a>
               </div>
@@ -221,6 +230,7 @@ export function App(): JSX.Element {
               </p>
             )}
             <main id="main-content" tabIndex={-1}>
+              <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && <OverviewView model={model} range={range} />}
               {route.name === "months" && <MonthsView model={model} />}
               {route.name === "fund" && <FundView model={model} isin={route.isin} range={range} />}
@@ -257,6 +267,7 @@ export function App(): JSX.Element {
                   }}
                 />
               )}
+              </DeferredView>
             </main>
           </div>
         </div>

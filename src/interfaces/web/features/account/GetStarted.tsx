@@ -27,7 +27,7 @@ export function GetStarted(props: { readonly clientConfigured: boolean; readonly
 
   return (
     <div class="card get-started">
-      <h3 class="card-title">Start your own portfolio</h3>
+      <h2 class="card-title">Start your own portfolio</h2>
       <p class="card-subtitle">Two steps. About a minute.</p>
       <ol class="steps">
         <li>
