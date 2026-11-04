@@ -87,6 +87,10 @@ if (!existsSync(`${DIST}/sw.js`)) {
     .map((path) => relative(DIST, path).split("\\").join("/"))
     .filter((file) => file !== "sw.js" && file !== "index.html" && !file.endsWith(".map"));
   for (const file of built) check(worker.includes(`"${file}"`), `the service worker does not list ${file}`);
+  for (const file of built.filter((name) => name.endsWith(".js"))) {
+    const source = readFileSync(join(DIST, file), "utf8");
+    check(!source.includes("foliodash-synthetic-acceptance") && !source.includes("foliodash.synthetic-acceptance.ledger.v1"), `the production asset ${file} contains synthetic acceptance configuration`);
+  }
   check(!/googleapis|accounts\.google/u.test(worker), "the service worker must not mention Google: it never handles those requests");
   const page = readFileSync(`${DIST}/index.html`, "utf8");
   check((page.match(/name="theme-color"/gu) ?? []).length === 1, "the page needs one theme-color tag for Android Chrome");

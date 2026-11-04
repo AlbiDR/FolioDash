@@ -9,7 +9,7 @@ import type { IsoDate } from "../../core/IsoDate";
 import type { RawSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedgerStore";
-import { appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs } from "./GoogleWorkbook";
+import { appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs, type WorkbookIdentity } from "./GoogleWorkbook";
 import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
 import { VIEW_TAB } from "./SheetsLayout";
 import { type RestClient, type RestFailure, wroteNothing } from "./Rest";
@@ -47,6 +47,7 @@ export class BufferedRowSheet implements RowSheet {
 export interface DirectDeps {
   readonly rest: RestClient;
   readonly newRevision: () => string;
+  readonly workbookIdentity?: WorkbookIdentity;
 }
 
 export type EnsureResult =
@@ -54,11 +55,11 @@ export type EnsureResult =
   | { readonly status: "call-failed"; readonly failure: CallFailure };
 
 /** Finds the person's spreadsheet, or creates it. This is the whole of "starting a portfolio from scratch". */
-export async function ensureWorkbook(rest: RestClient, accessToken: string): Promise<EnsureResult> {
-  const found = await findWorkbook(rest, accessToken);
+export async function ensureWorkbook(rest: RestClient, accessToken: string, identity?: WorkbookIdentity): Promise<EnsureResult> {
+  const found = await findWorkbook(rest, accessToken, identity);
   if (!found.ok) return { status: "call-failed", failure: found.failure };
   if (found.value !== null) return { status: "ready", workbook: found.value, created: false, tagged: true };
-  const created = await createWorkbook(rest, accessToken);
+  const created = await createWorkbook(rest, accessToken, identity);
   if (!created.ok) return { status: "call-failed", failure: created.failure };
   return { status: "ready", workbook: { id: created.value.id, url: created.value.url }, created: true, tagged: created.value.tagged };
 }
@@ -204,7 +205,7 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
 
   let workbook = into;
   if (workbook === null) {
-    const created = await createWorkbook(deps.rest, accessToken);
+    const created = await createWorkbook(deps.rest, accessToken, deps.workbookIdentity);
     if (!created.ok) return { status: "failed", failure: created.failure, workbook: null };
     workbook = { id: created.value.id, url: created.value.url };
   } else {

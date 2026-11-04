@@ -35,10 +35,10 @@ function record(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 
-export function createLedgerCache(open: () => KeyValueStore): LedgerCache {
+export function createLedgerCache(open: () => KeyValueStore, key = KEY): LedgerCache {
   const clear = (): void => {
     try {
-      open().removeItem(KEY);
+      open().removeItem(key);
     } catch {
       // Nothing to clear.
     }
@@ -46,7 +46,7 @@ export function createLedgerCache(open: () => KeyValueStore): LedgerCache {
   return {
     load(): DeviceCopy | null {
       try {
-        const text = open().getItem(KEY);
+        const text = open().getItem(key);
         if (text === null) return null;
         const stored = record(JSON.parse(text));
         const workbook = record(stored?.["workbook"]);
@@ -69,7 +69,7 @@ export function createLedgerCache(open: () => KeyValueStore): LedgerCache {
           clear();
           return false;
         }
-        open().setItem(KEY, text);
+        open().setItem(key, text);
         return true;
       } catch {
         return false;

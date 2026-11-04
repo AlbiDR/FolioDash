@@ -49,6 +49,35 @@ async function readyWorkbook(google: FakeGoogle) {
 }
 
 describe("ensureWorkbook: starting from scratch", () => {
+  it("creates and rediscovers an isolated synthetic workbook without selecting or changing the normal workbook", async () => {
+    const { google } = setup();
+    const normal = await readyWorkbook(google);
+    const before = JSON.stringify([...(google.workbooks.get(normal.id) ?? [])]);
+    const identity = { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" };
+    const synthetic = await ensureWorkbook(google.client, google.token, identity);
+    expect(synthetic).toMatchObject({ status: "ready", created: true });
+    if (synthetic.status !== "ready") throw new Error("Synthetic setup failed");
+    expect(synthetic.workbook.id).not.toBe(normal.id);
+    expect(google.files.get(synthetic.workbook.id)?.name).toBe(identity.title);
+    expect(google.files.get(synthetic.workbook.id)?.appProperties).toEqual({ [identity.propertyKey]: identity.propertyValue });
+    const again = await ensureWorkbook(google.client, google.token, identity);
+    expect(again).toMatchObject({ status: "ready", created: false, workbook: synthetic.workbook });
+    expect(await ensureWorkbook(google.client, google.token)).toMatchObject({ status: "ready", created: false, workbook: normal });
+    expect(JSON.stringify([...(google.workbooks.get(normal.id) ?? [])])).toBe(before);
+  });
+
+  it("uses the synthetic name fallback if tagging fails, never the normal workbook name", async () => {
+    const { google } = setup();
+    const normal = await readyWorkbook(google);
+    const identity = { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" };
+    google.faults.push({ match: /^PATCH \/drive/u, status: 500 });
+    const synthetic = await ensureWorkbook(google.client, google.token, identity);
+    expect(synthetic).toMatchObject({ status: "ready", created: true, tagged: false });
+    if (synthetic.status !== "ready") throw new Error("Synthetic setup failed");
+    const again = await ensureWorkbook(google.client, google.token, identity);
+    expect(again).toMatchObject({ status: "ready", created: false, workbook: synthetic.workbook });
+    expect(synthetic.workbook.id).not.toBe(normal.id);
+  });
   it("creates a tagged spreadsheet with a readable tab and a hidden ledger tab, in one sign-in", async () => {
     const { google } = setup();
     const result = await ensureWorkbook(google.client, google.token);

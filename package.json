@@ -19,7 +19,10 @@
     "verify:apps-script": "node scripts/verify-apps-script-bundle.ts",
     "preview": "vite preview --config config/vite.config.ts --host localhost --port 4173 --strictPort",
     "verify:repository": "node scripts/verify-repository.ts",
-    "benchmark:history": "esbuild scripts/benchmark-history.ts --bundle --platform=node --format=esm --outfile=dist/benchmarks/history.mjs && node dist/benchmarks/history.mjs"
+    "benchmark:history": "esbuild scripts/benchmark-history.ts --bundle --platform=node --format=esm --outfile=dist/benchmarks/history.mjs && node dist/benchmarks/history.mjs",
+    "fixtures:onboarding": "esbuild scripts/generate-onboarding-fixtures.ts --bundle --platform=node --format=esm --outfile=dist/acceptance/generate-fixtures.mjs && node dist/acceptance/generate-fixtures.mjs",
+    "build:acceptance": "vite build --config config/vite.acceptance.config.ts",
+    "preview:acceptance": "vite preview --config config/vite.acceptance.config.ts"
   },
   "engines": {
     "node": ">=22.18.0"

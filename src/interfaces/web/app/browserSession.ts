@@ -1,5 +1,5 @@
 import type { RestClient } from "../../../adapters/google/Rest";
-import { browserLedgerCache } from "../../../adapters/browser/LedgerCache";
+import { browserLedgerCache, createLedgerCache } from "../../../adapters/browser/LedgerCache";
 import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
 import { interpretStatement } from "./interpretStatement";
 import { Session } from "./session";
@@ -24,7 +24,8 @@ export function createBrowserSession(clientId: string): Session {
     signIn,
     revoke: revokeToken,
     rest: browserRest,
-    cache: browserLedgerCache,
+    cache: __SYNTHETIC_ACCEPTANCE__ ? createLedgerCache(() => window.localStorage, "foliodash.synthetic-acceptance.ledger.v1") : browserLedgerCache,
+    ...(__SYNTHETIC_ACCEPTANCE__ ? { workbookIdentity: { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" } } : {}),
     now: () => Date.now(),
     newId: () => crypto.randomUUID(),
   });

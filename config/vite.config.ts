@@ -24,7 +24,7 @@ export default defineConfig({
     emptyOutDir: true,
     target: "es2022",
   },
-  define: { __APP_BUILD__: JSON.stringify(buildStamp()) },
+  define: { __APP_BUILD__: JSON.stringify(buildStamp()), __SYNTHETIC_ACCEPTANCE__: "false" },
   plugins: [serviceWorkerPlugin()],
   oxc: { jsx: { runtime: "automatic", importSource: "preact" } },
 });

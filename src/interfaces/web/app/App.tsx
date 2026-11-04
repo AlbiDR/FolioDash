@@ -155,6 +155,7 @@ export function App(): JSX.Element {
         </nav>
         <div class="content">
           <div class="content-inner">
+            {__SYNTHETIC_ACCEPTANCE__ && <p class="notice" role="status">Synthetic acceptance build. Use generated test statements only. Google connection uses a separate test spreadsheet and device copy.</p>}
             <header class="topbar">
               {wide && (
                 <button

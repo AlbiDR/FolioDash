@@ -14,6 +14,7 @@ import {
   tidyLedgerTab,
 } from "../../../adapters/google/DirectLedger";
 import type { RestClient } from "../../../adapters/google/Rest";
+import type { WorkbookIdentity } from "../../../adapters/google/GoogleWorkbook";
 import type { AttachItem } from "../../../applications/LedgerService";
 import { type InterpretStatement, verifyRebuild } from "../../../applications/Rebuild";
 import type { IsoDate } from "../../../core/IsoDate";
@@ -27,6 +28,7 @@ export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 export interface SessionDeps {
   readonly clientId: string;
+  readonly workbookIdentity?: WorkbookIdentity;
   /** Re-reads a stored bank statement with today's reader, to prove the ledger can be rebuilt from them. */
   readonly interpret: InterpretStatement;
   /** How a statement is shown in its tab of the person's spreadsheet. */
@@ -162,7 +164,7 @@ export class Session {
   async connect(): Promise<ConnectOutcome> {
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
-    const ensured = await ensureWorkbook(this.deps.rest, signed.token);
+    const ensured = await ensureWorkbook(this.deps.rest, signed.token, this.deps.workbookIdentity);
     if (ensured.status !== "ready") return { status: "call-failed", failure: ensured.failure };
     return this.load(ensured.workbook, signed.token, ensured.created);
   }
@@ -218,7 +220,7 @@ export class Session {
     if (sheet !== "missing" && sheet !== "emptied") return { status: "not-needed" };
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
-    const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
+    const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId, ...(this.deps.workbookIdentity === undefined ? {} : { workbookIdentity: this.deps.workbookIdentity }) };
     const result = await restoreDirect(deps, signed.token, ledger, sheet === "emptied" ? workbook : null);
     if (result.status !== "restored") {
       return { status: "failed", message: result.status === "not-empty" ? "The spreadsheet already holds statements, so nothing was written." : "The spreadsheet could not be restored. Nothing on this device was changed." };

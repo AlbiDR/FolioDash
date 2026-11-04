@@ -22,6 +22,21 @@ function copyOf(ledger: DeviceCopy["ledger"]): DeviceCopy {
 }
 
 describe("ledger cache", () => {
+  it("isolates synthetic acceptance storage from the normal device copy, including clearing and corruption", async () => {
+    const store = memory();
+    const normal = createLedgerCache(() => store);
+    const acceptance = createLedgerCache(() => store, "foliodash.synthetic-acceptance.ledger.v1");
+    const copy = copyOf(await realLedger());
+    normal.save(copy);
+    expect(acceptance.load()).toBeNull();
+    acceptance.save({ ...copy, workbook: { id: "synthetic-workbook", url: "https://example.test/synthetic" } });
+    expect(normal.load()).toEqual(copy);
+    acceptance.clear();
+    expect(normal.load()).toEqual(copy);
+    store.data.set("foliodash.synthetic-acceptance.ledger.v1", "invalid");
+    expect(acceptance.load()).toBeNull();
+    expect(normal.load()).toEqual(copy);
+  });
   it("keeps a copy and returns exactly what was kept", async () => {
     const store = memory();
     const cache = createLedgerCache(() => store);

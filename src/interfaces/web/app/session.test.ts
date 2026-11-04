@@ -64,6 +64,50 @@ async function saved(session: Session, request: RecordRequest) {
 }
 
 describe("starting from scratch", () => {
+  it("connects a synthetic session without loading the normal workbook or device copy", async () => {
+    const { google, make, store } = world();
+    const normal = make();
+    await normal.connect();
+    await saved(normal, january);
+    const normalCopy = store.data.get("foliodash.ledger.v1");
+    const synthetic = make({
+      workbookIdentity: { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" },
+      cache: createLedgerCache(() => store, "foliodash.synthetic-acceptance.ledger.v1"),
+    });
+    expect(synthetic.state.mode).toBe("signed-out");
+    await synthetic.connect();
+    expect(synthetic.state.ledger.snapshots).toHaveLength(0);
+    expect(synthetic.state.workbook?.id).not.toBe(normal.state.workbook?.id);
+    expect(google.files.size).toBe(2);
+    expect(store.data.get("foliodash.ledger.v1")).toBe(normalCopy);
+    await normal.idle();
+    await synthetic.idle();
+  });
+
+  it("keeps synthetic workbook identity when restoring a missing test workbook", async () => {
+    const { google, make, store } = world();
+    const identity = { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" };
+    const session = make({ workbookIdentity: identity, cache: createLedgerCache(() => store, "foliodash.synthetic-acceptance.ledger.v1") });
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
+    const original = session.state.workbook;
+    if (original === null) throw new Error("Synthetic setup failed");
+    google.workbooks.delete(original.id);
+    const file = google.files.get(original.id);
+    if (file !== undefined) file.trashed = true;
+    await session.refresh();
+    expect(session.state.sheet).toBe("missing");
+    const result = await session.restoreFromDevice();
+    expect(result.status).toBe("restored");
+    const restored = session.state.workbook;
+    if (restored === null) throw new Error("Synthetic restoration failed");
+    expect(restored.id).not.toBe(original.id);
+    expect(google.files.get(restored.id)?.name).toBe(identity.title);
+    expect(google.files.get(restored.id)?.appProperties).toEqual({ [identity.propertyKey]: identity.propertyValue });
+    expect(store.data.has("foliodash.ledger.v1")).toBe(false);
+    await session.idle();
+  });
   it("one connect signs in once, creates the sheet, and leaves the person ready to import", async () => {
     const { google, log, make } = world();
     const session = make();

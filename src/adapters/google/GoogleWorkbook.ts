@@ -17,6 +17,14 @@ const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 const DRIVE = "https://www.googleapis.com/drive/v3/files";
 const TYPES = new Set<string>(["META", "SNAPSHOT", "TIMELINE", "SOURCE", "COMMIT"]);
 
+/** Explicit discovery identity keeps local synthetic acceptance separate from the real portfolio. */
+export interface WorkbookIdentity {
+  readonly title: string;
+  readonly propertyKey: string;
+  readonly propertyValue: string;
+}
+const DEFAULT_IDENTITY: WorkbookIdentity = { title: WORKBOOK_TITLE, propertyKey: APP_PROPERTY_KEY, propertyValue: APP_PROPERTY_VALUE };
+
 function record(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
@@ -33,10 +41,10 @@ function openUrl(id: string): string {
  * Finds the person's FolioDash spreadsheet again: first by the tag the app put on
  * it, then, in case tagging did not complete, by its name. The newest match wins.
  */
-export async function findWorkbook(rest: RestClient, accessToken: string): Promise<RestResult<Workbook | null>> {
+export async function findWorkbook(rest: RestClient, accessToken: string, identity: WorkbookIdentity = DEFAULT_IDENTITY): Promise<RestResult<Workbook | null>> {
   const queries = [
-    `appProperties has { key='${APP_PROPERTY_KEY}' and value='${APP_PROPERTY_VALUE}' } and trashed=false`,
-    `name='${WORKBOOK_TITLE}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
+    `appProperties has { key='${identity.propertyKey}' and value='${identity.propertyValue}' } and trashed=false`,
+    `name='${identity.title}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
   ];
   for (const query of queries) {
     const url = `${DRIVE}?q=${encodeURIComponent(query)}&fields=${encodeURIComponent("files(id)")}&orderBy=${encodeURIComponent("createdTime desc")}&pageSize=1&spaces=drive`;
@@ -55,12 +63,12 @@ export async function findWorkbook(rest: RestClient, accessToken: string): Promi
  * failure is not fatal, because the name search finds the file anyway; it is
  * reported so it can be mentioned.
  */
-export async function createWorkbook(rest: RestClient, accessToken: string): Promise<RestResult<Workbook & { readonly tagged: boolean }>> {
+export async function createWorkbook(rest: RestClient, accessToken: string, identity: WorkbookIdentity = DEFAULT_IDENTITY): Promise<RestResult<Workbook & { readonly tagged: boolean }>> {
   const created = await callRest(rest, accessToken, {
     method: "POST",
     url: SHEETS,
     body: {
-      properties: { title: WORKBOOK_TITLE },
+      properties: { title: identity.title },
       sheets: [
         { properties: { sheetId: 0, title: VIEW_TAB, index: 0 }, developerMetadata: [viewMetadata(0, VIEW_TAB)] },
         {
@@ -83,7 +91,7 @@ export async function createWorkbook(rest: RestClient, accessToken: string): Pro
   const tag = await callRest(rest, accessToken, {
     method: "PATCH",
     url: `${DRIVE}/${encodeURIComponent(id)}?fields=id`,
-    body: { appProperties: { [APP_PROPERTY_KEY]: APP_PROPERTY_VALUE } },
+    body: { appProperties: { [identity.propertyKey]: identity.propertyValue } },
   });
   return { ok: true, value: { id, url: openUrl(id), tagged: tag.ok } };
 }
