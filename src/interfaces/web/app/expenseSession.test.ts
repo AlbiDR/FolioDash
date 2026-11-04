@@ -45,6 +45,51 @@ async function world() {
 }
 
 describe("expense session integrity and recovery", () => {
+  it("joins concurrent readiness checks so background loading and explicit reconnect finish together", async () => {
+    const { session, google, setRest } = await world();
+    const entered = deferred<undefined>();
+    const release = deferred<undefined>();
+    let inspections = 0;
+    setRest(async call => {
+      if (call.method === "GET" && call.url.includes("?fields=")) { inspections++; entered.resolve(undefined); await release.promise; }
+      return google.client(call);
+    });
+    const background = session.refresh();
+    await entered.promise;
+    const explicit = session.refresh();
+    expect(explicit).toBe(background);
+    release.resolve(undefined);
+    await Promise.all([background, explicit]);
+    expect(inspections).toBe(1);
+    expect(session.state.ready).toBe(true);
+  });
+
+  it("makes a failed connection check visible and recoverable without losing the history", async () => {
+    const { session, google, boundCache } = await world();
+    await session.save(request);
+    const denied = new ExpenseSession({ rest: google.client, cache: boundCache, newId: () => "unused", access: () => Promise.resolve({ ok: false, message: "Sign in with Google to check these records." }) });
+    await denied.refresh();
+    expect(denied.state.ready).toBe(false);
+    expect(denied.state.message).toContain("Sign in with Google");
+    expect(denied.state.commands).toHaveLength(1);
+    expect(boundCache.load()?.commands).toHaveLength(1);
+  });
+
+  it("surfaces unexpected check failures without an unhandled rejection and permits another check", async () => {
+    const { session, google, setRest } = await world();
+    const access = deferred<{ readonly ok: true; readonly token: string; readonly workbook: Workbook }>();
+    const delayed = new ExpenseSession({ rest: google.client, newId: () => "unused", access: () => access.promise });
+    const checking = delayed.refresh(); access.reject(new Error("Synthetic identity failure"));
+    await expect(checking).resolves.toBeUndefined();
+    expect(delayed.state.ready).toBe(false);
+    expect(delayed.state.message).toContain("could not be checked");
+    setRest(() => Promise.reject(new Error("Synthetic network failure")));
+    await session.refresh();
+    expect(session.state.ready).toBe(false);
+    setRest(google.client);
+    await session.refresh();
+    expect(session.state.ready).toBe(true);
+  });
   it("does not create a records tab just by opening an empty tracker", async () => {
     const { google, session, workbook } = await world();
     expect(session.state.ready).toBe(true);

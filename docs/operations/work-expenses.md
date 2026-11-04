@@ -52,7 +52,9 @@ Existing portfolio clients do not write expense commands. Their portfolio-only d
 
 ## Export and recovery
 
-Your data offers a versioned JSON expense backup containing every command, retained correction and unresolved branch with a checksum. File selection validates and previews coverage without writing. An explicit checkbox and Restore action publish the full history atomically into a never-initialised expense store. Existing or damaged expense stores are refused, and portfolio data is preserved. This recovery does not merge histories or overwrite a working expense store.
+Your data offers a versioned JSON expense backup containing every command, retained correction and unresolved branch with a checksum. File selection validates and previews coverage without writing. An explicit checkbox and Restore action publish the full history atomically into a verified empty expense store. An absent store is created with its records in one batch; an existing valid store with zero commands receives one append without clearing or recreating its header or ownership markers. Existing nonempty or damaged histories are refused, and portfolio data is preserved. This recovery does not merge histories or overwrite a working expense store.
+
+The restore screen explains each unmet requirement: Google connection, expense-record check, confirmation, existing history or an unresolved operation. Connect and check expense records preserves the selected file and consent while establishing readiness. Failed reads show their reason and a check action instead of leaving Restore silently disabled. Concurrent background and explicit checks share one in-flight read; a connection failure does not discard the selected backup or known device history.
 
 A lost recovery response is reconciled against the original commands, including legitimate later additions. It is never blindly resubmitted, including after reload. Backup selection cannot replace an unresolved recovery request. Old or altered backups that omit locally known corrections cannot silently replace the device copy. In-flight replies after Forget this device cannot repopulate forgotten data. Forget clears both feature copies and pending requests; the Google workbook is untouched.
 
@@ -61,6 +63,8 @@ Consented workbook restoration includes cached expense correction history when a
 ## Evidence and remaining acceptance
 
 Verification on 2026-11-05: `npm run verify` passed with 712 tests across 55 files, type checks, strict lint, repository/contributor/punctuation policies and production/PWA/retained Apps Script builds. The final production Chrome rerun passed all 36 layout and interaction assertions. Independent calculation, storage/session and rendered-UI reviews informed fixes before this passing run; they are not live-provider acceptance.
+
+Restore follow-up on the same date: a selected valid backup could leave Restore disabled with no reason in device-copy mode or after a failed expense read; an owned empty log was also treated as populated. The connection/check action, visible blocked reasons and verified-empty-store recovery above fix those cases. `npm run verify` passed with 721 tests. A separate production-renderer harness passed 23 assertions across fresh synthetic absent-store, initialized-empty and lost-response profiles, using the real file input, confirmation, app/session and checked storage against FakeGoogle. It exercised a 220-command backup, retained file/consent through a failed read and reconnect, preserved portfolio records, refused populated history and checked an unknown response without re-appending. This is not a live Google write test. The session probes are `/tmp/foliodash-restore-browser.mjs` and `/tmp/foliodash-restore-bootstrap.ts`, outside the repository and containing synthetic data only.
 
 Automated evidence uses invented data only:
 

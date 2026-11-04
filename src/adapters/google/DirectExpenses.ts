@@ -256,21 +256,38 @@ export async function refreshExpenseView(rest: RestClient, token: string, id: st
   return (await writeGridTabs(rest, token, id, [{ title: EXPENSE_VIEW_TITLE, grid: bufferedGrid(rows, [140, 160, 130, 160, 130, 160, 150, 260]) }])).ok;
 }
 
-/** Explicit recovery into a never-initialised store only. It cannot replace or merge a reachable history. */
+/** Explicit recovery into an absent or verified empty store. Existing history is never cleared or replaced. */
 export async function restoreExpenses(rest: RestClient, token: string, id: string, commands: readonly ExpenseCommand[]): Promise<ExpenseRead> {
   const history = parseExpenseHistory(commands);
   if (history === null) return { status: "damaged", message: "The expense backup is invalid. Nothing was written." };
   const before = await readExpenses(rest, token, id);
-  if (before.status !== "absent") return { status: "damaged", message: "Expense recovery requires a new empty expense store. Existing or damaged records were not replaced." };
-  // All recovered commands, the header and markers are published in one batch.
-  // A failed/lost setup answer is reconciled by reading, never by appending again.
-  const setup = await initialize(rest, token, id, commands);
+  if (before.status === "ok" && containsExpenseCommands(before.commands, history.commands)) return before;
+  if (before.status !== "absent" && (before.status !== "ok" || before.commands.length !== 0)) {
+    return { status: "damaged", message: before.status === "unavailable" ? "Google could not be checked. No recovery records were submitted; keep the backup and reconnect." : "Expense recovery requires an empty expense history. Existing or damaged records were not replaced." };
+  }
+  let setup: "confirmed" | "not-written" | "unknown";
+  if (before.status === "absent") {
+    // A new log, header, ownership markers and all commands are one atomic batch.
+    setup = await initialize(rest, token, id, commands);
+  } else {
+    // A refused earlier day save may have left an owned log with just its header.
+    // Append the complete recovery in one request; never clear or recreate that log.
+    // A competing writer can add records after the empty check. Their records remain,
+    // and same-day siblings become explicit conflicts in the checked read-back.
+    const found = await inspect(rest, token, id);
+    if (found.status !== "ok") return { status: "damaged", message: "Google could not confirm the empty expense store. No recovery records were submitted." };
+    const tab = found.tabs.find((item) => item.markers.includes(ROLE));
+    if (tab === undefined) return { status: "damaged", message: "The checked expense record tab is missing. No recovery records were submitted." };
+    const answer = await callRest(rest, token, { method: "POST", url: `${SHEETS}/${encodeURIComponent(id)}/values/${encodeURIComponent(`'${tab.title.replaceAll("'", "''")}'!A:C`)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, body: { values: commands.map((command) => { const payload = canonicalJson(command); return ["1", payload, sha256Hex(payload)]; }) } });
+    setup = answer.ok ? "confirmed" : wroteNothing(answer.failure) ? "not-written" : "unknown";
+  }
+  // A lost response is reconciled by reading, never by submitting recovery again.
   const read = await readExpenses(rest, token, id, true);
   if (setup === "unknown" && read.status !== "ok") return { status: "unavailable", message: "The recovery response was lost and its records are not confirmed yet. Keep the backup and check the original workbook before any retry." };
-  if (setup === "not-written" && read.status !== "ok") return { status: "damaged", message: "Google did not accept expense recovery setup. No recovery records were submitted; the backup is unchanged." };
+  if (setup === "not-written" && read.status !== "ok") return { status: "damaged", message: "Google did not accept expense recovery. No recovery records were submitted; the backup is unchanged." };
   if (read.status !== "ok") return read;
   if (!containsExpenseCommands(read.commands, history.commands)) return setup === "not-written"
-    ? { status: "damaged", message: "Another expense history already exists. This recovery was not submitted and no records were replaced." }
+    ? { status: "damaged", message: "Expense recovery was not submitted. Existing records were preserved; keep the backup and reconnect before trying again." }
     : { status: "unavailable", message: "Expense recovery outcome could not be confirmed. Preserve your backup and check before retrying." };
   await refreshExpenseView(rest, token, id, read.days, read.conflicts);
   return read;

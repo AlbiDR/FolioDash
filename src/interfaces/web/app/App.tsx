@@ -361,9 +361,18 @@ export function App(): JSX.Element {
               {route.name === "connection" && data.mode !== "signed-out" && <ExpenseDataTools
                 days={expenseData.days.length} commands={expenseData.commands.length} conflicts={expenseData.conflicts.length}
                 initialized={expenseData.initialized} ready={expenseData.ready && data.mode === "online" && data.sheet === "ok"} pending={expenseData.pending}
+                connected={data.mode === "online" && data.sheet === "ok"} message={expenseData.message}
                 onLock={setExpenseLocked} onExport={() => session.expenses.exportBackup()}
                 onPreview={text => { const history = session.expenses.previewBackup(text); return history === null ? null : { days: history.days.length, commands: history.commands.length, conflicts: history.conflicts.length }; }}
                 onRestore={text => session.expenses.restoreBackup(text)} onCheck={() => session.expenses.checkPending()}
+                onSync={async () => {
+                  if (session.state.mode !== "online" || session.state.sheet !== "ok") {
+                    const result = await session.refresh();
+                    if (result.status !== "connected") { const described = describeConnect(result); throw new Error(`${described.title}. ${described.body}`); }
+                  }
+                  await session.expenses.refresh();
+                  if (!session.expenses.state.ready) throw new Error(session.expenses.state.message || "Your expense records could not be checked. Keep the backup selected and check again.");
+                }}
               />}
               </DeferredView>
             </main>

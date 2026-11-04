@@ -28,6 +28,7 @@ export class ExpenseSession {
   private epoch = 0;
   private busy = false;
   private sequence = 0;
+  private refreshing: Promise<void> | null = null;
   constructor(private readonly deps: { readonly rest: RestClient; readonly cache?: ExpenseCache; readonly newId: () => string; readonly access: () => Promise<Access>; readonly workbookId?: string | null; readonly today?: () => IsoDate }) {
     const copy = deps.cache?.load();
     if (copy !== null && copy !== undefined && (deps.workbookId === undefined || deps.workbookId === copy.workbookId)) {
@@ -52,16 +53,27 @@ export class ExpenseSession {
     this.workbookId = null;
     this.pendingCommand = null;
     this.pendingRestore = null;
+    this.refreshing = null;
     this.deps.cache?.clear();
     this.set({ days: [], commands: [], conflicts: [], ready: false, initialized: false, message: "", pending: false, cached: false });
   }
-  async refresh(): Promise<void> {
+  refresh(): Promise<void> {
+    if (this.refreshing !== null) return this.refreshing;
+    const epoch = this.epoch;
+    const refresh = this.load().catch(() => {
+      if (epoch === this.epoch) this.set({ ...this.current, ready: false, message: "Your expense records could not be checked against Google. Your backup and device copy were preserved; connect and check again." });
+    });
+    this.refreshing = refresh;
+    void refresh.then(() => { if (this.refreshing === refresh) this.refreshing = null; });
+    return refresh;
+  }
+  private async load(): Promise<void> {
     if (this.busy) return;
     const sequence = ++this.sequence;
     const epoch = this.epoch;
     const access = await this.deps.access();
     if (epoch !== this.epoch || sequence !== this.sequence) return;
-    if (!access.ok) { this.set({ ...this.current, message: access.message }); return; }
+    if (!access.ok) { this.set({ ...this.current, ready: false, message: access.message }); return; }
     if (this.workbookId !== null && this.workbookId !== access.workbook.id) this.forget();
     this.workbookId = access.workbook.id;
     const readEpoch = this.epoch;

@@ -3,7 +3,7 @@ import { FakeGoogle } from "../../../tests/fixtures/FakeGoogle";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { parseIsoDate } from "../../core/IsoDate";
 import { sha256Hex } from "../../core/Sha256";
-import { parseExpenseAmounts, type ExpenseCommand } from "../../core/WorkExpenses";
+import { isWorkday, shiftDate, parseExpenseAmounts, type ExpenseCommand } from "../../core/WorkExpenses";
 import { createWorkbook, writeGridTabs } from "./GoogleWorkbook";
 import { bufferedGrid, plainCell } from "../../applications/SheetGrid";
 import { checkExpense, decodeExpenseBackup, encodeExpenseBackup, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE, parseExpenseHistory, readExpenses, restoreExpenses, saveExpense } from "./DirectExpenses";
@@ -27,6 +27,25 @@ async function setup(): Promise<{ google: FakeGoogle; id: string }> {
 function appendRaw(google: FakeGoogle, id: string, entry: ExpenseCommand): void {
   const text = canonicalJson(entry);
   required(google.tab(id, EXPENSE_LOG_TITLE)).rows.push(["1", text, sha256Hex(text)]);
+}
+
+function syntheticRecovery(count = 220): ExpenseCommand[] {
+  const entries: ExpenseCommand[] = [];
+  let date = required(parseIsoDate("2024-01-01"));
+  while (entries.length < count) {
+    if (isWorkday(date)) entries.push(command(`synthetic-recovery-${String(entries.length)}`, date, null, entries.length % 4 === 0 ? [null, null, null, null, null] : [0, 500, 0, null, null]));
+    date = required(shiftDate(date, 1));
+  }
+  return entries;
+}
+
+async function setupEmptyExpenseStore(): Promise<{ google: FakeGoogle; id: string }> {
+  const fixture = await setup();
+  fixture.google.faults.push({ match: /:append/u, status: 403 });
+  expect((await saveExpense(fixture.google.client, fixture.google.token, fixture.id, command("unsent-first-day"))).status).toBe("not-saved");
+  const checked = await readExpenses(fixture.google.client, fixture.google.token, fixture.id);
+  expect(checked.status === "ok" && checked.commands).toEqual([]);
+  return fixture;
 }
 
 describe("direct work expense records", () => {
@@ -266,7 +285,98 @@ describe("direct work expense records", () => {
     google.faults.push({ match: /:batchUpdate/u, network: true, applyFirst: true });
     const restored = await restoreExpenses(google.client, google.token, target.value.id, required(decoded).commands);
     expect(restored.status === "ok" && restored.commands).toEqual(original.commands);
-    expect((await restoreExpenses(google.client, google.token, target.value.id, required(decoded).commands)).status).toBe("damaged");
+    const writes = google.callsMatching(/:append|:batchUpdate/u).length;
+    expect((await restoreExpenses(google.client, google.token, target.value.id, required(decoded).commands)).status).toBe("ok");
+    expect(google.callsMatching(/:append|:batchUpdate/u)).toHaveLength(writes);
+    expect((await restoreExpenses(google.client, google.token, target.value.id, [command("different-recovery")])).status).toBe("damaged");
+  });
+
+  it("restores all 220 synthetic commands into an owned empty log without resetting it", async () => {
+    const { google, id } = await setupEmptyExpenseStore();
+    const log = required(google.tab(id, EXPENSE_LOG_TITLE));
+    const header = required(log.rows[0]).slice();
+    const originalId = log.id;
+    const requests = google.requests.length;
+    const beforeAppend = google.callsMatching(/:append/u).length;
+    const entries = syntheticRecovery();
+    const restored = await restoreExpenses(google.client, google.token, id, entries);
+    expect(restored.status === "ok" && restored.commands).toEqual(entries);
+    expect(required(google.tab(id, EXPENSE_LOG_TITLE)).id).toBe(originalId);
+    expect(required(google.tab(id, EXPENSE_LOG_TITLE)).rows[0]).toEqual(header);
+    expect(required(google.tab(id, EXPENSE_LOG_TITLE)).rows).toHaveLength(221);
+    expect(google.callsMatching(/:append/u)).toHaveLength(beforeAppend + 1);
+    expect(google.requests.slice(requests).some((request) => "addSheet" in request && (request["addSheet"] as { properties?: { title?: string } }).properties?.title?.startsWith(EXPENSE_LOG_TITLE))).toBe(false);
+    const rechecked = await restoreExpenses(google.client, google.token, id, entries);
+    expect(rechecked.status === "ok" && rechecked.commands).toEqual(entries);
+    expect(google.callsMatching(/:append/u)).toHaveLength(beforeAppend + 1);
+  });
+
+  it("refuses populated recovery targets and pre-write read failures without appending", async () => {
+    const { google, id } = await setupEmptyExpenseStore();
+    await saveExpense(google.client, google.token, id, command("existing"), true);
+    const before = google.callsMatching(/:append/u).length;
+    expect((await restoreExpenses(google.client, google.token, id, syntheticRecovery())).status).toBe("damaged");
+    expect(google.callsMatching(/:append/u)).toHaveLength(before);
+    const unavailable: RestClient = () => Promise.resolve({ status: 503, json: () => Promise.resolve({}) });
+    expect((await restoreExpenses(unavailable, google.token, id, syntheticRecovery())).status).toBe("damaged");
+    expect(google.callsMatching(/:append/u)).toHaveLength(before);
+  });
+
+  it("reconciles a lost bulk append response without a second recovery write", async () => {
+    const { google, id } = await setupEmptyExpenseStore();
+    const entries = syntheticRecovery();
+    google.faults.push({ match: /:append/u, network: true, applyFirst: true });
+    const before = google.callsMatching(/:append/u).length;
+    expect((await restoreExpenses(google.client, google.token, id, entries)).status).toBe("ok");
+    expect((await restoreExpenses(google.client, google.token, id, entries)).status).toBe("ok");
+    expect(google.callsMatching(/:append/u)).toHaveLength(before + 1);
+    expect(required(google.tab(id, EXPENSE_LOG_TITLE)).rows).toHaveLength(221);
+  });
+
+  it("distinguishes a refused bulk append from an unconfirmed lost response", async () => {
+    const first = await setupEmptyExpenseStore();
+    first.google.faults.push({ match: /:append/u, status: 403 });
+    expect((await restoreExpenses(first.google.client, first.google.token, first.id, syntheticRecovery())).status).toBe("damaged");
+    expect(required(first.google.tab(first.id, EXPENSE_LOG_TITLE)).rows).toHaveLength(1);
+    const second = await setupEmptyExpenseStore();
+    second.google.faults.push({ match: /:append/u, network: true });
+    const before = second.google.callsMatching(/:append/u).length;
+    expect((await restoreExpenses(second.google.client, second.google.token, second.id, syntheticRecovery())).status).toBe("unavailable");
+    expect((await readExpenses(second.google.client, second.google.token, second.id)).status).toBe("ok");
+    expect(second.google.callsMatching(/:append/u)).toHaveLength(before + 1);
+  });
+
+  it("preserves a new competing day while appending recovery into an empty log", async () => {
+    const { google, id } = await setupEmptyExpenseStore();
+    const entries = syntheticRecovery();
+    let interleaved = false;
+    const rest: RestClient = async (request) => {
+      if (!interleaved && request.method === "POST" && request.url.includes(":append")) {
+        interleaved = true;
+        await saveExpense(google.client, google.token, id, command("concurrent-day", "2024-12-31"), true);
+      }
+      return google.client(request);
+    };
+    const result = await restoreExpenses(rest, google.token, id, entries);
+    expect(result.status === "ok" && result.commands.map((item) => item.id)).toEqual(["concurrent-day", ...entries.map((entry) => entry.id)]);
+    expect(result.status === "ok" && result.conflicts).toEqual([]);
+  });
+
+  it("surfaces a same-day race as a conflict without replacing either version", async () => {
+    const { google, id } = await setupEmptyExpenseStore();
+    const entries = syntheticRecovery();
+    let interleaved = false;
+    const rest: RestClient = async (request) => {
+      if (!interleaved && request.method === "POST" && request.url.includes(":append")) {
+        interleaved = true;
+        await saveExpense(google.client, google.token, id, command("concurrent-same-day", required(entries[0]).date), true);
+      }
+      return google.client(request);
+    };
+    const result = await restoreExpenses(rest, google.token, id, entries);
+    expect(result.status === "ok" && result.commands).toHaveLength(221);
+    expect(result.status === "ok" && result.conflicts[0]?.versions.map((version) => version.revision).sort()).toEqual(["concurrent-same-day", required(entries[0]).id].sort());
+    expect(result.status === "ok" && result.days).toHaveLength(219);
   });
 
   it("confirms atomic recovery even if another device saves afterward before its read-back", async () => {
