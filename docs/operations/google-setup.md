@@ -6,6 +6,12 @@ Scope: what the owner does in their own Google account so FolioDash can make its
 
 ## The current route (FD-017): sign in once, no script
 
+### Synthetic direct-Google proof, 2026-11-04
+
+The [isolated acceptance build](onboarding-acceptance.md) passed Google sign-in, synthetic workbook creation, three monthly commits and read-back from Chrome 133 on an Android 16 emulator at the existing local origin. An explicit reload/sync retained all three months; Check my history rebuilt 3 of 3 stored sources exactly. Both multiple Excel exports and a statement-per-sheet workbook passed the native Android picker. The first live attempt exposed a parser-to-review mapping defect; it was reconciled as not recorded, fixed and regression-tested before the successful run.
+
+This supersedes the historical claim below that direct Google writes have never been exercised. It does not establish cross-device discovery, two-account isolation, simultaneous-save safety, a hosted-origin proof, physical Android/WebAPK behavior or production release readiness. Retained Apps Script removal remains separate follow-up work; no deployment, permissions or existing financial workbook were changed by this proof.
+
 ### Entry and write hardening (2026-11-03)
 
 The Import screen now offers Excel and manual valuation entry. Manual entry pre-fills known active fund names/ISINs, requires fresh explicit market values and a valuation date, validates Italian cent amounts and identifiers, and uses the existing opening/cash/lifecycle review and final save. An explicitly confirmed empty portfolio proceeds to the normal closure/proceeds questions. Removing a fund from the entry does not delete its historical records.

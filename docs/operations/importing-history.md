@@ -1,6 +1,6 @@
 # Starting a portfolio from Excel history
 
-Status: **Implemented locally, with synthetic automated and headless Chrome checks on 2026-11-04. Live Google and physical-device acceptance remain NOT RUN.**
+Status: **Implemented locally, with synthetic automated and headless Chrome checks on 2026-11-04. A synthetic Google save/read-back/replay run passed from the Android emulator on 2026-11-04; physical-device and deployed-origin acceptance remain NOT RUN. See [acceptance evidence](onboarding-acceptance.md).**
 
 ## User journey
 

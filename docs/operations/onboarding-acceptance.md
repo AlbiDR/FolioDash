@@ -1,6 +1,6 @@
 # Synthetic onboarding acceptance
 
-Status: **Local acceptance build and generated fixtures implemented on 2026-11-04. Live Google proof is pending. Android emulator checks are recorded below; physical Android and WebAPK packaging are separate gates.**
+Status: **Local acceptance build and generated fixtures implemented on 2026-11-04. The synthetic Google create/save/read-back/replay flow passed from the Android emulator. Emulator checks are recorded below; physical Android and WebAPK packaging are separate gates.**
 
 ## Isolation before Google access
 
@@ -65,9 +65,19 @@ Observed environment: Android Emulator running Android 16 / API 36, Chrome 133.0
 | Combined workbook selected through Android's native Documents picker | PASS: three dates proposed, Notes explicitly excluded, no preflight errors or page overflow |
 | Multiple-file selection through the native picker | PASS: three compressed XLSX exports selected together, independently dated and parsed without errors or overflow |
 | Opening amounts and cash review on Android | PASS: Android keyboard accepted Italian amounts; opening values and explicit No-movement answers reached final confirmation with zero saves and no page overflow |
-| Google sign-in from the emulator | Reached password entry without an origin-mismatch error; owner handoff required, no Drive/Sheets requests yet |
-| Google consent, synthetic workbook creation, save and read-back | NOT RUN |
-| Reload, Google synchronization and source-replay health check | NOT RUN |
+| Google sign-in from the emulator | PASS after owner sign-in; subsequent account selection reused existing consent |
+| Synthetic workbook discovery/creation, save and read-back | PASS: synthetic discovery and creation returned HTTP 200; three ledger append calls returned HTTP 200; three months read back with expected values and invested amounts |
+| Reload, Google synchronization and source-replay health check | PASS: three months retained after reload, explicit sync reported healthy, and 3 of 3 months rebuilt exactly from saved sources |
+| Equivalent combined workbook after saving individual exports | PASS: recorded months blocked review; exactly three successful ledger append calls in the run |
+| Offline reload | PASS: Android Chrome reported offline, loaded the cached app and retained all three synthetic months; network access restored afterwards |
 | Physical phone, installed WebAPK and live HTTPS-origin behavior | NOT RUN |
 
 The localhost run does not prove that Chrome's WebAPK service can package or update an app from the intended deployment origin. No cloud publication is authorized or performed by this procedure.
+
+## Defect found by the live proof
+
+The first save failed before committing because the import preparer returned parser fund objects with extra exact-decimal fields containing BigInt values. Structural TypeScript compatibility did not remove those fields. The strict canonical JSON writer correctly refused them. Read-only command-outcome checks confirmed that the statement was not recorded; the write was not blindly retried.
+
+The preparer now explicitly maps each fund to its public review fields (`isin`, `name`, `marketValue`). Exact source cells are still retained separately. Canonical JSON validation and financial calculations are unchanged. A regression test takes generated compressed Excel files through the real direct-commit/checksum/source-storage path and validates all three read-back sources against the Google stand-in. The corrected build then passed the live three-month Google flow described above.
+
+Live API evidence retained only sanitized operation/status metadata: discovery used the synthetic identity, creation used the synthetic title, one workbook was addressed, three append calls succeeded and no HTTP failures were observed in the successful run. Tokens, account details, workbook IDs and raw request/response bodies were not retained in repository evidence. The ordinary portfolio cache was absent throughout this emulator run. This is one-account local-origin evidence, not a two-account isolation or simultaneous-write guarantee.

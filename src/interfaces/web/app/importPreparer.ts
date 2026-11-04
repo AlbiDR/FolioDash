@@ -38,7 +38,13 @@ export function createImportPreparer(localDateOf: (milliseconds: number) => IsoD
         dateCandidate: dateInSheetName(entry.name),
         raw: entry.sheet,
         outcome: interpreted.ok
-          ? { ok: true, statement: interpreted.statement }
+          ? { ok: true, statement: {
+              funds: interpreted.statement.funds.map(({ isin, name, marketValue }) => ({ isin, name, marketValue })),
+              fundsSubtotal: interpreted.statement.fundsSubtotal,
+              categories: interpreted.statement.categories,
+              total: interpreted.statement.total,
+              adjustments: interpreted.statement.adjustments,
+            } }
           : { ok: false, issues: interpreted.issues },
       });
     }
