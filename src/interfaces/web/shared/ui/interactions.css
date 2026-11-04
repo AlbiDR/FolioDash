@@ -1,6 +1,27 @@
-/* The numbered inventory in docs/operations/interactions.md owns the 92 additions.
+/* The numbered inventory in docs/operations/interactions.md owns the original additions.
  * This layer only changes feedback. It never delays an action or interpolates money.
  */
+
+/* Keep the same usable hit area with mouse, keyboard and touch. */
+button, .nav-link, .status-chip, summary, .field input:not([type="checkbox"]):not([type="radio"]), .field select {
+  min-height: var(--touch-target);
+}
+button { min-width: var(--touch-target); }
+.icon-button { width: var(--touch-target); height: var(--touch-target); }
+summary { align-content: center; cursor: pointer; }
+
+/* New workflow context arrives with the same short cue as page titles. */
+.journey-intro { animation: feedback-enter var(--duration-short) var(--ease-standard); }
+.journey-steps li { transition: color var(--duration-short) var(--ease-standard); }
+.journey-steps li > span {
+  display: inline-grid;
+  place-items: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--shape-full);
+  transition: background-color var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard);
+}
+.journey-steps li[aria-current="step"] { color: var(--color-text); font-weight: 650; }
+.journey-steps li[aria-current="step"] > span { background: var(--color-accent-soft); }
 
 /* 01: Enabled button press. */
 button:not(:disabled) {
@@ -209,6 +230,15 @@ details[open] > summary::before { transform: rotate(45deg); }
 .chart-reset { margin-top: var(--space-2); }
 
 /* This final rule wins over every motion rule, including layers imported earlier. */
+@media (forced-colors: active) {
+  .nav-link[aria-current="page"], .segmented button[aria-pressed="true"], .journey-steps li[aria-current="step"] > span {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .status-dot { border: 1px solid CanvasText; }
+  .card, .chart, .notice, .review-problem, .review-adjustments { border: 1px solid CanvasText; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

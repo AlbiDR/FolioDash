@@ -1,0 +1,12 @@
+/* Search recovery stays beside its input and retains the same target when empty. */
+.fund-search-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+.fund-search-controls input { flex: 1 1 calc(var(--touch-target) * 4); min-width: 0; max-width: none; }
+.fund-search-controls button { flex: 0 0 auto; }
+
+/* A statement change announces its date without making financial figures live. */
+.statement-position { margin: 0; }

@@ -5,7 +5,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-block: var(--space-3) calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--space-4));
+  scroll-padding-block: calc(var(--header-clearance, 0px) + var(--space-3)) calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--space-4));
 }
 
 body {
@@ -156,7 +156,7 @@ select:focus-visible {
   }
 
   .shell {
-    transition: grid-template-columns 480ms var(--ease-standard);
+    transition: grid-template-columns var(--duration-medium) var(--ease-standard);
   }
 
   .shell[data-nav="collapsed"] {
@@ -171,7 +171,7 @@ select:focus-visible {
 
   .main-nav {
     width: calc(15rem - var(--page-inset));
-    transition: transform 480ms var(--ease-standard), opacity 320ms var(--ease-standard);
+    transition: transform var(--duration-medium) var(--ease-standard), opacity var(--duration-short) var(--ease-standard);
     position: sticky;
     top: var(--page-inset);
     left: auto;
@@ -419,20 +419,13 @@ a.status-chip:hover {
 
 .dash > * {
   min-width: 0;
-  animation: rise var(--duration-medium) var(--ease-standard) both;
+  animation: rise var(--duration-feedback) var(--ease-standard);
 }
-
-.dash > *:nth-child(2) { animation-delay: 40ms; }
-.dash > *:nth-child(3) { animation-delay: 80ms; }
-.dash > *:nth-child(4) { animation-delay: 120ms; }
-.dash > *:nth-child(5) { animation-delay: 160ms; }
-.dash > *:nth-child(6) { animation-delay: 200ms; }
-.dash > *:nth-child(n + 7) { animation-delay: 240ms; }
 
 @keyframes rise {
   from {
-    opacity: 0;
-    transform: translateY(10px);
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(var(--motion-nudge));
   }
 }
 
@@ -1544,7 +1537,7 @@ button {
 
 .primary {
   justify-self: start;
-  min-height: 2.75rem;
+  min-height: var(--touch-target);
   padding: 0.5rem 1.6rem;
   font-weight: 650;
   color: var(--color-on-accent);

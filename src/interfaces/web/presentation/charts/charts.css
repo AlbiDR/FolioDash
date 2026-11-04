@@ -83,18 +83,21 @@
   stroke-linecap: round;
 }
 
-/* The series draws in from the left when the chart appears or its range changes. */
+/* Present the entire financial shape immediately; only its emphasis settles. */
 .chart-series {
-  animation: chart-reveal 720ms var(--ease-standard) both;
+  animation: chart-reveal var(--duration-medium) var(--ease-standard);
 }
+
+/* Inspection owns opacity even if a legend is used during the entrance cue. */
+.chart-series.unfocused { animation: none; }
 
 @keyframes chart-reveal {
   from {
-    clip-path: inset(0 100% 0 0);
+    opacity: var(--motion-reveal-opacity);
   }
 
   to {
-    clip-path: inset(0 0 0 0);
+    opacity: 1;
   }
 }
 
@@ -181,9 +184,38 @@
 .chart-table table {
   border-collapse: collapse;
   margin-top: var(--space-2);
+  min-width: 100%;
+}
+
+.chart-values-scroll {
   max-width: 100%;
   overflow-x: auto;
-  display: block;
+  border-radius: var(--shape-xs);
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--color-muted) transparent;
+}
+
+.chart-values-scroll:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.chart-inspection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.chart-inspection-actions .chart-reset {
+  margin-top: 0;
+}
+
+.chart-inspection-actions .hint {
+  flex: 1 1 12rem;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .chart-table th,

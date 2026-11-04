@@ -179,6 +179,7 @@ function Review(props: {
         <input id="statement-date" type="date" disabled={props.locked} value={date} onInput={(event) => {
             props.onDate(event.currentTarget.value);
           }}
+          aria-describedby="statement-date-hint"
         />
         <p class="hint" id="statement-date-hint">
           {chosen === null
@@ -302,14 +303,24 @@ export function ImportView(props: {
   const [date, setDate] = useState("");
   const [method, setMethod] = useState<"file" | "manual">("file");
   const [manualStarted, setManualStarted] = useState(false);
-  const [saveLocked, setSaveLocked] = useState(false);
+  const [fileSaveLocked, setFileSaveLocked] = useState(false);
+  const [manualSaveLocked, setManualSaveLocked] = useState(false);
+  const saveLocked = fileSaveLocked || manualSaveLocked;
   const [batchLocked, setBatchLocked] = useState(false);
-  useEffect(() => { props.onWorkflowLock?.(batchLocked); }, [batchLocked, props.onWorkflowLock]);
+  const [recorded, setRecorded] = useState<IsoDate | null>(null);
+  const recordedMessage = useRef<HTMLParagraphElement>(null);
+  const reviewHeading = useRef<HTMLDivElement>(null);
+  useEffect(() => { props.onWorkflowLock?.(batchLocked || saveLocked); }, [batchLocked, saveLocked, props.onWorkflowLock]);
   useEffect(() => () => { props.onWorkflowLock?.(false); }, [props.onWorkflowLock]);
+  useEffect(() => {
+    if (phase.name === "reviewed") reviewHeading.current?.focus();
+  }, [phase]);
+  useEffect(() => { if (recorded !== null) recordedMessage.current?.focus(); }, [recorded]);
   const fileSelection = useRef(0);
 
   async function choose(files: readonly File[]): Promise<void> {
     const selection = ++fileSelection.current;
+    setRecorded(null);
     setPhase({ name: "reading" });
     const wrapped: ImportFile[] = files.map((file) => ({
       name: file.name,
@@ -344,15 +355,16 @@ export function ImportView(props: {
   return (
     <section aria-labelledby="import-heading" class="import">
       <header class="journey-intro"><p class="eyebrow">Build your portfolio, one statement at a time</p><h2 id="import-heading">{props.historyMode ? "Bring your history together" : "Update your portfolio"}</h2><p>One export or a whole history. Review the details, then save with confidence.</p></header>
-      <ol class="journey-steps" aria-label="Import process"><li><span>01</span> Choose statements</li><li><span>02</span> Review dates &amp; movements</li><li><span>03</span> Save &amp; check</li></ol>
+      <ol class="journey-steps" aria-label="Import process"><li aria-current={phase.name === "idle" && method === "file" ? "step" : undefined}><span>01</span> Choose statements</li><li aria-current={!saveLocked && (method === "manual" || phase.name === "reviewed" || phase.name === "batch") ? "step" : undefined}><span>02</span> Review dates &amp; movements</li><li aria-current={saveLocked ? "step" : undefined}><span>03</span> Save &amp; check</li></ol>
+      {recorded !== null && <p ref={recordedMessage} class="notice" role="status" tabIndex={-1}>Statement for {formatDateLong(recorded)} {props.save === undefined ? "recorded in this browser tab" : "saved to your spreadsheet and checked"}. You can choose another statement below.</p>}
       {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
-        <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
-        <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
+        <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="file-entry-panel" aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
+        <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="manual-entry-panel" aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
       </div>}
-      <div class="entry-panel" hidden={method !== "manual"}>
-        {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
+      <div id="manual-entry-panel" class="entry-panel" hidden={method !== "manual"}>
+        {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setManualSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
       </div>
-      <div class="entry-panel" hidden={method !== "file"}>
+      <div id="file-entry-panel" class="entry-panel" hidden={method !== "file"}>
       <p>
         Choose one or more Excel files exported by your bank, or one workbook containing a statement on each sheet.
         Supported Fideuram holdings sheets are checked in this browser. The original Excel files are not uploaded;
@@ -388,8 +400,8 @@ export function ImportView(props: {
 
       {phase.name === "batch" && <ExcelHistoryView key={fileSelection.current} review={phase.review} ledger={props.ledger} onRecord={props.onRecord} onLock={setBatchLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
 
-      {phase.name === "reviewed" &&
-        (phase.review.status === "unreadable-file" ? (
+      {phase.name === "reviewed" && <div ref={reviewHeading} tabIndex={-1} role="region" aria-label="Statement review">
+        {phase.review.status === "unreadable-file" ? (
           <div class="review-problem" role="alert">
             <h3>This file cannot be read</h3>
             <p>{phase.review.message}</p>
@@ -402,17 +414,20 @@ export function ImportView(props: {
             onSheet={setSheetIndex}
             date={date}
             onDate={setDate}
-            onSaveLock={setSaveLocked}
+            onSaveLock={setFileSaveLocked}
             locked={saveLocked}
             ledger={props.ledger}
             createRevision={props.createRevision}
             {...(props.save === undefined ? {} : { save: props.save })}
-            onRecord={(next) => {
+            onRecord={(next, savedDate) => {
               props.onRecord(next);
+              setFileSaveLocked(false);
+              setRecorded(savedDate);
               setPhase({ name: "idle" });
             }}
           />
-        ))}
+        )}
+      </div>}
       </div>
       {props.save === undefined && <RecordedSummary ledger={props.ledger} />}
     </section>

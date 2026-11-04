@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { formatDateLong } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
@@ -15,6 +15,7 @@ import { Icon } from "../../shared/ui/icons";
 import { euroLabel, monthLabel } from "./chartData";
 import type { OverviewKpi, OverviewModel } from "./OverviewModel";
 import { Pill, Signed, tone } from "./parts";
+import "./portfolio-feedback.css";
 
 /** One headline figure of the earlier spreadsheet's recap, with its own trend underneath. */
 function StatCard(props: {
@@ -119,6 +120,11 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
  */
 export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange }): JSX.Element {
   const [fundQuery, setFundQuery] = useState("");
+  const searchInput = useRef<HTMLInputElement>(null);
+  function clearSearch(): void {
+    setFundQuery("");
+    searchInput.current?.focus({ preventScroll: true });
+  }
   const { dates, funds, totals, kpis } = props.model;
   const latestTotal = totals[totals.length - 1];
   const lastDate = dates[dates.length - 1];
@@ -204,8 +210,17 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
         {funds.length > 0 && <div class="field fund-search">
           <label for="fund-search">Find a fund</label>
-          <input id="fund-search" type="search" placeholder="Name or ISIN" value={fundQuery} onInput={(event) => { setFundQuery(event.currentTarget.value); }} aria-describedby="fund-search-help" />
-          <p id="fund-search-help" class="hint" role="status"><span key={listedFunds.length} class="filter-count">{listedFunds.length} of {funds.length} funds.</span> Filters this list only.</p>
+          <div class="fund-search-controls">
+            <input ref={searchInput} id="fund-search" type="search" placeholder="Name or ISIN" value={fundQuery} onInput={(event) => { setFundQuery(event.currentTarget.value); }} onKeyDown={(event) => {
+              if (event.key === "Escape" && fundQuery !== "") {
+                event.preventDefault();
+                event.stopPropagation();
+                clearSearch();
+              }
+            }} aria-describedby="fund-search-help" />
+            <button class="quiet-action" type="button" disabled={fundQuery === ""} onClick={clearSearch}>Clear search</button>
+          </div>
+          <p id="fund-search-help" class="hint" role="status" aria-atomic="true"><span key={listedFunds.length} class="filter-count">{listedFunds.length} of {funds.length} funds.</span> Filters this list only.</p>
         </div>}
         {funds.length > 0 && listedFunds.length === 0 && <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>}
         <ul class="mobile-holdings" data-filtered={query.length > 0}>

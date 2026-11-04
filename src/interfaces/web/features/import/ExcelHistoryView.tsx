@@ -31,6 +31,7 @@ export function ExcelHistoryView(props: {
   const [saved, setSaved] = useState(0);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [message, setMessage] = useState("");
+  const [checking, setChecking] = useState(false);
   const busy = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const plan = planExcelHistory(entries, props.ledger);
@@ -121,6 +122,7 @@ export function ExcelHistoryView(props: {
     const statement = statements[saved];
     if (statement === undefined || busy.current) return;
     busy.current = true;
+    setChecking(true);
     setMessage("Checking your spreadsheet without writing…");
     try {
       const outcome = await save.check(statement.commandId);
@@ -142,6 +144,7 @@ export function ExcelHistoryView(props: {
       setMessage("The spreadsheet could not be checked. Nothing more was sent. Try checking again when connected.");
     } finally {
       busy.current = false;
+      setChecking(false);
     }
   }
 
@@ -153,6 +156,7 @@ export function ExcelHistoryView(props: {
         {stage === "dates" ? "Check your statements" : stage === "questions" ? `Review statement ${String(reviewIndex + 1)} of ${String(ordered.length)}` : stage === "done" ? "Your history is ready" : "Review and save your history"}
       </h3>
       {message !== "" && <p class="notice" role="status">{message}</p>}
+      <div class="status" data-busy={checking} aria-live="polite">{checking && <p>Checking the interrupted save. Nothing more is being written.</p>}</div>
       {stage === "dates" && <>
         <p>All files were checked locally. Select the statements to include and check every date. They will be reviewed oldest first. This selection step does not save anything.</p>
         <p class="hint">One statement per calendar month is currently supported. If you have more than one export for a month, select the one you want to use.</p>
@@ -173,6 +177,7 @@ export function ExcelHistoryView(props: {
           {entry.sheet.outcome.ok ? <p>{entry.sheet.outcome.statement.funds.length} funds. Funds subtotal: <Amount cents={entry.sheet.outcome.statement.fundsSubtotal} />.</p> : <div class="review-problem"><ul>{entry.sheet.outcome.issues.map((issue, index) => <li key={index}>{issue.cell === null ? "" : `${issue.cell}: `}{issue.message}</li>)}</ul><p>Choose a fresh bank export, or exclude this statement.</p></div>}
         </fieldset>)}
         {!plan.ok && <div class="review-problem" role="status"><ul>{plan.messages.map((item, index) => <li key={index}>{item}</li>)}</ul></div>}
+        <p class="hint" aria-live="polite">{entries.filter(entry => entry.selected).length} of {entries.length} statements selected.</p>
         <button type="button" class="primary" disabled={!plan.ok || props.review.problems.length > 0} onClick={begin}>Review selected statements in date order</button>
       </>}
       {stage === "questions" && current?.sheet.outcome.ok && <>
@@ -195,7 +200,7 @@ export function ExcelHistoryView(props: {
           <p>Confirm to save these statements, including their bank-sheet contents and your reviewed cash decisions, to your connected Google spreadsheet.</p>
           {props.save === undefined ? <p class="notice">Connect to Google before saving. No history has been saved.</p> : <button type="button" class="primary" onClick={() => { void saveRemaining(props.save as RemoteSave); }}>Confirm and save {statements.length} statements</button>}
         </>}
-        {stage === "saving" && <p role="status">Saving and checking statement {Math.min(saved + 1, statements.length)} of {statements.length}. Keep this page open.</p>}
+        {stage === "saving" && <div class="status" data-busy="true" role="status"><p>Saving and checking statement {Math.min(saved + 1, statements.length)} of {statements.length}. Keep this page open.</p><div class="history-progress" role="progressbar" aria-label="Statements confirmed saved" aria-valuemin={0} aria-valuemax={Math.max(1, statements.length)} aria-valuenow={saved} style={{ "--completion": `${String(saved / Math.max(1, statements.length) * 100)}%` }} /></div>}
         {stage === "stopped" && <div class="review-problem" role="alert">
           <h4>Import paused after {saved} confirmed saves</h4>
           {failure?.status === "unknown" && <p>{failure.message} Do not retry this save until its outcome is checked.</p>}
@@ -204,7 +209,7 @@ export function ExcelHistoryView(props: {
           {failure?.status === "stale" && <p>The spreadsheet changed. Nothing from the stopped statement was saved. Refresh your connected history, then review the remaining statements again.</p>}
           {failure?.status === "rejected" && <ul>{failure.messages.map((item, index) => <li key={index}>{item}</li>)}</ul>}
           {failure?.status === "damaged" && <p>{failure.message} Do not save more until your history is recovered.</p>}
-          {uncertain && props.save !== undefined && <button type="button" onClick={() => { void check(props.save as RemoteSave); }}>Check what happened</button>}
+          {uncertain && props.save !== undefined && <button type="button" disabled={checking} onClick={() => { void check(props.save as RemoteSave); }}>{checking ? "Checking the save…" : "Check what happened"}</button>}
           {(failure === null || failure.status === "not-saved") && props.save !== undefined && <button type="button" onClick={() => { void saveRemaining(props.save as RemoteSave); }}>Resume remaining statements</button>}
         </div>}
         {stage === "done" && <><p role="status">All selected statements are saved to your spreadsheet and checked. Your portfolio is ready to view.</p><a class="primary link-button" href="#overview">View your portfolio</a></>}

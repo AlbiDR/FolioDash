@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { formatMonthShort } from "../../../../core/IsoDate";
+import { formatDateLong, formatMonthShort } from "../../../../core/IsoDate";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { useMediaQuery } from "../../shared/ui/useMediaQuery";
@@ -26,9 +26,9 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
       ) : (
         <>
           <div class="mobile-months">
-            <label class="field">Statement month
+            <label class="field">Statement date
               <select value={date} onChange={(event) => { setSelected(event.currentTarget.value); }}>
-                {[...dates].reverse().map((entry) => <option key={entry} value={entry}>{formatMonthShort(entry)}</option>)}
+                {[...dates].reverse().map((entry) => <option key={entry} value={entry}>{formatDateLong(entry)}</option>)}
               </select>
             </label>
             <div class="month-actions" role="group" aria-label="Browse statement months">
@@ -36,8 +36,9 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               <button type="button" class="month-step next" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates[index + 1] ?? ""); }}>Next<Icon name="chevron" size={16} /></button>
               <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates.at(-1) ?? ""); }}>Latest</button>
             </div>
+            <p class="hint statement-position" role="status" aria-atomic="true">Statement {index + 1} of {dates.length}{date === undefined ? "" : ` · ${formatDateLong(date)}`}</p>
             {month !== undefined && <div class="card month-summary" key={month.date}>
-              <h3 class="card-title">{formatMonthShort(month.date)}</h3>
+              <h3 class="card-title"><time dateTime={month.date}>{formatDateLong(month.date)}</time></h3>
               <dl class="facts stacked">
                 <div><dt>Fund value</dt><dd><Amount cents={month.value} /></dd></div>
                 <div><dt>Gain since invested</dt><dd><Signed cents={month.gain} /></dd></div>

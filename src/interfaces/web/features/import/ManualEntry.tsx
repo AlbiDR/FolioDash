@@ -44,7 +44,7 @@ export function ManualEntry(props: {
     node.focus({ preventScroll: true });
     node.scrollIntoView({ block: "nearest", behavior: "instant" });
     pendingFocus.current = null;
-  }, [rows, removed]);
+  }, [rows, removed, editing, review, savedDate]);
 
   function update(id: string, field: keyof ManualRow, value: string): void {
     setRows(current => current.map(row => row.id === id ? { ...row, [field]: value } : row));
@@ -53,10 +53,12 @@ export function ManualEntry(props: {
   function continueReview(event: Event): void {
     event.preventDefault(); setAttempted(true);
     if (chosen === null || !result.ok || (rows.length === 0 && !emptyConfirmed)) return;
+    pendingFocus.current = "manual-review-heading";
     setReview({ statement: result.statement, date: chosen, key: JSON.stringify([chosen, rows]) });
     setEditing(false);
   }
   function recorded(next: LedgerState): void {
+    pendingFocus.current = "manual-recorded";
     setSavedDate(date); setRows(startingRows(next)); setDate(""); setReview(null);
     setEditing(true); setAttempted(false); setRemoved(null); setEmptyConfirmed(false);
     setSaveLocked(false); props.onSaveLock?.(false); props.onRecord(next);
@@ -66,13 +68,13 @@ export function ManualEntry(props: {
   return <section class="manual-entry" aria-labelledby="manual-heading">
     <header><h3 id="manual-heading">Update your fund values</h3>
       <p>Enter every fund held on the same date. Money movements are reviewed separately before saving.</p>
-      <p class="hint">1. Values and date / 2. Movements and review / 3. Confirm save</p>
+      <p class="hint">{editing ? "Step 1 of 3: values and date" : "Step 2 of 3: movements and review. Confirm save when ready."}</p>
     </header>
-    {savedDate && <p class="notice" role="status">Update for {savedDate} recorded. You can start another update below.</p>}
+    {savedDate && <p id="manual-recorded" class="notice" role="status" tabIndex={-1}>Update for {savedDate} recorded. You can start another update below.</p>}
     <form hidden={!editing} onSubmit={continueReview}>
       <div class="field"><label for="manual-date">Valuation date</label>
-        <input id="manual-date" type="date" required value={date} onInput={event => { setDate(event.currentTarget.value); }} />
-        <p class="hint">The date these values refer to, not necessarily today.</p>
+        <input id="manual-date" type="date" required aria-describedby="manual-date-hint" value={date} onInput={event => { setDate(event.currentTarget.value); }} />
+        <p id="manual-date-hint" class="hint">The date these values refer to, not necessarily today.</p>
       </div>
       <div class="manual-funds">{rows.map((row, index) => {
         const checked = prepareManualStatement([row]);
@@ -103,8 +105,9 @@ export function ManualEntry(props: {
       <button class="primary" type="submit">Continue to movements and review</button>
     </form>
     {review !== null && <div hidden={editing} class="review">
+      <h4 id="manual-review-heading" tabIndex={-1}>Review movements before saving</h4>
       <p>{formatDateLong(review.date)} / {review.statement.funds.length} funds / <Amount cents={review.statement.fundsSubtotal} /></p>
-      <button type="button" disabled={saveLocked} onClick={() => { setEditing(true); }}>Back to values</button>
+      <button type="button" disabled={saveLocked} onClick={() => { pendingFocus.current = "manual-date"; setEditing(true); }}>Back to values</button>
       <p class="hint">Cash answers stay if values are unchanged. Changing values starts a fresh review.</p>
       <CashQuestions key={review.key} statement={review.statement} date={review.date} ledger={props.ledger} createRevision={props.createRevision} onRecord={recorded} onSaveLock={lock} {...(props.save === undefined ? {} : { save: props.save })} />
     </div>}

@@ -1,6 +1,6 @@
 import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../../../applications/SessionModel";
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { describeAge } from "./timeAgo";
 import { Icon } from "../../shared/ui/icons";
 import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeTidy, describeVerify } from "./accountText";
@@ -36,7 +36,11 @@ export function AccountView(props: {
   readonly build: string;
 }): JSX.Element {
   const { state, actions } = props;
-  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<"connect" | "sync" | "restore" | "verify" | "tidy" | null>(null);
+  const busy = pending !== null;
+  const forgetButton = useRef<HTMLButtonElement>(null);
+  const keepButton = useRef<HTMLButtonElement>(null);
+  const connectionHeading = useRef<HTMLHeadingElement>(null);
   const [message, setMessage] = useState<Message | null>(null);
   const [checkMessage, setCheckMessage] = useState<Message | null>(null);
   const [tidyMessage, setTidyMessage] = useState<Message | null>(null);
@@ -45,20 +49,22 @@ export function AccountView(props: {
   const [clientText, setClientText] = useState("");
   const [clientError, setClientError] = useState(false);
 
-  async function run(action: () => Promise<ConnectOutcome>): Promise<void> {
-    setBusy(true);
+  async function run(action: () => Promise<ConnectOutcome>, kind: "connect" | "sync"): Promise<void> {
+    if (busy) return;
+    setPending(kind);
     setMessage(null);
     try {
       setMessage(describeConnect(await action()));
     } catch {
       setMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }
 
   async function restore(): Promise<void> {
-    setBusy(true);
+    if (busy) return;
+    setPending("restore");
     setMessage(null);
     try {
       setMessage(describeRestore(await actions.restore()));
@@ -66,31 +72,33 @@ export function AccountView(props: {
     } catch {
       setMessage({ good: false, title: "Something went wrong", body: "Nothing on this device was changed. Try again." });
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }
 
   async function verify(): Promise<void> {
-    setBusy(true);
+    if (busy) return;
+    setPending("verify");
     setCheckMessage(null);
     try {
       setCheckMessage(describeVerify(await actions.verify()));
     } catch {
       setCheckMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }
 
   async function tidy(): Promise<void> {
-    setBusy(true);
+    if (busy) return;
+    setPending("tidy");
     setTidyMessage(null);
     try {
       setTidyMessage(describeTidy(await actions.tidy()));
     } catch {
       setTidyMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }
 
@@ -101,17 +109,18 @@ export function AccountView(props: {
   return (
     <section class="account screen" aria-labelledby="account-heading">
       <header class="journey-intro"><p class="eyebrow">Your spreadsheet. Your device. Your choice.</p><h2 id="account-heading">Keep your portfolio in good shape</h2><p>Check synchronization, verify your saved history and manage the copy on this device.</p></header>
+      <div class="status" data-busy={busy} aria-live="polite">{pending !== null && <p>{pending === "connect" ? "Waiting for Google…" : pending === "sync" ? "Checking your latest saved history…" : pending === "restore" ? "Restoring your spreadsheet and checking the result…" : pending === "verify" ? "Reading and checking your saved statements…" : "Tidying the generated views in your spreadsheet…"}</p>}</div>
 
       <div class="card account-summary">
-        <h3 class="card-title">Your connection</h3>
+        <h3 ref={connectionHeading} class="card-title" tabIndex={-1}>Your connection</h3>
         {signedOut ? (
           <>
             <p class="card-subtitle">Not set up yet.</p>
             <p>
               Continue with Google and FolioDash creates one private spreadsheet in your own Google Drive for your portfolio. The spreadsheet lives in your Google account, and you choose whether to share it.
             </p>
-            <button type="button" class="primary" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.connect())}>
-              Continue with Google
+            <button type="button" class="primary" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.connect(), "connect")}>
+              {pending === "connect" ? "Waiting for Google…" : "Continue with Google"}
             </button>
             {!props.clientConfigured && <p class="hint">This site has no Google client set up yet. Add it under Advanced below.</p>}
           </>
@@ -150,8 +159,8 @@ export function AccountView(props: {
                 </div>
               )}
             </dl>
-            <button type="button" class="primary" disabled={busy} onClick={() => void run(() => actions.refresh())}>
-              <Icon name="history" size={16} /> Sync now
+            <button type="button" class="primary" disabled={busy} onClick={() => void run(() => actions.refresh(), "sync")}>
+              <Icon name="history" size={16} /> {pending === "sync" ? "Syncing…" : "Sync now"}
             </button>
           </>
         )}
@@ -164,7 +173,7 @@ export function AccountView(props: {
           <p class="card-subtitle">Every month keeps its exact bank statement. This replays each one and compares it with your saved figures.</p>
           <p>It only reads. Nothing in your Google Sheet or on this device is changed.</p>
           <button type="button" disabled={busy} onClick={() => void verify()}>
-            Check my history
+            {pending === "verify" ? "Checking your history…" : "Check my history"}
           </button>
           <Result message={checkMessage} />
         </div>
@@ -176,7 +185,7 @@ export function AccountView(props: {
           <p class="card-subtitle">Rewrites the summary and every month's tab so they look alike and stay lean.</p>
           <p>Dates, amounts and prices are shown the same way in every month, with one empty row and column around the data and nothing beyond it. Your saved records are not touched.</p>
           <button type="button" disabled={busy} onClick={() => void tidy()}>
-            Tidy my sheet
+            {pending === "tidy" ? "Tidying your sheet…" : "Tidy my sheet"}
           </button>
           <Result message={tidyMessage} />
         </div>
@@ -195,6 +204,7 @@ export function AccountView(props: {
           <label class="check">
             <input
               type="checkbox"
+              disabled={busy}
               checked={confirmRestore}
               onChange={(event) => {
                 setConfirmRestore(event.currentTarget.checked);
@@ -203,7 +213,7 @@ export function AccountView(props: {
             Yes, restore my Google Sheet from this device
           </label>
           <button type="button" class="primary" disabled={busy || !confirmRestore} onClick={() => void restore()}>
-            Restore from this device
+            {pending === "restore" ? "Restoring and checking…" : "Restore from this device"}
           </button>
         </div>
       )}
@@ -231,18 +241,23 @@ export function AccountView(props: {
                 <p>This removes the saved copy from this device and signs you out. Your Google Sheet is not touched, and you can continue with Google again any time.</p>
                 <button
                   type="button"
+                  disabled={busy}
                   onClick={() => {
                     actions.forget();
                     setConfirmForget(false);
-                    setMessage(null);
+                    setMessage({ good: true, title: "This device was forgotten", body: "The saved copy on this device was removed. Your Google Sheet is unchanged." });
+                    requestAnimationFrame(() => connectionHeading.current?.focus());
                   }}
                 >
                   Yes, forget this device
                 </button>{" "}
                 <button
                   type="button"
+                  ref={keepButton}
+                  disabled={busy}
                   onClick={() => {
                     setConfirmForget(false);
+                    requestAnimationFrame(() => forgetButton.current?.focus());
                   }}
                 >
                   Keep it
@@ -251,8 +266,11 @@ export function AccountView(props: {
             ) : (
               <button
                 type="button"
+                ref={forgetButton}
+                disabled={busy}
                 onClick={() => {
                   setConfirmForget(true);
+                  requestAnimationFrame(() => keepButton.current?.focus());
                 }}
               >
                 Forget this device
@@ -276,19 +294,24 @@ export function AccountView(props: {
               type="text"
               autoComplete="off"
               spellcheck={false}
+              disabled={busy}
               value={clientText}
               aria-invalid={clientError ? "true" : undefined}
+              aria-describedby={clientError ? "client-id-error" : undefined}
               onInput={(event) => {
                 setClientText(event.currentTarget.value);
                 setClientError(false);
               }}
             />
-            {clientError && <p class="field-error" role="alert">That does not look like a client ID. It ends with .apps.googleusercontent.com.</p>}
+            {clientError && <p id="client-id-error" class="field-error" role="alert">That does not look like a client ID. It ends with .apps.googleusercontent.com.</p>}
           </div>
           <button
             type="button"
+            disabled={busy}
             onClick={() => {
-              setClientError(!actions.setClientId(clientText));
+              const accepted = actions.setClientId(clientText);
+              setClientError(!accepted);
+              if (!accepted) document.getElementById("client-id")?.focus();
             }}
           >
             Save client ID

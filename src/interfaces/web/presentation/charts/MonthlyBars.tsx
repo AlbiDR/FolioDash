@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacyChoice";
 
@@ -28,8 +28,16 @@ export function MonthlyBars(props: {
   readonly formatValue: (value: number) => string;
 }): JSX.Element {
   const hidden = usePrivacy();
-  const [active, setActive] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [focused, setFocused] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
+  const dateControl = useRef<HTMLInputElement>(null);
+  const container = useRef<HTMLElement>(null);
+  useEffect(() => {
+    setPinned(current => props.bars.some(bar => bar.key === current) ? current : null);
+    setHovered(null);
+    setFocused(current => props.bars.some(bar => bar.key === current) ? current : null);
+  }, [props.bars]);
   const present = props.bars.flatMap((bar) => (bar.value === null ? [] : [bar.value]));
   const top = Math.max(0, ...present);
   const bottom = Math.min(0, ...present);
@@ -45,16 +53,29 @@ export function MonthlyBars(props: {
     return <p class="empty-note">No month has a figure to show yet.</p>;
   }
   const latest = [...props.bars].reverse().find((bar) => bar.value !== null);
-  const shown = props.bars.find((bar) => bar.key === (active ?? pinned)) ?? latest;
+  const selected = props.bars.find(bar => bar.key === pinned);
+  const shown = props.bars.find((bar) => bar.key === (hovered ?? focused)) ?? selected ?? latest;
+  const tabStop = focused ?? selected?.key ?? latest?.key;
+  function resetInspection(): void {
+    setHovered(null);
+    setFocused(null);
+    setPinned(null);
+    if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
+    else container.current?.focus({ preventScroll: true });
+  }
   return (
-    <figure class="bars">
+    <figure ref={container} class="bars" tabIndex={-1} onKeyDown={(event) => {
+      if (event.key !== "Escape" || (pinned === null && hovered === null && focused === null)) return;
+      event.preventDefault();
+      resetInspection();
+    }}>
       <p class="bars-readout" aria-hidden="true">
         <span key={shown?.key} class="bars-readout-month">{shown?.label ?? ""}</span>
         <span class={`bars-readout-value ${shown?.value === undefined || shown.value === null ? "" : shown.value >= 0 ? "gain" : "loss"}`}>
           {shown?.value === undefined || shown.value === null ? "-" : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
         </span>
       </p>
-      <svg viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`} role="group" aria-label={props.description}>
+      <svg viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`} role="group" aria-label={props.description} aria-describedby={`${props.id}-inspection-help`}>
         <line class="bars-zero" x1={PAD.side} x2={WIDTH - PAD.side} y1={zeroY} y2={zeroY} />
         {props.bars.map((bar, index) => {
           const x = PAD.side + band * index + (band - barWidth) / 2;
@@ -67,20 +88,33 @@ export function MonthlyBars(props: {
               key={bar.key}
               class={`bars-item${bar.key === shown?.key ? " is-active" : ""}`}
               role="button"
-              tabIndex={0}
+              tabIndex={bar.key === tabStop ? 0 : -1}
               aria-label={`${bar.label}: ${value === null ? "Unavailable" : show(value)}`}
               aria-pressed={pinned === bar.key}
               onClick={() => { setPinned(current => current === bar.key ? null : bar.key); }}
               onKeyDown={(event) => {
-                if (event.key !== "Enter" && event.key !== " ") return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setPinned(current => current === bar.key ? null : bar.key);
+                  return;
+                }
+                const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
+                let target: number;
+                if (event.key === "ArrowRight") target = (index + (rtl ? -1 : 1) + props.bars.length) % props.bars.length;
+                else if (event.key === "ArrowLeft") target = (index + (rtl ? 1 : -1) + props.bars.length) % props.bars.length;
+                else if (event.key === "Home") target = 0;
+                else if (event.key === "End") target = props.bars.length - 1;
+                else return;
                 event.preventDefault();
-                setPinned(current => current === bar.key ? null : bar.key);
+                event.currentTarget.parentElement?.querySelectorAll<SVGGElement>(".bars-item")[target]?.focus({ preventScroll: true });
               }}
-              onPointerEnter={() => {
-                setActive(bar.key);
+              onFocus={() => { setHovered(null); setFocused(bar.key); }}
+              onBlur={() => { setFocused(null); }}
+              onPointerEnter={(event) => {
+                if (event.pointerType !== "touch") setHovered(bar.key);
               }}
               onPointerLeave={() => {
-                setActive(null);
+                setHovered(null);
               }}
             >
               <rect class="bars-hit" x={PAD.side + band * index} y={0} width={band} height={HEIGHT} />
@@ -101,6 +135,7 @@ export function MonthlyBars(props: {
       <label class="chart-date-control">
         <span>Explore months</span>
         <input
+          ref={dateControl}
           type="range"
           min={0}
           max={Math.max(0, props.bars.length - 1)}
@@ -108,13 +143,20 @@ export function MonthlyBars(props: {
           value={Math.max(0, props.bars.findIndex((bar) => bar.key === shown?.key))}
           disabled={props.bars.length < 2}
           aria-label={`${props.title}: month`}
-          aria-valuetext={shown?.label ?? "No observation"}
-          onInput={(event) => { setActive(null); setPinned(props.bars[Number(event.currentTarget.value)]?.key ?? null); }}
+          aria-describedby={`${props.id}-inspection-help`}
+          aria-valuetext={shown === undefined ? "No observation" : `${shown.label}: ${shown.value === null ? "Unavailable" : show(shown.value)}`}
+          onFocus={() => { setHovered(null); setFocused(null); }}
+          onInput={(event) => { setHovered(null); setFocused(null); setPinned(props.bars[Number(event.currentTarget.value)]?.key ?? null); }}
         />
-        <output aria-live="polite">{shown?.label ?? ""}</output>
+        <span aria-hidden="true">{shown?.label ?? ""}</span>
       </label>
+      <div class="chart-inspection-actions">
+        <button class="quiet-action chart-reset" type="button" disabled={selected === undefined && hovered === null && focused === null} onClick={resetInspection}>Show latest month</button>
+        <span class="hint" id={`${props.id}-inspection-help`}>Tap or press Enter to pin a month. Arrow keys explore; Escape shows the latest.</span>
+      </div>
       <details class="chart-table">
         <summary>Show the values as a table</summary>
+        <div class="chart-values-scroll" role="region" aria-label={`${props.title}: monthly values table`} tabIndex={0}>
         <table>
           <thead>
             <tr>
@@ -131,6 +173,7 @@ export function MonthlyBars(props: {
             ))}
           </tbody>
         </table>
+        </div>
       </details>
     </figure>
   );

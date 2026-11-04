@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { type HistoryStatement, parseHistory, planAttach, planHistory, runHistory } from "../../../../applications/HistoryImport";
 import { formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
@@ -7,6 +7,7 @@ import type { RecordResult, RemoteSave } from "../../../../applications/ImportMo
 
 type Phase =
   | { readonly name: "idle" }
+  | { readonly name: "reading" }
   | { readonly name: "problem"; readonly message: string }
   | { readonly name: "ready"; readonly statements: readonly HistoryStatement[]; readonly alreadyRecorded: number; readonly toSave: readonly HistoryStatement[] }
   | { readonly name: "attaching" }
@@ -40,17 +41,27 @@ export function HistoryView(props: {
   /** Present once a spreadsheet is connected. Without it nothing can be saved. */
   readonly save?: RemoteSave;
   readonly onLedger: (next: LedgerState) => void;
+  readonly onWorkflowLock?: (locked: boolean) => void;
 }): JSX.Element {
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [fileName, setFileName] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [checkMessage, setCheckMessage] = useState("");
+  const resultHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (phase.name === "ready" || phase.name === "problem") resultHeading.current?.focus();
+  }, [phase.name]);
 
   function plan(statements: readonly HistoryStatement[], ledger: LedgerState): void {
+    setCheckMessage("");
     const planned = planHistory(ledger, statements);
     setPhase(planned.ok ? { name: "ready", statements, alreadyRecorded: planned.alreadyRecorded, toSave: planned.toSave } : { name: "problem", message: planned.message });
   }
 
   async function choose(file: File): Promise<void> {
     setFileName(file.name);
+    setCheckMessage("");
+    setPhase({ name: "reading" });
     let text: string;
     try {
       text = await file.text();
@@ -78,7 +89,12 @@ export function HistoryView(props: {
         const items = planAttach(props.ledger, statements, have);
         if (items.length > 0) {
           const commandId = save.newCommandId();
-          const attachedResult = await save.attach(items, commandId, props.ledger.revision);
+          let attachedResult: RecordResult;
+          try {
+            attachedResult = await save.attach(items, commandId, props.ledger.revision);
+          } catch {
+            attachedResult = { status: "unknown", message: "The attachment response was lost. Check what happened before continuing." };
+          }
           if (attachedResult.status !== "recorded") {
             setPhase({ name: "attach-stopped", failure: attachedResult, commandId, statements });
             return;
@@ -91,8 +107,12 @@ export function HistoryView(props: {
       setPhase({ name: "saving", saved: 0, total: toSave.length });
       const run = await runHistory<RecordResult>(
         async (item, expectedRevision) => {
-          const result = await save.record({ date: item.date, statement: item.statement, commands: item.commands, ...(item.source === undefined ? {} : { source: item.source }) }, item.commandId, expectedRevision);
-          return result.status === "recorded" ? { ok: true, ledger: result.ledger } : { ok: false, failure: result };
+          try {
+            const result = await save.record({ date: item.date, statement: item.statement, commands: item.commands, ...(item.source === undefined ? {} : { source: item.source }) }, item.commandId, expectedRevision);
+            return result.status === "recorded" ? { ok: true, ledger: result.ledger } : { ok: false, failure: result };
+          } catch {
+            return { ok: false, failure: { status: "unknown", message: "The save response was lost. Check what happened before continuing." } };
+          }
         },
         latest,
         toSave,
@@ -110,44 +130,58 @@ export function HistoryView(props: {
   }
 
   async function checkAttach(save: RemoteSave, commandId: string, statements: readonly HistoryStatement[]): Promise<void> {
-    setPhase({ name: "checked", message: "Checking your spreadsheet…" });
+    if (checking) return;
+    setChecking(true);
+    setCheckMessage("Checking your spreadsheet without writing…");
     try {
       const result = await save.check(commandId);
       if (result.status === "recorded") {
         props.onLedger(result.ledger);
         plan(statements, result.ledger);
       } else if (result.status === "not-recorded") {
+        setCheckMessage("");
         setPhase({ name: "checked", message: "The spreadsheet shows the bank statements were not attached. Choose the file again to try again." });
       } else if (result.status === "saved-not-reloaded") {
-        setPhase({ name: "checked", message: "The bank statements were attached, but the ledger could not be read back. Choose the file again." });
+        setCheckMessage("The bank statements were attached, but the ledger could not be read back. Check again before continuing.");
       } else {
-        setPhase({ name: "checked", message: result.message });
+        setCheckMessage(result.message);
       }
     } catch {
-      setPhase({ name: "checked", message: "The spreadsheet could not be checked. Try again shortly." });
+      setCheckMessage("The spreadsheet could not be checked. Nothing more was sent. Try checking again shortly.");
+    } finally {
+      setChecking(false);
     }
   }
 
   async function check(save: RemoteSave, statement: HistoryStatement, statements: readonly HistoryStatement[]): Promise<void> {
-    setPhase({ name: "checked", message: "Checking your spreadsheet…" });
+    if (checking) return;
+    setChecking(true);
+    setCheckMessage("Checking your spreadsheet without writing…");
     try {
       const result = await save.check(statement.commandId);
       if (result.status === "recorded") {
         props.onLedger(result.ledger);
         plan(statements, result.ledger);
       } else if (result.status === "not-recorded") {
+        setCheckMessage("");
         setPhase({ name: "checked", message: "The spreadsheet shows that statement was not recorded. Choose the file again to resume from there." });
       } else if (result.status === "saved-not-reloaded") {
-        setPhase({ name: "checked", message: "That statement was recorded, but the ledger could not be read back. Connect again on the Connection page, then choose the file again." });
+        setCheckMessage("That statement was recorded, but the ledger could not be read back. Check again before continuing.");
       } else {
-        setPhase({ name: "checked", message: result.message });
+        setCheckMessage(result.message);
       }
     } catch {
-      setPhase({ name: "checked", message: "The spreadsheet could not be checked. Try again shortly." });
+      setCheckMessage("The spreadsheet could not be checked. Nothing more was sent. Try checking again shortly.");
+    } finally {
+      setChecking(false);
     }
   }
 
-  const busy = phase.name === "saving";
+  const busy = phase.name === "reading" || phase.name === "saving" || phase.name === "attaching" || checking;
+  const uncertain = (phase.name === "stopped" || phase.name === "attach-stopped") && (phase.failure.status === "unknown" || phase.failure.status === "saved-not-reloaded");
+  const locked = phase.name === "saving" || phase.name === "attaching" || checking || uncertain;
+  useEffect(() => { props.onWorkflowLock?.(locked); }, [locked, props.onWorkflowLock]);
+  useEffect(() => () => { props.onWorkflowLock?.(false); }, [props.onWorkflowLock]);
   return (
     <section aria-labelledby="history-heading" class="import">
       <h2 id="history-heading">Import history</h2>
@@ -158,7 +192,7 @@ export function HistoryView(props: {
       </p>
       {props.save === undefined && (
         <p class="notice" role="status">
-          Connect to your spreadsheet on the Connection page first. Nothing can be saved until then.
+          Connect to your spreadsheet on the Your data screen first. Nothing can be saved until then.
         </p>
       )}
       <div class="field">
@@ -167,7 +201,7 @@ export function HistoryView(props: {
           id="history-file"
           type="file"
           accept=".json,application/json"
-          disabled={busy || props.save === undefined}
+          disabled={busy || uncertain || props.save === undefined}
           onChange={(event) => {
             const input = event.currentTarget;
             const file = input.files?.[0];
@@ -179,13 +213,13 @@ export function HistoryView(props: {
 
       {phase.name === "problem" && (
         <div class="review-problem" role="alert">
-          <h3>This cannot be imported</h3>
+          <h3 ref={resultHeading} tabIndex={-1}>This cannot be imported</h3>
           <p>{phase.message}</p>
         </div>
       )}
       {phase.name === "ready" && (
         <div class="review-adjustments" role="status">
-          <h3>Ready</h3>
+          <h3 ref={resultHeading} tabIndex={-1}>Ready</h3>
           <p>
             {fileName} holds {phase.statements.length} statements, from {formatDateLong(phase.statements[0]?.date as never)} to{" "}
             {formatDateLong(phase.statements[phase.statements.length - 1]?.date as never)}. Your spreadsheet already holds{" "}
@@ -208,7 +242,9 @@ export function HistoryView(props: {
           )}
         </div>
       )}
-      <div aria-live="polite" class="status">
+      <div aria-live="polite" class="status" data-busy={busy}>
+        {phase.name === "reading" && <p>Reading and checking your history file…</p>}
+        {checkMessage !== "" && <p>{checkMessage}</p>}
         {phase.name === "attaching" && <p>Checking which bank statements are stored, and attaching the missing ones… Keep this page open.</p>}
         {phase.name === "saving" && (
           <div>
@@ -232,26 +268,26 @@ export function HistoryView(props: {
           <p>
             Statement dated {formatDateLong(phase.statement.date)}: {describeFailure(phase.failure)} Nothing after it was attempted.
           </p>
-          {phase.failure.status === "unknown" && props.save !== undefined && (
+          {uncertain && props.save !== undefined && (
             <>
               <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
-              <button type="button" onClick={() => void check(props.save as RemoteSave, (phase as { statement: HistoryStatement }).statement, phase.statements)}>
-                Check what happened
+              <button type="button" disabled={checking} onClick={() => void check(props.save as RemoteSave, (phase as { statement: HistoryStatement }).statement, phase.statements)}>
+                {checking ? "Checking the save…" : "Check what happened"}
               </button>
             </>
           )}
-          {phase.failure.status !== "unknown" && <p>Choose the file again to resume from what the spreadsheet holds.</p>}
+          {!uncertain && <p>Choose the file again to resume from what the spreadsheet holds.</p>}
         </div>
       )}
       {phase.name === "attach-stopped" && (
         <div class="review-problem" role="alert">
-          <h3>The bank statements were not attached</h3>
+          <h3>{uncertain ? "Check the bank-statement attachment" : "The bank statements were not attached"}</h3>
           <p>{describeFailure(phase.failure)}</p>
-          {phase.failure.status === "unknown" && props.save !== undefined ? (
+          {uncertain && props.save !== undefined ? (
             <>
               <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
-              <button type="button" onClick={() => void checkAttach(props.save as RemoteSave, phase.commandId, phase.statements)}>
-                Check what happened
+              <button type="button" disabled={checking} onClick={() => void checkAttach(props.save as RemoteSave, phase.commandId, phase.statements)}>
+                {checking ? "Checking the save…" : "Check what happened"}
               </button>
             </>
           ) : (

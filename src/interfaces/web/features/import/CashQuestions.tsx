@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
 import type { StatementSource } from "../../../../applications/LedgerService";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../../applications/ImportModel";
@@ -132,7 +132,7 @@ const DETECTION_TEXT: Readonly<Record<PlanRow["detected"], string>> = {
 
 type SaveState =
   | { readonly name: "idle" }
-  | { readonly name: "saving" }
+  | { readonly name: "saving"; readonly checking?: boolean }
   | { readonly name: "not-saved"; readonly message: string }
   | { readonly name: "refused"; readonly outcome: Extract<RecordResult, { status: "stale" | "rejected" | "damaged" }> }
   | { readonly name: "saved-not-reloaded" }
@@ -155,9 +155,13 @@ export function CashQuestions(props: {
   readonly onSaveLock?: (locked: boolean) => void;
 }): JSX.Element {
   const [saving, setSaving] = useState<SaveState>({ name: "idle" });
+  const prefix = useId();
+  const inFlight = useRef(false);
+  const questions = useRef<HTMLElement>(null);
+  const locked = saving.name === "saving" || saving.name === "unknown" || saving.name === "saved-not-reloaded";
   useEffect(() => {
-    props.onSaveLock?.(saving.name === "saving" || saving.name === "unknown" || saving.name === "saved-not-reloaded");
-  }, [saving.name, props.onSaveLock]);
+    props.onSaveLock?.(locked);
+  }, [locked, props.onSaveLock]);
   // One id per user action. It is kept across a failed attempt so a retry cannot be recorded twice.
   const [commandId, setCommandId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Readonly<Record<string, Answer>>>(props.initialDraft?.answers ?? {});
@@ -207,7 +211,8 @@ export function CashQuestions(props: {
   }
 
   async function saveToGoogle(save: RemoteSave): Promise<void> {
-    if (result === null || !result.ok) return;
+    if (result === null || !result.ok || inFlight.current || locked) return;
+    inFlight.current = true;
     const id = commandId ?? save.newCommandId();
     setCommandId(id);
     setSaving({ name: "saving" });
@@ -215,22 +220,36 @@ export function CashQuestions(props: {
       settle(await save.record({ date: props.date, statement: props.statement, commands: built.commands, ...(props.source === undefined ? {} : { source: props.source }) }, id, props.ledger.revision));
     } catch {
       setSaving({ name: "unknown", message: "The save may or may not have been recorded. Check what happened before trying again." });
+    } finally {
+      inFlight.current = false;
     }
   }
 
   async function checkSave(save: RemoteSave): Promise<void> {
-    if (commandId === null) return;
-    setSaving({ name: "saving" });
+    if (commandId === null || inFlight.current) return;
+    inFlight.current = true;
+    setSaving({ name: "saving", checking: true });
     try {
       settle(await save.check(commandId));
     } catch {
       setSaving({ name: "unknown", message: "The spreadsheet could not be checked. Try again shortly." });
+    } finally {
+      inFlight.current = false;
     }
   }
 
   function record(): void {
+    if (locked || inFlight.current) return;
     setAttempted(true);
-    if (result === null || !result.ok) return;
+    if (result === null || !result.ok) {
+      requestAnimationFrame(() => {
+        const target = needsMoneyQuestion && moneyMoved === ""
+          ? questions.current?.querySelector<HTMLInputElement>(".choice input")
+          : questions.current?.querySelector<HTMLElement>('[data-invalid="true"] input, .review-problem');
+        target?.focus();
+      });
+      return;
+    }
     if (props.onReview !== undefined) {
       props.onReview({ date: props.date, statement: props.statement, commands: built.commands, ...(props.source === undefined ? {} : { source: props.source }) }, result.state);
       return;
@@ -244,8 +263,8 @@ export function CashQuestions(props: {
   }
 
   return (
-    <section class="questions" aria-labelledby="questions-heading">
-      <h4 id="questions-heading">{latest === undefined ? "Opening amounts" : "Changes since the last statement"}</h4>
+    <section ref={questions} class="questions" aria-labelledby={`${prefix}-questions-heading`}>
+      <h4 id={`${prefix}-questions-heading`} tabIndex={-1}>{latest === undefined ? "Opening amounts" : "Changes since the last statement"}</h4>
       {latest === undefined ? (
         <p>
           For each fund, enter how much cash you had paid in, minus full proceeds already received, as of{" "}
@@ -259,16 +278,16 @@ export function CashQuestions(props: {
       )}
 
       {needsMoneyQuestion && (
-        <fieldset class="choice">
+        <fieldset class="choice" disabled={locked} aria-invalid={attempted && moneyMoved === "" ? "true" : undefined}>
           <legend>
             Did you add or remove money, switch funds, or receive distributions between{" "}
             {latest === undefined ? "statements" : `${formatDateLong(latest.date)} and ${formatDateLong(props.date)}`}?
           </legend>
           <label>
-            <input type="radio" name="money-moved" checked={moneyMoved === "yes"} onChange={() => { setMoneyMoved("yes"); }} /> Yes
+            <input type="radio" name={`${prefix}-money-moved`} checked={moneyMoved === "yes"} onChange={() => { setMoneyMoved("yes"); }} /> Yes
           </label>
           <label>
-            <input type="radio" name="money-moved" checked={moneyMoved === "no"} onChange={() => { setMoneyMoved("no"); }} /> No
+            <input type="radio" name={`${prefix}-money-moved`} checked={moneyMoved === "no"} onChange={() => { setMoneyMoved("no"); }} /> No
           </label>
           <p class="hint">A switch is money out of one fund and money into the other. Withdrawals are the full proceeds, not the gain.</p>
         </fieldset>
@@ -278,9 +297,9 @@ export function CashQuestions(props: {
         const answer = answers[row.isin] ?? BLANK;
         const error = built.errors[row.isin];
         const showMoney = moneyMoved === "yes" && (row.detected === "Held" || row.detected === "Reappeared");
-        const id = (suffix: string): string => `${suffix}-${row.isin}`;
+        const id = (suffix: string): string => `${prefix}-${suffix}-${row.isin}`;
         return (
-          <fieldset key={row.isin} class="fund-question">
+          <fieldset key={row.isin} class="fund-question" disabled={locked} data-invalid={attempted && error !== undefined} aria-describedby={attempted && error !== undefined ? id("error") : undefined}>
             <legend>
               {row.name} <span class="isin">{row.isin}</span> <span class="tag">{DETECTION_TEXT[row.detected]}</span>
             </legend>
@@ -351,13 +370,13 @@ export function CashQuestions(props: {
                 <AmountField id={id("out")} label="Full proceeds and distributions received" value={answer.moneyOut} onInput={(value) => { update(row.isin, { moneyOut: value }); }} />
               </>
             )}
-            {error !== undefined && attempted && <p class="field-error" role="alert">{error}</p>}
+            {error !== undefined && attempted && <p id={id("error")} class="field-error" role="alert">{error}</p>}
           </fieldset>
         );
       })}
 
       {result !== null && !result.ok && (
-        <div class="review-problem" role="alert">
+        <div class="review-problem" role="alert" tabIndex={-1}>
           <h4>This cannot be recorded yet</h4>
           <ul>
             {result.issues.map((issue) => (
@@ -368,8 +387,8 @@ export function CashQuestions(props: {
       )}
 
       {result?.ok === true && (
-        <section aria-labelledby="summary-heading" class="summary">
-          <h4 id="summary-heading">What will be recorded for {formatDateLong(props.date)}</h4>
+        <section aria-labelledby={`${prefix}-summary-heading`} class="summary">
+          <h4 id={`${prefix}-summary-heading`}>What will be recorded for {formatDateLong(props.date)}</h4>
           <table class="funds">
             <thead>
               <tr>
@@ -409,12 +428,12 @@ export function CashQuestions(props: {
           ? "Not connected to Google: this statement will be kept in this browser tab only and is lost when the page reloads."
           : "Confirming saves this statement to your connected Google spreadsheet."}
       </p>
-      <button type="button" class="primary" onClick={record} disabled={saving.name === "saving" || saving.name === "unknown"}>
-        {props.onReview === undefined ? "Confirm and record this statement" : "Keep these answers and continue"}
+      <button type="button" class="primary" onClick={record} disabled={locked}>
+        {saving.name === "saving" ? saving.checking === true ? "Checking the save…" : "Saving statement…" : props.onReview === undefined ? "Confirm and record this statement" : "Keep these answers and continue"}
       </button>
       {hasErrors && attempted && <p class="field-error" role="alert">Some questions above still need an answer.</p>}
       <div aria-live="polite" data-busy={saving.name === "saving"} class="status">
-        {saving.name === "saving" && <p>Saving to your spreadsheet…</p>}
+        {saving.name === "saving" && <p>{saving.checking === true ? "Checking your spreadsheet without writing…" : "Saving to your spreadsheet…"}</p>}
       </div>
       {saving.name === "not-saved" && (
         <div class="review-problem" role="alert">
@@ -426,7 +445,7 @@ export function CashQuestions(props: {
         <div class="review-problem" role="alert">
           <h4>Not saved</h4>
           {saving.outcome.status === "stale" && (
-            <p>The ledger in the spreadsheet changed after you loaded it, so nothing was saved. Connect again on the Connection page to load the latest ledger, then repeat this import.</p>
+            <p>The ledger in the spreadsheet changed after you loaded it, so nothing was saved. Connect again on the Your data screen to load the latest ledger, then repeat this import.</p>
           )}
           {saving.outcome.status === "rejected" && (
             <>
@@ -440,7 +459,8 @@ export function CashQuestions(props: {
       {saving.name === "saved-not-reloaded" && (
         <div class="review-problem" role="alert">
           <h4>Saved, but not reloaded</h4>
-          <p>The statement was recorded in your spreadsheet, but the ledger could not be read back. Do not record it again: connect on the Connection page to load the current ledger.</p>
+          <p>The statement was recorded in your spreadsheet, but the ledger could not be read back. Do not record it again. Checking reads your spreadsheet and writes nothing.</p>
+          {props.save !== undefined && <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>Check what happened</button>}
         </div>
       )}
       {saving.name === "unknown" && props.save !== undefined && (

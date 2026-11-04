@@ -30,6 +30,7 @@ export function RangeSelector<Id extends string>(props: {
           key={option.id}
           type="button"
           aria-pressed={option.id === props.value}
+          tabIndex={option.id === props.value ? 0 : -1}
           onClick={() => {
             props.onChange(option.id);
           }}

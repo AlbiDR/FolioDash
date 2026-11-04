@@ -46,22 +46,48 @@ function styleClass(index: number, slot: number | null): string {
 export function LineChart(props: LineChartProps): JSX.Element {
   const hidden = usePrivacy();
   const [scrubbed, setScrubbed] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
   const [highlighted, setHighlighted] = useState<string | null>(null);
+  const touchStart = useRef<{ readonly previous: number | null } | null>(null);
+  const dateControl = useRef<HTMLInputElement>(null);
   const container = useRef<HTMLElement>(null);
   const [width, setWidth] = useState<number>(LAYOUT.width);
   useEffect(() => {
     const node = container.current;
     if (node === null) return;
+    let frame: number | null = null;
+    let measuredWidth: number = LAYOUT.width;
     const observer = new ResizeObserver(([entry]) => {
-      if (entry !== undefined && entry.contentRect.width > 0) setWidth(Math.max(200, Math.round(entry.contentRect.width)));
+      if (entry === undefined || entry.contentRect.width <= 0) return;
+      const nextWidth = Math.max(200, Math.round(entry.contentRect.width));
+      if (nextWidth === measuredWidth) return;
+      measuredWidth = nextWidth;
+      if (frame !== null) cancelAnimationFrame(frame);
+      // Do not change the observed card's layout inside its resize delivery.
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        setWidth(nextWidth);
+      });
     });
     observer.observe(node);
-    return () => { observer.disconnect(); };
+    return () => {
+      observer.disconnect();
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
   }, []);
   const layout = { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height };
   // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
   const includeZero = props.includeZero ?? false;
   const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height, includeZero }), [props.series, includeZero, width]);
+  const times = useMemo(() => [...new Set(props.series.flatMap((entry) => entry.points.map((point) => point.time)))].sort(
+    (left, right) => left - right,
+  ), [props.series]);
+  // A shorter period must not retain an observation or series that is no longer present.
+  useEffect(() => {
+    setScrubbed(current => current !== null && times.includes(current) ? current : null);
+    setHovered(null);
+    setHighlighted(current => props.series.some(entry => entry.id === current) ? current : null);
+  }, [props.series, times]);
   const titleId = `${props.id}-title`;
   const descriptionId = `${props.id}-description`;
   const highlight = geometry.series.some(entry => entry.id === highlighted) ? highlighted : null;
@@ -75,15 +101,24 @@ export function LineChart(props: LineChartProps): JSX.Element {
     );
   }
 
-  const times = [...new Set(props.series.flatMap((entry) => entry.points.map((point) => point.time)))].sort(
-    (left, right) => left - right,
-  );
   const xByTime = new Map(geometry.series.flatMap((entry) => entry.points.map((point) => [point.time, point.x] as const)));
   const lastTime = times[times.length - 1];
-  const activeTime = scrubbed ?? lastTime;
+  const selectedTime = scrubbed !== null && times.includes(scrubbed) ? scrubbed : null;
+  const hoveredTime = hovered !== null && times.includes(hovered) ? hovered : null;
+  const activeTime = hoveredTime ?? selectedTime ?? lastTime;
   const activeX = activeTime === undefined ? undefined : xByTime.get(activeTime);
   const baseline = geometry.plot.top + geometry.plot.height;
   const show = (value: number): string => (hidden ? maskNumbers(props.formatValue(value)) : props.formatValue(value));
+  const valueSummary = geometry.series.filter(entry => !entry.muted).map(entry => {
+    const point = entry.points.find(candidate => candidate.time === activeTime);
+    return `${entry.label}: ${point === undefined ? "Unavailable" : show(point.value)}`;
+  }).join("; ");
+
+  function resetInspection(): void {
+    setScrubbed(null);
+    setHovered(null);
+    setHighlighted(null);
+  }
 
   function scrubTo(event: TargetedPointerEvent<SVGSVGElement>): void {
     const box = event.currentTarget.getBoundingClientRect();
@@ -97,11 +132,16 @@ export function LineChart(props: LineChartProps): JSX.Element {
         nearest = time;
       }
     }
-    setScrubbed(nearest);
+    if (event.pointerType === "touch" || (event.pointerType === "pen" && event.buttons !== 0)) setScrubbed(nearest);
+    else setHovered(nearest);
   }
 
   return (
-    <figure ref={container} class="chart">
+    <figure ref={container} class="chart" tabIndex={-1} onKeyDown={(event) => {
+      if (event.key !== "Escape" || (selectedTime === null && hoveredTime === null && highlight === null)) return;
+      event.preventDefault();
+      resetInspection();
+    }}>
       <figcaption class="chart-title" id={titleId}>
         {props.title}
       </figcaption>
@@ -130,10 +170,19 @@ export function LineChart(props: LineChartProps): JSX.Element {
         role="img"
         aria-labelledby={`${titleId} ${descriptionId}`}
         onPointerMove={scrubTo}
-        onPointerDown={scrubTo}
-        onPointerCancel={() => { setScrubbed(null); }}
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          if (event.pointerType === "touch" || event.pointerType === "pen") touchStart.current = { previous: selectedTime };
+          scrubTo(event);
+        }}
+        onPointerUp={() => { touchStart.current = null; }}
+        onPointerCancel={() => {
+          if (touchStart.current !== null) setScrubbed(touchStart.current.previous);
+          touchStart.current = null;
+          setHovered(null);
+        }}
         onPointerLeave={() => {
-          setScrubbed(null);
+          setHovered(null);
         }}
       >
         <desc id={descriptionId}>{props.description}</desc>
@@ -158,7 +207,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
             </text>
           ))}
         </g>
-        {activeX !== undefined && scrubbed !== null && (
+        {activeX !== undefined && (selectedTime !== null || hoveredTime !== null) && (
           <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />
         )}
         {geometry.series.map((entry, index) => (
@@ -184,6 +233,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
       <label class="chart-date-control">
         <span>Explore dates</span>
         <input
+          ref={dateControl}
           type="range"
           min={0}
           max={Math.max(0, times.length - 1)}
@@ -191,11 +241,21 @@ export function LineChart(props: LineChartProps): JSX.Element {
           value={Math.max(0, times.indexOf(activeTime ?? 0))}
           disabled={times.length < 2}
           aria-label={`${props.title}: observation date`}
-          aria-valuetext={activeTime === undefined ? "No observation" : props.formatTime(activeTime)}
-          onInput={(event) => { setScrubbed(times[Number(event.currentTarget.value)] ?? null); }}
+          aria-describedby={`${props.id}-inspection-help`}
+          aria-valuetext={activeTime === undefined ? "No observation" : `${props.formatTime(activeTime)}. ${valueSummary}`}
+          onFocus={() => { setHovered(null); }}
+          onInput={(event) => { setHovered(null); setScrubbed(times[Number(event.currentTarget.value)] ?? null); }}
         />
-        <output aria-live="polite"><span key={activeTime} class="inspection-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span></output>
+        <span aria-hidden="true"><span key={activeTime} class="inspection-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span></span>
       </label>
+      <div class="chart-inspection-actions">
+        <button class="quiet-action chart-reset" type="button" disabled={selectedTime === null && hoveredTime === null && highlight === null} onClick={() => {
+          resetInspection();
+          if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
+          else container.current?.focus({ preventScroll: true });
+        }}>Reset chart inspection</button>
+        <span class="hint" id={`${props.id}-inspection-help`}>Explore dates with the slider. Escape resets inspection.</span>
+      </div>
       <ul class="chart-legend">
         {geometry.series.map((entry, index) =>
           entry.muted ? null : (
@@ -214,12 +274,9 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </ul>
       <details class="chart-table">
         <summary>Chart tools and values</summary>
-      <button class="quiet-action chart-reset" type="button" disabled={scrubbed === null && highlight === null} onClick={() => {
-        setScrubbed(null);
-        setHighlighted(null);
-      }}>Reset chart inspection</button>
       <p class="footnote">Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.</p>
 
+        <div class="chart-values-scroll" role="region" aria-label={`${props.title}: values table`} tabIndex={0}>
         <table>
           <thead>
             <tr>
@@ -243,6 +300,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
             ))}
           </tbody>
         </table>
+        </div>
       </details>
     </figure>
   );
