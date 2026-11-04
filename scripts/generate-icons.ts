@@ -1,8 +1,8 @@
 // Draws the app icons as PNG files with no image library: a rising line on a dark tile.
 // Run `node scripts/generate-icons.ts` to regenerate src/interfaces/web/public/icons/.
-// The same shapes are in public/icons/icon.svg, which the browser tab uses.
+// This also generates the SVG tab icon from the same geometry. Use --check to detect stale assets.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { crc32, deflateSync } from "node:zlib";
 
 type Point = readonly [number, number];
@@ -11,7 +11,7 @@ type Colour = readonly [number, number, number];
 const OUTPUT = "src/interfaces/web/public/icons";
 const GRID = 512;
 
-// The chart, on a 512 grid, kept inside the central 80 percent that a maskable icon may not crop.
+// All foreground geometry must fit in the central safe CIRCLE (radius 40% of the canvas).
 const LINE: readonly Point[] = [
   [122, 332],
   [208, 252],
@@ -120,16 +120,51 @@ function png(size: number, pixels: Uint8Array): Buffer {
 }
 
 const ICONS: readonly { readonly file: string; readonly size: number; readonly corner: number }[] = [
+  { file: "favicon-48.png", size: 48, corner: 112 },
   // "Any" icons have rounded corners and transparent edges.
   { file: "icon-192.png", size: 192, corner: 112 },
   { file: "icon-512.png", size: 512, corner: 112 },
   // A maskable icon fills the whole square: the launcher cuts the shape. The Apple icon is the same, because iOS rounds it.
+  { file: "icon-maskable-192.png", size: 192, corner: 0 },
   { file: "icon-maskable-512.png", size: 512, corner: 0 },
   { file: "apple-touch-icon.png", size: 180, corner: 0 },
 ];
 
-mkdirSync(OUTPUT, { recursive: true });
-for (const { file, size, corner } of ICONS) {
-  writeFileSync(`${OUTPUT}/${file}`, png(size, render(size, corner)));
-  process.stdout.write(`Wrote ${OUTPUT}/${file}\n`);
+// A capsule around each segment stays inside the circle when its endpoints do.
+for (const [index, point] of LINE.entries()) {
+  const radius = index === LINE.length - 1 ? Math.max(DOT_RADIUS, STROKE / 2) : STROKE / 2;
+  if (Math.hypot(point[0] - GRID / 2, point[1] - GRID / 2) + radius > GRID * 0.4) {
+    throw new Error("Icon foreground escapes the Android maskable safe circle.");
+  }
 }
+
+const hex = (colour: Colour): string => `#${colour.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${String(GRID)} ${String(GRID)}">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${hex(TOP)}"/>
+      <stop offset="1" stop-color="${hex(BOTTOM)}"/>
+    </linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="${String(LINE[0]?.[0])}" y1="0" x2="${String(LINE.at(-1)?.[0])}" y2="0">
+      <stop offset="0" stop-color="${hex(LINE_START)}"/>
+      <stop offset="1" stop-color="${hex(LINE_END)}"/>
+    </linearGradient>
+  </defs>
+  <rect width="${String(GRID)}" height="${String(GRID)}" rx="112" fill="url(#tile)"/>
+  <polyline points="${LINE.map((point) => point.join(",")).join(" ")}" fill="none" stroke="url(#line)" stroke-width="${String(STROKE)}" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="${String(LINE.at(-1)?.[0])}" cy="${String(LINE.at(-1)?.[1])}" r="${String(DOT_RADIUS)}" fill="${hex(LINE_END)}"/>
+</svg>
+`;
+const checkOnly = process.argv.includes("--check");
+if (!checkOnly) mkdirSync(OUTPUT, { recursive: true });
+function output(file: string, bytes: Buffer): void {
+  const path = `${OUTPUT}/${file}`;
+  if (checkOnly) {
+    if (!readFileSync(path).equals(bytes)) throw new Error(`Stale icon: ${path}. Run node scripts/generate-icons.ts.`);
+  } else {
+    writeFileSync(path, bytes);
+    process.stdout.write(`Wrote ${path}\n`);
+  }
+}
+output("icon.svg", Buffer.from(svg));
+for (const { file, size, corner } of ICONS) output(file, png(size, render(size, corner)));
