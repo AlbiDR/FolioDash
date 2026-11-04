@@ -4,6 +4,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { crc32, deflateSync } from "node:zlib";
+import { pngContent } from "./png-content.ts";
 
 type Point = readonly [number, number];
 type Colour = readonly [number, number, number];
@@ -160,7 +161,9 @@ if (!checkOnly) mkdirSync(OUTPUT, { recursive: true });
 function output(file: string, bytes: Buffer): void {
   const path = `${OUTPUT}/${file}`;
   if (checkOnly) {
-    if (!readFileSync(path).equals(bytes)) throw new Error(`Stale icon: ${path}. Run node scripts/generate-icons.ts.`);
+    const actual = readFileSync(path);
+    const matches = file.endsWith(".png") ? pngContent(actual).equals(pngContent(bytes)) : actual.equals(bytes);
+    if (!matches) throw new Error(`Stale icon: ${path}. Run node scripts/generate-icons.ts.`);
   } else {
     writeFileSync(path, bytes);
     process.stdout.write(`Wrote ${path}\n`);
