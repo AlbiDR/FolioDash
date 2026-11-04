@@ -1,31 +1,100 @@
+<img src="src/interfaces/web/public/icons/icon.svg" width="64" height="64" alt="" />
+
 # FolioDash
 
-A private portfolio tracker designed for Mac and Android through one installable web application.
+Your fund portfolio and the everyday cost of work, in one responsive web application backed by your own Google spreadsheet.
 
-**Stage: local application with automated verification.** The repository contains the portfolio UI, pure financial kernel, synthetic tests and Google adapters. Live integration and device support still require the evidence recorded in the decision register. The existing Google Sheets application remains separate.
+**In active development.** Local workflows are implemented, and a synthetic Google portfolio flow has been exercised. Full release and physical-device acceptance remain pending.
 
-**Selected direction:** GitHub-managed frontend and user-owned private Google Sheets records. FD-017 selects direct browser-to-Google access; the earlier Apps Script service remains until its replacement passes live proof. The interface lives in FolioDash, not sheet dashboards; a separate database provider is not required. The browser uses Google authorisation, not a GitHub secret, for live access. Read the [Google-backed architecture](docs/architecture/google-sheets-backend.md) first for the scope and unverified connection gates.
+[Try locally](#try-locally) · [Capabilities](#capabilities) · [Data and privacy](#data-and-privacy) · [Development](#development) · [Documentation](#documentation)
 
-FolioDash should turn bank statements and explicitly recorded cash movements into understandable portfolio history. Normal use must not require AI, scripts, developer tools or manual dashboard repairs.
+## Try locally
 
-## Start here
+Use Node.js **22.18.0 or newer** and npm. CI checks Node 22 and 24.
 
-- [Documentation map](docs/README.md)
-- [CleanStack Architecture - Authoritative Design Reference](docs/architecture/cleanstack.md)
-- [GitHub + Google Sheets + Apps Script architecture](docs/architecture/google-sheets-backend.md)
-- [Decision register](docs/architecture/decision-register.md)
-- [Web quality and verification contract](docs/operations/web-quality.md)
-- [Repository policy and checks](docs/operations/repository-policy.md)
-- [Growth assessment and synthetic benchmark](docs/operations/scalability.md)
+```sh
+git clone https://github.com/AlbiDR/FolioDash.git
+cd FolioDash
+npm ci --ignore-scripts
+npm run dev
+```
 
-The decision register records selected tooling and later amendments as well as remaining authentication, deployment, retention and licensing questions. Implementation alone does not settle an open decision. Normal Google-readable workbook storage is not FolioDash end-to-end encryption.
+Open the URL printed by Vite. Portfolio and Expenses start with invented records; no Google setup is needed. Demo expense edits reset on reload. The interface uses English labels and Italian/EUR number formatting.
 
-## Privacy boundary
+Mac and Android are the intended platforms; the [PWA guide](docs/operations/pwa.md) records installation evidence and remaining device checks.
 
-This repository holds code, design documents and synthetic fixtures only. Real statements, holdings, account identifiers, screenshots, backups and credentials do not belong here, even if the repository is private. A future public demonstration must use synthetic data and separate storage from the personal application.
+For Google access, use an existing public OAuth client ID with the local origin authorised. Enter it under **Your data > Advanced: Google client ID**, or supply `VITE_GOOGLE_CLIENT_ID` when starting or building the app. See [Repository configuration](docs/operations/repository-configuration.md) for hosted configuration.
 
-The ignore rules are an accidental-inclusion guard, not a security control or permission to commit otherwise-sensitive files. Repository history and built artifacts must also be inspected before any publication.
+For provider tests, follow the isolated [synthetic onboarding procedure](docs/operations/onboarding-acceptance.md). Ordinary sign-in can reconnect an existing FolioDash workbook.
 
-## Implementation boundary
+## Capabilities
 
-This documentation does not authorize creating cloud resources, uploading financial data, publishing the site, connecting bank accounts or choosing unresolved security policies. Run `npm ci --ignore-scripts`, then `npm run verify` for repository policy, contributor and punctuation policy, types, lint, tests, production build, PWA checks and the Apps Script bundle check. Run `npm run audit:dependencies` separately for the dependency security gate. Use `npm run dev` to run locally. CI runs verification on Node 22 and 24. For workflow changes, also run `npm run verify:workflows`; see the [GitHub Actions system](docs/operations/github-actions.md) for checked artifacts, triggers and deployment guards. These checks do not replace live Google, deployed-browser or physical-device verification.
+| Journey | Current implementation |
+|---|---|
+| Portfolio | Value, net invested and gain; allocation and history charts; individual funds and month-by-month detail |
+| Import | Supported Fideuram XLSX exports, separately or in a workbook with a statement per sheet. Review dates, holdings and cash movements, then confirm. Manual entry is also available |
+| Expenses | Five fields for outbound commute, lunch, inbound commute, dinner and other expenses; daily, weekly, monthly and annual reports with retained corrections. Works without a portfolio import |
+| Your data | Google connection, source-replay health checks, device recovery and expense backup/restore |
+
+Imports append **one statement per calendar month**, in chronological order. Other bank layouts and earlier-history insertion are unsupported. Files are parsed locally; confirmed saves retain extracted statements and reviewed cash decisions in the private workbook. A history import saves statement by statement, preserving confirmed saves if interrupted. See [Excel history](docs/operations/importing-history.md).
+
+Expense entry covers today and earlier Monday-Friday workdays, using a separate log in the same workbook. Complete expense correction-history backup and confirmed restoration into a never-initialised expense store are implemented. **Portfolio JSON export is not implemented**, and portfolio device recovery omits original statements. See [Work expenses](docs/operations/work-expenses.md) for definitions and recovery limits.
+
+### Evidence and remaining gates
+
+| Area | Recorded evidence | Still pending |
+|---|---|---|
+| Local application | Automated verification; local production UI checks recorded for [dashboard](docs/design/dashboard-coherence.md) and [expenses](docs/operations/work-expenses.md) | Complete browser and accessibility acceptance |
+| Google portfolio flow | [One-account synthetic create, save, read-back and source replay](docs/operations/onboarding-acceptance.md) from an Android emulator at a local origin | Deployed-origin, two-account and simultaneous-device proof |
+| Work expenses | [Storage/session tests and local Chrome interactions](docs/operations/work-expenses.md) | Live Google expense writes, physical devices and screen-reader review |
+| Installation and hosting | [Desktop Chrome PWA checks](docs/operations/pwa.md); [existing Pages deployment](docs/operations/github-actions.md) | Physical Android/WebAPK installation and complete release acceptance |
+
+## Data and privacy
+
+FD-017 selects direct browser-to-Google access with user authorisation and `drive.file`. GitHub holds source and deployment configuration; the private Google workbook holds committed records. Apps Script code and its manual deployment workflow remain pending replacement acceptance. See the [Google-backed architecture](docs/architecture/google-sheets-backend.md) and later [decision amendments](docs/architecture/decision-register.md).
+
+The workbook is authoritative. Plain device copies support faster reads and offline viewing. Signing out or choosing **Forget this device** clears local records without deleting the workbook. Financial saves require a Google connection; uncertain outcomes are checked before continuing. Device copies and Google-readable records do not provide FolioDash end-to-end encryption.
+
+One pure kernel calculates with exact EUR cents. Under `legacy-parity-v1`, year to date starts at the January statement. Percentages that depend on cash timing are estimates; no returns are annualised, time-weighted or money-weighted. See [FD-007](docs/architecture/decision-register.md#fd-007-financial-policy-questions).
+
+Keep real financial files, account identifiers, private screenshots, backups and credentials outside the repository, fixtures, logs and builds. GitHub secrets serve deployment/CI. Original-file archival, retention duration, session/privacy review and supported-device acceptance remain open.
+
+## Development
+
+The current stack is TypeScript, Preact, Vite and SVG charts using `d3-array`, `d3-scale` and `d3-shape`. Financial rules and use cases stay independent of the UI framework.
+
+```sh
+npm run verify
+npm run audit:dependencies
+```
+
+`verify` checks repository boundaries, contributor and punctuation policies, types, lint, tests, production/PWA output and the retained Apps Script bundle. The separate dependency audit fails on moderate or greater severity. Workflow edits also require `npm run verify:workflows`.
+
+Pages publishes the artifact produced by CI after both Node versions pass. [GitHub Actions](docs/operations/github-actions.md) documents the pipeline and deployment guards.
+
+For a local production preview, run `npm run build`, then `npm run preview`. The ignored web artifact is `dist/web/`.
+
+```text
+src/core/                 Pure financial values and calculations
+src/applications/         Use cases, ports and typed outcomes
+src/adapters/             Google, browser storage and XLSX integrations
+src/interfaces/web/       App composition, features, presentation and UI
+src/interfaces/server/    Retained Apps Script service
+tests/                    Cross-layer tests and synthetic fixtures
+config/                   Tool configuration
+scripts/                  Build and verification utilities
+docs/                     Architecture, decisions, design and operations
+```
+
+Read the [working agreement](AGENTS.md) and [contribution guide](.github/CONTRIBUTING.md) before changing the project. **Licensing is undecided (FD-011); external contributions cannot be accepted yet.**
+
+## Documentation
+
+| To understand | Read |
+|---|---|
+| Documentation and its authoritative owners | [Documentation map](docs/README.md) |
+| Boundaries, financial invariants and repository structure | [CleanStack Architecture](docs/architecture/cleanstack.md) |
+| Selected directions and unresolved decisions | [Decision register](docs/architecture/decision-register.md) |
+| Accessibility, chart and release requirements | [Web quality contract](docs/operations/web-quality.md) |
+
+The existing Google Sheets project remains separate. Open decisions and live acceptance gates retain their documented approval requirements.
