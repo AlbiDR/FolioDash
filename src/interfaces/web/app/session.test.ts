@@ -13,7 +13,7 @@ import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/Money";
 import type { RecordRequest } from "../../../applications/ImportModel";
 import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
 import { interpretStatement } from "./interpretStatement";
-import { type KeyValueStore, createLedgerCache } from "./ledgerCache";
+import { type KeyValueStore, createLedgerCache } from "../../../adapters/browser/LedgerCache";
 import { type SessionDeps, Session } from "./session";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;

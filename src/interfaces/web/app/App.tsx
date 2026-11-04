@@ -15,7 +15,7 @@ import { useMediaQuery } from "../shared/ui/useMediaQuery";
 import { Icon, type IconName } from "../shared/ui/icons";
 import { createBrowserSession } from "./browserSession";
 import { CHART_RANGES, type ChartRange } from "../features/overview/chartRange";
-import { rememberClientId, resolveClientId } from "./clientId";
+import { rememberClientId, resolveClientId } from "../../../adapters/browser/ClientId";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
 import { memoizeLast } from "../shared/ui/memo";
 import { overviewFromLedger } from "./overviewFromLedger";

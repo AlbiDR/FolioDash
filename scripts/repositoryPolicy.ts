@@ -6,11 +6,26 @@ const GENERATED_OR_PRIVATE = /(?:^|\/)(?:node_modules|dist|build|coverage|privat
 
 /** Tracked paths only: this cannot certify the contents of a file or ignored local data. */
 export function pathProblems(files: readonly string[]): string[] {
+  const casing = new Map<string, string>();
   return files.flatMap((file) => {
     const root = file.split("/")[0] ?? "";
     const problems: string[] = [];
     if (file.includes("/") ? !ROOT_DIRECTORIES.has(root) : !ROOT_FILES.has(file)) problems.push(`${file}: unapproved root entry`);
     if (GENERATED_OR_PRIVATE.test(file)) problems.push(`${file}: generated or private artifact`);
+    const parts = file.split("/");
+    for (let count = 1; count <= parts.length; count++) {
+      const prefix = parts.slice(0, count).join("/");
+      const folded = prefix.toLowerCase();
+      const existing = casing.get(folded);
+      if (existing !== undefined && existing !== prefix) problems.push(`${file}: case-colliding path with ${existing}`);
+      casing.set(folded, prefix);
+    }
+    if (file.startsWith("docs/") && !/^docs\/(?:README\.md|(?:architecture|design|operations)\/.+\.md)$/.test(file)) problems.push(`${file}: documentation belongs in a named documentation section`);
+    if (file.startsWith("config/") && !/\.(?:json|ts)$/.test(file)) problems.push(`${file}: configuration directory contains non-configuration content`);
+    if (file.startsWith("scripts/") && !file.endsWith(".ts")) problems.push(`${file}: tooling directory contains non-tooling content`);
+    if (file.startsWith("tests/") && !file.endsWith(".ts")) problems.push(`${file}: tests must be TypeScript; binary fixtures need a reviewed policy exception`);
+    if (file.startsWith("src/adapters/") && file.split("/").length < 4) problems.push(`${file}: adapters belong in a named integration directory`);
+    if (file.startsWith("src/") && file.endsWith(".md")) problems.push(`${file}: documentation belongs in docs`);
     return problems;
   });
 }
@@ -90,6 +105,20 @@ export function architectureProblems(sources: readonly SourceFile[]): string[] {
     };
     visit(ast);
   }
+  // Check environment isolation through intermediate adapters, not just direct imports.
+  const checkEnvironment = (roots: readonly string[], forbidden: (file: string) => boolean, environment: string): void => {
+    const seen = new Set<string>();
+    const visit = (file: string, chain: readonly string[]): void => {
+      if (forbidden(file)) { problems.push(`${environment} dependency reaches forbidden environment: ${[...chain, file].join(" -> ")}`); return; }
+      if (seen.has(file)) return;
+      seen.add(file);
+      for (const target of graph.get(file) ?? []) visit(target, [...chain, file]);
+    };
+    for (const root of roots) visit(root, []);
+  };
+  const files = [...graph.keys()];
+  checkEnvironment(files.filter((file) => file.startsWith("src/interfaces/web/") || file.startsWith("src/adapters/browser/")), (file) => file.startsWith("src/interfaces/server/") || file.startsWith("src/adapters/appsscript/"), "Browser");
+  checkEnvironment(files.filter((file) => file.startsWith("src/interfaces/server/") || file.startsWith("src/adapters/appsscript/")), (file) => file.startsWith("src/interfaces/web/") || file.startsWith("src/adapters/browser/"), "Server");
   const visited = new Set<string>();
   const active = new Set<string>();
   const walk = (file: string, chain: readonly string[]): void => {

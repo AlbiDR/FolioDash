@@ -17,5 +17,5 @@
     "noEmit": true
   },
   "include": ["../src/**/*.ts", "../tests/**/*.ts"],
-  "exclude": ["../src/interfaces/web"]
+  "exclude": ["../src/interfaces/web", "../src/adapters/browser"]
 }

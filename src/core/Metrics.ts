@@ -3,7 +3,7 @@ import type { HoldingStatus, LedgerState, Snapshot } from "./Ledger";
 import { type EuroCents, ZERO_CENTS, addCents, subtractCents } from "./Money";
 
 /**
- * Reporting policy "legacy-parity-v1" (decision FD-007, still open).
+ * Reporting policy "legacy-parity-v1" (initial policy accepted in decision FD-007).
  *
  * These are the definitions of the existing Sheets project, kept and labelled so
  * results can be compared with it. They are not a statement that these are the
@@ -85,6 +85,8 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
   const results: StatementMetrics[] = [];
   const invested: EuroCents[] = [];
   const gains: EuroCents[] = [];
+  // Preserve the first earlier statement in each calendar month, as legacy-parity-v1 requires.
+  const firstByMonth = new Map<number, number>();
 
   state.snapshots.forEach((snapshot, index) => {
     const previous = index > 0 ? state.snapshots[index - 1] : undefined;
@@ -106,12 +108,8 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
         ? previous.fundsSubtotal + netInvested - previousInvested
         : 0;
 
-    const baselineIndex = (match: (candidate: Snapshot) => boolean): number =>
-      state.snapshots.slice(0, index).findIndex(match);
-    const january = baselineIndex(
-      (candidate) => monthSerial(candidate.date) === Math.floor(month / 12) * 12,
-    );
-    const lastYear = baselineIndex((candidate) => monthSerial(candidate.date) === month - 12);
+    const january = firstByMonth.get(Math.floor(month / 12) * 12) ?? -1;
+    const lastYear = firstByMonth.get(month - 12) ?? -1;
     const change = (baseline: number): { gain: EuroCents; base: number } | null => {
       const baselineGain = baseline >= 0 ? gains[baseline] : undefined;
       const baselineSnapshot = baseline >= 0 ? state.snapshots[baseline] : undefined;
@@ -164,6 +162,7 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
       ),
       funds,
     });
+    if (!firstByMonth.has(month)) firstByMonth.set(month, index);
   });
   return results;
 }

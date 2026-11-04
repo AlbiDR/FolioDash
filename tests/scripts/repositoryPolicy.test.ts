@@ -19,6 +19,19 @@ describe("lean root and artifact policy", () => {
   });
 });
 
+describe("filesystem compartments", () => {
+  it.each(["docs/build.ts", "docs/notes.md", "config/screenshot.png", "scripts/NOTES.md", "tests/export.json", "src/adapters/Loose.ts", "src/core/NOTES.md"])("rejects misplaced content %s", (file) => {
+    expect(pathProblems([file]).length).toBeGreaterThan(0);
+  });
+  it("rejects filenames that collide on case-insensitive filesystems", () => {
+    expect(pathProblems(["src/core/Money.ts", "src/core/money.ts"]).join("\n")).toContain("case-colliding");
+    expect(pathProblems(["src/core/Money.ts", "src/Core/Percent.ts"]).join("\n")).toContain("case-colliding");
+  });
+  it("accepts browser adapters and their adjacent tests", () => {
+    expect(pathProblems(["src/adapters/browser/LedgerCache.ts", "src/adapters/browser/LedgerCache.test.ts"])).toEqual([]);
+  });
+});
+
 describe("dependency law", () => {
   it.each([[app, feature], [app, adapter], [feature, application], [feature, presentation], [presentation, core], [presentation, shared], [application, core], [adapter, application], [core, "src/core/Ledger.ts"]])("allows %s -> %s", (from, to) => {
     expect(allowedDependency(from, to)).toBe(true);
@@ -56,4 +69,20 @@ describe("dependency law", () => {
   it("lets adjacent tests cross layers without granting production the same permission", () => {
     expect(architectureProblems([{ file: "src/core/Money.test.ts", text: 'import "vitest"; import "../../tests/fixtures/Synthetic";' }])).toEqual([]);
   });
+});
+
+it("rejects browser-to-server dependencies hidden behind an intermediate adapter", () => {
+  expect(architectureProblems([
+    { file: app, text: 'import "../../../adapters/google/Rest";' },
+    { file: adapter, text: 'import "../appsscript/SheetsRowSheet";' },
+    { file: "src/adapters/appsscript/SheetsRowSheet.ts", text: "" },
+  ]).join("\n")).toContain("Browser dependency reaches forbidden environment");
+});
+
+it("rejects server-to-browser dependencies hidden behind an intermediate adapter", () => {
+  expect(architectureProblems([
+    { file: "src/interfaces/server/main.ts", text: 'import "../../adapters/google/Rest";' },
+    { file: adapter, text: 'import "../browser/GoogleIdentity";' },
+    { file: "src/adapters/browser/GoogleIdentity.ts", text: "" },
+  ]).join("\n")).toContain("Server dependency reaches forbidden environment");
 });

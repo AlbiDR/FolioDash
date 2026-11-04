@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_LEDGER } from "../../../core/Ledger";
-import { demoPortfolio } from "./demoPortfolio";
-import { type DeviceCopy, type KeyValueStore, createLedgerCache } from "./ledgerCache";
+import { EMPTY_LEDGER } from "../../core/Ledger";
+import { demoPortfolio } from "../../interfaces/web/app/demoPortfolio";
+import { type DeviceCopy, type KeyValueStore, createLedgerCache } from "./LedgerCache";
 
 const memory = (): KeyValueStore & { data: Map<string, string> } => {
   const data = new Map<string, string>();
@@ -13,7 +13,7 @@ const blocked = (): KeyValueStore => {
 
 async function realLedger() {
   // A valid ledger built by the real rules, from the invented demo portfolio.
-  const { demoLedger } = await import("./demoPortfolio");
+  const { demoLedger } = await import("../../interfaces/web/app/demoPortfolio");
   return demoLedger("typical");
 }
 

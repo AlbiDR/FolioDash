@@ -16,6 +16,7 @@ FolioDash should turn bank statements and explicitly recorded cash movements int
 - [Decision register](docs/architecture/decision-register.md)
 - [Web quality and verification contract](docs/operations/web-quality.md)
 - [Repository policy and checks](docs/operations/repository-policy.md)
+- [Growth assessment and synthetic benchmark](docs/operations/scalability.md)
 
 The decision register records selected tooling and later amendments as well as remaining authentication, deployment, retention and licensing questions. Implementation alone does not settle an open decision. Normal Google-readable workbook storage is not FolioDash end-to-end encryption.
 

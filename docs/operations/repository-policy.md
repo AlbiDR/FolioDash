@@ -8,9 +8,9 @@ Implemented 2026-11-04 under the owner's organization audit request. Architectur
 |---|---|
 | `src/core/` | Pure financial values, ledger invariants and canonical calculations |
 | `src/applications/` | Use cases, ports and shared workflow contracts; source and session value contracts |
-| `src/adapters/` | External formats, Google transport and ledger persistence |
+| `src/adapters/` | External formats, Google transport, ledger persistence and concrete browser identity/storage under `browser/` |
 | `src/interfaces/server/` | Retained Apps Script composition and service entry |
-| `src/interfaces/web/app/` | Browser composition, routing, session orchestration and infrastructure wiring |
+| `src/interfaces/web/app/` | Browser composition, routing, session orchestration and infrastructure wiring; concrete browser identity/storage implementations belong in adapters |
 | `src/interfaces/web/features/` | Isolated account, import, history and overview workflows; overview data selection and chart ranges |
 | `src/interfaces/web/presentation/` | Domain-aware chart and amount/privacy presentation shared by workflows |
 | `src/interfaces/web/shared/` | Domain-blind UI primitives, memoization and tokens |
@@ -25,11 +25,19 @@ There are no empty directories for future migrations or services. The retained A
 
 `npm run verify:repository` checks tracked files plus new non-ignored files. Deleted working-tree files are omitted, so a move can be verified before staging. CI sees the committed checkout. It enforces the current root entry allowlist, known generated/private artifact paths and extensions, source-layer ownership, import direction and production dependency cycles.
 
-The TypeScript syntax walker checks relative imports, type-only imports, re-exports, literal dynamic imports, import type expressions and CommonJS import syntax. Nonliteral module loads, unresolved aliases and unapproved external packages fail closed. Production source cannot import tests or fixtures. Adjacent tests may cross layers and use test dependencies; they are excluded from the production dependency graph. CSS is resolved as a web style dependency, not parsed as TypeScript. The checker does not analyze CSS dependency direction.
+The TypeScript syntax walker checks relative imports, type-only imports, re-exports, literal dynamic imports, import type expressions and CommonJS import syntax. Nonliteral module loads, unresolved aliases and unapproved external packages fail closed. Production source cannot import tests or fixtures. Adjacent tests may cross layers and use test dependencies; they are excluded from the production dependency graph. CSS is resolved as a web style dependency, not parsed as TypeScript. The checker does not analyze CSS dependency direction. Transitive source dependencies are also traversed to prevent browser roots from reaching server/Apps Script implementations, or server roots from reaching browser implementations, through intermediate adapters.
 
 The UI external-package allowlist covers the selected Preact and d3 modules. Core and applications cannot import runtime packages. The worker imports only within its area. The browser app cannot import server entry points or Apps Script adapters. Import cycles include type-only edges, keeping contracts independent of the implementations that consume them.
 
 `tests/scripts/repositoryPolicy.test.ts` exercises approved entry points and deliberate violations: private/generated paths, forbidden layer directions, cross-feature imports, barrels, dynamic imports, unresolved dependencies and cycles. `npm run verify` runs the checker before types, lint, tests and builds. Existing CI invokes that command, so no duplicate verification policy is needed.
+
+## Filesystem compartment checks
+
+The path check also rejects case-colliding files or directory names, documentation outside named documentation sections, non-configuration content in `config/`, non-TypeScript content in tooling/tests, loose adapters outside a named integration directory and Markdown inside production source. New binary fixtures need a reviewed policy exception; they are not automatically allowed merely because they are called synthetic. These checks enforce location and naming, not the semantic contents of a file.
+
+Browser identity, client-ID storage and ledger-cache implementations and their adjacent tests now live in `src/adapters/browser/`. The web compiler includes that environment; the pure runtime compiler excludes it. All TypeScript configuration files are now type-checked and linted, including the Vitest configuration. The tooling compiler inherits web settings because the history benchmark imports the actual web projection/geometry pipeline; it retains Node types for tools. No root entry, empty future layer or production package was added.
+
+See [Growth assessment](scalability.md) for the synthetic benchmark, regression tests and remaining capacity limits. User-supplied legacy/private folders remain ignored and untouched; the tracked-file check does not inventory their contents or authorize moving them.
 
 ## Limits and remaining evidence
 

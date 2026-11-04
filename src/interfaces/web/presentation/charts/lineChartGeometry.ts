@@ -80,19 +80,29 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
     width: layout.width - layout.margin.left - layout.margin.right,
     height: layout.height - layout.margin.top - layout.margin.bottom,
   };
-  const observed = series.flatMap((entry) =>
-    entry.points.flatMap((point) => (point.value === null ? [] : [{ time: point.time, value: point.value }])),
-  );
-  if (observed.length === 0) return { empty: true, plot, xTicks: [], yTicks: [], series: [] };
+  // Scan bounds without spreading history into function arguments. Large histories
+  // can exceed the engine's argument limit even when each series is small.
+  let minTime = Infinity;
+  let maxTime = -Infinity;
+  let minValue = Infinity;
+  let maxValue = -Infinity;
+  let observed = false;
+  for (const entry of series) {
+    for (const point of entry.points) {
+      if (point.value === null) continue;
+      observed = true;
+      minTime = Math.min(minTime, point.time);
+      maxTime = Math.max(maxTime, point.time);
+      minValue = Math.min(minValue, point.value);
+      maxValue = Math.max(maxValue, point.value);
+    }
+  }
+  if (!observed) return { empty: true, plot, xTicks: [], yTicks: [], series: [] };
 
-  let minTime = Math.min(...observed.map((point) => point.time));
-  let maxTime = Math.max(...observed.map((point) => point.time));
   if (minTime === maxTime) {
     minTime -= DAY_MS;
     maxTime += DAY_MS;
   }
-  let minValue = Math.min(...observed.map((point) => point.value));
-  let maxValue = Math.max(...observed.map((point) => point.value));
   if (layout.includeZero) {
     minValue = Math.min(minValue, 0);
     maxValue = Math.max(maxValue, 0);

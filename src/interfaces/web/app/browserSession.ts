@@ -1,9 +1,9 @@
 import type { RestClient } from "../../../adapters/google/Rest";
-import { browserLedgerCache } from "./ledgerCache";
+import { browserLedgerCache } from "../../../adapters/browser/LedgerCache";
 import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
 import { interpretStatement } from "./interpretStatement";
 import { Session } from "./session";
-import { revokeToken, signIn } from "./googleIdentity";
+import { revokeToken, signIn } from "../../../adapters/browser/GoogleIdentity";
 
 /** The browser's own way to reach Google: its fetch, with no cookies or credentials of ours attached. */
 const browserRest: RestClient = async (request) => {

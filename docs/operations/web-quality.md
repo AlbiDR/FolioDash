@@ -95,6 +95,8 @@ Initial design targets, **not measured results**:
 
 FD-012 must set actual reference devices, dataset sizes, network conditions, warm/cold definitions, end-to-end import/selection targets and bundle budgets before performance is accepted. Measure multiple runs and report median and tail/worst cases, including file selection, parsing, review, server confirmation and sync separately. Exclude human review time only when explicitly stated.
 
+Local synthetic history measurements and confirmed bottleneck fixes are recorded in [Growth assessment](scalability.md). They do not settle FD-012 device or capacity targets.
+
 Do not transplant another project's 55KiB asset budget or 100/100 Lighthouse claim into an XLSX/chart application. A timing from a mock adapter is not input-to-pixel or real-provider latency.
 
 ## 7. Security, caching and release integrity

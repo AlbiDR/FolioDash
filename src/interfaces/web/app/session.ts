@@ -20,7 +20,7 @@ import type { IsoDate } from "../../../core/IsoDate";
 import { type RawSheet, parseStoredSheet } from "../../../core/RawSheet";
 import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../applications/ImportModel";
-import type { LedgerCache } from "./ledgerCache";
+import type { LedgerCache } from "../../../adapters/browser/LedgerCache";
 
 /** The narrow permission: only files this app creates or the person opens with it. */
 export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";

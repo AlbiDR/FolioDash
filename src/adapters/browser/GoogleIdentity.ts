@@ -1,4 +1,4 @@
-import type { SignInResult } from "../../../applications/SessionModel";
+import type { SignInResult } from "../../applications/SessionModel";
 // The browser half of Google sign-in. Google's identity script is loaded only
 // when the user chooses to connect, never on page load, and the access token it
 // returns is held in memory for one call and never stored.

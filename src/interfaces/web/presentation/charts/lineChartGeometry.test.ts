@@ -142,3 +142,17 @@ describe("computeLineChart", () => {
     });
   });
 });
+
+// Bounds must not depend on how many arguments the JavaScript engine accepts.
+it("lays out 150,000 observations across many series without dropping points or bounds", () => {
+  const data: ChartSeries[] = Array.from({ length: 100 }, (_, slot) => ({
+    id: String(slot), label: String(slot),
+    points: Array.from({ length: 1500 }, (_, index) => ({ time: START + index * DAY, value: slot * 1500 + index })),
+  }));
+  const geometry = computeLineChart(data, layout);
+  expect(geometry.series).toHaveLength(100);
+  expect(geometry.series.reduce((count, entry) => count + entry.points.length, 0)).toBe(150_000);
+  expect(Math.min(...geometry.yTicks.map((tick) => tick.value))).toBe(0);
+  expect(Math.max(...geometry.yTicks.map((tick) => tick.value))).toBe(149_999);
+  expect(geometry.series[99]?.points[1499]?.value).toBe(149_999);
+});

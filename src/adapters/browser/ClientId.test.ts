@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type ClientIdStore, forgetClientId, isClientId, rememberClientId, resolveClientId } from "./clientId";
+import { type ClientIdStore, forgetClientId, isClientId, rememberClientId, resolveClientId } from "./ClientId";
 
 const VALID = "1234567890-abcdef.apps.googleusercontent.com";
 const memory = (): ClientIdStore & { data: Map<string, string> } => {

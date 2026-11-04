@@ -1,4 +1,4 @@
-import { type LedgerState, parseLedgerState } from "../../../core/Ledger";
+import { type LedgerState, parseLedgerState } from "../../core/Ledger";
 
 const KEY = "foliodash.ledger.v1";
 const VERSION = 1;
