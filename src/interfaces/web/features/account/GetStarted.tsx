@@ -1,6 +1,6 @@
+import type { ConnectOutcome } from "../../../../applications/SessionModel";
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import type { ConnectOutcome } from "../../app/session";
 import { describeConnect } from "./accountText";
 
 /**

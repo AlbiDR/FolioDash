@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { FORMULA, ROW, COL, number, syntheticSheet, text, withCell } from "../../../../tests/fixtures/SyntheticFideuramSheet";
 import { buildXlsx } from "../../../../tests/fixtures/SyntheticXlsx";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
-import type { ImportFile } from "../features/import/ImportModel";
+import type { ImportFile } from "../../../applications/ImportModel";
 import { createImportPreparer } from "./importPreparer";
 
 // A fixed UTC clock, so the tests do not depend on the machine's time zone.

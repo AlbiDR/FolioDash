@@ -1,3 +1,4 @@
+import type { Workbook } from "../../applications/SessionModel";
 import type { Grid, GridCell } from "../../applications/SheetGrid";
 import type { LedgerRow } from "../ledger/RowLedgerStore";
 import { type RestClient, type RestResult, callRest } from "./Rest";
@@ -14,11 +15,6 @@ import {
 const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 const DRIVE = "https://www.googleapis.com/drive/v3/files";
 const TYPES = new Set<string>(["META", "SNAPSHOT", "TIMELINE", "SOURCE", "COMMIT"]);
-
-export interface Workbook {
-  readonly id: string;
-  readonly url: string;
-}
 
 function record(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;

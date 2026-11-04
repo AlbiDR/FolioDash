@@ -116,6 +116,12 @@ Charts, same day: the owner agreed to SVG charts rendered by Preact from three s
 
 Scaffolded 2026-11-01 with `npm run verify` (attribution check, type check, lint, tests). Versions chosen at that point: TypeScript is held at 6.0.x because typescript-eslint declares support only below 6.1, although 7.x exists; `@types/node` 22 matches the minimum Node version used in CI. esbuild is deferred until the first bundled Apps Script entry exists, so it is not an unused dependency. The `audit:dependencies` gate fails on high severity or above. `npm audit` currently reports 11 moderate findings, all in the linting toolchain (a `minimatch` denial-of-service advisory), a development-only tool that is not shipped and reads only this repository's files. They are recorded, not fixed, pending owner review, and re-checked at each dependency update. TypeScript 7 is not adopted: per third-party reports, typescript-eslint cannot use it until the stable compiler API expected in TypeScript 7.1 ships. Revisit when 7.1 is stable and typescript-eslint declares support; no change of lint tool is planned.
 
+### FD-008 / FD-015 implementation record, 2026-11-04
+
+The root tool exceptions are `package.json` (npm package and script discovery) and `package-lock.json` (npm reproducible installation). npm owns both entry points; all explicitly addressable tool configuration stays in `config/`. No additional root exception is introduced. `src/interfaces/web/index.html` and its adjacent `public/` directory are the configured Vite web entry and passthrough assets; they implement the public-asset responsibility without a duplicate root directory.
+
+Repository organization enforcement now runs in `npm run verify`. The CleanStack 4.1 amendment locates current domain-aware presentation separately from domain-blind primitives; feature contracts point inward to applications. This is an organization change under the owner's repository audit request, with no change to financial policy or the approval state of open product/integration decisions. Historical scaffold and deployment records above and below retain their original dates; consult current package scripts and the linked operation documents for present verification commands.
+
 ## FD-013 and FD-014: selected direction versus proposed protocol
 
 Owner direction, recorded 2026-11-01: keep the financial data in the user's Google spreadsheet, use connected Apps Script functionality and recreate the interface in FolioDash managed through GitHub, avoiding a separate database service.
@@ -128,7 +134,7 @@ This amendment changes storage/transport assumptions in the parent ADR and web c
 
 ## FD-015: lean repository root
 
-FD-015 records the owner's instruction to keep the root clean and lean. It does not authorise moving/deleting the existing legacy scripts or private exports. Root tooling exceptions must be justified under FD-008 rather than hidden behind extra wrappers or duplicated configuration. Enforcement is a future check, not a current passing gate.
+FD-015 records the owner's instruction to keep the root clean and lean. It does not authorise moving/deleting the existing legacy scripts or private exports. Root tooling exceptions must be justified under FD-008 rather than hidden behind extra wrappers or duplicated configuration. Enforcement was implemented on 2026-11-04 as `npm run verify:repository`, with deliberate violation tests. See [Repository policy](../operations/repository-policy.md).
 
 ## FD-016: GitHub-to-Apps Script source sync
 

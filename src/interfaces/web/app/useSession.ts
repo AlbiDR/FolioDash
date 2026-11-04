@@ -1,5 +1,6 @@
+import type { SessionState } from "../../../applications/SessionModel";
 import { useEffect, useState } from "preact/hooks";
-import type { Session, SessionState } from "./session";
+import type { Session } from "./session";
 
 /** The session's current state, redrawn whenever it changes. */
 export function useSession(session: Session): SessionState {

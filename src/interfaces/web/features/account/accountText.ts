@@ -1,5 +1,5 @@
+import type { ConnectOutcome, RestoreOutcome, SheetStatus, TidyOutcome, VerifyOutcome } from "../../../../applications/SessionModel";
 import { formatMonthYear } from "../../../../core/IsoDate";
-import type { ConnectOutcome, RestoreOutcome, SheetStatus, TidyOutcome, VerifyOutcome } from "../../app/session";
 
 export interface Message {
   readonly good: boolean;

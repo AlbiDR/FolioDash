@@ -1,11 +1,11 @@
 # Web quality and verification contract
 
-Status: **Proposed - not implemented or measured**  
+Status: **Acceptance contract; automated checks partially implemented, live acceptance incomplete**
 Created: 2026-11-01  
 Architecture authority: [CleanStack ADR](../architecture/cleanstack.md)  
 Open decisions: [Decision register](../architecture/decision-register.md)
 
-These are product/release requirements, not optional polish. This document does not claim an existing PWA, CI pipeline or test suite.
+These are product/release requirements, not optional polish. The repository now has a local PWA, CI and tests. Individual requirements still need their named evidence; implementation does not imply full acceptance.
 
 FD-013 selects GitHub frontend delivery with user-owned private Google Sheets and an Apps Script service. [Google-backed architecture](../architecture/google-sheets-backend.md) owns its storage/transport protocol and FD-014 proof gates; a separate database is not assumed. A GitHub secret cannot supply private browser-runtime access. Live browser-to-Google feasibility is NOT RUN.
 
@@ -102,7 +102,7 @@ Do not transplant another project's 55KiB asset budget or 100/100 Lighthouse cla
 - Separate application hosting, account API and optional document archive responsibilities. All data access is account-authorised at the trusted boundary, not by hidden UI controls.
 - No personal financial files/fixtures, production screenshots, secrets or real account seeds enter the repository, CI, preview deployment, bundle or public demo.
 - The production artifact is scanned for secret/environment leakage and unexpected third-party runtime/network dependencies.
-- A tracked-root policy check enforces CleanStack section 4.3: no unapproved root files, scratch/release archives, duplicate legacy implementations or committed generated/private artifacts. Test legitimate tool exceptions as well as deliberately introduced violations; ignored local folders need a separate pre-publication privacy review. The checker does not exist yet.
+- A tracked-root policy check enforces CleanStack section 4.3: no unapproved root files, scratch/release archives, duplicate legacy implementations or committed generated/private artifacts. Test legitimate tool exceptions as well as deliberately introduced violations; ignored local folders need a separate pre-publication privacy review. Implemented as `npm run verify:repository`; see [Repository policy](repository-policy.md) for coverage and limits.
 - Apply an evaluated restrictive Content Security Policy and real deployable transport/framing/referrer protections. Do not claim a response header that the chosen host cannot serve.
 - Third-party application packages are bundled/reviewed, not fetched as mutable CDN scripts at runtime. A Google-hosted identity loader, if selected under FD-005/FD-014, is an explicitly reviewed provider exception with a minimal origin/CSP allowlist; it is not permission for arbitrary CDN scripts.
 - Actions secrets are deployment-only; user Google tokens and financial data never enter static builds, public configuration or workflow artifacts. Verify this in the built release, not merely in source.
@@ -121,7 +121,7 @@ Each requirement is tracked with a method and one of PASS, FAIL, BLOCKED or NOT 
 
 The initial implementation must provide checks for dependency boundaries, types if used, lint, kernel examples/properties, parser contracts, transactional/idempotency/concurrency behaviour, two-account authorisation, redaction/artifact policy, production builds, browser journeys, actual chart rendering, cache/update lifecycle, export/restore and deployed Mac/Android acceptance.
 
-Only then should the actual commands be documented; no `npm run verify` or equivalent exists now.
+The implemented local/CI command is `npm run verify`; dependency security uses `npm run audit:dependencies`. These cover a subset of the categories above. Unimplemented or manual gates remain NOT RUN or BLOCKED until their own evidence exists.
 
 Required report shape:
 

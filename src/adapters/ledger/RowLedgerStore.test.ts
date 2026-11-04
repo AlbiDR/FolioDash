@@ -1,5 +1,6 @@
+import type { SourceRecord } from "../../applications/StatementSource";
 import { describe, expect, it } from "vitest";
-import { type CommitRequest, type ServiceEnvironment, type SourceRecord, commitStatement } from "../../applications/LedgerService";
+import { type CommitRequest, type ServiceEnvironment, commitStatement } from "../../applications/LedgerService";
 import type { FundCommand, StatementInput } from "../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { parseIsin } from "../../core/Isin";

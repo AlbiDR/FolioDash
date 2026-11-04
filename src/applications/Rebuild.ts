@@ -1,9 +1,9 @@
+import type { SourceRecord } from "./StatementSource";
 import { canonicalJson } from "../core/CanonicalJson";
 import { type FundCommand, type StatementInput, applyImport } from "../core/ImportPlan";
 import type { IsoDate } from "../core/IsoDate";
 import { EMPTY_LEDGER, type LedgerState, type Snapshot } from "../core/Ledger";
 import { type RawSheet, parseStoredSheet } from "../core/RawSheet";
-import type { SourceRecord } from "./LedgerService";
 
 /** Reads a bank statement sheet into what the ledger needs. The bank adapter provides it; this layer does not know the bank. */
 export type InterpretStatement = (sheet: RawSheet) => { readonly ok: true; readonly statement: StatementInput } | { readonly ok: false; readonly message: string };

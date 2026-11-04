@@ -1,10 +1,10 @@
-import type { FundCommand, StatementInput } from "../../../../core/ImportPlan";
-import type { IsoDate } from "../../../../core/IsoDate";
-import type { LedgerState } from "../../../../core/Ledger";
-import type { RawSheet } from "../../../../core/RawSheet";
-import type { AttachItem, StatementSource } from "../../../../applications/LedgerService";
-import type { EuroCents } from "../../../../core/Money";
-import type { DateCandidate } from "../../../../core/StatementDate";
+import type { FundCommand, StatementInput } from "../core/ImportPlan";
+import type { IsoDate } from "../core/IsoDate";
+import type { LedgerState } from "../core/Ledger";
+import type { RawSheet } from "../core/RawSheet";
+import type { AttachItem, StatementSource } from "./LedgerService";
+import type { EuroCents } from "../core/Money";
+import type { DateCandidate } from "../core/StatementDate";
 
 /** A file the user chose, as the screen needs it. Wrapping the browser's File keeps the logic testable. */
 export interface ImportFile {

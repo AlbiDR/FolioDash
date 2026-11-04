@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { formatMonthShort } from "../../../../core/IsoDate";
-import { Amount } from "../../shared/privacy/privacy";
+import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { useMediaQuery } from "../../shared/ui/useMediaQuery";
 import type { OverviewModel } from "./OverviewModel";

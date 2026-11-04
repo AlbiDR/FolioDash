@@ -6,7 +6,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 |---|---|---|
 | [CleanStack Architecture](architecture/cleanstack.md) | Product boundaries, dependency law, financial/data invariants, safety and governance | Draft for owner review |
 | [Google-backed architecture](architecture/google-sheets-backend.md) | Selected GitHub/Sheets/Apps Script direction, service/data boundaries, credential correction and runtime proof gates | Direction selected; protocol proposed and unverified |
-| [Fideuram XLSX layout v1](architecture/fideuram-xlsx-layout.md) | Observed bank export layout, cell formats, reconciliation relations and proposed bank-adapter rules | Draft; one observed export, no parser or fixtures |
+| [Fideuram XLSX layout v1](architecture/fideuram-xlsx-layout.md) | Observed bank export layout, cell formats, reconciliation relations and proposed bank-adapter rules | Observed layout reference; parser and synthetic fixtures implemented, live acceptance separate |
 | [Decision register](architecture/decision-register.md) | Decisions, alternatives, approval state and implementation blockers | Google-backed direction selected; implementation details open |
 | [Repository configuration](operations/repository-configuration.md) | GitHub variables, secrets, environments, workflow rules and the public-release gate | Draft; environment, four variables, one secret and the deploy workflow exist and ran once (2026-11-01); no branch or environment protection |
 | [Google setup](operations/google-setup.md) | Owner steps in the owner's Google account for the first live proof with a synthetic spreadsheet | Performed once on 2026-11-01 with a synthetic sheet; read-only check passed; commit and read-back not yet exercised |
@@ -14,6 +14,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Mobile dashboard layout](design/mobile-dashboard.md) | Mobile card hierarchy, disclosure, readable metrics and responsive verification | Implemented locally; physical-device checks pending |
 | [Microanimations and interactions](operations/interactions.md) | Original 92 interaction/motion touchpoints, shared surface feedback, allocation inspection and reduced-motion verification | Implemented locally; physical Android and screen-reader verification pending |
 | [Lighthouse verification](operations/lighthouse.md) | Reproducible audit settings, startup loading changes and measured evidence | Full production audits reached 100 in all four categories on mobile and desktop; mobile Performance varied 98-100 across runs |
+| [Repository policy](operations/repository-policy.md) | Executable root/import rules, current content ownership, commands and enforcement limits | Implemented with deliberate violation tests; live acceptance separate |
 | [Dependency maintenance](operations/dependencies.md) | Security override rationale, removal conditions and dependency verification | minimatch alert patched; audit fails on moderate or greater severity |
 | [Web quality contract](operations/web-quality.md) | User journeys, accessible presentation, measurement methods and release evidence | Proposed acceptance requirements |
 

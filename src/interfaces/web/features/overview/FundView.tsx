@@ -1,9 +1,9 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { type ChartRange, rangeStart } from "../../app/chartRange";
-import { LineChart } from "../../shared/charts/LineChart";
-import type { ChartSeries } from "../../shared/charts/lineChartGeometry";
-import { Amount } from "../../shared/privacy/privacy";
+import { type ChartRange, rangeStart } from "./chartRange";
+import { LineChart } from "../../presentation/charts/LineChart";
+import type { ChartSeries } from "../../presentation/charts/lineChartGeometry";
+import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { euroLabel, euros, monthLabel, utcTime } from "./chartData";
 import type { OverviewModel } from "./OverviewModel";

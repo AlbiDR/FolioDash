@@ -1,7 +1,5 @@
+import type { CallFailure } from "../../applications/SessionModel";
 import type { LedgerState } from "../../core/Ledger";
-
-/** Why a call failed before or instead of an answer. A subset applies to any one route. */
-export type CallFailure = "unauthorised" | "forbidden" | "not-found" | "unavailable" | "network" | "unexpected" | "script-error";
 
 /** What reading the ledger can turn up. Shared by every way of reaching the person's spreadsheet. */
 export type RemoteRead =

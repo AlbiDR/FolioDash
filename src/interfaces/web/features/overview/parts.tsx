@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import type { EuroCents } from "../../../../core/Money";
 import { formatPercent } from "../../../../core/Percent";
-import { Amount } from "../../shared/privacy/privacy";
+import { Amount } from "../../presentation/privacy/privacy";
 
 /** A gain or loss reads as one in text too (the sign), so colour is never the only cue. */
 export function tone(value: number | null): string {

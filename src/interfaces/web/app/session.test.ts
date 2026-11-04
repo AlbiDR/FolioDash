@@ -1,3 +1,4 @@
+import type { SignInResult } from "../../../applications/SessionModel";
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
 import { OPENING, februarySheet, januarySheet } from "../../../../tests/fixtures/SavedMonths";
@@ -9,8 +10,7 @@ import type { FundCommand, StatementInput } from "../../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../../core/IsoDate";
 import { parseIsin } from "../../../core/Isin";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/Money";
-import type { RecordRequest } from "../features/import/ImportModel";
-import type { SignInResult } from "./googleIdentity";
+import type { RecordRequest } from "../../../applications/ImportModel";
 import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
 import { interpretStatement } from "./interpretStatement";
 import { type KeyValueStore, createLedgerCache } from "./ledgerCache";

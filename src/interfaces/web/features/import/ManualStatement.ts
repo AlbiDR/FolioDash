@@ -1,7 +1,7 @@
 import { parseIsin } from "../../../../core/Isin";
 import { isSafeFundName } from "../../../../core/Ledger";
 import { addCents, parseItalianAmount, ZERO_CENTS } from "../../../../core/Money";
-import type { ReviewStatement } from "./ImportModel";
+import type { ReviewStatement } from "../../../../applications/ImportModel";
 
 export interface ManualRow { readonly name: string; readonly isin: string; readonly amount: string }
 export function prepareManualStatement(rows: readonly ManualRow[]):

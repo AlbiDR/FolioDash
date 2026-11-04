@@ -2,12 +2,12 @@ import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
 import type { StatementSource } from "../../../../applications/LedgerService";
-import type { CheckResult, RecordResult, RemoteSave } from "./ImportModel";
+import type { CheckResult, RecordResult, RemoteSave } from "../../../../applications/ImportModel";
 import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/Money";
-import { Amount } from "../../shared/privacy/privacy";
-import type { ReviewStatement } from "./ImportModel";
+import { Amount } from "../../presentation/privacy/privacy";
+import type { ReviewStatement } from "../../../../applications/ImportModel";
 
 interface Answer {
   readonly opening: string;

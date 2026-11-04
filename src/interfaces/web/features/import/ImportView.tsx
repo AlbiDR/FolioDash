@@ -2,19 +2,11 @@ import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
-import { Amount } from "../../shared/privacy/privacy";
+import { Amount } from "../../presentation/privacy/privacy";
 import type { DateSource } from "../../../../core/StatementDate";
 import { CashQuestions } from "./CashQuestions";
 import { ManualEntry } from "./ManualEntry";
-import type {
-  ImportFile,
-  ImportPreparer,
-  ImportReview,
-  RemoteSave,
-  ReviewAdjustment,
-  ReviewIssue,
-  ReviewStatement,
-} from "./ImportModel";
+import type { ImportFile, ImportPreparer, ImportReview, RemoteSave, ReviewAdjustment, ReviewIssue, ReviewStatement } from "../../../../applications/ImportModel";
 
 const MAX_CELLS_LISTED = 8;
 

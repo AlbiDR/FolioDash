@@ -2,9 +2,9 @@ import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
-import { Amount } from "../../shared/privacy/privacy";
+import { Amount } from "../../presentation/privacy/privacy";
 import { CashQuestions } from "./CashQuestions";
-import type { RemoteSave, ReviewStatement } from "./ImportModel";
+import type { RemoteSave, ReviewStatement } from "../../../../applications/ImportModel";
 import { type ManualRow, prepareManualStatement } from "./ManualStatement";
 
 interface EntryRow extends ManualRow { readonly id: string; readonly known: boolean }

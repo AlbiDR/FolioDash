@@ -1,5 +1,5 @@
+import type { ConnectOutcome, RestoreOutcome } from "../../../../applications/SessionModel";
 import { describe, expect, it } from "vitest";
-import type { ConnectOutcome, RestoreOutcome } from "../../app/session";
 import { describeConnect, describeRestore } from "./accountText";
 
 describe("describeConnect", () => {

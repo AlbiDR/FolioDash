@@ -62,6 +62,7 @@ src/
       app/                 Routes, shell and composition root
       features/            Import, overview, funds, history and recovery interfaces
       shared/              Domain-blind UI primitives and design tokens
+      presentation/        Financial display, charts and privacy presentation
     server/                Apps Script API handlers and server composition root
 tests/                     Contract, integration and end-to-end tests
 scripts/                   Build and verification tooling only
@@ -77,7 +78,7 @@ Use one dependency manifest and one lockfile initially. A monorepo/package catal
 
 ```yaml
 # @machine-readable: architecture-isolation
-# Specification only: enforcement tooling does not exist yet.
+# Import directions enforced by npm run verify:repository; runtime purity also needs review and tests.
 layers:
   - id: core
     allowed_imports: []
@@ -91,11 +92,14 @@ layers:
   - id: interfaces/web/shared
     allowed_imports: []
     role: domain-blind-ui-and-tokens
-  - id: interfaces/web/features
+  - id: interfaces/web/presentation
     allowed_imports: [applications, core, interfaces/web/shared]
+    role: domain-aware-display-without-infrastructure
+  - id: interfaces/web/features
+    allowed_imports: [applications, core, interfaces/web/shared, interfaces/web/presentation]
     forbidden_imports: [adapters, interfaces/server, other-web-features]
   - id: interfaces/web/app
-    allowed_imports: [applications, core, adapters, interfaces/web/shared, interfaces/web/features]
+    allowed_imports: [applications, core, adapters, interfaces/web/shared, interfaces/web/presentation, interfaces/web/features]
     role: composition-root
   - id: interfaces/server
     allowed_imports: [applications, core, adapters]
@@ -103,9 +107,11 @@ layers:
     role: composition-root
 ```
 
-An eventual TypeScript/framework import checker must translate these semantic rules into real path checks, including relative imports and barrel re-exports. UI/framework imports are allowed in web interfaces, not in the kernel. Adapter directories may not become a way to bypass narrower environment capabilities; the browser build must exclude server adapters and secrets.
+An eventual TypeScript/framework import checker must translate these semantic rules into real path checks, including relative imports and barrel re-exports. UI/framework imports are allowed in web interfaces, not in the kernel. The dedicated web service-worker area imports only within itself. The app must not import server code or Apps Script adapters. Adapter directories may not become a way to bypass narrower environment capabilities; the browser build must exclude server adapters and secrets.
 
 Features never import another feature's components, stores or private state. Shared business behavior belongs in the kernel/use cases; shared visual behavior belongs in the UI primitives. Only the composition root wires concrete infrastructure into feature use cases.
+
+2026-11-04 organization amendment: existing financial chart widgets and amount privacy presentation live in `interfaces/web/presentation`, because they consume domain values and formatting. `shared` remains domain-blind. Overview-specific data selection and chart ranges belong to the overview feature; account age text belongs to account. Cross-workflow import and session contracts live in `applications`. This changes dependency ownership, not accounting, privacy policy or write authority. The implementation and enforcement limits are recorded in [Repository policy](../operations/repository-policy.md).
 
 There is one calculation kernel and one versioned policy, not separate web/server formula implementations. The Google-backed direction uses readable private workbook records and Apps Script financial validation; it does not claim FolioDash E2EE. Cross-runtime browser/Apps Script builds must preserve the same kernel semantics. An E2EE variant would require a new decision and a different validation contract.
 
@@ -154,7 +160,7 @@ Build output (`dist/`, `build/`), dependencies, caches and test reports may be g
 
 **Current user-supplied material:** `App Scripts/` and `.Montly Exports/` were present when this policy was drafted. They are preserved, not adopted as canonical source and not silently moved, deleted or published. A separately authorised inventory must classify the legacy scripts before porting/archive placement; private exports should be relocated outside the repository only with the owner's approval. Existing ignore guards remain defence in depth, not evidence that sensitive contents were audited.
 
-Before source implementation, add a root-policy check that inspects tracked paths and rejects new unapproved root entries or committed generated/private artifacts. Test the check with both a deliberate violation and legitimate tooling exceptions. Inspect ignored/untracked local material separately before publication; a passing tracked-file check cannot certify its confidentiality. This check is **specified, not implemented** at the current documentation-only stage.
+Before source implementation, add a root-policy check that inspects tracked paths and rejects new unapproved root entries or committed generated/private artifacts. Test the check with both a deliberate violation and legitimate tooling exceptions. Inspect ignored/untracked local material separately before publication; a passing tracked-file check cannot certify its confidentiality. Implemented 2026-11-04 as `npm run verify:repository`, including deliberate violation tests; see [Repository policy](../operations/repository-policy.md).
 
 ## 5. Financial and temporal contract
 
@@ -320,7 +326,7 @@ Choose the runtime, package manager and test tools through FD-008 before scaffol
 
 Adopt Conventional Commits, Semantic Versioning for releases and a curated changelog once implementation starts. Licensing and source headers require FD-011; no licence is inherited by copying another project's header. Reusing legacy source requires a licence/provenance review.
 
-A defect report distinguishes confirmed root cause from hypothesis. A fix includes prevention for the failure class and a regression test when feasible. Never waive a failed release gate or weaken validation to ship a cosmetic repair. CI/lint is proposed until executable and proven to detect a deliberately introduced violation in an isolated test.
+A defect report distinguishes confirmed root cause from hypothesis. A fix includes prevention for the failure class and a regression test when feasible. Never waive a failed release gate or weaken validation to ship a cosmetic repair. Import and root-policy enforcement is executable and tested with deliberate violations; this does not prove every architecture or runtime invariant.
 
 ## 13. Proof obligations and release gates
 
@@ -336,7 +342,7 @@ Required categories before the corresponding capability is called supported:
 
 Each gate reports PASS, FAIL or BLOCKED/NOT RUN, with revision, environment, method and evidence. Syntax checks and mocked charts cannot satisfy actual renderer gates. Tools must not invent measurements or report unavailable manual checks as successful.
 
-The first implementation supplies reproducible dependency installation, type checks if applicable, lint, dependency-boundary tests, unit/contract tests, production build, privacy/artifact scanning and browser journeys. Those commands do not exist yet. Required failures block integration/deployment; a documented failure is still a failure.
+The first implementation supplies reproducible dependency installation, type checks if applicable, lint, dependency-boundary tests, unit/contract tests, production build, privacy/artifact scanning and browser journeys. `npm run verify` now covers repository boundaries, types, lint, unit/contract tests and production/PWA/Apps Script builds. Content/privacy scanning and full browser/live acceptance remain separate incomplete gates. Required failures block integration/deployment; a documented failure is still a failure.
 
 ## 14. Forbidden paths
 

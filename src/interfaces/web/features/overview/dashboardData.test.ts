@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { demoPortfolio } from "./demoPortfolio";
+import { demoPortfolio } from "../../app/demoPortfolio";
 import { allocation, fundRanking, metricSeries } from "./dashboardData";
 
 describe("allocation", () => {

@@ -1,4 +1,5 @@
-import type { CommandReceipt, LedgerStore, LoadResult, SourceRecord, SourcesResult } from "../../applications/LedgerService";
+import type { SourceRecord } from "../../applications/StatementSource";
+import type { CommandReceipt, LedgerStore, LoadResult, SourcesResult } from "../../applications/LedgerService";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { type FundCommand } from "../../core/ImportPlan";
 import { parseIsoDate } from "../../core/IsoDate";

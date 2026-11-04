@@ -5,6 +5,8 @@ Status: **Direction selected by the owner; protocol and deployment not implement
 Created: 2026-11-01  
 Parent authority: [CleanStack Architecture](cleanstack.md)
 
+Current direction: FD-017 in the [decision register](decision-register.md) supersedes the Apps Script route for new users with direct browser-to-Google access. The Apps Script service below is retained until the replacement passes live proof. The original protocol remains documented for that retained implementation; its historical status does not describe all current source.
+
 ## 1. Decision and scope
 
 FolioDash uses GitHub for reviewed source and intended static frontend delivery, the user's private Google spreadsheet for financial records, and Google Apps Script for the application service. The dashboards, charts, review screens and navigation belong to FolioDash, not spreadsheet cells.

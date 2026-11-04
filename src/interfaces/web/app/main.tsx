@@ -1,6 +1,6 @@
 import { render } from "preact";
 import "../shared/tokens.css";
-import "../shared/charts/charts.css";
+import "../presentation/charts/charts.css";
 import "./app.css";
 import "../shared/ui/interactions.css";
 import "../shared/ui/motion.css";

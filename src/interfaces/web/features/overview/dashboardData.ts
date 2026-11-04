@@ -1,11 +1,11 @@
-import { type IsoDate, formatMonthShort } from "../../../core/IsoDate";
-import type { EuroCents } from "../../../core/Money";
-import { euros, utcTime } from "../features/overview/chartData";
-import type { OverviewFund, OverviewModel, OverviewMonth } from "../features/overview/OverviewModel";
-import type { Bar } from "../shared/charts/MonthlyBars";
-import type { ChartSeries } from "../shared/charts/lineChartGeometry";
+import { type IsoDate, formatMonthShort } from "../../../../core/IsoDate";
+import type { EuroCents } from "../../../../core/Money";
+import { euros, utcTime } from "./chartData";
+import type { OverviewFund, OverviewModel, OverviewMonth } from "./OverviewModel";
+import type { Bar } from "../../presentation/charts/MonthlyBars";
+import type { ChartSeries } from "../../presentation/charts/lineChartGeometry";
 import { type ChartRange, rangeStart } from "./chartRange";
-import { memoizeLast } from "./memo";
+import { memoizeLast } from "../../shared/ui/memo";
 
 export interface AllocationSlice {
   readonly isin: string;

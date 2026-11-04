@@ -1,3 +1,4 @@
+import type { SignInResult } from "../../../applications/SessionModel";
 // The browser half of Google sign-in. Google's identity script is loaded only
 // when the user chooses to connect, never on page load, and the access token it
 // returns is held in memory for one call and never stored.
@@ -31,10 +32,6 @@ declare global {
     google?: GoogleIdentity;
   }
 }
-
-export type SignInResult =
-  | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
-  | { readonly ok: false; readonly reason: "denied" | "closed" | "unavailable" };
 
 const IDENTITY_SCRIPT = "https://accounts.google.com/gsi/client";
 const LOAD_TIMEOUT_MILLISECONDS = 15_000;

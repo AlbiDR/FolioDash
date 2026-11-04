@@ -1,7 +1,8 @@
+import type { SourceRecord } from "./StatementSource";
 import { canonicalJson } from "../core/CanonicalJson";
 import { type FundCommand, type StatementInput, applyImport } from "../core/ImportPlan";
 import type { IsoDate } from "../core/IsoDate";
-import { type RawSheet, type StoredSheet, toStoredSheet } from "../core/RawSheet";
+import { type RawSheet, toStoredSheet } from "../core/RawSheet";
 import type { LedgerIssue, LedgerState } from "../core/Ledger";
 import { sha256Hex } from "../core/Sha256";
 import { replayedMonth } from "./Rebuild";
@@ -28,18 +29,6 @@ export interface CommandReceipt {
 export interface StatementSource {
   readonly sheetName: string;
   readonly sheet: RawSheet;
-}
-
-/**
- * What is kept for one month beside the ledger: the exact bank statement and the
- * decisions made about it. With these the ledger can be rebuilt from scratch.
- */
-export interface SourceRecord {
-  readonly date: IsoDate;
-  readonly commandId: string;
-  readonly sheetName: string;
-  readonly commands: readonly FundCommand[];
-  readonly sheet: StoredSheet;
 }
 
 export type SourcesResult =

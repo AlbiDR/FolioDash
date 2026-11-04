@@ -1,7 +1,7 @@
+import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../../../applications/SessionModel";
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { describeAge } from "../../app/timeAgo";
-import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../app/session";
+import { describeAge } from "./timeAgo";
 import { Icon } from "../../shared/ui/icons";
 import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeTidy, describeVerify } from "./accountText";
 

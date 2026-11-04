@@ -3,7 +3,7 @@ import { useState } from "preact/hooks";
 import { type HistoryStatement, parseHistory, planAttach, planHistory, runHistory } from "../../../../applications/HistoryImport";
 import { formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
-import type { RecordResult, RemoteSave } from "../import/ImportModel";
+import type { RecordResult, RemoteSave } from "../../../../applications/ImportModel";
 
 type Phase =
   | { readonly name: "idle" }

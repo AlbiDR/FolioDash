@@ -3,7 +3,7 @@ import { XLSX_LIMITS } from "../../../adapters/xlsx/XlsxError";
 import { readXlsx } from "../../../adapters/xlsx/XlsxReader";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
 import { statementDateCandidate } from "../../../core/StatementDate";
-import type { ImportFile, ImportPreparer, ImportReview, ReviewedSheet } from "../features/import/ImportModel";
+import type { ImportFile, ImportPreparer, ImportReview, ReviewedSheet } from "../../../applications/ImportModel";
 
 /** The user's own calendar date for an instant, using the browser's time zone. */
 export function browserLocalDate(milliseconds: number): IsoDate | null {
