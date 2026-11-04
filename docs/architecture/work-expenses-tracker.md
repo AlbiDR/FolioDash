@@ -17,6 +17,7 @@ Confirmed requirements:
 - Average Daily, Average Weekly, Average Monthly, Total Yearly and Yearly Projection.
 - A simple Today entry view, previous/next date navigation, and viewing, backfilling and correcting past entries.
 - Preserve the difference between an explicit zero cost and an unentered amount. Working does not imply paying for either transport or food.
+- Design the daily journey, readable summaries and purposeful microanimations together; interaction feedback is part of the feature requirements.
 - Keep the existing portfolio and the working legacy spreadsheet safe.
 
 Custom categories, labels, advanced filters, budgets, bank connections, weekend expense tracking and broader spending analysis are deferred. No new navigation item or empty tracker screen belongs in this preparation change.
@@ -27,13 +28,23 @@ The workbook was inspected privately, read-only. No private amounts, rows, origi
 
 The five expense fields are the initial fixed categories. A future model should store date-only dates and exact EUR cents through the existing canonical date/money primitives. Spending must not become portfolio cash movements or alter performance calculations. A recorded day can contain confirmed zeroes, amounts and unentered fields without turning unknowns into zeroes.
 
-These decisions must be agreed before implementing the tracker calculations:
+### Confirmed day interpretation (owner agreement, 2026-11-04)
+
+| Entry state | Meaning and required presentation |
+|---|---|
+| Past Monday-Friday date with all five fields blank | No work that day; exclude it from workday averages |
+| All five fields have amounts, including explicit zeroes | A fully recorded workday; a day with five zeroes counts in workday averages |
+| Some fields filled and some blank | Ambiguous entry needing review: possible omission or exception; retain the entered amounts and blanks without guessing |
+
+An empty current or future date is not evidence of a non-working day. Do not automatically fill missing amounts with zero or add a separate completion action as a settled requirement. The meaning and resolution of exceptions, and how unresolved partial days participate in summaries, remain open.
+
+These remaining decisions must be agreed before implementing the tracker calculations:
 
 | Question | What must be explicit |
 |---|---|
-| Completed day | How the person marks a day complete; how partially entered days appear and participate in reports |
-| No work / not applicable | Whether a separate day status is needed for holidays, leave or other non-working weekdays |
-| Average Daily | Denominator: confirmed working days, completed recorded days or days with paid expenses; treatment of missing fields and zeroes |
+| Partial day / exception | How the person reviews and resolves omissions or exceptions; participation of unresolved partial days in reports |
+| No work / not applicable | Whether exceptions need an explicit status beyond the agreed interpretation of entirely blank past weekdays |
+| Average Daily | Exact denominator and treatment of unresolved partial days; fully recorded zero-cost workdays count and blank past weekdays do not |
 | Average Weekly | Inclusion of partial weeks, weeks without entries and confirmed zero-cost weeks |
 | Average Monthly | Inclusion and weighting of partial months and months without records |
 | Total Yearly | Calendar-year boundaries and inclusion of incomplete daily records |
@@ -44,6 +55,14 @@ These decisions must be agreed before implementing the tracker calculations:
 Legacy observations, not formulas to copy blindly: daily totals exclude Other Expenses in some blocks; some weekly totals are text and therefore excluded from numeric recap aggregates. The exported monthly formula contains a Google Sheets-specific function wrapper. The legacy yearly projection scales spending between the first and last recorded daily totals to 365 calendar days. These findings require independent expected examples, not preservation of accidental errors.
 
 Suggested UX, still to design: the familiar five inputs on Today, date navigation and a return-to-today control, a clear Save action and saved/unsaved state. Navigating never creates expenses. Copying previous amounts, if later included, creates an editable draft rather than confirmed spending. Preserve a draft on failed saves or navigation; confirm corrections and retain the recovery path. Do not queue financial writes offline.
+
+### Journey, data clarity and interaction requirements
+
+The owner requires the user journey and clear data visualisation to guide every tracker decision. Design entry, date navigation, review of incomplete days, correction and summary inspection as connected journeys. The person must always understand which date they are editing, what needs attention, whether changes are saved and what each summary includes.
+
+Distinguish no work, a recorded zero-cost workday and a partial day through text and consistent visual treatment, not colour alone. Show review needs where the person enters data and where affected summaries appear. Summaries must expose their period and inclusion rules, with access to the underlying days. Missing data must not appear as a zero in tables or charts.
+
+Every new or changed tracker journey must include purposeful interactions and microanimations using the existing shared tokens and [interaction system](../operations/interactions.md). Examples to evaluate in design are date-change transitions, input focus/press feedback, partial-day review cues, save progress and confirmed-save feedback, and summary selection or disclosure. These are design requirements, not implemented controls. Keep amount text and financial values immediate and stable; motion must not imply a successful save before confirmation, delay entry or shift an active input. All feedback must work with touch and keyboard; reduced motion keeps state changes and meaning immediately visible without animation. The [web quality contract](../operations/web-quality.md) remains the acceptance authority.
 
 ## 3. Workbook compatibility proposal
 
@@ -83,7 +102,7 @@ The direct Google write path still has a race after its final stale-state check 
 |---|---|---|
 | Preparation safeguards | Synthetic creation interruptions, header checks, unrecognised-ledger preservation, name collisions, renamed views, ambiguous markers and lost view responses | Implemented with automated tests; full verification reported with the change |
 | Tracker calculations | Independently calculated examples for all five categories and metrics, zero/missing, partial periods, boundaries and arithmetic bounds | NOT RUN; reporting policy open |
-| Tracker workflow | Today/date navigation, drafts, correction/backfill, keyboard/touch and readable history | NOT RUN; not implemented |
+| Tracker workflow | Today/date navigation, drafts, correction/backfill, clear day states and summary inclusion rules, keyboard/touch, microanimation feedback and reduced-motion behaviour | NOT RUN; not implemented |
 | Upgrade compatibility | Legacy portfolio preserved, unrelated tabs preserved, repeated/interrupted upgrade and incompatible clients | NOT RUN; future format not selected |
 | Financial writes | Idempotent save, read-back, lost acknowledgements, token expiry, quota failure and simultaneous-device conflicts | NOT RUN for spending; not implemented |
 | Recovery | Complete round-trip, spending-only data, damaged records, partial-copy refusal and confirmed recovery without overwriting other history | NOT RUN for spending; not implemented |

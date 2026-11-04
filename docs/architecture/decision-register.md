@@ -46,6 +46,8 @@ The owner selected feature parity with the legacy Monday-Friday work-expenses sp
 
 [Work expenses tracker preparation](work-expenses-tracker.md) owns the five expense fields, required summaries, open financial/UX decisions, same-file recommendation, implemented safeguards and future proof gates. The owner leans toward one spreadsheet file; exact spending storage and upgrade protocol remain proposed. Portfolio schema 1 and its financial rules are unchanged. No generic expense platform, new auth scopes, cloud resources or licence decision is implied.
 
+Owner follow-up, 2026-11-04: the preparation contract now records the agreed interpretation of blank past weekdays, fully recorded zero-cost workdays and ambiguous partial entries. Remaining reporting rules stay open. The owner also requires clear user journeys, readable data and purposeful microanimations/interactions throughout future work, under the existing web quality and interaction contracts. This remains preparation authority only.
+
 ## FD-003: privacy implications of the selected Google direction
 
 ### Current direction

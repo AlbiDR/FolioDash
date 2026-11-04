@@ -35,6 +35,7 @@ Normal success does not require opening an editor, calling AI, running a repair 
 ## 2. Visual system and information hierarchy
 
 - One semantic token source owns typography, spacing, colours, radii, motion and chart series styling. No local raw visual constants when an existing token fits.
+- Owner direction, 2026-11-04: design every new or changed user journey with clear data presentation, purposeful interactions and microanimations as part of the feature. Use the shared [interaction system](interactions.md), preserve immediate financial values and truthful save feedback, and retain all meaning and functionality with reduced motion. Journey clarity and motion are acceptance requirements from the start of design.
 - Keep a consistent outer inset, alignment anchors, section rhythm, numerical alignment and precision. There is no spreadsheet-style 25px row/column mechanism in the PWA.
 - Lead with useful portfolio/fund KPIs. Keep technical provenance and audit details accessible without turning the main dashboard into a diagnostics panel.
 - Use navy/blue for structure, neutral styles for value/capital/allocation, and signed labels for gains/losses. Do not communicate performance by colour alone.
