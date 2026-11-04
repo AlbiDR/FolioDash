@@ -9,7 +9,8 @@ import { EMPTY_LEDGER } from "../../core/Ledger";
 import type { RawSheet } from "../../core/RawSheet";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
 import { type DirectDeps, attachDirect, commitDirect, ensureWorkbook, mirrorStatements, outcomeDirect, readAllDirect, readDirect, refreshView, restoreDirect, statementTabTitle, tidyLedgerTab } from "./DirectLedger";
-import { LEDGER_TAB, VIEW_TAB } from "./SheetsLayout";
+import { LEDGER_TAB, VIEW_TAB, VIEW_METADATA_KEY } from "./SheetsLayout";
+import { writeGridTabs } from "./GoogleWorkbook";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;
 const date = (text: string): IsoDate => parseIsoDate(text) as IsoDate;
@@ -91,6 +92,141 @@ describe("ensureWorkbook: starting from scratch", () => {
     expect(result).toEqual({ status: "call-failed", failure: "unauthorised" });
     expect(google.files.size).toBe(0);
   });
+
+  it("creates the header with the workbook, even when the creation response is lost", async () => {
+    const { google } = setup();
+    google.faults.push({ match: /^POST \/v4\/spreadsheets$/u, network: true, applyFirst: true });
+    expect(await ensureWorkbook(google.client, google.token)).toEqual({ status: "call-failed", failure: "network" });
+    expect(google.files.size).toBe(1);
+    const again = await ensureWorkbook(google.client, google.token);
+    expect(again).toMatchObject({ status: "ready", created: false });
+    if (again.status !== "ready") throw new Error("setup failed");
+    expect((await readDirect(google.client, google.token, again.workbook.id)).status).toBe("ok");
+    expect(google.files.size).toBe(1);
+    expect(google.callsMatching(/^PUT /u)).toHaveLength(0);
+  });
+
+  it("recovers discovery after the header verification is interrupted without creating another workbook", async () => {
+    const { google } = setup();
+    google.faults.push({ match: /^GET .*\/values\//u, network: true });
+    expect((await ensureWorkbook(google.client, google.token)).status).toBe("call-failed");
+    const again = await ensureWorkbook(google.client, google.token);
+    expect(again).toMatchObject({ status: "ready", created: false });
+    if (again.status !== "ready") throw new Error("setup failed");
+    expect((await readDirect(google.client, google.token, again.workbook.id)).status).toBe("ok");
+    expect(google.files.size).toBe(1);
+  });
+
+  it("preserves an older incomplete workbook instead of guessing its missing header", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const tab = google.tab(workbook.id, LEDGER_TAB);
+    if (tab === undefined) throw new Error("setup failed");
+    tab.rows = [["unrecognised existing records"]];
+    await ensureWorkbook(google.client, google.token);
+    expect((await readDirect(google.client, google.token, workbook.id)).status).toBe("refused");
+    expect(tab.rows).toEqual([["unrecognised existing records"]]);
+    expect(google.files.size).toBe(1);
+  });
+
+  it("does not report successful creation when the returned workbook has an invalid header", async () => {
+    const { google } = setup();
+    const rest: DirectDeps["rest"] = async (request) => {
+      const response = await google.client(request);
+      if (request.method === "POST" && request.url.endsWith("/v4/spreadsheets")) {
+        for (const tabs of google.workbooks.values()) {
+          const ledger = tabs.get(LEDGER_TAB);
+          if (ledger !== undefined) ledger.rows = [["unexpected header"]];
+        }
+      }
+      return response;
+    };
+    expect(await ensureWorkbook(rest, google.token)).toEqual({ status: "call-failed", failure: "unexpected" });
+    expect(google.callsMatching(/^PUT /u)).toHaveLength(0);
+  });
+});
+
+describe("generated tab ownership", () => {
+  const grid = () => rawGrid({ date1904: false, rows: [[{ kind: "text", text: "Synthetic view" }]] });
+
+  it("preserves unmarked tabs and reuses the separately marked view on subsequent writes", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const old = google.tab(workbook.id, VIEW_TAB);
+    if (old === undefined) throw new Error("setup failed");
+    old.developerMetadata = [];
+    old.rows = [["personal notes"]];
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
+    const generated = google.tab(workbook.id, `${VIEW_TAB} (2)`);
+    expect(generated?.developerMetadata).toContainEqual(expect.objectContaining({ metadataKey: VIEW_METADATA_KEY, metadataValue: VIEW_TAB }));
+    expect(old.rows).toEqual([["personal notes"]]);
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(3);
+    expect(old.rows).toEqual([["personal notes"]]);
+  });
+
+  it("recognises a generated tab after the person renames it", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const tabs = google.workbooks.get(workbook.id);
+    const view = tabs?.get(VIEW_TAB);
+    if (tabs === undefined || view === undefined) throw new Error("setup failed");
+    tabs.delete(VIEW_TAB);
+    tabs.set("My overview", view);
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
+    expect(tabs.has(VIEW_TAB)).toBe(false);
+    expect(view.rows[1]?.[1]).toBe("Synthetic view");
+  });
+
+  it("refuses ambiguous ownership without applying any part of the requested batch", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Another view", grid: grid() }]);
+    const other = google.tab(workbook.id, "Another view");
+    const view = google.tab(workbook.id, VIEW_TAB);
+    if (other === undefined || view === undefined) throw new Error("setup failed");
+    other.developerMetadata = view.developerMetadata.map((metadata) => ({ ...metadata, location: { sheetId: other.id } }));
+    const calls = google.callsMatching(/:batchUpdate$/u).length;
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: "New view", grid: grid() }, { title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
+    expect(google.callsMatching(/:batchUpdate$/u)).toHaveLength(calls);
+    expect(google.tab(workbook.id, "New view")).toBeUndefined();
+  });
+
+  it("never lets a generated view erase the ledger or repeat a role", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const before = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: LEDGER_TAB, grid: grid() }])).ok).toBe(false);
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }, { title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
+    expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
+  });
+
+  it("resolves a lost view-write response by finding the marker, without making duplicate tabs", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(false);
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(true);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(3);
+  });
+
+  it("rolls back a new tab when its ownership marker cannot be created", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const rest: DirectDeps["rest"] = (request) => {
+      if (request.body !== undefined && request.url.endsWith(":batchUpdate")) {
+        const body = JSON.parse(request.body) as { requests: Record<string, unknown>[] };
+        for (const item of body.requests) {
+          if (item["createDeveloperMetadata"] !== undefined) item["createDeveloperMetadata"] = { developerMetadata: { location: { sheetId: -1 } } };
+        }
+        return google.client({ ...request, body: JSON.stringify(body) });
+      }
+      return google.client(request);
+    };
+    expect((await writeGridTabs(rest, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(false);
+    expect(google.tab(workbook.id, "Generated")).toBeUndefined();
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
+  });
 });
 
 describe("readDirect", () => {
@@ -170,7 +306,7 @@ describe("commitDirect: saving", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     google.afterRead = {
-      count: 1,
+      count: google.calls.filter((call) => call.startsWith("GET ") && call.includes("/values/")).length + 1,
       run: () => {
         google.tab(workbook.id, LEDGER_TAB)?.rows.push(["x", "SNAPSHOT", "{}", "x"]);
       },

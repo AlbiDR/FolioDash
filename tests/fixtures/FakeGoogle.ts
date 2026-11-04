@@ -45,6 +45,7 @@ interface FakeTab {
   /** The `userEnteredFormat` of each cell written by `updateCells`, by row then column. */
   formats: (Record<string, unknown> | null)[][];
   widths: Map<number, number>;
+  developerMetadata: Record<string, unknown>[];
 }
 
 interface GridSize {
@@ -53,7 +54,7 @@ interface GridSize {
 }
 
 function newTab(id: number, hidden: boolean, size: GridSize | undefined): FakeTab {
-  return { id, hidden, rows: [], rowCount: size?.rowCount ?? 1000, columnCount: size?.columnCount ?? 26, formats: [], widths: new Map() };
+  return { id, hidden, rows: [], rowCount: size?.rowCount ?? 1000, columnCount: size?.columnCount ?? 26, formats: [], widths: new Map(), developerMetadata: [] };
 }
 
 interface Fault {
@@ -144,7 +145,7 @@ export class FakeGoogle {
       const tabs = this.workbooks.get(info[1] ?? "");
       if (tabs === undefined) return this.respond(404, {});
       return this.respond(200, {
-        sheets: [...tabs.entries()].map(([title, tab]) => ({ properties: { sheetId: tab.id, title, hidden: tab.hidden, gridProperties: { rowCount: tab.rowCount, columnCount: tab.columnCount } } })),
+        sheets: [...tabs.entries()].map(([title, tab]) => ({ properties: { sheetId: tab.id, title, hidden: tab.hidden, gridProperties: { rowCount: tab.rowCount, columnCount: tab.columnCount } }, developerMetadata: tab.developerMetadata })),
       });
     }
     const bulk = /^\/v4\/spreadsheets\/([^/]+)\/values:(batchClear|batchUpdate)$/u.exec(path);
@@ -184,7 +185,7 @@ export class FakeGoogle {
     if (tabs === undefined) return this.respond(404, {});
     const requests = (body?.["requests"] as Record<string, unknown>[] | undefined) ?? [];
     // Google applies a batch whole or not at all, so work on copies and keep them only if every step succeeds.
-    const copy = (tab: FakeTab): FakeTab => ({ ...tab, rows: tab.rows.map((row) => [...row]), formats: tab.formats.map((row) => [...row]), widths: new Map(tab.widths) });
+    const copy = (tab: FakeTab): FakeTab => ({ ...tab, rows: tab.rows.map((row) => [...row]), formats: tab.formats.map((row) => [...row]), widths: new Map(tab.widths), developerMetadata: [...tab.developerMetadata] });
     const backup = new Map([...tabs.entries()].map(([title, tab]) => [title, copy(tab)] as const));
     const restore = (): void => {
       tabs.clear();
@@ -212,6 +213,12 @@ export class FakeGoogle {
       const sheetId = chosen ?? this.nextTabId;
       this.nextTabId = Math.max(this.nextTabId, sheetId + 1);
       tabs.set(add.properties.title, newTab(sheetId, false, add.properties.gridProperties));
+    }
+    const metadata = request["createDeveloperMetadata"] as { developerMetadata: Record<string, unknown> & { location: { sheetId: number } } } | undefined;
+    if (metadata !== undefined) {
+      const tab = byId(metadata.developerMetadata.location.sheetId);
+      if (tab === undefined) return "No such sheet";
+      tab.developerMetadata.push(metadata.developerMetadata);
     }
     const update = request["updateSheetProperties"] as { properties: { sheetId: number; hidden?: boolean; gridProperties?: GridSize & { frozenRowCount?: number } }; fields: string } | undefined;
     if (update !== undefined) {
@@ -292,8 +299,24 @@ export class FakeGoogle {
     const id = `workbook-${String(this.nextId++)}`;
     const title = ((body?.["properties"] as Record<string, unknown> | undefined)?.["title"] as string | undefined) ?? "Untitled";
     const tabs = new Map<string, FakeTab>();
-    for (const sheet of (body?.["sheets"] as { properties: { title: string; hidden?: boolean; gridProperties?: GridSize } }[] | undefined) ?? []) {
-      tabs.set(sheet.properties.title, newTab(this.nextTabId++, this.ignoreHiddenOnCreate ? false : sheet.properties.hidden === true, sheet.properties.gridProperties));
+    type CreateSheet = {
+      properties: { title: string; sheetId?: number; hidden?: boolean; gridProperties?: GridSize };
+      developerMetadata?: Record<string, unknown>[];
+      data?: { startRow?: number; startColumn?: number; rowData?: { values: { userEnteredValue?: { stringValue?: string; numberValue?: number } }[] }[] }[];
+    };
+    for (const sheet of (body?.["sheets"] as CreateSheet[] | undefined) ?? []) {
+      const sheetId = sheet.properties.sheetId ?? this.nextTabId++;
+      this.nextTabId = Math.max(this.nextTabId, sheetId + 1);
+      const tab = newTab(sheetId, this.ignoreHiddenOnCreate ? false : sheet.properties.hidden === true, sheet.properties.gridProperties);
+      tab.developerMetadata = [...(sheet.developerMetadata ?? [])];
+      for (const data of sheet.data ?? []) {
+        (data.rowData ?? []).forEach((row, index) => {
+          const values: unknown[] = Array.from({ length: data.startColumn ?? 0 }, () => "");
+          values.push(...row.values.map((cell) => cell.userEnteredValue?.stringValue ?? cell.userEnteredValue?.numberValue ?? ""));
+          tab.rows[(data.startRow ?? 0) + index] = values;
+        });
+      }
+      tabs.set(sheet.properties.title, tab);
     }
     this.workbooks.set(id, tabs);
     this.files.set(id, { id, name: title, appProperties: {}, trashed: false, createdTime: this.clock++ });

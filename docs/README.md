@@ -6,6 +6,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 |---|---|---|
 | [CleanStack Architecture](architecture/cleanstack.md) | Product boundaries, dependency law, financial/data invariants, safety and governance | Draft for owner review |
 | [Google-backed architecture](architecture/google-sheets-backend.md) | Selected GitHub/Sheets/Apps Script direction, service/data boundaries, credential correction and runtime proof gates | Direction selected; protocol proposed and unverified |
+| [Work expenses tracker preparation](architecture/work-expenses-tracker.md) | Legacy parity scope, open reporting policy, workbook compatibility proposal and setup/view safeguards | Preparation authorised; tracker not implemented; live proof pending |
 | [Fideuram XLSX layout v1](architecture/fideuram-xlsx-layout.md) | Observed bank export layout, cell formats, reconciliation relations and proposed bank-adapter rules | Observed layout reference; parser and synthetic fixtures implemented, live acceptance separate |
 | [Decision register](architecture/decision-register.md) | Decisions, alternatives, approval state and implementation blockers | Google-backed direction selected; implementation details open |
 | [Repository configuration](operations/repository-configuration.md) | GitHub variables, secrets, environments, workflow rules and the public-release gate | Draft; environment, four variables, one secret and the deploy workflow exist and ran once (2026-11-01); no branch or environment protection |

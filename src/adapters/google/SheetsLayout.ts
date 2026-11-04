@@ -5,6 +5,9 @@ export const WORKBOOK_TITLE = "FolioDash";
 export const LEDGER_HEADER: readonly string[] = ["revision", "type", "payload", "checksum"];
 export const LEDGER_COLUMNS = LEDGER_HEADER.length;
 
+/** Sheet-scoped metadata identifies rebuildable views independently of their visible names. */
+export const VIEW_METADATA_KEY = "foliodash.view";
+
 /** Tags the spreadsheet in Drive so it can be found again on any device without remembering its id. */
 export const APP_PROPERTY_KEY = "foliodash";
 export const APP_PROPERTY_VALUE = "ledger-v1";

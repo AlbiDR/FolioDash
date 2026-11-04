@@ -9,6 +9,7 @@ import {
   LEDGER_HEADER,
   LEDGER_TAB,
   VIEW_TAB,
+  VIEW_METADATA_KEY,
   WORKBOOK_TITLE,
 } from "./SheetsLayout";
 
@@ -50,8 +51,9 @@ export async function findWorkbook(rest: RestClient, accessToken: string): Promi
 
 /**
  * Creates the spreadsheet: a readable tab for the person and a hidden ledger tab
- * with its header, then tags the file. A tagging failure is not fatal, because the
- * name search finds the file anyway; it is reported so it can be mentioned.
+ * with its header in the same creation request, then tags the file. A tagging
+ * failure is not fatal, because the name search finds the file anyway; it is
+ * reported so it can be mentioned.
  */
 export async function createWorkbook(rest: RestClient, accessToken: string): Promise<RestResult<Workbook & { readonly tagged: boolean }>> {
   const created = await callRest(rest, accessToken, {
@@ -60,8 +62,11 @@ export async function createWorkbook(rest: RestClient, accessToken: string): Pro
     body: {
       properties: { title: WORKBOOK_TITLE },
       sheets: [
-        { properties: { title: VIEW_TAB, index: 0 } },
-        { properties: { title: LEDGER_TAB, index: 1, hidden: true, gridProperties: { rowCount: 2, columnCount: LEDGER_COLUMNS, frozenRowCount: 1 } } },
+        { properties: { sheetId: 0, title: VIEW_TAB, index: 0 }, developerMetadata: [viewMetadata(0, VIEW_TAB)] },
+        {
+          properties: { sheetId: 1, title: LEDGER_TAB, index: 1, hidden: true, gridProperties: { rowCount: 2, columnCount: LEDGER_COLUMNS, frozenRowCount: 1 } },
+          data: [{ startRow: 0, startColumn: 0, rowData: [{ values: LEDGER_HEADER.map((text) => ({ userEnteredValue: { stringValue: text } })) }] }],
+        },
       ],
     },
   });
@@ -69,12 +74,9 @@ export async function createWorkbook(rest: RestClient, accessToken: string): Pro
   const id = record(created.value)?.["spreadsheetId"];
   if (typeof id !== "string") return fail("unexpected");
 
-  const header = await callRest(rest, accessToken, {
-    method: "PUT",
-    url: `${SHEETS}/${encodeURIComponent(id)}/values/${encodeURIComponent(`${LEDGER_TAB}!A1:D1`)}?valueInputOption=RAW`,
-    body: { values: [[...LEDGER_HEADER]] },
-  });
+  const header = await readLedgerRows(rest, accessToken, id);
   if (!header.ok) return header;
+  if ("notALedger" in header.value) return fail("unexpected");
 
   await tidyLedgerTab(rest, accessToken, id);
 
@@ -134,20 +136,32 @@ interface TabInfo {
   readonly title: string;
   readonly hidden: boolean;
   readonly columns: number;
+  readonly viewRoles: readonly string[];
+}
+
+function viewMetadata(sheetId: number, role: string): Record<string, unknown> {
+  return { metadataKey: VIEW_METADATA_KEY, metadataValue: role, location: { sheetId }, visibility: "DOCUMENT" };
 }
 
 async function listTabs(rest: RestClient, accessToken: string, workbookId: string): Promise<RestResult<readonly TabInfo[]>> {
   const answer = await callRest(rest, accessToken, {
     method: "GET",
-    url: `${SHEETS}/${encodeURIComponent(workbookId)}?fields=${encodeURIComponent("sheets.properties(sheetId,title,hidden,gridProperties(columnCount))")}`,
+    url: `${SHEETS}/${encodeURIComponent(workbookId)}?fields=${encodeURIComponent("sheets(properties(sheetId,title,hidden,gridProperties(columnCount)),developerMetadata)")}`,
   });
   if (!answer.ok) return answer;
   const sheets = record(answer.value)?.["sheets"];
   const tabs = (Array.isArray(sheets) ? (sheets as unknown[]) : []).flatMap((entry): TabInfo[] => {
     const properties = record(record(entry)?.["properties"]);
     const columns = record(properties?.["gridProperties"])?.["columnCount"];
+    const metadata = record(entry)?.["developerMetadata"];
+    const viewRoles = (Array.isArray(metadata) ? metadata : []).flatMap((item: unknown): string[] => {
+      const value = record(item);
+      const location = record(value?.["location"]);
+      return value?.["metadataKey"] === VIEW_METADATA_KEY && typeof value["metadataValue"] === "string" && location?.["sheetId"] === properties?.["sheetId"] && location?.["dimensionRange"] === undefined
+        ? [value["metadataValue"]] : [];
+    });
     return typeof properties?.["sheetId"] === "number" && typeof properties["title"] === "string"
-      ? [{ id: properties["sheetId"], title: properties["title"], hidden: properties["hidden"] === true, columns: typeof columns === "number" ? columns : 0 }]
+      ? [{ id: properties["sheetId"], title: properties["title"], hidden: properties["hidden"] === true, columns: typeof columns === "number" ? columns : 0, viewRoles }]
       : [];
   });
   return { ok: true, value: tabs };
@@ -214,7 +228,7 @@ function widthRequests(sheetId: number, widths: readonly number[]): unknown[] {
 
 /**
  * Writes tabs from finished grids, any number of them, in two requests: list the
- * tabs, then one batch that adds the missing ones, fits every grid to exactly its
+ * tabs, then one batch that adds the missing owned views, fits every grid to exactly its
  * data plus the one-cell margin (so surplus rows and columns are deleted), resets
  * what was there, and writes values, formats and widths. Text goes in as text and
  * numbers as numbers, with no guessing by Google. A batch is applied whole or not
@@ -223,19 +237,28 @@ function widthRequests(sheetId: number, widths: readonly number[]): unknown[] {
  */
 export async function writeGridTabs(rest: RestClient, accessToken: string, workbookId: string, tabs: readonly GridTab[]): Promise<RestResult<true>> {
   if (tabs.length === 0) return { ok: true, value: true };
+  // Never let a view operation target the financial log or repeat a role in one batch.
+  if (tabs.some((tab) => tab.title === LEDGER_TAB) || new Set(tabs.map((tab) => tab.title)).size !== tabs.length) return fail("unexpected");
   const existing = await listTabs(rest, accessToken, workbookId);
   if (!existing.ok) return existing;
-  const known = new Map(existing.value.map((tab) => [tab.title, tab.id]));
+  const names = new Set(existing.value.map((tab) => tab.title));
   let nextId = existing.value.reduce((highest, tab) => Math.max(highest, tab.id), 0) + 1;
 
   const requests: unknown[] = [];
   for (const tab of tabs) {
     const rows = tab.grid.cells.length;
     const columns = tab.grid.widths.length;
-    const knownId = known.get(tab.title);
+    const owned = existing.value.filter((candidate) => candidate.viewRoles.includes(tab.title));
+    // Ambiguous markers must not decide which tab to erase. The ledger is never a view.
+    if (owned.length > 1 || owned.some((candidate) => candidate.title === LEDGER_TAB || candidate.viewRoles.length !== 1)) return fail("unexpected");
+    const knownId = owned[0]?.id;
     const sheetId = knownId ?? nextId++;
     if (knownId === undefined) {
-      requests.push({ addSheet: { properties: { sheetId, title: tab.title, gridProperties: { rowCount: rows, columnCount: columns } } } });
+      let title = tab.title;
+      for (let suffix = 2; names.has(title); suffix++) title = `${tab.title} (${String(suffix)})`;
+      names.add(title);
+      requests.push({ addSheet: { properties: { sheetId, title, gridProperties: { rowCount: rows, columnCount: columns } } } });
+      requests.push({ createDeveloperMetadata: { developerMetadata: viewMetadata(sheetId, tab.title) } });
     } else {
       requests.push({
         updateSheetProperties: { properties: { sheetId, gridProperties: { rowCount: rows, columnCount: columns, frozenRowCount: 0, frozenColumnCount: 0 } }, fields: "gridProperties(rowCount,columnCount,frozenRowCount,frozenColumnCount)" },
