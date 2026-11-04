@@ -2,7 +2,7 @@
 
 Date: 2026-11-04
 
-Status: Refined and audited design proposal. Preparation only; no tracker UI, calculations, routes or spending storage implemented. Owner-confirmed scope and day meanings remain authoritative in the [preparation contract](../architecture/work-expenses-tracker.md). Recommendations here are implementation guidance, not accepted financial policy or authority for live writes.
+Status: Refined and audited design proposal, followed by owner-authorised implementation on 2026-11-05. [Implementation and acceptance](../operations/work-expenses.md) records the resulting tracker, reporting choices and verification. This document preserves the design rationale and historical sequence; owner-confirmed day meanings remain authoritative in the [preparation contract](../architecture/work-expenses-tracker.md). Live private writes and migration are not authorised by a design document.
 
 This plan moves from the whole application to the dashboard, then to entry and recovery. Each pass was audited against existing source and consolidated into the recommendations below. The audit is a source and design review, not independent reviewer, usability or browser evidence.
 

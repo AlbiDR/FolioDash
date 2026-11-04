@@ -3,6 +3,7 @@ import { navEntryOf, routeFrom } from "./routes";
 
 describe("routeFrom", () => {
   it("reads the main screens", () => {
+    expect(routeFrom("#expenses")).toEqual({ name: "expenses" });
     expect(routeFrom("#import")).toEqual({ name: "import" });
     expect(routeFrom("#history")).toEqual({ name: "history" });
     expect(routeFrom("#connection")).toEqual({ name: "connection" });
@@ -23,6 +24,7 @@ describe("routeFrom", () => {
 
 describe("navEntryOf", () => {
   it("files the detail screens under the portfolio", () => {
+    expect(navEntryOf({ name: "expenses" })).toBe("expenses");
     expect(navEntryOf({ name: "months" })).toBe("overview");
     expect(navEntryOf({ name: "fund", isin: "US0378331005" })).toBe("overview");
     expect(navEntryOf({ name: "import" })).toBe("import");

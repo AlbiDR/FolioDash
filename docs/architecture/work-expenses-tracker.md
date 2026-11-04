@@ -4,7 +4,7 @@ Date: 2026-11-04
 
 Decision: FD-020 in the [decision register](decision-register.md)
 
-Status: Legacy feature parity and preparation authorised; tracker not implemented. Workbook layout and reporting choices below remain proposals unless explicitly identified as confirmed.
+Status: Preparation contract, followed by implementation authorised on 2026-11-05. The tracker is now implemented locally; [implementation and acceptance](../operations/work-expenses.md) records concrete reporting choices, persistence, recovery and evidence. The original preparation sections below retain their historical proposals and release gates; they do not describe all current source.
 
 ## 1. Purpose and scope
 

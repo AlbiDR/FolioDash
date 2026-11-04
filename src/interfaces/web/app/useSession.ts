@@ -1,6 +1,16 @@
 import type { SessionState } from "../../../applications/SessionModel";
 import { useEffect, useState } from "preact/hooks";
 import type { Session } from "./session";
+import type { ExpenseSessionState } from "./expenseSession";
+
+export function useExpenses(session: Session): ExpenseSessionState {
+  const [state, setState] = useState(session.expenses.state);
+  useEffect(() => {
+    setState(session.expenses.state);
+    return session.expenses.subscribe(() => { setState(session.expenses.state); });
+  }, [session]);
+  return state;
+}
 
 /** The session's current state, redrawn whenever it changes. */
 export function useSession(session: Session): SessionState {

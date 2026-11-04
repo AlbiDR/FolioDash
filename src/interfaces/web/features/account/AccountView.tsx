@@ -34,6 +34,7 @@ export function AccountView(props: {
   readonly actions: AccountActions;
   /** Which build of the app this page is running, so a stale page is never mistaken for the new one. */
   readonly build: string;
+  readonly expenseCommands?: number;
 }): JSX.Element {
   const { state, actions } = props;
   const [pending, setPending] = useState<"connect" | "sync" | "restore" | "verify" | "tidy" | null>(null);
@@ -104,7 +105,7 @@ export function AccountView(props: {
 
   const signedOut = state.mode === "signed-out";
   const statements = state.ledger.snapshots.length;
-  const canRestore = (state.sheet === "missing" || state.sheet === "emptied") && statements > 0;
+  const canRestore = (state.sheet === "missing" || state.sheet === "emptied") && (statements > 0 || (props.expenseCommands ?? 0) > 0);
 
   return (
     <section class="account screen" aria-labelledby="account-heading">
@@ -199,7 +200,7 @@ export function AccountView(props: {
             {statements === 1 ? "statement" : "statements"}.
           </p>
           <p>
-            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it. The copy holds your figures but not the original bank statements, so a restored sheet cannot be rebuilt from statements until you import them again.
+            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it. The portfolio copy holds figures but not original bank statements, so those statements need to be imported again. {props.expenseCommands ? "The saved expense correction history on this device is also recovered into a replacement workbook; existing expense records are preserved." : "This device has no saved expense correction history to restore. Downloaded expense backups are restored separately below."}
           </p>
           <label class="check">
             <input

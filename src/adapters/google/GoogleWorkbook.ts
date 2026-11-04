@@ -145,6 +145,7 @@ interface TabInfo {
   readonly hidden: boolean;
   readonly columns: number;
   readonly viewRoles: readonly string[];
+  readonly financialRecords: boolean;
 }
 
 function viewMetadata(sheetId: number, role: string): Record<string, unknown> {
@@ -162,6 +163,11 @@ async function listTabs(rest: RestClient, accessToken: string, workbookId: strin
     const properties = record(record(entry)?.["properties"]);
     const columns = record(properties?.["gridProperties"])?.["columnCount"];
     const metadata = record(entry)?.["developerMetadata"];
+    const financialRecords = (Array.isArray(metadata) ? metadata : []).some((item: unknown) => {
+      const value = record(item);
+      const location = record(value?.["location"]);
+      return value?.["metadataKey"] === "foliodash.expenses" && location?.["sheetId"] === properties?.["sheetId"];
+    });
     const viewRoles = (Array.isArray(metadata) ? metadata : []).flatMap((item: unknown): string[] => {
       const value = record(item);
       const location = record(value?.["location"]);
@@ -169,7 +175,7 @@ async function listTabs(rest: RestClient, accessToken: string, workbookId: strin
         ? [value["metadataValue"]] : [];
     });
     return typeof properties?.["sheetId"] === "number" && typeof properties["title"] === "string"
-      ? [{ id: properties["sheetId"], title: properties["title"], hidden: properties["hidden"] === true, columns: typeof columns === "number" ? columns : 0, viewRoles }]
+      ? [{ id: properties["sheetId"], title: properties["title"], hidden: properties["hidden"] === true, columns: typeof columns === "number" ? columns : 0, viewRoles, financialRecords }]
       : [];
   });
   return { ok: true, value: tabs };
@@ -258,7 +264,7 @@ export async function writeGridTabs(rest: RestClient, accessToken: string, workb
     const columns = tab.grid.widths.length;
     const owned = existing.value.filter((candidate) => candidate.viewRoles.includes(tab.title));
     // Ambiguous markers must not decide which tab to erase. The ledger is never a view.
-    if (owned.length > 1 || owned.some((candidate) => candidate.title === LEDGER_TAB || candidate.viewRoles.length !== 1)) return fail("unexpected");
+    if (owned.length > 1 || owned.some((candidate) => candidate.title === LEDGER_TAB || candidate.financialRecords || candidate.viewRoles.length !== 1)) return fail("unexpected");
     const knownId = owned[0]?.id;
     const sheetId = knownId ?? nextId++;
     if (knownId === undefined) {

@@ -45,6 +45,9 @@ a {
   color: var(--color-accent);
 }
 
+/* Route changes focus the landmark for orientation; interactive descendants retain their outlines. */
+#main-content:focus { outline: none; }
+
 a:focus-visible,
 summary:focus-visible,
 button:focus-visible,

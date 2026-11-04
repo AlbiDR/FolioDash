@@ -24,9 +24,14 @@ import { type Route, navEntryOf, routeFrom } from "./routes";
 import { watchForUpdate } from "./serviceWorker";
 import { describeAge } from "../features/account/timeAgo";
 import { describeConnect } from "../features/account/accountText";
-import { useNow, useSession } from "./useSession";
+import { useExpenses, useNow, useSession } from "./useSession";
+import { toIsoDate } from "../../../core/IsoDate";
+import type { ExpenseCommand, ExpenseDay } from "../../../core/WorkExpenses";
+import { demoExpenses } from "./demoExpenses";
 
-const TITLES = { overview: "Portfolio", months: "Month by month", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
+const TITLES = { overview: "Portfolio", expenses: "Work expenses", months: "Month by month", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
+const ExpensesView = lazy(async () => ({ default: (await import("../features/expenses/ExpensesView")).ExpensesView }));
+const ExpenseDataTools = lazy(async () => ({ default: (await import("../features/expenses/ExpenseDataTools")).ExpenseDataTools }));
 const AccountView = lazy(async () => ({ default: (await import("../features/account/AccountView")).AccountView }));
 const HistoryView = lazy(async () => ({ default: (await import("../features/history/HistoryView")).HistoryView }));
 const ImportView = lazy(async () => ({ default: (await import("../features/import/ImportView")).ImportView }));
@@ -51,6 +56,7 @@ const browserPrivacyStorage = (): Storage => window.localStorage;
 
 const NAV: readonly { readonly id: ReturnType<typeof navEntryOf>; readonly href: string; readonly label: string; readonly icon: IconName }[] = [
   { id: "overview", href: "#overview", label: "Portfolio", icon: "overview" },
+  { id: "expenses", href: "#expenses", label: "Expenses", icon: "expenses" },
   { id: "import", href: "#import", label: "Import", icon: "import" },
   { id: "connection", href: "#connection", label: "Your data", icon: "connection" },
 ];
@@ -63,21 +69,26 @@ export function App(): JSX.Element {
   const [statementLocked, setStatementLocked] = useState(false);
   const [jsonImportLocked, setJsonImportLocked] = useState(false);
   const importLocked = statementLocked || jsonImportLocked;
+  const [expenseLocked, setExpenseLocked] = useState(false);
   const [importNavigationMessage, setImportNavigationMessage] = useState("");
   const [importConnecting, setImportConnecting] = useState(false);
   const [importConnectMessage, setImportConnectMessage] = useState("");
   useEffect(() => {
-    if (!importLocked) return;
+    if (!importLocked && !expenseLocked) return;
     const keepReview = (event: BeforeUnloadEvent): void => {
       event.preventDefault();
     };
     window.addEventListener("beforeunload", keepReview);
     return () => { window.removeEventListener("beforeunload", keepReview); };
-  }, [importLocked]);
+  }, [importLocked, expenseLocked]);
   // The person's data: the Google spreadsheet is the record, this device keeps a copy, and the session joins them.
   const [clientId, setClientId] = useState(() => resolveClientId(import.meta.env.VITE_GOOGLE_CLIENT_ID, browserPrivacyStorage));
   const session = useMemo(() => createBrowserSession(clientId), [clientId]);
   const data = useSession(session);
+  const expenseData = useExpenses(session);
+  useEffect(() => {
+    if (data.mode === "online" && data.sheet === "ok") void session.expenses.refresh();
+  }, [session, data.mode, data.sheet, data.workbook?.id, data.syncedAt]);
   async function connectForImport(): Promise<void> {
     setImportConnecting(true);
     setImportConnectMessage("");
@@ -94,11 +105,17 @@ export function App(): JSX.Element {
     }
   }
   const now = useNow(60_000);
+  const localDate = new Date(now);
+  const today = toIsoDate(localDate.getFullYear(), localDate.getMonth() + 1, localDate.getDate());
+  if (today === null) throw new Error("The device date is outside FolioDash's supported range.");
+  const [expenseDemo, setExpenseDemo] = useState<readonly ExpenseDay[]>(() => demoExpenses(today));
+  const [expenseDemoHistory, setExpenseDemoHistory] = useState<readonly ExpenseCommand[]>(() => demoExpenses(today).map(day => ({ id: day.revision, date: day.date, amounts: day.amounts, expectedRevision: null })));
+  const [expenseConnectMessage, setExpenseConnectMessage] = useState("");
   useEffect(() => {
     const update = (): void => {
-      if (importLocked && routeFrom(window.location.hash).name !== route.name) {
+      if ((importLocked || expenseLocked) && routeFrom(window.location.hash).name !== route.name) {
         window.history.replaceState(null, "", `#${route.name}`);
-        setImportNavigationMessage("Finish the import or return to statement selection before leaving. Your reviewed answers are still here.");
+        setImportNavigationMessage(expenseLocked ? "Save or discard your expense draft before leaving. If a save is uncertain, check its outcome first." : "Finish the import or return to statement selection before leaving. Your reviewed answers are still here.");
         return;
       }
       setImportNavigationMessage("");
@@ -110,7 +127,7 @@ export function App(): JSX.Element {
     return () => {
       window.removeEventListener("hashchange", update);
     };
-  }, [importLocked, route.name]);
+  }, [importLocked, expenseLocked, route.name]);
 
   // A newer version of the app, kept waiting until the person chooses to switch.
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
@@ -208,10 +225,11 @@ export function App(): JSX.Element {
             {applyUpdate !== null && (
               <p class="notice app-update" role="status">
                 A new version of FolioDash is ready.{" "}
-                <button type="button" disabled={importLocked} onClick={applyUpdate}>
+                <button type="button" disabled={importLocked || expenseLocked} onClick={applyUpdate}>
                   Reload to update
                 </button>
                 {importLocked && <> Finish the import or return to statement selection before updating.</>}
+                {expenseLocked && <> Save or discard the expense draft, or check its uncertain save, before updating.</>}
               </p>
             )}
             {portfolioScreen && route.name !== "overview" && data.mode === "signed-out" && (
@@ -238,10 +256,39 @@ export function App(): JSX.Element {
               </p>
             )}
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
-              {importLocked && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
+              {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
               {(route.name === "overview" || route.name === "fund") && model.dates.length > 0 && <div class="view-tools"><div><span class="control-label">Chart period</span><span class="hint">Changes the charts, not your latest figures.</span></div><RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} /></div>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && <OverviewView model={model} range={range} />}
+              {route.name === "expenses" && <ExpensesView
+                days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
+                conflicts={data.mode === "signed-out" ? [] : expenseData.conflicts}
+                history={data.mode === "signed-out" ? expenseDemoHistory : expenseData.commands}
+                today={today}
+                mode={data.mode}
+                ready={data.mode === "signed-out" || expenseData.ready}
+                pending={data.mode !== "signed-out" && expenseData.pending}
+                onCheckPending={() => session.expenses.checkPending()}
+                message={expenseConnectMessage || expenseData.message}
+                onDirtyChange={setExpenseLocked}
+                onRevealAmounts={() => { setHidden(false); }}
+                onRefresh={() => session.expenses.refresh()}
+                onConnect={async () => {
+                  const result = await session.connect();
+                  if (result.status === "connected") { setExpenseConnectMessage(""); await session.expenses.refresh(); }
+                  else { const described = describeConnect(result); setExpenseConnectMessage(`${described.title}. ${described.body}`); }
+                }}
+                onSave={async (request) => {
+                  if (data.mode !== "signed-out") return session.expenses.save(request);
+                  const entry = expenseDemo.find(day => day.date === request.date);
+                  if ((entry?.revision ?? null) !== request.expectedRevision) return { status: "conflict", days: expenseDemo, message: "The demo day changed. Review it before saving again." };
+                  const id = crypto.randomUUID();
+                  const days = [...expenseDemo.filter(day => day.date !== request.date), { date: request.date, amounts: request.amounts, revision: id }].sort((a, b) => a.date.localeCompare(b.date));
+                  setExpenseDemoHistory(current => [...current, { ...request, id }]);
+                  setExpenseDemo(days);
+                  return { status: "saved", days, viewUpdated: true };
+                }}
+              />}
               {route.name === "overview" && data.mode === "signed-out" && (
                 <GetStarted
                   clientConfigured={clientConfigured}
@@ -293,6 +340,7 @@ export function App(): JSX.Element {
                   now={now}
                   clientConfigured={clientConfigured}
                   build={__APP_BUILD__}
+                  expenseCommands={expenseData.commands.length}
                   actions={{
                     connect: () => session.connect(),
                     refresh: () => session.refresh(),
@@ -310,6 +358,13 @@ export function App(): JSX.Element {
                   }}
                 />
               )}
+              {route.name === "connection" && data.mode !== "signed-out" && <ExpenseDataTools
+                days={expenseData.days.length} commands={expenseData.commands.length} conflicts={expenseData.conflicts.length}
+                initialized={expenseData.initialized} ready={expenseData.ready && data.mode === "online" && data.sheet === "ok"} pending={expenseData.pending}
+                onLock={setExpenseLocked} onExport={() => session.expenses.exportBackup()}
+                onPreview={text => { const history = session.expenses.previewBackup(text); return history === null ? null : { days: history.days.length, commands: history.commands.length, conflicts: history.conflicts.length }; }}
+                onRestore={text => session.expenses.restoreBackup(text)} onCheck={() => session.expenses.checkPending()}
+              />}
               </DeferredView>
             </main>
           </div>

@@ -2,6 +2,7 @@ import { parseIsin } from "../../../core/Isin";
 
 export type Route =
   | { readonly name: "overview" }
+  | { readonly name: "expenses" }
   | { readonly name: "months" }
   | { readonly name: "fund"; readonly isin: string }
   | { readonly name: "import" }
@@ -10,6 +11,7 @@ export type Route =
 
 /** Reads the address fragment. Anything unknown, including a malformed fund identifier, is the overview. */
 export function routeFrom(hash: string): Route {
+  if (hash === "#expenses") return { name: "expenses" };
   if (hash === "#import") return { name: "import" };
   if (hash === "#history") return { name: "history" };
   if (hash === "#connection") return { name: "connection" };
@@ -22,7 +24,7 @@ export function routeFrom(hash: string): Route {
 }
 
 /** Which main navigation entry a route belongs to: detail screens belong to the portfolio, and importing a history belongs to Import. */
-export function navEntryOf(route: Route): "overview" | "import" | "history" | "connection" {
+export function navEntryOf(route: Route): "overview" | "expenses" | "import" | "history" | "connection" {
   if (route.name === "months" || route.name === "fund") return "overview";
   return route.name === "history" ? "import" : route.name;
 }
