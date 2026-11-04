@@ -11,6 +11,8 @@
 
   /* Surfaces, lightest to most elevated tone (Material's surface container roles). */
   --color-background: #eceff6;
+  --card-padding: clamp(1rem, 1.7vw, 1.5rem);
+  --shadow-card: 0 4px 24px rgba(16, 19, 28, 0.025);
   --color-surface: #ffffff;
   --surface-low: #f6f8fc;
   --color-surface-2: #eef1f8;
@@ -96,6 +98,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: #07080d;
+    --shadow-card: 0 6px 26px rgba(0, 0, 0, 0.12);
     --color-surface: #14161f;
     --surface-low: #0f1119;
     --color-surface-2: #1b1e29;

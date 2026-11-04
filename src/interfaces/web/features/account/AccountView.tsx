@@ -100,16 +100,15 @@ export function AccountView(props: {
 
   return (
     <section class="account screen" aria-labelledby="account-heading">
-      <h2 id="account-heading" class="visually-hidden">Your data</h2>
+      <header class="journey-intro"><p class="eyebrow">Your spreadsheet. Your device. Your choice.</p><h2 id="account-heading">Keep your portfolio in good shape</h2><p>Check synchronization, verify your saved history and manage the copy on this device.</p></header>
 
-      <div class="card">
-        <h3 class="card-title">Where your data lives</h3>
+      <div class="card account-summary">
+        <h3 class="card-title">Your connection</h3>
         {signedOut ? (
           <>
             <p class="card-subtitle">Not set up yet.</p>
             <p>
-              Continue with Google and FolioDash creates one private spreadsheet in your own Google Drive for your portfolio. Nobody else, including
-              the people who made FolioDash, can see it.
+              Continue with Google and FolioDash creates one private spreadsheet in your own Google Drive for your portfolio. The spreadsheet lives in your Google account, and you choose whether to share it.
             </p>
             <button type="button" class="primary" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.connect())}>
               Continue with Google
@@ -160,8 +159,8 @@ export function AccountView(props: {
       </div>
 
       {!signedOut && state.workbook !== null && (
-        <div class="card">
-          <h3 class="card-title">Check that your history can be rebuilt</h3>
+        <div class="card account-health">
+          <h3 class="card-title">Verify your history</h3>
           <p class="card-subtitle">Every month keeps its exact bank statement. This replays each one and compares it with your saved figures.</p>
           <p>It only reads. Nothing in your Google Sheet or on this device is changed.</p>
           <button type="button" disabled={busy} onClick={() => void verify()}>
@@ -172,8 +171,8 @@ export function AccountView(props: {
       )}
 
       {!signedOut && state.workbook !== null && (
-        <div class="card">
-          <h3 class="card-title">Tidy your Google Sheet</h3>
+        <div class="card account-maintenance">
+          <h3 class="card-title">Keep your sheet tidy</h3>
           <p class="card-subtitle">Rewrites the summary and every month's tab so they look alike and stay lean.</p>
           <p>Dates, amounts and prices are shown the same way in every month, with one empty row and column around the data and nothing beyond it. Your saved records are not touched.</p>
           <button type="button" disabled={busy} onClick={() => void tidy()}>

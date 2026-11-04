@@ -184,7 +184,9 @@ select:focus-visible {
   }
 
   .main-nav .brand {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     padding: 0 0.85rem 1.25rem;
     font-size: 1.25rem;
     font-weight: 700;
@@ -403,6 +405,10 @@ a.status-chip:hover {
   grid-column: span 4;
 }
 
+.cell-6 {
+  grid-column: span 6;
+}
+
 .cell-8 {
   grid-column: span 8;
 }
@@ -449,6 +455,7 @@ a.status-chip:hover {
 @media (max-width: 47.5rem) {
   .cell-3,
   .cell-4,
+  .cell-6,
   .cell-8,
   .hero.cell-4 {
     grid-column: span 12;
@@ -472,8 +479,8 @@ a.status-chip:hover {
 .card {
   background: var(--color-surface);
   border-radius: var(--shape-lg);
-  padding: 1.25rem;
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  padding: var(--card-padding);
+  box-shadow: inset 0 0 0 1px var(--color-border), var(--shadow-card);
 }
 
 .card-label {
@@ -484,7 +491,7 @@ a.status-chip:hover {
 }
 
 .card-title {
-  margin-bottom: 0.9rem;
+  margin-bottom: var(--space-2);
   font-size: 1rem;
   font-weight: 650;
 }
@@ -706,6 +713,71 @@ a.status-chip:hover {
 
 .empty-note {
   color: var(--color-muted);
+}
+
+/* The same hierarchy runs from the portfolio to its supporting workflows. */
+.dashboard-intro, .section-heading, .view-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.dashboard-intro { padding-block: var(--space-2); }
+.hero-gain { margin-block: auto; padding-block: var(--space-4); }
+.hero-gain .hero-sub { font-size: 1.75rem; line-height: 1.2; }
+.hero-gain .amount { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.portfolio-dashboard > .hero .facts { margin-block: 0; padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
+.get-started { margin-top: var(--space-4); }
+.demo-picker { margin-top: var(--space-3); }
+.account { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.account > * { grid-column: 1 / -1; }
+.account > .account-health, .account > .account-maintenance { grid-column: auto; }
+.dashboard-intro h2, .section-heading h3, .journey-intro h2 {
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+}
+.dashboard-intro p:not(.eyebrow), .section-heading > p, .journey-intro > p:not(.eyebrow) {
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  margin-top: var(--space-2);
+  max-width: 55ch;
+}
+.section-heading { padding-top: var(--space-4); align-items: end; }
+.section-heading > p { max-width: 40ch; }
+.statement-action { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--touch-target); text-decoration: none; }
+.view-tools { padding-block: var(--space-2) var(--space-4); }
+.view-tools > div { display: grid; gap: var(--space-1); }
+.view-tools .control-label { display: block; }
+.view-tools .hint { font-size: 0.8125rem; }
+.view-tools .segmented button { min-height: var(--touch-target); }
+.dashboard-analysis { border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
+.dashboard-analysis > summary { min-height: var(--touch-target); cursor: pointer; font-weight: 650; font-size: 1.125rem; }
+.dashboard-analysis > summary::marker { color: var(--color-accent); }
+.disclosure-description { display: block; color: var(--color-muted); font-size: 0.875rem; font-weight: 400; line-height: 1.5; margin-block: var(--space-2); }
+.analysis-grid { margin-top: var(--space-4); }
+.empty-portfolio { display: grid; gap: var(--space-4); padding: var(--space-5); }
+.empty-portfolio > p { max-width: 55ch; line-height: 1.6; }
+.empty-portfolio .primary { justify-self: start; }
+.journey-intro { display: grid; gap: var(--space-2); }
+.journey-steps { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); padding: var(--space-3) 0; margin: 0; list-style: none; border-block: 1px solid var(--color-border); }
+.journey-steps li { display: flex; align-items: baseline; gap: var(--space-2); color: var(--color-muted); font-size: 0.875rem; }
+.journey-steps li > span { color: var(--color-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (min-width: 47.501rem) {
+  .portfolio-dashboard > .kpi-cell { grid-column: span 4; }
+}
+@media (max-width: 47.5rem) {
+  .view-tools { align-items: stretch; }
+  .view-tools .segmented { width: 100%; }
+  .dashboard-intro { align-items: start; }
+  .dashboard-intro .statement-action { width: 100%; }
+  .section-heading { gap: var(--space-1); }
+  .empty-portfolio { padding: var(--space-4); }
+  .account { grid-template-columns: minmax(0, 1fr); }
+  .journey-steps { display: grid; gap: var(--space-2); }
 }
 
 /* ---------- Controls ---------- */

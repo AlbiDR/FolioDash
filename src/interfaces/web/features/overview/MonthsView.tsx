@@ -20,7 +20,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
       <a class="back-link" href="#overview">
         <Icon name="back" size={18} /> Portfolio
       </a>
-      <h2 id="months-heading" class="screen-title">Month by month</h2>
+      <header class="journey-intro"><p class="eyebrow">The story behind your balance</p><h2 id="months-heading" class="screen-title">Month by month</h2><p>Revisit a statement, then compare the complete history below.</p></header>
       {dates.length === 0 ? (
         <p>No statements have been imported yet.</p>
       ) : (

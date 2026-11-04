@@ -115,8 +115,7 @@ export function App(): JSX.Element {
     writeSidebarCollapsed(browserPrivacyStorage, sidebarCollapsed);
   }, [sidebarCollapsed]);
   const variant = demoVariantFrom(window.location.search);
-  const recorded = data.mode !== "signed-out" && data.ledger.snapshots.length > 0;
-  const model = recorded ? overviewFor(data.ledger, "recorded") : demoFor(variant);
+  const model = data.mode === "signed-out" ? demoFor(variant) : overviewFor(data.ledger, "recorded");
   const current = navEntryOf(route);
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
@@ -141,7 +140,7 @@ export function App(): JSX.Element {
           document.getElementById("main-content")?.focus();
         }}>Skip to content</a>
         <nav class="main-nav" id="main-nav" aria-label="Main" inert={sidebarHidden}>
-          <p class="brand">FolioDash</p>
+          <p class="brand"><img src={`${import.meta.env.BASE_URL}icons/icon.svg`} width="32" height="32" alt="" />FolioDash</p>
           <ul class="nav-list" style={{ "--nav-count": NAV.length, "--nav-index": Math.max(0, NAV.findIndex(entry => entry.id === current)) }}>
             {NAV.map((entry) => (
               <li key={entry.id}>
@@ -180,12 +179,6 @@ export function App(): JSX.Element {
                 <span key={source.label} class="source-label">{source.label}</span>
               </a>
               <div class="topbar-controls">
-                {(route.name === "overview" || route.name === "fund") && (
-                  <>
-                    <span class="control-label">Chart period</span>
-                    <RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} />
-                  </>
-                )}
                 <PrivacyToggle hidden={hidden} onChange={setHidden} />
               </div>
             </header>
@@ -197,7 +190,7 @@ export function App(): JSX.Element {
                 </button>
               </p>
             )}
-            {portfolioScreen && data.mode === "signed-out" && (
+            {portfolioScreen && route.name !== "overview" && data.mode === "signed-out" && (
               <p class="notice" role="status">
                 Demonstration with invented data. Nothing here is yours until you continue with Google.
               </p>
@@ -206,48 +199,6 @@ export function App(): JSX.Element {
               <p class="notice" role="status">
                 Your Google Sheet needs attention. <a href="#connection">See what to do</a>
               </p>
-            )}
-            {route.name === "overview" && data.mode === "signed-out" && (
-              <GetStarted
-                clientConfigured={clientConfigured}
-                connect={() => session.connect()}
-                onReady={() => {
-                  window.location.hash = "#import";
-                }}
-              />
-            )}
-            {route.name === "overview" && data.mode !== "signed-out" && data.ledger.snapshots.length === 0 && (
-              <div class="card get-started">
-                <h2 class="card-title">Your Google Sheet is ready</h2>
-                <p class="card-subtitle">Next: import a bank statement or your existing statement history.</p>
-                <a class="primary link-button" href="#import">Import bank statements</a>
-              </div>
-            )}
-            {route.name === "overview" && data.mode === "signed-out" && (
-              <details class="demo-picker">
-                <summary>Explore demo portfolios</summary>
-                <nav aria-label="Demonstration portfolios">
-                  <ul class="demo-nav">
-                    <li class="demo-label">Demo portfolios:</li>
-                    {DEMO_VARIANTS.map((entry) => (
-                      <li key={entry.id}>
-                        <a href={`?demo=${entry.id}#overview`} aria-current={entry.id === variant ? "page" : undefined}>
-                          {entry.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </details>
-            )}
-            {(route.name === "import" || route.name === "history") && (
-              <div class="mode-row">
-                <nav class="segmented" aria-label="What to import">
-                  <a href="#import" aria-current={route.name === "import" ? "page" : undefined}>Bank statements</a>
-                  <a href="#history" aria-current={route.name === "history" ? "page" : undefined}>Whole history</a>
-                </nav>
-                <p class="hint">Import one statement, several bank exports, or a workbook with one statement per sheet. Whole history guides you through the complete review.</p>
-              </div>
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
               <p class="notice" role="status">
@@ -264,8 +215,36 @@ export function App(): JSX.Element {
             )}
             <main id="main-content" tabIndex={-1}>
               {importLocked && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
+              {(route.name === "overview" || route.name === "fund") && model.dates.length > 0 && <div class="view-tools"><div><span class="control-label">Chart period</span><span class="hint">Changes the charts, not your latest figures.</span></div><RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} /></div>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && <OverviewView model={model} range={range} />}
+              {route.name === "overview" && data.mode === "signed-out" && (
+                <GetStarted
+                  clientConfigured={clientConfigured}
+                  connect={() => session.connect()}
+                  onReady={() => {
+                    window.location.hash = "#import";
+                  }}
+                />
+              )}
+              {route.name === "overview" && data.mode === "signed-out" && (
+                <details class="demo-picker">
+                  <summary>Explore demo portfolios</summary>
+                  <nav aria-label="Demonstration portfolios">
+                    <ul class="demo-nav">
+                      <li class="demo-label">Demo portfolios:</li>
+                      {DEMO_VARIANTS.map((entry) => (
+                        <li key={entry.id}>
+                          <a href={`?demo=${entry.id}#overview`} aria-current={entry.id === variant ? "page" : undefined}>
+                            {entry.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                </details>
+              )}
+
               {route.name === "months" && <MonthsView model={model} />}
               {route.name === "fund" && <FundView model={model} isin={route.isin} range={range} />}
               {route.name === "import" && (
@@ -278,10 +257,10 @@ export function App(): JSX.Element {
                   onWorkflowLock={setImportLocked}
                 />
               )}
-              {route.name === "history" && <>
+              {route.name === "history" && (
                 <ImportView historyMode prepare={prepareImport} ledger={data.ledger} createRevision={() => crypto.randomUUID()} onRecord={() => undefined} save={session.save} onWorkflowLock={setImportLocked} />
-                {!importLocked && <details class="setup-details"><summary>Import an existing FolioDash JSON history file</summary><HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} /></details>}
-              </>}
+              )}
+              {(route.name === "import" || route.name === "history") && !importLocked && <details class="setup-details"><summary>Import an existing FolioDash JSON history file</summary><HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} /></details>}
               {route.name === "connection" && (
                 <AccountView
                   state={data}

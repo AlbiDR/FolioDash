@@ -343,7 +343,8 @@ export function ImportView(props: {
 
   return (
     <section aria-labelledby="import-heading" class="import">
-      <h2 id="import-heading">{props.historyMode ? "Start with your bank statements" : "Add a portfolio update"}</h2>
+      <header class="journey-intro"><p class="eyebrow">Build your portfolio, one statement at a time</p><h2 id="import-heading">{props.historyMode ? "Bring your history together" : "Update your portfolio"}</h2><p>One export or a whole history. Review the details, then save with confidence.</p></header>
+      <ol class="journey-steps" aria-label="Import process"><li><span>01</span> Choose statements</li><li><span>02</span> Review dates &amp; movements</li><li><span>03</span> Save &amp; check</li></ol>
       {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>

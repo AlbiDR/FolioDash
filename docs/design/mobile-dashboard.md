@@ -3,6 +3,8 @@
 Implemented 2026-11-04. This is a presentation change; financial definitions,
 account access and import consent retain their existing owners.
 
+Subsequent consolidation on the same date is recorded in [Dashboard coherence](dashboard-coherence.md). It retains these reflow rules while using three period cards (total gain stays in the hero), a separate chart-period row, paired holdings/allocation and disclosed supporting analysis. The earlier four-card verification below is historical evidence for that earlier layout.
+
 ## Research translated into product rules
 
 A bento grid is a way to group related information, not a requirement to keep
