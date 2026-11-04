@@ -17,7 +17,10 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: apps-script-deploy
@@ -27,6 +30,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Node.js
@@ -41,23 +45,55 @@ jobs:
       - name: Verify project
         run: npm run verify
 
-      - name: Build the Apps Script bundle
-        run: npm run build:apps-script
+      - name: Audit dependencies
+        run: npm run audit:dependencies
 
-      - name: Write clasp credentials and project link
+      # npm run verify already builds and checks dist/apps-script.
+      # Install the deployment tool before the Google credential exists on disk.
+      - name: Install clasp
+        run: >-
+          npm install --prefix "$RUNNER_TEMP/foliodash-clasp"
+          --no-save --package-lock=false --ignore-scripts --no-audit --no-fund
+          "@google/clasp@${CLASP_VERSION}"
+
+      - name: Reject a stale revision before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current_main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ "$current_main_sha" != "$GITHUB_SHA" ]]; then
+            printf '%s\n' '::error::This revision is no longer the current main revision. Dispatch a new deployment from main.'
+            exit 1
+          fi
+
+      - name: Validate deployment configuration and write clasp credentials
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
           SCRIPT_ID: ${{ vars.APPS_SCRIPT_SCRIPT_ID }}
+          DEPLOYMENT_ID: ${{ vars.APPS_SCRIPT_DEPLOYMENT_ID }}
         run: |
           set -euo pipefail
-          test -n "$CLASPRC_JSON" && test -n "$SCRIPT_ID"
+          if [[ -z "$CLASPRC_JSON" || -z "$SCRIPT_ID" || -z "$DEPLOYMENT_ID" ]]; then
+            printf '%s\n' '::error::Configure CLASPRC_JSON, APPS_SCRIPT_SCRIPT_ID and APPS_SCRIPT_DEPLOYMENT_ID before deploying.'
+            exit 1
+          fi
+          node --input-type=module <<'NODE'
+          try {
+            const credential = JSON.parse(process.env.CLASPRC_JSON);
+            if (credential === null || typeof credential !== "object" || Array.isArray(credential)) throw new Error();
+          } catch {
+            console.error("::error::CLASPRC_JSON must contain a valid clasp credential object.");
+            process.exit(1);
+          }
+          NODE
           umask 077
           printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
-          printf '{"scriptId":"%s","rootDir":"."}' "$SCRIPT_ID" > dist/apps-script/.clasp.json
+          node --input-type=module -e 'import { writeFileSync } from "node:fs"; writeFileSync("dist/apps-script/.clasp.json", JSON.stringify({ scriptId: process.env.SCRIPT_ID, rootDir: "." }));'
 
       - name: Push the bundle
         working-directory: dist/apps-script
-        run: npx --yes "@google/clasp@${CLASP_VERSION}" push --force
+        run: '"$RUNNER_TEMP/foliodash-clasp/node_modules/.bin/clasp" push --force'
 
       - name: Move the API executable deployment to the new version
         working-directory: dist/apps-script
@@ -65,8 +101,7 @@ jobs:
           DEPLOYMENT_ID: ${{ vars.APPS_SCRIPT_DEPLOYMENT_ID }}
         run: |
           set -euo pipefail
-          test -n "$DEPLOYMENT_ID"
-          npx --yes "@google/clasp@${CLASP_VERSION}" redeploy "$DEPLOYMENT_ID" -d "FolioDash ${GITHUB_SHA::7}"
+          "$RUNNER_TEMP/foliodash-clasp/node_modules/.bin/clasp" redeploy "$DEPLOYMENT_ID" -d "FolioDash ${GITHUB_SHA::7}"
 
       - name: Remove credentials
         if: always()

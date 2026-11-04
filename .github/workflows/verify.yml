@@ -7,22 +7,41 @@ on:
   schedule:
     - cron: "11 5 * * 3"
   workflow_dispatch:
-  # Lets the site deployment run exactly the same checks before it publishes.
-  workflow_call:
 
 permissions:
   contents: read
 
-concurrency:
-  # github.workflow is the caller's name when called, so a deploy never cancels the push check.
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
+  workflows:
+    name: Check GitHub Actions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: workflows-${{ github.event_name }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Validate workflow definitions
+        run: npm run verify:workflows
+
   verify:
     name: Verify (Node ${{ matrix.node }})
+    needs: workflows
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # Supersede checks for this event/ref without cancelling an active deployment.
+    concurrency:
+      group: verify-${{ github.event_name }}-${{ github.ref }}-${{ matrix.node }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -43,11 +62,37 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Check punctuation (no em or en dashes)
-        run: npm run verify:punctuation
+      - name: Check public release configuration
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+        run: |
+          if [[ -z "$VITE_GOOGLE_CLIENT_ID" ]]; then
+            echo "::error::Set the public repository variable VITE_GOOGLE_CLIENT_ID before releasing."
+            exit 1
+          fi
 
       - name: Verify project
         run: npm run verify
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Audit dependencies
         run: npm run audit:dependencies
+
+      - name: Upload the verified site
+        if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/web
+          retention-days: 1
+
+  deploy:
+    name: Publish verified site
+    needs: [workflows, verify]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-pages.yml
