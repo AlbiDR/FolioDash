@@ -108,6 +108,13 @@ export function planImport(state: LedgerState, statement: StatementInput): PlanR
   return rows;
 }
 
+/** The current monthly append rule, shared by preflight and the actual financial write. */
+export function statementDateIssue(date: IsoDate, previous: IsoDate | undefined): LedgerIssue | null {
+  return previous !== undefined && monthSerial(date) <= monthSerial(previous)
+    ? { code: "date-not-later", isin: null, message: "That month is already recorded. A statement must fall in a later calendar month." }
+    : null;
+}
+
 /**
  * Records one statement. Commands are matched by ISIN, never by row order or
  * name. Nothing is changed unless every rule holds; the returned ledger is new
@@ -126,9 +133,8 @@ export function applyImport(
   };
 
   const latest = state.snapshots[state.snapshots.length - 1];
-  if (latest !== undefined && monthSerial(date) <= monthSerial(latest.date)) {
-    add("date-not-later", null, "That month is already recorded. A statement must fall in a later calendar month.");
-  }
+  const dateIssue = statementDateIssue(date, latest?.date);
+  if (dateIssue !== null) issues.push(dateIssue);
 
   const plan = planImport(state, statement);
   const byIsin = new Map(commands.map((command) => [command.isin, command]));

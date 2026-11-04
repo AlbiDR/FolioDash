@@ -16,6 +16,7 @@ FD-013 selects GitHub frontend delivery with user-owned private Google Sheets an
 | Start with no history | Explain the first import; no empty broken charts or manual bootstrap scripts | Synthetic fresh-account browser journey |
 | Connect a Google workbook | Authenticate, prove authorised caller/workbook binding and explain scopes; no shared secret or public-sheet step | Real OAuth/API executable test from the deployed origin with two Google accounts |
 | Import a statement | Select XLSX, review date/funds/flows, confirm once; show progress and clear saved state | Real file picker on Mac and Android plus synthetic browser integration |
+| Start with existing history | Select multiple supported bank Excel exports or a workbook with a statement per sheet; review dates and cash decisions in order, then confirm the complete selection. Surface duplicate months, invalid and unrecognized sheets before writing; retain confirmed progress and reconcile uncertain saves | [Excel history implementation and local evidence](importing-history.md); real Mac/Android file picker and synthetic Google save/recovery journey remain required |
 | Repeat a file/date | Explain already-recorded versus revised content; never duplicate movements | Concurrent API/commit tests and UI journey |
 | View portfolio | Opening KPIs and chart values agree with the same committed revision | Independent expected-value and real chart tests |
 | Select a fund | Name-based selection; ISIN accessible; only that view updates | Keyboard/touch journey and measured selection latency |

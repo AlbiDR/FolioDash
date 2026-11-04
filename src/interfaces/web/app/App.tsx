@@ -22,6 +22,7 @@ import { overviewFromLedger } from "./overviewFromLedger";
 import { type Route, navEntryOf, routeFrom } from "./routes";
 import { watchForUpdate } from "./serviceWorker";
 import { describeAge } from "../features/account/timeAgo";
+import { describeConnect } from "../features/account/accountText";
 import { useNow, useSession } from "./useSession";
 
 const TITLES = { overview: "Portfolio", months: "Month by month", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
@@ -55,13 +56,38 @@ const NAV: readonly { readonly id: ReturnType<typeof navEntryOf>; readonly href:
 
 export function App(): JSX.Element {
   const [route, setRoute] = useState<Route>(routeFrom(window.location.hash));
+  const [importLocked, setImportLocked] = useState(false);
+  const [importNavigationMessage, setImportNavigationMessage] = useState("");
+  const [importConnecting, setImportConnecting] = useState(false);
+  const [importConnectMessage, setImportConnectMessage] = useState("");
   // The person's data: the Google spreadsheet is the record, this device keeps a copy, and the session joins them.
   const [clientId, setClientId] = useState(() => resolveClientId(import.meta.env.VITE_GOOGLE_CLIENT_ID, browserPrivacyStorage));
   const session = useMemo(() => createBrowserSession(clientId), [clientId]);
   const data = useSession(session);
+  async function connectForImport(): Promise<void> {
+    setImportConnecting(true);
+    setImportConnectMessage("");
+    try {
+      const outcome = await session.connect();
+      if (outcome.status !== "connected") {
+        const described = describeConnect(outcome);
+        setImportConnectMessage(`${described.title}. ${described.body} Your import review is still here.`);
+      }
+    } catch {
+      setImportConnectMessage("Google connection did not complete. Your import review is still here. Try connecting again.");
+    } finally {
+      setImportConnecting(false);
+    }
+  }
   const now = useNow(60_000);
   useEffect(() => {
     const update = (): void => {
+      if (importLocked && routeFrom(window.location.hash).name !== route.name) {
+        window.history.replaceState(null, "", `#${route.name}`);
+        setImportNavigationMessage("Finish the import or return to statement selection before leaving. Your reviewed answers are still here.");
+        return;
+      }
+      setImportNavigationMessage("");
       setRoute(routeFrom(window.location.hash));
       window.scrollTo(0, 0);
       requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
@@ -70,7 +96,7 @@ export function App(): JSX.Element {
     return () => {
       window.removeEventListener("hashchange", update);
     };
-  }, []);
+  }, [importLocked, route.name]);
 
   // A newer version of the app, kept waiting until the person chooses to switch.
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
@@ -192,8 +218,8 @@ export function App(): JSX.Element {
             {route.name === "overview" && data.mode !== "signed-out" && data.ledger.snapshots.length === 0 && (
               <div class="card get-started">
                 <h2 class="card-title">Your Google Sheet is ready</h2>
-                <p class="card-subtitle">Next: import your first bank statement.</p>
-                <a class="primary link-button" href="#import">Import a statement</a>
+                <p class="card-subtitle">Next: import a bank statement or your existing statement history.</p>
+                <a class="primary link-button" href="#import">Import bank statements</a>
               </div>
             )}
             {route.name === "overview" && data.mode === "signed-out" && (
@@ -216,15 +242,18 @@ export function App(): JSX.Element {
             {(route.name === "import" || route.name === "history") && (
               <div class="mode-row">
                 <nav class="segmented" aria-label="What to import">
-                  <a href="#import" aria-current={route.name === "import" ? "page" : undefined}>One statement</a>
+                  <a href="#import" aria-current={route.name === "import" ? "page" : undefined}>Bank statements</a>
                   <a href="#history" aria-current={route.name === "history" ? "page" : undefined}>Whole history</a>
                 </nav>
-                <p class="hint">Add values manually or from Excel. Use Whole history to restore many months at once.</p>
+                <p class="hint">Import one statement, several bank exports, or a workbook with one statement per sheet. Whole history guides you through the complete review.</p>
               </div>
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
               <p class="notice" role="status">
-                Nothing can be saved yet. <a href="#connection">Continue with Google</a> first, which takes one click.
+                Continue with Google to save your statements. You can review the files first.{" "}
+                <button type="button" disabled={importConnecting || !clientConfigured} onClick={() => { void connectForImport(); }}>{importConnecting ? "Connecting to Google…" : "Continue with Google"}</button>
+                {!clientConfigured && <> Set up Google on <a href="#connection">Your data</a> first.</>}
+                {importConnectMessage !== "" && <span>{importConnectMessage}</span>}
               </p>
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
@@ -233,6 +262,7 @@ export function App(): JSX.Element {
               </p>
             )}
             <main id="main-content" tabIndex={-1}>
+              {importLocked && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && <OverviewView model={model} range={range} />}
               {route.name === "months" && <MonthsView model={model} />}
@@ -244,9 +274,13 @@ export function App(): JSX.Element {
                   createRevision={() => crypto.randomUUID()}
                   onRecord={() => undefined}
                   save={session.save}
+                  onWorkflowLock={setImportLocked}
                 />
               )}
-              {route.name === "history" && <HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} />}
+              {route.name === "history" && <>
+                <ImportView historyMode prepare={prepareImport} ledger={data.ledger} createRevision={() => crypto.randomUUID()} onRecord={() => undefined} save={session.save} onWorkflowLock={setImportLocked} />
+                {!importLocked && <details class="setup-details"><summary>Import an existing FolioDash JSON history file</summary><HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} /></details>}
+              </>}
               {route.name === "connection" && (
                 <AccountView
                   state={data}

@@ -1,11 +1,13 @@
 import type { JSX } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import { Amount } from "../../presentation/privacy/privacy";
 import type { DateSource } from "../../../../core/StatementDate";
 import { CashQuestions } from "./CashQuestions";
 import { ManualEntry } from "./ManualEntry";
+import { ExcelHistoryView } from "./ExcelHistoryView";
+import { prepareExcelHistory, type ExcelHistoryReview } from "../../../../applications/ExcelHistory";
 import type { ImportFile, ImportPreparer, ImportReview, RemoteSave, ReviewAdjustment, ReviewIssue, ReviewStatement } from "../../../../applications/ImportModel";
 
 const MAX_CELLS_LISTED = 8;
@@ -33,6 +35,7 @@ const ISSUE_TITLE: Readonly<Record<string, string>> = {
 type Phase =
   | { readonly name: "idle" }
   | { readonly name: "reading" }
+  | { readonly name: "batch"; readonly review: ExcelHistoryReview }
   | { readonly name: "reviewed"; readonly review: ImportReview };
 
 function groupAdjustments(adjustments: readonly ReviewAdjustment[]): { message: string; cells: string[] }[] {
@@ -291,6 +294,8 @@ export function ImportView(props: {
   /** Present once a spreadsheet is connected; statements are then saved there instead of kept in this tab. */
   readonly save?: RemoteSave;
   readonly initialPhase?: Phase;
+  readonly historyMode?: boolean;
+  readonly onWorkflowLock?: (locked: boolean) => void;
 }): JSX.Element {
   const [phase, setPhase] = useState<Phase>(props.initialPhase ?? { name: "idle" });
   const [sheetIndex, setSheetIndex] = useState(0);
@@ -298,19 +303,34 @@ export function ImportView(props: {
   const [method, setMethod] = useState<"file" | "manual">("file");
   const [manualStarted, setManualStarted] = useState(false);
   const [saveLocked, setSaveLocked] = useState(false);
+  const [batchLocked, setBatchLocked] = useState(false);
+  useEffect(() => { props.onWorkflowLock?.(batchLocked); }, [batchLocked, props.onWorkflowLock]);
+  useEffect(() => () => { props.onWorkflowLock?.(false); }, [props.onWorkflowLock]);
   const fileSelection = useRef(0);
 
-  async function choose(file: File): Promise<void> {
+  async function choose(files: readonly File[]): Promise<void> {
     const selection = ++fileSelection.current;
     setPhase({ name: "reading" });
-    const wrapped: ImportFile = {
+    const wrapped: ImportFile[] = files.map((file) => ({
       name: file.name,
       size: file.size,
       lastModified: file.lastModified,
       read: async () => new Uint8Array(await file.arrayBuffer()),
-    };
+    }));
     try {
-      const review = await props.prepare(wrapped);
+      if (props.historyMode || wrapped.length > 1) {
+        const review = await prepareExcelHistory(wrapped, props.prepare);
+        if (selection === fileSelection.current) setPhase({ name: "batch", review });
+        return;
+      }
+      const first = wrapped[0];
+      if (first === undefined) return;
+      const review = await props.prepare(first);
+      if (review.status === "reviewed" && (review.sheets.length > 1 || (review.workbookSheetCount ?? 0) > 1)) {
+        const batch = await prepareExcelHistory(wrapped, () => Promise.resolve(review));
+        if (selection === fileSelection.current) setPhase({ name: "batch", review: batch });
+        return;
+      }
       if (selection !== fileSelection.current) return;
       setSheetIndex(Math.max(0, review.status === "reviewed" ? review.sheets.findIndex((entry) => entry.outcome.ok) : 0));
       setDate(review.status === "reviewed" ? (review.dateCandidate?.date ?? "") : "");
@@ -323,30 +343,32 @@ export function ImportView(props: {
 
   return (
     <section aria-labelledby="import-heading" class="import">
-      <h2 id="import-heading">Add a portfolio update</h2>
-      <div class="segmented entry-methods" role="group" aria-label="Entry method">
-        <button type="button" disabled={saveLocked} aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
-        <button type="button" disabled={saveLocked} aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
-      </div>
+      <h2 id="import-heading">{props.historyMode ? "Start with your bank statements" : "Add a portfolio update"}</h2>
+      {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
+        <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
+        <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
+      </div>}
       <div class="entry-panel" hidden={method !== "manual"}>
         {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
       </div>
       <div class="entry-panel" hidden={method !== "file"}>
       <p>
-        Choose the Excel file exactly as the bank exported it. It is read and checked in this browser; it is not
-        uploaded.
+        Choose one or more Excel files exported by your bank, or one workbook containing a statement on each sheet.
+        Supported Fideuram holdings sheets are checked in this browser. The original Excel files are not uploaded;
+        confirming an import saves the reviewed sheet contents and your decisions to your private Google spreadsheet.
       </p>
       <div class="field">
-        <label for="statement-file">Statement file (.xlsx)</label>
+        <label for="statement-file">Bank statements (.xlsx)</label>
         <input
           id="statement-file"
-          disabled={saveLocked}
+          disabled={saveLocked || batchLocked || phase.name === "reading"}
           type="file"
+          multiple
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           onChange={(event) => {
             const input = event.currentTarget;
-            const file = input.files?.[0];
-            if (file !== undefined) void choose(file);
+            const files = Array.from(input.files ?? []);
+            if (files.length > 0) void choose(files);
             input.value = "";
           }}
         />
@@ -362,6 +384,8 @@ export function ImportView(props: {
           </p>
         )}
       </div>
+
+      {phase.name === "batch" && <ExcelHistoryView key={fileSelection.current} review={phase.review} ledger={props.ledger} onRecord={props.onRecord} onLock={setBatchLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
 
       {phase.name === "reviewed" &&
         (phase.review.status === "unreadable-file" ? (

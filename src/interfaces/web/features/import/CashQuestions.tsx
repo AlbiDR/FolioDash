@@ -2,7 +2,7 @@ import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
 import type { StatementSource } from "../../../../applications/LedgerService";
-import type { CheckResult, RecordResult, RemoteSave } from "../../../../applications/ImportModel";
+import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../../applications/ImportModel";
 import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/Money";
@@ -22,6 +22,10 @@ interface Answer {
 }
 
 const BLANK: Answer = { opening: "", moneyIn: "", moneyOut: "", name: "", sold: "", zero: "keep", reopen: false };
+export interface CashReviewDraft {
+  readonly answers: Readonly<Record<string, Answer>>;
+  readonly moneyMoved: "yes" | "no" | "";
+}
 const AMOUNT_HINT = "Use Italian notation, for example 1.000,50. Enter 0 if there was none.";
 
 function amount(text: string): EuroCents | null {
@@ -140,6 +144,10 @@ export function CashQuestions(props: {
   readonly ledger: LedgerState;
   readonly createRevision: () => string;
   readonly onRecord: (next: LedgerState) => void;
+  /** Collect a reviewed decision locally for a later, explicit whole-history confirmation. */
+  readonly onReview?: (request: RecordRequest, next: LedgerState) => void;
+  readonly initialDraft?: CashReviewDraft;
+  readonly onDraft?: (draft: CashReviewDraft) => void;
   /** Present once the user has connected a spreadsheet. Without it, a statement is kept in this tab only. */
   readonly save?: RemoteSave;
   /** The bank statement being imported, saved with the month so the ledger can always be rebuilt from it. */
@@ -152,8 +160,9 @@ export function CashQuestions(props: {
   }, [saving.name, props.onSaveLock]);
   // One id per user action. It is kept across a failed attempt so a retry cannot be recorded twice.
   const [commandId, setCommandId] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Readonly<Record<string, Answer>>>({});
-  const [moneyMoved, setMoneyMoved] = useState<"yes" | "no" | "">("");
+  const [answers, setAnswers] = useState<Readonly<Record<string, Answer>>>(props.initialDraft?.answers ?? {});
+  const [moneyMoved, setMoneyMoved] = useState<"yes" | "no" | "">(props.initialDraft?.moneyMoved ?? "");
+  useEffect(() => { props.onDraft?.({ answers, moneyMoved }); }, [answers, moneyMoved, props.onDraft]);
   const [attempted, setAttempted] = useState(false);
 
   const rows = planImport(props.ledger, props.statement);
@@ -222,6 +231,10 @@ export function CashQuestions(props: {
   function record(): void {
     setAttempted(true);
     if (result === null || !result.ok) return;
+    if (props.onReview !== undefined) {
+      props.onReview({ date: props.date, statement: props.statement, commands: built.commands, ...(props.source === undefined ? {} : { source: props.source }) }, result.state);
+      return;
+    }
     if (props.save !== undefined) {
       void saveToGoogle(props.save);
       return;
@@ -390,12 +403,14 @@ export function CashQuestions(props: {
       )}
 
       <p class="hint">
-        {props.save === undefined
+        {props.onReview !== undefined
+          ? "This step only prepares your history. Nothing is saved until you review the complete history and confirm."
+          : props.save === undefined
           ? "Not connected to Google: this statement will be kept in this browser tab only and is lost when the page reloads."
           : "Confirming saves this statement to your connected Google spreadsheet."}
       </p>
       <button type="button" class="primary" onClick={record} disabled={saving.name === "saving" || saving.name === "unknown"}>
-        Confirm and record this statement
+        {props.onReview === undefined ? "Confirm and record this statement" : "Keep these answers and continue"}
       </button>
       {hasErrors && attempted && <p class="field-error" role="alert">Some questions above still need an answer.</p>}
       <div aria-live="polite" data-busy={saving.name === "saving"} class="status">

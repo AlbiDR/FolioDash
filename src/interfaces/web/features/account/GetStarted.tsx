@@ -28,7 +28,7 @@ export function GetStarted(props: { readonly clientConfigured: boolean; readonly
   return (
     <div class="card get-started">
       <h2 class="card-title">Start your own portfolio</h2>
-      <p class="card-subtitle">Connect Google, then import your first statement.</p>
+      <p class="card-subtitle">Connect Google, then import your bank statements.</p>
       <details class="setup-details">
         <summary>How setup works</summary>
         <ol class="steps">
@@ -36,7 +36,7 @@ export function GetStarted(props: { readonly clientConfigured: boolean; readonly
             <strong>Continue with Google.</strong> FolioDash creates one private spreadsheet in your own Google Drive. It can only ever see that one file.
           </li>
           <li>
-            <strong>Import your first bank statement.</strong> Drop in the Excel file from your bank. Your figures appear straight away.
+            <strong>Import your bank statements.</strong> Choose one or more bank Excel exports, or a workbook with a statement on each sheet. Check the dates and cash movements, then confirm to create your portfolio.
           </li>
         </ol>
       </details>

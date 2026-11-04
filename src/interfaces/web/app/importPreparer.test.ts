@@ -4,6 +4,8 @@ import { buildXlsx } from "../../../../tests/fixtures/SyntheticXlsx";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
 import type { ImportFile } from "../../../applications/ImportModel";
 import { createImportPreparer } from "./importPreparer";
+import { planExcelHistory, prepareExcelHistory } from "../../../applications/ExcelHistory";
+import { EMPTY_LEDGER } from "../../../core/Ledger";
 
 // A fixed UTC clock, so the tests do not depend on the machine's time zone.
 function utcDate(milliseconds: number): IsoDate | null {
@@ -55,6 +57,39 @@ describe("createImportPreparer", () => {
     ]);
     const review = await prepare(file(bytes));
     expect(review.status === "reviewed" && review.sheets.map((entry) => entry.name)).toEqual(["April", "May"]);
+  });
+
+  it("prepares an actual multi-sheet workbook using independent sheet dates, ignoring notes and container dates", async () => {
+    const bytes = await buildXlsx([
+      { name: "Bank 2026-03-31", sheet: syntheticSheet() },
+      { name: "Notes", sheet: { rows: [[text("synthetic notes")]], date1904: false } },
+      { name: "31-01-2026", sheet: syntheticSheet() },
+      { name: "February", sheet: syntheticSheet() },
+    ], { created: "2026-11-04T12:00:00Z" });
+    const batch = await prepareExcelHistory([file(bytes)], prepare);
+    expect(batch.problems).toEqual([]);
+    expect(batch.notices).toHaveLength(1);
+    expect(batch.notices[0]).toContain("Notes");
+    expect(batch.entries.map((entry) => [entry.sheet.name, entry.date])).toEqual([
+      ["Bank 2026-03-31", "2026-03-31"], ["31-01-2026", "2026-01-31"], ["February", ""],
+    ]);
+    expect(planExcelHistory(batch.entries, EMPTY_LEDGER).ok).toBe(false);
+    const confirmed = batch.entries.map((entry) => entry.date === "" ? { ...entry, date: "2026-02-28" } : entry);
+    const plan = planExcelHistory(confirmed, EMPTY_LEDGER);
+    expect(plan.ok && plan.entries.map((entry) => entry.date)).toEqual(["2026-01-31", "2026-02-28", "2026-03-31"]);
+  });
+
+  it("checks every sheet and keeps a malformed statement visible instead of silently omitting it", async () => {
+    const broken = withCell(syntheticSheet(), ROW.productA, COL.H, FORMULA);
+    const bytes = await buildXlsx([
+      { name: "2026-01-31", sheet: syntheticSheet() },
+      { name: "2026-02-28", sheet: broken },
+    ]);
+    const batch = await prepareExcelHistory([file(bytes)], prepare);
+    expect(batch.entries).toHaveLength(2);
+    expect(planExcelHistory(batch.entries, EMPTY_LEDGER).ok).toBe(false);
+    const excluded = batch.entries.map((entry) => ({ ...entry, selected: entry.sheet.outcome.ok }));
+    expect(planExcelHistory(excluded, EMPTY_LEDGER).ok).toBe(true);
   });
 
   it("reports a holdings sheet that fails its checks, with the cell", async () => {

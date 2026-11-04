@@ -3,6 +3,7 @@ import { XLSX_LIMITS } from "../../../adapters/xlsx/XlsxError";
 import { readXlsx } from "../../../adapters/xlsx/XlsxReader";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
 import { statementDateCandidate } from "../../../core/StatementDate";
+import { dateInSheetName } from "../../../applications/ExcelHistory";
 import type { ImportFile, ImportPreparer, ImportReview, ReviewedSheet } from "../../../applications/ImportModel";
 
 /** The user's own calendar date for an instant, using the browser's time zone. */
@@ -25,11 +26,16 @@ export function createImportPreparer(localDateOf: (milliseconds: number) => IsoD
     if (!result.ok) return { status: "unreadable-file", message: result.message };
 
     const sheets: ReviewedSheet[] = [];
+    const ignoredSheets: string[] = [];
     for (const entry of result.sheets) {
       const interpreted = interpretFideuramSheet(entry.sheet);
-      if (!interpreted.ok && interpreted.issues.every((issue) => issue.code === "layout-not-found")) continue;
+      if (!interpreted.ok && interpreted.issues.every((issue) => issue.code === "layout-not-found")) {
+        ignoredSheets.push(entry.name);
+        continue;
+      }
       sheets.push({
         name: entry.name,
+        dateCandidate: dateInSheetName(entry.name),
         raw: entry.sheet,
         outcome: interpreted.ok
           ? { ok: true, statement: interpreted.statement }
@@ -39,6 +45,8 @@ export function createImportPreparer(localDateOf: (milliseconds: number) => IsoD
     return {
       status: "reviewed",
       sheets,
+      ignoredSheets,
+      workbookSheetCount: result.sheets.length,
       dateCandidate: statementDateCandidate({
         created: result.created,
         fileName: file.name,

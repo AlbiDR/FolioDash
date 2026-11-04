@@ -51,6 +51,8 @@ export type SheetOutcome =
 
 export interface ReviewedSheet {
   readonly name: string;
+  /** A date proposed from this sheet's name; never the workbook's creation date. */
+  readonly dateCandidate?: IsoDate | null;
   readonly outcome: SheetOutcome;
   /** The sheet exactly as read from the file, kept with the month it becomes. */
   readonly raw: RawSheet;
@@ -59,7 +61,13 @@ export interface ReviewedSheet {
 export type ImportReview =
   | { readonly status: "unreadable-file"; readonly message: string }
   /** `sheets` holds every sheet that looks like a bank holdings sheet; it may be empty. */
-  | { readonly status: "reviewed"; readonly sheets: readonly ReviewedSheet[]; readonly dateCandidate: DateCandidate | null };
+  | {
+      readonly status: "reviewed";
+      readonly sheets: readonly ReviewedSheet[];
+      readonly dateCandidate: DateCandidate | null;
+      readonly workbookSheetCount?: number;
+      readonly ignoredSheets?: readonly string[];
+    };
 
 /** Reads and checks a file entirely in the browser. Nothing is saved or sent anywhere. */
 export type ImportPreparer = (file: ImportFile) => Promise<ImportReview>;
