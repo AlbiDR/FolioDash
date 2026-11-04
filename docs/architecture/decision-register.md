@@ -48,6 +48,8 @@ The owner selected feature parity with the legacy Monday-Friday work-expenses sp
 
 Owner follow-up, 2026-11-04: the preparation contract now records the agreed interpretation of blank past weekdays, fully recorded zero-cost workdays and ambiguous partial entries. Remaining reporting rules stay open. The owner also requires clear user journeys, readable data and purposeful microanimations/interactions throughout future work, under the existing web quality and interaction contracts. This remains preparation authority only.
 
+The owner subsequently requested iterative refinement, audit and consolidation of the whole-product experience down to individual interactions. The [experience plan](../design/work-expenses-experience.md) records the resulting proposed UI integration, layout study and implementation order. Navigation, partial-save behaviour and other new design recommendations remain proposals; they do not settle financial policy or authorise implementation, live writes or migration.
+
 ## FD-003: privacy implications of the selected Google direction
 
 ### Current direction
