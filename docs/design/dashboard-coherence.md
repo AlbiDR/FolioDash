@@ -43,3 +43,25 @@ The local production renderer was checked in headless Chrome with invented demo 
 - Light/dark production screenshots inspected between passes; the review removed the setup-first stack, repeated summary figures and clipped duplicate holdings columns.
 
 The session's browser probes are `/tmp/foliodash-consolidation-check.mjs` and `/tmp/foliodash-consolidation-details.mjs`; they are local evidence, not a committed CI browser suite. The screenshots contain only invented data. Physical Android/iOS, screen readers, Firefox/WebKit, installed WebAPK and live Google behavior after these presentation changes are not claimed by this visual pass. Prior Google acceptance evidence retains its original tested scope.
+
+## Bento redesign, 2026-11-05
+
+This supersedes the floating glass shell, ambient gradients and separate Progress/Composition headings described above. The owner requested a substantive redesign using the supplied bento and interface-design references.
+
+The portfolio uses one compact statement-date/action row. The chart range lives here and explicitly affects charts, while period results retain latest-statement semantics. At wide widths, a navy value summary and a grouped period-results surface form the left column; the main trend panel spans both beside them. Tablet widths pair summary and period results before the full-width chart. Phones follow the source order: summary, chart, period results, holdings and allocation. Layout tracks size from content rather than fixed heights. Sparklines remain secondary context beside the period explanations. Unavailable values retain their reasons.
+
+Holdings and allocation follow directly, with analysis and definitions still disclosed. Chart inspection's reset and detailed keyboard instructions now live in Chart tools and values; the date slider and selectable legend remain visible. No financial formulas, financial policy, persistence or save/recovery protocols change.
+
+The shared shell uses an anchored sidebar, a simple page header, solid surfaces and restrained token-owned corners. This updates expenses, import and account surfaces as well as the portfolio. Motion still uses the shared focus, press, selection and reduced-motion rules. The signed gain/loss text retains meaning independently of colour; losses on the navy summary use its high-contrast foreground.
+
+References applied: [responsive CSS Grid composition](https://github.com/microsoft/Resource2Skill/blob/main/skills_wiki/web/responsive_bento_dashboard_grid_05a335e3/text/overview.md), [bento-ui](https://skills.rest/skill/bento-ui), [frontend-design source skill](https://github.com/omanjaya/attendancedev/blob/main/.claude/skills/frontend-design/SKILL.md), and the owner's [Impeccable reference](https://skills.rest/repo/pbakaus/impeccable). Guidance was adapted to the existing Preact implementation and stronger repository accessibility/privacy requirements; no external skill scripts or runtime libraries were installed.
+
+### Verification record
+
+- Revision/build: commit containing this entry; production artifact from `npm run verify`, 2026-11-05.
+- Capability: responsive dashboard composition and shared shell, with existing financial/chart interactions preserved.
+- Environment: local production preview, headless desktop Google Chrome, fresh temporary profile, service-worker bypass; invented demo portfolios only. Viewports 320, 390, 760, 1024 and 1440 CSS pixels; typical, single, many, different and empty portfolios.
+- Method: `npm run verify`; `npm run capture:readme`; browser checks navigating Portfolio, Expenses, Month by month, Import, history and Your data, inspecting page overflow, landmarks and 48px control heights. Repeat portfolio cases with 200% root text. Exercise slider selection, legend highlighting, Escape/reset, range keyboard selection, fund search/clear, analysis disclosure, privacy, sidebar resize and focus clearance. Compare chart paths and ticks before/after inspection. Emulate reduced motion and forced colours.
+- Result: PASS. All 757 tests in 58 files, source/build/PWA/Apps Script gates, and 124 local browser assertions passed. Captured and visually reviewed the actual portfolio renderer in light/dark desktop and dark mobile, plus the shared expense shell. No unhandled browser exceptions in the browser assertion run.
+- Evidence: generated synthetic screenshots in `dist/readme/` (ignored build output); local verification logs `/tmp/foliodash-bento-redesign-verify.log` and `/tmp/foliodash-redesign-browser-results.txt`. These temporary files are local evidence, not durable CI artifacts.
+- Remaining gates: Firefox/WebKit, physical Android, screen-reader review and live Google acceptance NOT RUN for this change. No live-product or hosted-revision verification is claimed.

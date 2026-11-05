@@ -265,9 +265,9 @@ export function App(): JSX.Element {
             )}
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
               {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
-              {(route.name === "overview" || route.name === "fund") && model.dates.length > 0 && <div class="view-tools"><div><span class="control-label">Chart period</span><span class="hint">Changes the charts, not your latest figures.</span></div><RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} /></div>}
+              {route.name === "fund" && model.dates.length > 0 && <div class="view-tools"><div><span class="control-label">Chart period</span><span class="hint">Changes the charts, not your latest figures.</span></div><RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} /></div>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
-              {route.name === "overview" && <OverviewView model={model} range={range} />}
+              {route.name === "overview" && <OverviewView model={model} range={range} onRangeChange={setRange} />}
               {route.name === "expenses" && <ExpensesView
                 days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
                 conflicts={data.mode === "signed-out" ? [] : expenseData.conflicts}

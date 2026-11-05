@@ -3,7 +3,8 @@ import { useRef, useState } from "preact/hooks";
 import { formatDateLong } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
-import type { ChartRange } from "./chartRange";
+import { CHART_RANGES, type ChartRange } from "./chartRange";
+import { RangeSelector } from "../../shared/ui/RangeSelector";
 import { type AllocationSlice, type MonthMetric, dashboardFor } from "./dashboardData";
 import { Donut } from "../../presentation/charts/Donut";
 import { LineChart } from "../../presentation/charts/LineChart";
@@ -46,9 +47,9 @@ function StatCard(props: {
 }
 
 const STATS: readonly { readonly label: string; readonly metric: MonthMetric; readonly caption: string; readonly unavailable: string }[] = [
-  { label: "Month on month", metric: "monthlyGain", caption: "How much the gain changed since last month.", unavailable: "Needs a statement from the month before." },
-  { label: "Year to date", metric: "yearToDateGain", caption: "How much the gain changed since January.", unavailable: "Needs a January statement of this year." },
-  { label: "Year on year", metric: "yearOverYearGain", caption: "How much the gain changed since the same month last year.", unavailable: "Needs a statement from the same month last year." },
+  { label: "Month on month", metric: "monthlyGain", caption: "Change since the previous month.", unavailable: "Needs a statement from the month before." },
+  { label: "Year to date", metric: "yearToDateGain", caption: "Change since January.", unavailable: "Needs a January statement of this year." },
+  { label: "Year on year", metric: "yearOverYearGain", caption: "Change since the same month last year.", unavailable: "Needs a statement from the same month last year." },
 ];
 
 /** The meaning of every figure, in plain words. The exact definitions stay one click further down. */
@@ -58,7 +59,7 @@ const GLOSSARY: readonly { readonly term: string; readonly meaning: string }[] =
   { term: "Gain", meaning: "Fund value minus net invested. It includes profit already made on funds you sold." },
   { term: "Month on month", meaning: "How much the gain changed since last month's statement." },
   { term: "Year to date", meaning: "How much the gain changed since this year's January statement." },
-  { term: "Year on year", meaning: "How much the gain changed since the same month last year." },
+  { term: "Year on year", meaning: "Change since the same month last year." },
   { term: "Percentages", meaning: "A gain divided by net invested. They are not yearly rates." },
 ];
 
@@ -73,8 +74,8 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
   }
   return (
     <div class="card cell-4 allocation-card">
-      <h3 class="card-title">Where your money is</h3>
-      <p class="card-subtitle">Share of the latest statement's fund value. Select a fund to see its history.</p>
+      <h3 class="card-title">Allocation</h3>
+      <p class="card-subtitle">Share of total fund value. Select a fund to explore.</p>
       {props.slices.length === 0 ? <p class="empty-note">No fund is held.</p> : <>
         <Donut
           label="Share of the portfolio by fund"
@@ -118,7 +119,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
  * nothing here calculates a financial result. The grid shows value, trend,
  * period results, allocation, monthly pattern, fund ranking and holdings at once.
  */
-export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange }): JSX.Element {
+export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void }): JSX.Element {
   const [fundQuery, setFundQuery] = useState("");
   const searchInput = useRef<HTMLInputElement>(null);
   function clearSearch(): void {
@@ -153,8 +154,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   return (
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
       <header class="dashboard-intro cell-12">
-        <div><p class="eyebrow">{props.model.source === "demo" ? "Sample portfolio" : "Your latest picture"}</p><h2 id="overview-heading">As of {formatDateLong(lastDate)}</h2><p>Fund values, progress and holdings from your latest statement.</p></div>
-        <a class="quiet-action statement-action" href="#import"><Icon name="import" size={18} /> Add a statement</a>
+        <div><p class="eyebrow">{props.model.source === "demo" ? "Sample portfolio" : "Your latest picture"}</p><h2 id="overview-heading">As of {formatDateLong(lastDate)}</h2></div>
+        <div class="dashboard-actions"><RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} /><a class="primary statement-action" href="#import"><Icon name="import" size={18} /> Add a statement</a></div>
       </header>
 
       <div class="card hero cell-4">
@@ -183,8 +184,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         <LineChart
           id="total-chart"
           key={props.range}
-          title="Your portfolio over time"
-          subtitle="Fund value and net invested, side by side. The dashed line tracks your net cash contributions."
+          title="Portfolio performance"
+          subtitle="Fund value against net invested. Chart period affects this chart and the sparklines."
           description="Two lines over time: the value of all funds, and the cash invested in them, dashed."
           series={d.totalSeries}
           fillFirst
@@ -194,7 +195,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         />
       </div>
 
-      <header class="section-heading cell-12"><div><p class="eyebrow">Progress</p><h3>How your gain has changed</h3></div><p>Latest-statement results, independent of the chart period.{props.model.estimated ? " Cash timing affects percentage estimates." : ""}</p></header>
+      <section class="card period-results cell-4" aria-label="Changes in gain from the latest statement">
+      {props.model.estimated && <p class="hint">Cash timing affects percentage estimates.</p>}
       {STATS.map((stat) => {
         const entry = kpi(stat.label);
         return entry === undefined ? null : (
@@ -204,9 +206,9 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         );
       })}
 
-      <header class="section-heading cell-12"><div><p class="eyebrow">Composition</p><h3>Inside your portfolio</h3></div><p>Explore each fund and see how your value is distributed.</p></header>
+      </section>
       <div class="card cell-8 portfolio-holdings">
-        <h3 class="card-title">Your funds</h3>
+        <h3 class="card-title">Holdings</h3>
         <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
         {funds.length > 0 && <div class="field fund-search">
           <label for="fund-search">Find a fund</label>

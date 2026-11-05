@@ -20,18 +20,6 @@ body {
   font-optical-sizing: auto;
 }
 
-/* A soft ambient wash behind everything, so the glass bars have something to blur. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(40rem 30rem at 8% -5%, var(--ambient-a), transparent 60%),
-    radial-gradient(36rem 28rem at 100% 10%, var(--ambient-b), transparent 60%),
-    radial-gradient(40rem 30rem at 60% 110%, var(--ambient-c), transparent 60%);
-  pointer-events: none;
-}
 
 h1,
 h2,
@@ -75,7 +63,7 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-/* ---------- Shell: floating glass navigation around a solid content layer ---------- */
+/* ---------- Workspace navigation ---------- */
 
 .shell {
   min-height: 100vh;
@@ -88,11 +76,9 @@ select:focus-visible {
   right: var(--page-inset);
   bottom: calc(var(--page-inset) + env(safe-area-inset-bottom));
   padding: 0.35rem;
-  background: var(--glass);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background: var(--color-surface);
   border-radius: var(--shape-full);
-  box-shadow: var(--glass-shadow), inset 0 0 0 1px var(--glass-edge);
+  box-shadow: inset 0 0 0 1px var(--color-border);
 }
 
 .main-nav .brand {
@@ -155,7 +141,7 @@ select:focus-visible {
 @media (min-width: 64rem) {
   .shell {
     display: grid;
-    grid-template-columns: 15rem minmax(0, 1fr);
+    grid-template-columns: 13rem minmax(0, 1fr);
   }
 
   .shell {
@@ -173,17 +159,17 @@ select:focus-visible {
   }
 
   .main-nav {
-    width: calc(15rem - var(--page-inset));
+    width: 13rem;
     transition: transform var(--duration-medium) var(--ease-standard), opacity var(--duration-short) var(--ease-standard);
     position: sticky;
-    top: var(--page-inset);
+    top: 0;
     left: auto;
     right: auto;
     bottom: auto;
-    height: calc(100vh - var(--page-inset) * 2);
-    margin: var(--page-inset) 0 var(--page-inset) var(--page-inset);
-    padding: 1.25rem 0.75rem;
-    border-radius: var(--shape-xl);
+    height: 100vh;
+    margin: 0;
+    padding: var(--space-4) var(--space-3);
+    border-radius: 0;
   }
 
   .main-nav .brand {
@@ -218,7 +204,7 @@ select:focus-visible {
   }
 }
 
-/* ---------- Top bar: glass, floating, carries the context and the global controls ---------- */
+/* ---------- Page identity and global controls ---------- */
 
 .topbar {
   position: sticky;
@@ -228,12 +214,11 @@ select:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-  padding: 0.6rem 0.6rem 0.6rem 1.25rem;
-  background: var(--glass);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border-radius: var(--shape-xl);
-  box-shadow: var(--glass-shadow), inset 0 0 0 1px var(--glass-edge);
+  padding: var(--space-2) 0;
+  background: var(--color-surface);
+  border-radius: 0;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: none;
 }
 
 .icon-button {
@@ -505,30 +490,6 @@ a.status-chip:hover {
   border-radius: var(--shape-xl);
   box-shadow: none;
   padding: 1.5rem;
-}
-
-.hero::before,
-.hero::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 30%, transparent), transparent 70%);
-}
-
-.hero::before {
-  width: 16rem;
-  height: 16rem;
-  right: -6rem;
-  top: -7rem;
-}
-
-.hero::after {
-  width: 11rem;
-  height: 11rem;
-  left: -4rem;
-  bottom: -5rem;
-  opacity: 0.6;
 }
 
 .hero > * {
@@ -1872,4 +1833,73 @@ details.card > summary {
   .perf-name { white-space: normal; overflow-wrap: anywhere; }
   .perf-track { grid-row: 2; grid-column: 1 / -1; }
   .perf-value { grid-column: 2; grid-row: 1; }
+}
+
+/* Bento composition: the summary and period results balance one shared trend panel.
+ * Automatic row sizes preserve full figures, explanations and 200% text resizing. */
+.topbar { background: var(--color-background); }
+.topbar-title > .eyebrow { display: none; }
+.topbar-title h1 { font-size: 1.5rem; }
+.nav-link, .nav-list::before { border-radius: var(--shape-sm); }
+.dashboard-actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+.dashboard-actions .statement-action { border-radius: var(--shape-sm); padding-inline: var(--space-3); }
+.dashboard-intro h2 { font-size: var(--text-heading); margin-top: var(--space-1); }
+.portfolio-dashboard > .hero {
+  background: var(--color-hero);
+  color: var(--color-on-hero);
+  border-radius: var(--shape-lg);
+  --hero-gain: var(--color-hero-gain);
+}
+.portfolio-dashboard > .hero .card-label,
+.portfolio-dashboard > .hero .facts dt,
+.portfolio-dashboard > .hero .hero-caption { color: var(--color-hero-muted); opacity: 1; }
+.portfolio-dashboard > .hero .loss { color: var(--color-on-hero); }
+.portfolio-dashboard > .hero .facts { border-color: var(--color-hero-muted); }
+.portfolio-dashboard .hero-value { margin-top: var(--space-2); }
+.portfolio-dashboard .hero-gain { margin: 0; padding-block: var(--space-4); }
+.portfolio-dashboard .hero-gain .hero-sub { font-size: 1.5rem; margin-top: var(--space-2); }
+.period-results { display: grid; gap: var(--space-3); min-width: 0; }
+.period-results > .kpi-cell + .kpi-cell { border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
+.period-results .kpi-cell > .stat { background: transparent; box-shadow: none; border-radius: 0; padding: 0; }
+.period-results .stat {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+.period-results .stat .card-label { grid-column: 1 / -1; }
+.period-results .stat-value { font-size: 1.5rem; }
+.period-results .pill { align-self: center; }
+.period-results .stat-caption { grid-column: 1; line-height: 1.5; }
+.period-results .stat .sparkline { grid-column: 2; grid-row: 3; width: 4rem; height: 1.5rem; margin: 0; align-self: end; }
+.period-results .stat-caption { grid-column: 1; }
+.portfolio-holdings, .allocation-card { align-self: start; }
+.portfolio-holdings .fund-search { margin-block: var(--space-3); }
+.portfolio-holdings .fund-search label { font-size: var(--text-small); }
+.dashboard-analysis { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--shape-lg); padding: var(--card-padding); }
+.dashboard-analysis > summary { font-size: 1rem; }
+@media (min-width: 73.751rem) {
+  .portfolio-dashboard > .hero { grid-column: 1 / 5; grid-row: 2; }
+  .portfolio-dashboard > .portfolio-trend { grid-column: 5 / -1; grid-row: 2 / 4; }
+  .portfolio-dashboard > .period-results { grid-column: 1 / 5; grid-row: 3; }
+}
+@media (min-width: 47.501rem) and (max-width: 73.75rem) {
+  .portfolio-dashboard > .hero { grid-column: 1 / 7; grid-row: 2; }
+  .portfolio-dashboard > .period-results { grid-column: 7 / -1; grid-row: 2; }
+}
+@media (min-width: 47.501rem) {
+  .portfolio-trend > .chart { height: 100%; display: flex; flex-direction: column; }
+  .portfolio-trend .chart-svg { margin-block: auto; flex: 0 0 auto; }
+}
+@media (max-width: 47.5rem) {
+  .topbar { padding: 0 0 var(--space-3); border-radius: 0; }
+  .topbar-title h1 { font-size: 1.5rem; }
+  .dashboard-intro { gap: var(--space-3); }
+  .dashboard-actions { width: 100%; gap: var(--space-2); }
+  .dashboard-actions .segmented { width: auto; flex: 1 1 auto; }
+  .dashboard-intro .statement-action { width: auto; flex: 1 1 auto; justify-content: center; }
+  .portfolio-dashboard .hero-value { font-size: clamp(1.75rem, 9vw, 2.75rem); }
+  .portfolio-dashboard .hero-gain { padding-block: var(--space-3); }
+  .period-results .stat-value { font-size: 1.5rem; }
+  .period-results .stat-caption { font-size: var(--text-small); }
+  .portfolio-dashboard > .period-results { grid-column: 1 / -1; }
 }

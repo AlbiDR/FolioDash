@@ -16,7 +16,7 @@
   pointer-events: none;
   inset: 0 auto 0 0;
   width: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
-  border-radius: var(--shape-full);
+  border-radius: var(--shape-sm);
   background: var(--color-accent-soft);
   transform: translateX(calc(var(--nav-index) * (100% + var(--nav-gap))));
   transition: transform var(--duration-feedback) var(--ease-standard);

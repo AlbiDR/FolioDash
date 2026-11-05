@@ -1,31 +1,36 @@
 /*
  * The single source of colour, shape, motion and type. Components use these names, never raw values.
  *
- * Two ideas meet here. From Apple's Liquid Glass: translucent, blurred material for the navigation
- * layer only (sidebar, toolbar, tab bar), concentric corner radii, capsule controls. From Material 3
- * Expressive: tonal surface containers, large expressive shapes, spring motion, deeper tonal colour.
- * Content cards stay solid so figures are always read against a stable background.
+ * A quiet financial workspace: navy structure, solid surfaces, restrained corners and
+ * a consistent type/spacing scale. Data and interaction carry the hierarchy.
  */
 :root {
   color-scheme: light dark;
 
   /* Surfaces, lightest to most elevated tone (Material's surface container roles). */
-  --color-background: #eceff6;
+  --color-background: #f3f5f8;
+  --color-hero: #172b4d;
+  --color-on-hero: #f5f8ff;
+  --color-hero-muted: #becce2;
+  --color-hero-gain: #8ce0ba;
+  --text-small: 0.8125rem;
+  --text-body: 0.9375rem;
+  --text-heading: 1.25rem;
   --card-padding: clamp(1rem, 1.7vw, 1.5rem);
   --shadow-card: 0 4px 24px rgba(16, 19, 28, 0.025);
   --color-surface: #ffffff;
   --surface-low: #f6f8fc;
   --color-surface-2: #eef1f8;
   --surface-high: #e5e9f4;
-  --color-text: #10131c;
-  --color-muted: #5a6072;
+  --color-text: #19263b;
+  --color-muted: #59677c;
   --color-border: rgba(16, 19, 28, 0.1);
   --color-grid: rgba(16, 19, 28, 0.1);
   --color-inspect-edge: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
   --shadow-inspect: inset 0 0 0 1px var(--color-inspect-edge), 0 6px 18px var(--color-accent-soft);
 
   /* Dynamic accent: a primary, its tonal container, and a quiet secondary and tertiary. */
-  --color-accent: #0b5fff;
+  --color-accent: #285bd4;
   --color-accent-soft: rgba(11, 95, 255, 0.12);
   --color-on-accent: #ffffff;
   --primary-container: #dce7ff;
@@ -50,7 +55,7 @@
   --ambient-b: rgba(124, 77, 255, 0.12);
   --ambient-c: rgba(0, 137, 123, 0.1);
 
-  --series-0: #0b5fff;
+  --series-0: #285bd4;
   --series-1: #00a884;
   --series-2: #ff8a00;
   --series-3: #8e5cff;
@@ -61,10 +66,10 @@
 
   /* Shapes: concentric steps, so an inner radius is its container's radius minus the padding. */
   --shape-xs: 8px;
-  --shape-sm: 12px;
-  --shape-md: 16px;
-  --shape-lg: 24px;
-  --shape-xl: 32px;
+  --shape-sm: 8px;
+  --shape-md: 12px;
+  --shape-lg: 16px;
+  --shape-xl: 20px;
   --shape-full: 999px;
   --radius: var(--shape-sm);
   --radius-lg: var(--shape-lg);
@@ -89,8 +94,8 @@
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2.5rem;
-  --page-inset: clamp(1rem, 2.4vw, 1.5rem);
-  --gap: clamp(1rem, 1.4vw, 1.5rem);
+  --page-inset: clamp(1rem, 2.4vw, 2rem);
+  --gap: clamp(0.875rem, 1.3vw, 1.25rem);
   --touch-target: 3rem;
   --mobile-nav-height: 4.5rem;
 }

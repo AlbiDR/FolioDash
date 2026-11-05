@@ -248,14 +248,6 @@ export function LineChart(props: LineChartProps): JSX.Element {
         />
         <span aria-hidden="true"><span key={activeTime} class="inspection-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span></span>
       </label>
-      <div class="chart-inspection-actions">
-        <button class="quiet-action chart-reset" type="button" disabled={selectedTime === null && hoveredTime === null && highlight === null} onClick={() => {
-          resetInspection();
-          if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
-          else container.current?.focus({ preventScroll: true });
-        }}>Reset chart inspection</button>
-        <span class="hint" id={`${props.id}-inspection-help`}>Explore dates with the slider. Escape resets inspection.</span>
-      </div>
       <ul class="chart-legend">
         {geometry.series.map((entry, index) =>
           entry.muted ? null : (
@@ -274,6 +266,15 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </ul>
       <details class="chart-table">
         <summary>Chart tools and values</summary>
+      <div class="chart-inspection-actions">
+        <button class="quiet-action chart-reset" type="button" disabled={selectedTime === null && hoveredTime === null && highlight === null} onClick={() => {
+          resetInspection();
+          if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
+          else container.current?.focus({ preventScroll: true });
+        }}>Reset chart inspection</button>
+        <span class="hint" id={`${props.id}-inspection-help`}>Explore dates with the slider. Escape resets inspection.</span>
+      </div>
+
       <p class="footnote">Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.</p>
 
         <div class="chart-values-scroll" role="region" aria-label={`${props.title}: values table`} tabIndex={0}>
