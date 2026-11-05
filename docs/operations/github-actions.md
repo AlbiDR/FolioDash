@@ -35,6 +35,8 @@ Before the 2026-11-05 pipeline consolidation, each main push ran the two-version
 
 Every eligible main push or manual Verify release regenerates the five README screenshots before artifact upload. `npm run capture:readme` serves the already-verified production build locally and drives headless Chrome through the portfolio and expenses demo in light, dark and phone-sized views. It does not rebuild the app. The runner must expose `google-chrome`; the workflow resolves its executable into `CHROME_PATH` and fails clearly if it is unavailable. Local capture uses the installed browser or an explicit `CHROME_PATH` override.
 
+Capture closes Chrome through the browser protocol and waits for shutdown before removing its temporary profile; a failed browser connection retains the bounded process-termination fallback. This avoids profile-writer races observed on the Linux runner during the link-preview release.
+
 Capture fingerprints the checked application before starting the browser, then uses a fresh temporary profile, bypasses service workers and restricts page requests to the local preview. It checks for the signed-out demo, visible invented amounts, complete rendering and absence of unexpected requests or browser exceptions. No Google sign-in, financial write, personal browser profile or secret participates. These images establish presentation, not provider connectivity or physical-device support.
 
 The artifact boundary is explicit:

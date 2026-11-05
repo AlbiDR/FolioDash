@@ -116,12 +116,12 @@ async function connectBrowser(): Promise<void> {
   });
 }
 
-async function stop(child: ChildProcess | undefined): Promise<void> {
+async function stop(child: ChildProcess | undefined, graceful = false): Promise<void> {
   if (child === undefined || child.pid === undefined || child.exitCode !== null) return;
   await new Promise<void>((resolveExit) => {
-    const timer = setTimeout(() => { child.kill("SIGKILL"); }, 1500);
+    const timer = setTimeout(() => { child.kill("SIGKILL"); }, graceful ? 5000 : 1500);
     child.once("exit", () => { clearTimeout(timer); resolveExit(); });
-    child.kill();
+    if (!graceful) child.kill();
   });
 }
 
@@ -189,13 +189,23 @@ try {
   await capture("portfolio-mobile.png", "dark", "overview", true);
   writeCaptureReceipt(APP, OUTPUT, appDigest, revision);
 } finally {
+  // Closing through CDP lets Chrome stop its profile-writing helpers first.
+  let closingBrowser = false;
+  if (socket?.readyState === WebSocket.OPEN) {
+    try {
+      await call("Browser.close");
+      closingBrowser = true;
+    } catch {
+      // A crashed or disconnected browser still needs the process fallback.
+    }
+  }
   for (const operation of pending.values()) {
     clearTimeout(operation.timer);
     operation.reject(new Error("Browser connection closed."));
   }
   pending.clear();
   socket?.close();
-  await stop(chrome);
+  await stop(chrome, closingBrowser);
   await stop(preview);
   // Chrome helpers can finish profile writes just after its main process exits.
   rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
