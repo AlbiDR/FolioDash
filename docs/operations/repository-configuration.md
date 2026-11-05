@@ -17,7 +17,7 @@ The owner wants every value that can change, whether a secret or a variable, to 
 - **Trade-off to decide:** baking the spreadsheet ID into a build that becomes public names the owner's spreadsheet to every visitor. Access is still enforced by Google, but the owner may prefer to keep it as something each person enters, as the Connection page does today.
 - Anything the repository cannot hold (Google console settings) is recorded in [Google setup](google-setup.md) so it can be recreated; it is not a second source of truth for values.
 
-The web build reads the public OAuth client ID from `VITE_GOOGLE_CLIENT_ID`. Changing it requires a new Verify run on current `main`, which checks and publishes the configured artifact. The retained Apps Script workflow is manual and owner-only on current `main`, using the `apps-script-deploy` environment. FD-017 selects direct Google access for new users; retaining that workflow does not reinstate Apps Script as the selected runtime route.
+The web build reads the public OAuth client ID from `VITE_GOOGLE_CLIENT_ID`. Changing it requires a new Deploy site or Verify run on current `main`, which checks and publishes the configured artifact. The retained Apps Script workflow is manual and owner-only on current `main`, using the `apps-script-deploy` environment. FD-017 selects direct Google access for new users; retaining that workflow does not reinstate Apps Script as the selected runtime route.
 
 ## 2. Configuration contract
 

@@ -1,0 +1,50 @@
+name: Publish verified site
+
+# Verify supplies the checked Node 22 artifact in the same run. This workflow
+# never checks out source, installs packages or rebuilds the release.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check this revision is still current
+        id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          if [[ "$current_sha" == "$GITHUB_SHA" ]]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            printf 'Skipped site publication for superseded revision `%s`. Current main is `%s`.\n' "$GITHUB_SHA" "$current_sha" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Deploy to GitHub Pages
+        if: steps.revision.outputs.current == 'true'
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+      - name: Record the released revision
+        if: steps.deployment.outcome == 'success'
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          printf 'Published the verified Node 22 artifact for `%s`: %s\n' "$GITHUB_SHA" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
