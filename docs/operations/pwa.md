@@ -19,6 +19,8 @@ Status: **Built and checked in desktop Chrome on 2026-11-02. Not yet checked on 
 - A new version waits until the person chooses to reload, so a page is never swapped during an import or a save.
 - The saved copy of the ledger on the device is unchanged: it is still the separate, validated device copy (FD-018), not part of this cache.
 
+README screenshots are generated separately in `dist/readme/` and added only to the Pages staging tree under `readme/`, after application/PWA verification. They are not inputs to `dist/web/`, its build fingerprint or its precache list. Viewing the README on GitHub does not use the FolioDash worker. Requests made from an already-controlled FolioDash client still follow the existing same-origin runtime cache policy; this change does not exclude a URL from that policy. [GitHub Actions](github-actions.md#automatic-readme-screenshots) owns capture and release assembly.
+
 ## What Chrome needs for an installable app and a WebAPK
 
 HTTPS (GitHub Pages gives it), a manifest with a name, a `start_url`, a `standalone` display and 192 and 512 pixel icons, and a service worker. When all hold, Chrome on Android offers "Install app" and builds a WebAPK, which shows as a real app with its own icon. No Play Store listing or Digital Asset Links file is needed for that; those are only for a Trusted Web Activity published to the store.

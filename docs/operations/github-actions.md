@@ -9,7 +9,8 @@ flowchart LR
     events[Main push / PR / weekly / manual] --> workflows[Validate all workflows]
     workflows --> node22[Verify + audit: Node 22]
     workflows --> node24[Verify + audit: Node 24]
-    node22 --> artifact[Checked dist/web artifact]
+    node22 --> capture[Main push / manual: capture synthetic README views]
+    capture --> artifact[Assemble dist/pages: checked app + README images]
     node22 --> gate{Both Node versions pass}
     node24 --> gate
     gate --> eligible{Main push or manual?}
@@ -25,9 +26,27 @@ flowchart LR
 
 Both builds receive the public repository variable `VITE_GOOGLE_CLIENT_ID` before verification. Main push/manual releases fail with a redacted configuration error if it is empty. A PR or weekly run can verify without a release client ID. No Google token, credential or private workbook data enters this path.
 
-The successful Node 22 job uploads the exact `dist/web` directory produced by `npm run verify`, including its PWA checks. Upload is limited to main push/manual runs and retained for one day. Node 24 verifies compatibility but does not upload a competing artifact. The entire matrix must pass before `deploy-pages.yml` is called. That local reusable workflow comes from the caller's commit and consumes the same run's Pages artifact. It has no checkout, install or build step. No cross-run artifact retrieval or `workflow_run` privilege handoff is needed. GitHub documents these [reusable workflow semantics](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [Pages artifact/deployment requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+For a main push/manual release, the successful Node 22 job captures the README views from the exact `dist/web` directory produced by `npm run verify`, then assembles `dist/pages` from that unchanged application and the separate screenshot output. Upload is limited to those runs and retained for one day. Node 24 verifies compatibility but does not capture or upload a competing artifact. The entire matrix, including capture and assembly on Node 22, must pass before `deploy-pages.yml` is called. That local reusable workflow comes from the caller's commit and consumes the same run's Pages artifact. It has no checkout, install or build step. No cross-run artifact retrieval or `workflow_run` privilege handoff is needed. GitHub documents these [reusable workflow semantics](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [Pages artifact/deployment requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
-Before this change, each main push ran the two-version matrix twice, then a separate Pages install/build. It now runs that matrix once and deploys the checked artifact, eliminating two full verification jobs and the extra release build per push.
+Before the 2026-11-05 pipeline consolidation, each main push ran the two-version matrix twice, then a separate Pages install/build. It now runs that matrix once and deploys the checked application with generated README images, eliminating two full verification jobs and the extra release build per push.
+
+## Automatic README screenshots
+
+Every eligible main push or manual Verify release regenerates the five README screenshots before artifact upload. `npm run capture:readme` serves the already-verified production build locally and drives headless Chrome through the portfolio and expenses demo in light, dark and phone-sized views. It does not rebuild the app. The runner must expose `google-chrome`; the workflow resolves its executable into `CHROME_PATH` and fails clearly if it is unavailable. Local capture uses the installed browser or an explicit `CHROME_PATH` override.
+
+Capture fingerprints the checked application before starting the browser, then uses a fresh temporary profile, bypasses service workers and restricts page requests to the local preview. It checks for the signed-out demo, visible invented amounts, complete rendering and absence of unexpected requests or browser exceptions. No Google sign-in, financial write, personal browser profile or secret participates. These images establish presentation, not provider connectivity or physical-device support.
+
+The artifact boundary is explicit:
+
+| Path | Responsibility |
+|---|---|
+| `dist/web/` | Verified application, including its existing PWA manifest, asset fingerprint and precache list; unchanged by capture or assembly |
+| `dist/readme/` | Generated `hero-light.png`, `hero-dark.png`, `expenses-light.png`, `expenses-dark.png` and `portfolio-mobile.png`, plus `screenshots.json` with the revision, pre-capture app digest and image hashes/dimensions |
+| `dist/pages/` | Pages staging tree: byte-identical checked app at its root, the five screenshots and their receipt in `readme/` |
+
+`npm run prepare:pages` validates the screenshot set, PNG integrity and dimensions, rejects unexpected files and symlinks, and checks the app and image bytes against the capture receipt. It then verifies the staged app bytes and final file tree. Capture and assembly each reject changes to the original application after its pre-capture fingerprint. The added delivery images are outside the verified application build and its generated precache list; they do not alter its fingerprint or require changing the PWA integrity check. This does not change the worker's existing same-origin runtime cache behavior. See [PWA boundaries](pwa.md).
+
+The README references the stable Pages URLs under `https://albidr.github.io/FolioDash/readme/`. Images refresh with the next successful release; a failed capture or assembly prevents publication. No workflow edits the README, commits generated PNGs or receives `contents: write`. Pull-request and weekly Verify runs retain their existing checks without capture or publication. GitHub's image proxy may retain an older response briefly after a deployment; the hosted screenshot URL is the release output.
 
 ## Trigger and permission contract
 
