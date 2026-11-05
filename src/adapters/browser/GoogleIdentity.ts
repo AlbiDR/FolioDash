@@ -1,4 +1,4 @@
-import type { SignInResult } from "../../applications/SessionModel";
+import type { SignInOptions, SignInResult } from "../../applications/SessionModel";
 // The browser half of Google sign-in. Google's identity script is loaded only
 // when the user chooses to connect, never on page load, and the access token it
 // returns can be reused until expiry by the tab-scoped session.
@@ -69,7 +69,7 @@ function loadIdentityScript(): Promise<boolean> {
 }
 
 /** Asks the signed-in user for a short-lived token with the given scope. */
-export async function signIn(clientId: string, scope: string): Promise<SignInResult> {
+export async function signIn(clientId: string, scope: string, options?: SignInOptions): Promise<SignInResult> {
   if (!(await loadIdentityScript()) || window.google === undefined) return { ok: false, reason: "unavailable" };
   const identity = window.google;
   return new Promise<SignInResult>((resolve) => {
@@ -103,7 +103,7 @@ export async function signIn(clientId: string, scope: string): Promise<SignInRes
         },
       });
       // Let Google reuse existing consent instead of forcing its default account picker.
-      client.requestAccessToken({ prompt: "" });
+      client.requestAccessToken({ prompt: options?.selectAccount === true ? "select_account" : "" });
     } catch {
       finish({ ok: false, reason: "unavailable" });
     }

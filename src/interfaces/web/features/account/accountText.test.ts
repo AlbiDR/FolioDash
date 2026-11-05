@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { describeConnect, describeRestore } from "./accountText";
 
 describe("describeConnect", () => {
+  it("names token renewal and superseded reads accurately", () => {
+    const rejected = describeConnect({ status: "call-failed", failure: "unauthorised" });
+    expect(rejected.title).toBe("Reconnect to Google");
+    expect(rejected.body).toContain("Reconnect with Google");
+    expect(rejected.body).toContain("saved copy was not changed");
+    const superseded = describeConnect({ status: "superseded" });
+    expect(superseded.title).toBe("This check was superseded");
+    expect(superseded.body).not.toContain("rejected");
+  });
+
   it("says a new sheet is ready, an update, or that nothing changed", () => {
     expect(describeConnect({ status: "connected", created: true, statements: 0, changed: true }).title).toBe("Your Google Sheet is ready");
     expect(describeConnect({ status: "connected", created: false, statements: 3, changed: true }).body).toContain("3 statements");

@@ -569,6 +569,51 @@ describe("connection authentication resilience", () => {
     expect(log.signIns).toBe(2);
   });
 
+  it("explicitly reconnects with fresh account selection without deleting either saved copy", async () => {
+    const { make, google, store, log } = world();
+    const storage = memory();
+    const googleSession = createGoogleSessionStore(() => storage);
+    const initial = make({ googleSession });
+    await initial.connect();
+    await saved(initial, january);
+    await initial.idle();
+    const cached = store.data.get("foliodash.ledger.v1");
+    const calls = google.calls.length;
+    let selectedAccount = false;
+    const reloaded = make({ googleSession, signIn: (_client, _scope, options) => {
+      log.signIns++;
+      selectedAccount = options?.selectAccount === true;
+      // Reconnection removes access only, before requesting its replacement.
+      expect(storage.data.size).toBe(0);
+      expect(store.data.get("foliodash.ledger.v1")).toBe(cached);
+      return Promise.resolve({ ok: true, accessToken: google.token, expiresInSeconds: 3600 });
+    } });
+    expect(await reloaded.reconnect()).toMatchObject({ status: "connected" });
+    expect(selectedAccount).toBe(true);
+    expect(log.signIns).toBe(2);
+    expect(reloaded.state.ledger.snapshots).toHaveLength(1);
+    expect(google.files.size).toBe(1);
+    expect(storage.data.size).toBe(1);
+    expect(google.calls.slice(calls).some(call => call === "POST /v4/spreadsheets")).toBe(false);
+    await reloaded.idle();
+  });
+
+  it("retains the workbook and saved history if explicit reconnection is cancelled", async () => {
+    const { make, store, google } = world();
+    const initial = make();
+    await initial.connect();
+    await saved(initial, january);
+    await initial.idle();
+    const cached = store.data.get("foliodash.ledger.v1");
+    const calls = google.calls.length;
+    const session = make({ signIn: () => Promise.resolve({ ok: false, reason: "closed" }) });
+    expect(await session.reconnect()).toEqual({ status: "sign-in-failed", reason: "closed" });
+    expect(store.data.get("foliodash.ledger.v1")).toBe(cached);
+    expect(session.state.ledger.snapshots).toHaveLength(1);
+    expect(session.state.workbook).toEqual(initial.state.workbook);
+    expect(google.calls).toHaveLength(calls);
+  });
+
   it("survives a throwing sign-in provider and allows another attempt", async () => {
     const { make } = world();
     let attempts = 0;
@@ -663,6 +708,33 @@ describe("persistent Google access and two-device freshness", () => {
 });
 
 describe("out-of-order Google reads", () => {
+  it("does not misreport a successful manual read as rejected sign-in when a newer background check wins", async () => {
+    const { google, make } = world();
+    let delayNext = false;
+    let entered: (() => void) | undefined;
+    let release: (() => void) | undefined;
+    const reading = new Promise<void>(resolve => { entered = resolve; });
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const session = make({ rest: async request => {
+      const response = await google.client(request);
+      if (delayNext && request.method === "GET" && request.url.includes("/values/")) {
+        delayNext = false;
+        entered?.();
+        await gate;
+      }
+      return response;
+    } });
+    await session.connect();
+    await session.idle();
+    delayNext = true;
+    const manual = session.refresh();
+    await reading;
+    await session.refreshIfNeeded();
+    release?.();
+    expect(await manual).toEqual({ status: "superseded" });
+    expect(session.state.connection).toBe("connected");
+  });
+
   it("does not let an older background response replace a newer manual refresh", async () => {
     const { google, make } = world();
     let delayNext = false;

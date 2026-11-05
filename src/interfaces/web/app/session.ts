@@ -1,4 +1,4 @@
-import type { ConnectOutcome, GoogleSessionStore, RestoreOutcome, SessionState, SheetStatus, SignInResult, TidyOutcome, VerifyOutcome, Workbook } from "../../../applications/SessionModel";
+import type { ConnectOutcome, GoogleSessionStore, RestoreOutcome, SessionState, SheetStatus, SignInOptions, SignInResult, TidyOutcome, VerifyOutcome, Workbook } from "../../../applications/SessionModel";
 import {
   type DirectDeps,
   attachDirect,
@@ -36,7 +36,7 @@ export interface SessionDeps {
   readonly interpret: InterpretStatement;
   /** How a statement is shown in its tab of the person's spreadsheet. */
   readonly present: PresentStatement;
-  readonly signIn: (clientId: string, scope: string) => Promise<SignInResult>;
+  readonly signIn: (clientId: string, scope: string, options?: SignInOptions) => Promise<SignInResult>;
   readonly revoke?: (accessToken: string) => void;
   readonly rest: RestClient;
   readonly cache: LedgerCache;
@@ -81,6 +81,7 @@ export class Session {
   private lastAutoCheck = -Infinity;
   private signingIn: Promise<Awaited<ReturnType<Session["accessToken"]>>> | null = null;
   private connecting: Promise<ConnectOutcome> | null = null;
+  private selectAccountOnSignIn = false;
 
   constructor(deps: SessionDeps) {
     this.deps = { ...deps, rest: async (request) => {
@@ -197,7 +198,9 @@ export class Session {
     const generation = this.generation;
     let result: SignInResult;
     try {
-      result = await this.deps.signIn(this.deps.clientId, DRIVE_FILE_SCOPE);
+      const selectAccount = this.selectAccountOnSignIn;
+      this.selectAccountOnSignIn = false;
+      result = await this.deps.signIn(this.deps.clientId, DRIVE_FILE_SCOPE, ...(selectAccount ? [{ selectAccount: true }] : []));
     } catch {
       result = { ok: false, reason: "unavailable" };
     }
@@ -233,9 +236,19 @@ export class Session {
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
     const ensured = await ensureWorkbook(this.deps.rest, signed.token, this.deps.workbookIdentity);
-    if (generation !== this.generation) return { status: "call-failed", failure: "unauthorised" };
+    if (generation !== this.generation) return { status: "superseded" };
     if (ensured.status !== "ready") return { status: "call-failed", failure: ensured.failure };
     return this.load(ensured.workbook, signed.token, ensured.created, generation);
+  }
+
+  /** Explicit recovery: replace access only, retaining the workbook, history and unresolved writes. */
+  reconnect(): Promise<ConnectOutcome> {
+    this.token = null;
+    this.deps.googleSession?.clear();
+    this.selectAccountOnSignIn = this.signingIn === null;
+    this.syncSequence++;
+    this.set({ ...this.current, connection: "reconnect" });
+    return this.refresh();
   }
 
   /** Confirms the saved copy against the spreadsheet. A failed or odd answer never replaces the copy. */
@@ -244,14 +257,14 @@ export class Session {
     const generation = this.generation;
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
-    if (generation !== this.generation) return { status: "call-failed", failure: "unauthorised" };
+    if (generation !== this.generation) return { status: "superseded" };
     return this.load(this.current.workbook, signed.token, false, generation);
   }
 
   private async load(workbook: Workbook, accessToken: string, created: boolean, generation: number): Promise<ConnectOutcome> {
     const sequence = ++this.syncSequence;
     const read = await readDirect(this.deps.rest, accessToken, workbook.id);
-    if (generation !== this.generation || sequence !== this.syncSequence) return { status: "call-failed", failure: "unauthorised" };
+    if (generation !== this.generation || sequence !== this.syncSequence) return { status: "superseded" };
     if (this.current.workbook !== null && this.current.workbook.id !== workbook.id) {
       // A newly selected account/workbook cannot inherit the previous feature's private cache.
       this.deps.cache.clear();

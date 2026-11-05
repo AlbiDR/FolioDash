@@ -352,6 +352,7 @@ export function App(): JSX.Element {
                   actions={{
                     connect: () => session.connect(),
                     refresh: () => session.refresh(),
+                    reconnect: () => session.reconnect(),
                     restore: () => session.restoreFromDevice(),
                     verify: () => session.verifyHistory(),
                     tidy: () => session.tidySheet(),

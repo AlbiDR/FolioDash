@@ -30,6 +30,12 @@ describe("Google sign-in recovery", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it("opens account selection for an explicit reconnection", async () => {
+    const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
+    expect(await signIn("synthetic-client", SCOPE, { selectAccount: true })).toMatchObject({ ok: true });
+    expect(request).toHaveBeenCalledWith({ prompt: "select_account" });
+  });
+
   it("refuses tokens that do not grant the required permission", async () => {
     const { signIn } = await setup((config) => { config.callback({ access_token: "synthetic-token", scope: "unrelated" }); });
     expect(await signIn("client", SCOPE)).toEqual({ ok: false, reason: "denied" });

@@ -8,7 +8,7 @@ export interface Message {
 }
 
 const CALL_FAILED: Readonly<Record<string, string>> = {
-  unauthorised: "Google rejected the sign-in. Try again.",
+  unauthorised: "Google no longer accepts this session. Choose Reconnect with Google to sign in again and select the account that owns your FolioDash sheet.",
   forbidden: "Google refused the request. Check that you allowed FolioDash to create and manage its own spreadsheet.",
   "not-found": "Google could not find the spreadsheet. Open Your data to check it.",
   unavailable: "Google is busy or unavailable. Try again shortly.",
@@ -27,6 +27,8 @@ const SIGN_IN: Readonly<Record<string, string>> = {
 /** What a connect or sync result says to the person, in plain words. */
 export function describeConnect(outcome: ConnectOutcome): Message {
   switch (outcome.status) {
+    case "superseded":
+      return { good: false, title: "This check was superseded", body: "A newer check or connection change replaced this request. Your saved copy was not changed by this request. Check the current connection status." };
     case "connected":
       if (outcome.created) return { good: true, title: "Your Google Sheet is ready", body: "A private spreadsheet was created in your Google Drive. Import your first bank statement to start your portfolio." };
       if (outcome.changed) return { good: true, title: "Updated from your Google Sheet", body: `Loaded ${String(outcome.statements)} ${outcome.statements === 1 ? "statement" : "statements"}.` };
@@ -34,7 +36,7 @@ export function describeConnect(outcome: ConnectOutcome): Message {
     case "sign-in-failed":
       return { good: false, title: "Not signed in", body: SIGN_IN[outcome.reason] ?? "Sign-in did not complete." };
     case "call-failed":
-      return { good: false, title: "Could not reach your Google Sheet", body: `${CALL_FAILED[outcome.failure] ?? "Something went wrong."} Your saved copy was not changed.` };
+      return { good: false, title: outcome.failure === "unauthorised" ? "Reconnect to Google" : "Could not reach your Google Sheet", body: `${CALL_FAILED[outcome.failure] ?? "Something went wrong."} Your saved copy was not changed.` };
     case "needs-attention":
       return { good: false, title: "Your Google Sheet needs attention", body: outcome.message };
   }

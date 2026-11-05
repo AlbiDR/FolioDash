@@ -9,6 +9,10 @@ export interface Workbook {
 /** Why a call failed before or instead of an answer. A subset applies to any one route. */
 export type CallFailure = "unauthorised" | "forbidden" | "not-found" | "unavailable" | "network" | "unexpected" | "script-error";
 
+export interface SignInOptions {
+  readonly selectAccount: boolean;
+}
+
 export type SignInResult =
   | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
   | { readonly ok: false; readonly reason: "denied" | "closed" | "blocked" | "timeout" | "unavailable" };
@@ -61,6 +65,8 @@ export interface SessionState {
 }
 
 export type ConnectOutcome =
+  /** A newer check or account transition replaced this read; no authentication rejection is implied. */
+  | { readonly status: "superseded" }
   | { readonly status: "connected"; readonly created: boolean; readonly statements: number; readonly changed: boolean }
   | { readonly status: "sign-in-failed"; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }
   | { readonly status: "call-failed"; readonly failure: CallFailure }
