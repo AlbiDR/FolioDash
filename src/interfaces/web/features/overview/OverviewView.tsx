@@ -171,7 +171,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           <div>
             <dt>Net invested</dt>
             <dd><Amount cents={latestTotal.invested} /></dd>
-            <dd class="facts-note">paid in − taken out</dd>
+            <dd class="facts-note">paid in - taken out</dd>
           </div>
           <div>
             <dt>Funds held</dt>
