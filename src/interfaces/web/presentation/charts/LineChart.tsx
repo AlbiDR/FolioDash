@@ -1,3 +1,4 @@
+import { useAxisLabels } from "./useAxisLabels";
 import type { JSX, TargetedPointerEvent } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
@@ -79,6 +80,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
   const includeZero = props.includeZero ?? false;
   const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height, includeZero }), [props.series, includeZero, width]);
+  const axis = useAxisLabels(geometry.xTicks.map(tick => ({ key: String(tick.time), text: props.formatTime(tick.time), x: tick.x })), geometry.plot.left, geometry.plot.left + geometry.plot.width, !geometry.empty);
   const times = useMemo(() => [...new Set(props.series.flatMap((entry) => entry.points.map((point) => point.time)))].sort(
     (left, right) => left - right,
   ), [props.series]);
@@ -201,11 +203,9 @@ export function LineChart(props: LineChartProps): JSX.Element {
               </text>
             </g>
           ))}
-          {geometry.xTicks.map((tick) => (
-            <text key={`x-${String(tick.time)}`} class="chart-tick" x={tick.x} y={baseline + 20} text-anchor="middle">
-              {props.formatTime(tick.time)}
-            </text>
-          ))}
+          <g ref={axis.group} class="chart-time-axis" aria-hidden="true">
+            {axis.labels.map(label => <text key={label.key} data-axis-key={label.key} class="chart-tick" x={label.x} y={baseline + 20} text-anchor="middle" visibility={label.visible ? "visible" : "hidden"}>{label.text}</text>)}
+          </g>
         </g>
         {activeX !== undefined && (selectedTime !== null || hoveredTime !== null) && (
           <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />

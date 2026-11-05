@@ -302,3 +302,6 @@
   .chart-date-control { grid-template-columns: minmax(0, 1fr); }
   .chart-date-control input { grid-row: auto; }
 }
+
+/* Date labels do not intercept bar inspection or chart pointer movement. */
+.chart-time-axis { pointer-events: none; }

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
+import { useAxisLabels } from "./useAxisLabels";
 import { maskNumbers } from "../privacy/privacyChoice";
 
 export interface Bar {
@@ -47,7 +48,7 @@ export function MonthlyBars(props: {
   const band = (WIDTH - PAD.side * 2) / Math.max(1, props.bars.length);
   const barWidth = Math.min(22, band * 0.62);
   const show = (value: number): string => (hidden ? maskNumbers(props.formatValue(value)) : props.formatValue(value));
-  const labelEvery = props.bars.length > 9 ? Math.ceil(props.bars.length / 6) : 1;
+  const axis = useAxisLabels(props.bars.map((bar, index) => ({ key: bar.key, text: bar.label, x: PAD.side + band * (index + 0.5) })), PAD.side, WIDTH - PAD.side, present.length > 0);
 
   if (present.length === 0) {
     return <p class="empty-note">No month has a figure to show yet.</p>;
@@ -79,7 +80,6 @@ export function MonthlyBars(props: {
         <line class="bars-zero" x1={PAD.side} x2={WIDTH - PAD.side} y1={zeroY} y2={zeroY} />
         {props.bars.map((bar, index) => {
           const x = PAD.side + band * index + (band - barWidth) / 2;
-          const labelled = index % labelEvery === 0 || index === props.bars.length - 1;
           const value = bar.value;
           const height = value === null || span === 0 ? 0 : (Math.abs(value) / span) * plotHeight;
           const y = value === null ? zeroY : value >= 0 ? zeroY - height : zeroY;
@@ -123,14 +123,13 @@ export function MonthlyBars(props: {
                   <title>{`${bar.label}: ${show(value)}`}</title>
                 </rect>
               )}
-              {labelled && (
-                <text class="chart-tick" x={x + barWidth / 2} y={HEIGHT - 6} text-anchor="middle">
-                  {bar.label}
-                </text>
-              )}
+
             </g>
           );
         })}
+        <g ref={axis.group} class="chart-time-axis" aria-hidden="true">
+          {axis.labels.map(label => <text key={label.key} data-axis-key={label.key} class="chart-tick" x={label.x} y={HEIGHT - 6} text-anchor="middle" visibility={label.visible ? "visible" : "hidden"}>{label.text}</text>)}
+        </g>
       </svg>
       <label class="chart-date-control">
         <span>Explore months</span>

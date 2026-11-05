@@ -105,3 +105,20 @@ This follows the [container-query model](https://developer.mozilla.org/en-US/doc
 - Result: PASS. All 762 tests in 58 files and all 168 browser assertions passed. The first broad matrix found the enlarged-text period overflow described above; its corrective container/grid changes passed the same regression check. Visually reviewed the actual wide and compact holdings renderings. No financial formulas or source data were changed.
 - Evidence: local `/tmp/foliodash-metrics-verify.log`, `/tmp/foliodash-metrics-browser.mjs`, `/tmp/foliodash-metrics-browser-results.json`, `/tmp/foliodash-holdings-wide.png` and `/tmp/foliodash-holdings-compact.png`. These temporary files are local evidence, not durable CI artifacts.
 - Remaining gates: physical Android/Apple touch, screen-reader and Firefox/WebKit checks NOT RUN for this change. No hosted revision or live Google claim follows from the local synthetic checks.
+
+## Chart date-label collisions, 2026-11-06
+
+The owner reported overlapping October/November labels in Monthly change in gain. The confirmed cause was the fixed every-N-month label cadence plus an unconditional final label. A regular penultimate label could collide with the appended final month, and centred endpoint text could extend past the SVG boundary.
+
+Monthly bars and line-chart time axes now share one presentation-only label-positioning policy. It measures real SVG glyph widths, reserves the latest date, clamps text inside the plot's horizontal bounds and includes earlier labels only when their measured intervals have sufficient clearance. Crowded labels are omitted from the visual axis; observations and their dates remain available through the existing readout, slider, keyboard inspection and complete values table. All bars, values, time coordinates, financial calculations and line paths are preserved. Labels cannot intercept pointer inspection.
+
+Measurements update when label candidates change, a closed disclosure opens, the SVG resizes or fonts finish loading. Hidden/unmeasurable text uses a conservative initial estimate. Resize/font listeners and scheduled frames have explicit cleanup. Date labels do not animate. The pure policy tests cover the final-month collision, clipped endpoints, unequal glyph widths, empty/single cases and histories up to 60 months.
+
+### Chart-label verification record
+
+- Revision/build: commit containing this amendment, local production build, 2026-11-06.
+- Environment/dataset: fresh headless Chrome profiles with service workers bypassed; validated synthetic ledgers containing 1, 2, 8, 11, 12, 13, 24 and 60 monthly observations ending November 2026. No live account or financial records used.
+- Method: `npm run verify`; actual SVG text rectangle comparisons for overlapping visible labels and horizontal chart-edge clipping in all expanded bar/line charts, at 320/760/1280/1440px and 100%/200% root text. Check that every bar observation is retained and the latest November label remains visible. Repeat the six-screen metric/layout and interaction browser matrix from the preceding amendment.
+- Result: PASS. 767 tests across 59 files; 129 chart-specific browser assertions and 168 broader UI assertions. Visible chart text had no detected collisions or horizontal clipping in the matrix; no page overflow or unhandled browser exceptions. Actual production rendering was visually inspected with the 60-month synthetic ledger. Existing geometry/inspection checks confirm that hovering and pinning do not change plotted bar/line geometry or axis scale.
+- Evidence: `/tmp/foliodash-labels-verify.log`, `/tmp/foliodash-axis-browser.mjs`, `/tmp/foliodash-axis-browser-results.json`, `/tmp/foliodash-labels-ui-results.json` and `/tmp/foliodash-axis-labels.png`. These local temporary files are not durable CI artifacts.
+- Limits: physical-device touch, screen-reader, Firefox/WebKit and arbitrary real-world content outside the tested matrix remain unverified. This is a bounded regression review, not a claim that every possible UI/content combination is defect-free. No live Google or hosted-release verification was performed.

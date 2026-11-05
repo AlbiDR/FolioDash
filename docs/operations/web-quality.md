@@ -50,7 +50,7 @@ Normal success does not require opening an editor, calling AI, running a repair 
 
 - Charts use the same committed revision and calculation policy as their tables. The renderer does not calculate financial metrics.
 - All relevant plotted series inform bounds. Null/unknown values stay gaps; real zero remains plotted. A first/single valid point must still be visible.
-- Time spacing reflects actual observation dates. Labels remain readable at mobile widths without silently implying month-end dates.
+- Time spacing reflects actual observation dates. Labels remain readable at mobile widths without silently implying month-end dates. Axis label density accounts for rendered text width and endpoint clearance; adding the latest label must not collide with the preceding label. Omitted axis labels retain their full dates in inspection controls and the accessible values table.
 - Auto bounds use a named, tested spread-padding policy with flat/zero/negative/finite safeguards. Padding policy is presentation, not financial methodology.
 - Show units, dates, scale and series identity clearly. Tighter axes improve detail, not numerical accuracy. Individual fund slopes on independently scaled axes are not return rankings.
 - Net invested and value remain distinguishable by labels plus non-colour styling where supported. Do not claim a dashed line from a configuration test without verifying it in the actual renderer.
