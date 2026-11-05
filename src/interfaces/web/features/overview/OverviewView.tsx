@@ -229,11 +229,13 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           {listedFunds.map((fund) => (
             <li key={fund.isin}>
               <a href={`#fund/${fund.isin}`}>
-                <span class="mobile-holding-name">{fund.name}<span class="holding-meta">{fund.status === "closed" ? "Closed" : "View fund"}</span></span>
+                <span class="mobile-holding-name">{fund.name}<span class="holding-meta">{fund.status === "closed" ? `Closed · ${fund.isin}` : fund.isin}</span></span>
                 <Icon name="chevron" size={18} />
                 <dl>
                   <div><dt>Value</dt><dd><Amount cents={fund.latest?.value ?? null} /></dd></div>
-                  <div><dt>Gain</dt><dd><Signed cents={fund.latest?.gain ?? null} /> <Pill ratio={fund.latest?.gainPercent ?? null} signed /></dd></div>
+                  <div><dt>Gain %</dt><dd><Pill ratio={fund.latest?.gainPercent ?? null} signed /></dd></div>
+                  <div><dt>Gain</dt><dd><Signed cents={fund.latest?.gain ?? null} /></dd></div>
+                  <div><dt>Net invested</dt><dd><Amount cents={fund.latest?.netInvested ?? null} /></dd></div>
                 </dl>
               </a>
             </li>
@@ -248,9 +250,9 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                 <tr>
                   <th scope="col">Fund</th>
                   <th scope="col">Value</th>
-                  <th scope="col" class="hide-sm">Net invested</th>
-                  <th scope="col" class="hide-sm">Gain</th>
                   <th scope="col">Gain %</th>
+                  <th scope="col">Gain</th>
+                  <th scope="col">Net invested</th>
                 </tr>
               </thead>
               <tbody>
@@ -261,9 +263,9 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                       <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
                     </th>
                     <td><Amount cents={fund.latest?.value ?? null} /></td>
-                    <td class="hide-sm"><Amount cents={fund.latest?.netInvested ?? null} /></td>
-                    <td class="hide-sm"><Signed cents={fund.latest?.gain ?? null} /></td>
                     <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
+                    <td><Signed cents={fund.latest?.gain ?? null} /></td>
+                    <td><Amount cents={fund.latest?.netInvested ?? null} /></td>
                   </tr>
                 ))}
               </tbody>

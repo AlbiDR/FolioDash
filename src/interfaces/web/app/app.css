@@ -916,7 +916,7 @@ a.status-chip:hover {
 
 .legend a {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.6rem;
   padding: 0.4rem 0;
@@ -936,9 +936,9 @@ a.status-chip:hover {
 }
 
 .legend-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-weight: 600;
 }
 
@@ -995,9 +995,9 @@ a.status-chip:hover {
 }
 
 .perf-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-weight: 600;
 }
 
@@ -1088,6 +1088,10 @@ a.status-chip:hover {
   user-select: none;
 }
 
+/* Financial fact groups must reflow even inside narrow desktop cards. */
+.facts > div, .facts dd { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.facts .amount { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+
 /* ---------- Holdings table and month tables ---------- */
 
 .table-scroll {
@@ -1105,6 +1109,7 @@ table {
 }
 
 .holdings-table {
+  table-layout: fixed;
   width: 100%;
   font-variant-numeric: tabular-nums;
 }
@@ -1125,7 +1130,10 @@ table {
 }
 
 .holdings-table th:first-child {
+  width: 24%;
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .holdings-table tbody th {
@@ -1193,17 +1201,7 @@ table {
   border-radius: var(--shape-full);
 }
 
-@media (max-width: 47.5rem) {
-  .hide-sm {
-    display: none;
-  }
-}
 
-@media (max-width: 73.75rem) {
-  .hide-md {
-    display: none;
-  }
-}
 
 .sparkline {
   color: var(--color-muted);
@@ -1701,7 +1699,27 @@ details.card > summary {
 
 .skip-link:focus { transform: translateY(0); }
 
-.mobile-holdings { display: none; }
+.portfolio-holdings { container: holdings / inline-size; }
+.mobile-holdings { display: none; list-style: none; padding: 0; margin: 0; }
+.mobile-holdings li + li { border-top: 1px solid var(--color-border); }
+.mobile-holdings a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); padding: var(--space-3) var(--space-2); color: inherit; text-decoration: none; }
+.mobile-holding-name { min-width: 0; font-weight: 650; overflow-wrap: anywhere; }
+.mobile-holdings dl { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
+.mobile-holdings dl > div { display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
+.mobile-holdings dt { color: var(--color-muted); font-size: var(--text-small); }
+.mobile-holdings dd { margin: 0; min-width: 0; max-width: 100%; font-variant-numeric: tabular-nums; }
+.mobile-holdings .amount { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.mobile-holdings .pill { max-width: 100%; overflow-wrap: anywhere; }
+.holdings-table td { width: 19%; white-space: normal; overflow-wrap: anywhere; }
+.holdings-table .amount { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.holdings-table .pill { max-width: 100%; overflow-wrap: anywhere; }
+@container holdings (max-width: 42rem) {
+  .desktop-holdings { display: none; }
+  .mobile-holdings { display: grid; }
+}
+@container holdings (max-width: 20rem) {
+  .mobile-holdings dl { grid-template-columns: minmax(0, 1fr); }
+}
 .mobile-months { display: none; }
 .month-matrices { display: block; }
 .month-matrices > .card { margin-top: var(--space-3); }
@@ -1764,14 +1782,7 @@ details.card > summary {
 
   .desktop-holdings { display: none; }
   .mobile-months { display: grid; gap: var(--gap); }
-  .mobile-holdings { display: grid; list-style: none; padding: 0; margin: 0; }
-  .mobile-holdings li + li { border-top: 1px solid var(--color-border); }
-  .mobile-holdings a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); padding-block: var(--space-3); color: inherit; text-decoration: none; }
-  .mobile-holding-name { font-weight: 650; overflow-wrap: anywhere; }
-  .mobile-holdings dl { grid-column: 1 / -1; display: grid; gap: var(--space-2); margin: 0; }
-  .mobile-holdings dl > div { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); }
-  .mobile-holdings dt { color: var(--color-muted); font-size: 0.8125rem; }
-  .mobile-holdings dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .mobile-holdings { display: grid; }
 
   .legend a,
   .row-link,
@@ -1874,7 +1885,8 @@ details.card > summary {
 .portfolio-dashboard .hero-value { margin-top: var(--space-2); }
 .portfolio-dashboard .hero-gain { margin: 0; padding-block: var(--space-4); }
 .portfolio-dashboard .hero-gain .hero-sub { font-size: 1.5rem; margin-top: var(--space-2); }
-.period-results { display: grid; gap: var(--space-3); min-width: 0; }
+.period-results { container: periods / inline-size; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); min-width: 0; }
+.period-results > * { min-width: 0; }
 .period-results > .kpi-cell + .kpi-cell { border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
 .period-results .kpi-cell > .stat { background: transparent; box-shadow: none; border-radius: 0; padding: 0; }
 .period-results .stat {
@@ -1888,6 +1900,12 @@ details.card > summary {
 .period-results .stat-caption { grid-column: 1; line-height: 1.5; }
 .period-results .stat .sparkline { grid-column: 2; grid-row: 3; width: 4rem; height: 1.5rem; margin: 0; align-self: end; }
 .period-results .stat-caption { grid-column: 1; }
+@container periods (max-width: 18rem) {
+  .period-results .stat { grid-template-columns: minmax(0, 1fr); }
+  .period-results .stat .pill { grid-column: 1; justify-self: start; max-width: 100%; overflow-wrap: anywhere; }
+  .period-results .stat .sparkline { grid-column: 1; grid-row: auto; width: 100%; height: 2rem; }
+}
+
 .portfolio-holdings, .allocation-card { align-self: start; }
 .portfolio-holdings .fund-search { margin-block: var(--space-3); }
 .portfolio-holdings .fund-search label { font-size: var(--text-small); }
