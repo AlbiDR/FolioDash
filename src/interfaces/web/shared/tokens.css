@@ -1,8 +1,8 @@
 /*
  * The single source of colour, shape, motion and type. Components use these names, never raw values.
  *
- * A quiet financial workspace: navy structure, solid surfaces, restrained corners and
- * a consistent type/spacing scale. Data and interaction carry the hierarchy.
+ * A quiet financial workspace: translucent navigation material over a tonal backdrop,
+ * solid financial surfaces, navy structure and a consistent type/spacing scale.
  */
 :root {
   color-scheme: light dark;
@@ -51,9 +51,9 @@
   --glass-blur: blur(28px) saturate(190%);
   --nav-background: var(--glass);
 
-  --ambient-a: rgba(11, 95, 255, 0.16);
-  --ambient-b: rgba(124, 77, 255, 0.12);
-  --ambient-c: rgba(0, 137, 123, 0.1);
+  --ambient-a: rgba(11, 95, 255, 0.1);
+  --ambient-b: rgba(124, 77, 255, 0.07);
+  --ambient-c: rgba(0, 137, 123, 0.05);
 
   --series-0: #285bd4;
   --series-1: #00a884;
@@ -151,18 +151,28 @@
   :root {
     --glass: var(--color-surface);
     --nav-background: var(--color-surface);
+    --glass-blur: none;
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
   :root {
+    --ambient-a: transparent;
+    --ambient-b: transparent;
+    --ambient-c: transparent;
     --glass: var(--color-surface);
     --nav-background: var(--color-surface);
+    --glass-blur: none;
   }
 }
 
 @media (forced-colors: active) {
   :root {
+    --glass: Canvas;
+    --nav-background: Canvas;
+    --glass-blur: none;
+    --glass-edge: CanvasText;
+    --glass-shadow: none;
     --series-0: CanvasText;
     --series-1: CanvasText;
     --series-2: CanvasText;

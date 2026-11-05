@@ -46,13 +46,13 @@ The session's browser probes are `/tmp/foliodash-consolidation-check.mjs` and `/
 
 ## Bento redesign, 2026-11-05
 
-This supersedes the floating glass shell, ambient gradients and separate Progress/Composition headings described above. The owner requested a substantive redesign using the supplied bento and interface-design references.
+The initial redesign replaced the floating glass shell and ambient gradients and removed the separate Progress/Composition headings described above. The owner subsequently requested restoration of the Apple-style material; the amendment below owns the current shell treatment. The owner requested a substantive redesign using the supplied bento and interface-design references.
 
 The portfolio uses one compact statement-date/action row. The chart range lives here and explicitly affects charts, while period results retain latest-statement semantics. At wide widths, a navy value summary and a grouped period-results surface form the left column; the main trend panel spans both beside them. Tablet widths pair summary and period results before the full-width chart. Phones follow the source order: summary, chart, period results, holdings and allocation. Layout tracks size from content rather than fixed heights. Sparklines remain secondary context beside the period explanations. Unavailable values retain their reasons.
 
 Holdings and allocation follow directly, with analysis and definitions still disclosed. Chart inspection's reset and detailed keyboard instructions now live in Chart tools and values; the date slider and selectable legend remain visible. No financial formulas, financial policy, persistence or save/recovery protocols change.
 
-The shared shell uses an anchored sidebar, a simple page header, solid surfaces and restrained token-owned corners. This updates expenses, import and account surfaces as well as the portfolio. Motion still uses the shared focus, press, selection and reduced-motion rules. The signed gain/loss text retains meaning independently of colour; losses on the navy summary use its high-contrast foreground.
+The initial shared shell used an anchored sidebar, a simple page header, solid surfaces and restrained token-owned corners; its material is amended below. This updates expenses, import and account surfaces as well as the portfolio. Motion still uses the shared focus, press, selection and reduced-motion rules. The signed gain/loss text retains meaning independently of colour; losses on the navy summary use its high-contrast foreground.
 
 References applied: [responsive CSS Grid composition](https://github.com/microsoft/Resource2Skill/blob/main/skills_wiki/web/responsive_bento_dashboard_grid_05a335e3/text/overview.md), [bento-ui](https://skills.rest/skill/bento-ui), [frontend-design source skill](https://github.com/omanjaya/attendancedev/blob/main/.claude/skills/frontend-design/SKILL.md), and the owner's [Impeccable reference](https://skills.rest/repo/pbakaus/impeccable). Guidance was adapted to the existing Preact implementation and stronger repository accessibility/privacy requirements; no external skill scripts or runtime libraries were installed.
 
@@ -65,3 +65,23 @@ References applied: [responsive CSS Grid composition](https://github.com/microso
 - Result: PASS. All 757 tests in 58 files, source/build/PWA/Apps Script gates, and 124 local browser assertions passed. Captured and visually reviewed the actual portfolio renderer in light/dark desktop and dark mobile, plus the shared expense shell. No unhandled browser exceptions in the browser assertion run.
 - Evidence: generated synthetic screenshots in `dist/readme/` (ignored build output); local verification logs `/tmp/foliodash-bento-redesign-verify.log` and `/tmp/foliodash-redesign-browser-results.txt`. These temporary files are local evidence, not durable CI artifacts.
 - Remaining gates: Firefox/WebKit, physical Android, screen-reader review and live Google acceptance NOT RUN for this change. No live-product or hosted-revision verification is claimed.
+
+
+## Apple-style material restored, 2026-11-06
+
+The owner clarified that translucency and liquid glass are part of FolioDash's intended identity and should have survived the bento redesign. Restore that material while retaining the revised data hierarchy, compact action row and chart tooling.
+
+The sidebar, page toolbar and mobile navigation use the existing shared glass tokens: translucent fill, backdrop blur/saturation, an inset highlight and soft elevation. The desktop sidebar regains a small outer inset and rounded silhouette; the toolbar has rounded edges and comfortable inner padding. A static, restrained tonal backdrop makes the material visible without animation. Financial cards, forms and chart surfaces stay solid. No chart data, authentication, persistence or financial behavior changes.
+
+Reduced transparency uses opaque surface tokens, disables blur and removes the backdrop accents. Browsers without backdrop-filter support also receive opaque surfaces and no blur. Forced colours use system Canvas colours and no blur/shadow. Reduced motion retains the established interaction fallback. No external fonts, runtime requests or dependencies are added.
+
+
+### Material verification record
+
+- Revision/build: commit containing this amendment, local production build checked 2026-11-06.
+- Capability: translucent navigation/header material with solid financial surfaces and accessible preference fallbacks.
+- Environment/dataset: headless desktop Google Chrome, fresh temporary profiles, signed-out synthetic demos, 320/390/760/1024/1440px viewports and 200% text.
+- Method: `npm run verify`, `npm run capture:readme`, the existing local interaction/layout browser procedure plus computed-material checks under light/dark and reduced-transparency preferences. Inspect actual production screenshots on desktop and mobile.
+- Result: PASS. 762 tests across 58 files; all 124 existing browser assertions passed. Nine additional material assertions passed, including translucent fill/blur, opaque reduced-transparency fallbacks in both themes and mobile navigation blur. An initial material assertion compared equivalent `#fff`/`#ffffff` token spellings; normalizing the expected colour corrected that check without changing the implementation.
+- Evidence: ignored synthetic renders in `dist/readme/`; local `/tmp/foliodash-glass-verify.log`, `/tmp/foliodash-glass-browser.mjs` and `/tmp/foliodash-glass-material.mjs`. Local temporary paths are not durable CI artifacts.
+- Limits: physical Apple/Android devices, WebKit/Firefox, unsupported-filter fallback rendering and screen-reader testing NOT RUN for this change. The unsupported-filter fallback was reviewed in source. No hosted or live-Google verification is claimed.
