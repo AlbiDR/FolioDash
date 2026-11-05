@@ -197,5 +197,6 @@ try {
   socket?.close();
   await stop(chrome);
   await stop(preview);
-  rmSync(profile, { recursive: true, force: true });
+  // Chrome helpers can finish profile writes just after its main process exits.
+  rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 }
