@@ -214,3 +214,15 @@ The consolidated plan retains all five fields and metrics, keeps work-only scope
 | Blank, zero-only, partial-only, long and cross-year histories | Honest availability, stable reading order, period labels and independent expected values |
 
 Before implementation acceptance, run the existing repository checks plus production-renderer journeys at 320, 390, 760 and 1440 CSS pixels, 200% text, light/dark and reduced motion. Include real keyboard focus, keyboard-open phone layouts, screen-reader status/labels and the appropriate actual supported devices. Measure entry acknowledgement and actual save latency separately. Source review and this layout illustration do not satisfy those gates.
+
+## Experience revision, 2026-11-06
+
+The owner requested a full expense UX/UI refinement after the portfolio work. The implementation now treats Expenses as a dashboard with a focused daily workflow rather than a long uniform form.
+
+On desktop, annual spending and the clearly labelled yearly projection sit beside one grouped surface containing all three averages. The Reporting year control lives in the introduction and affects only the reporting figures/record. The editor and independently dated week follow. On phones, the editor and week take visual priority before those static report cards; the focusable controls retain their logical sequence. All five fields remain directly accessible. Routine fields form three columns only when the editor itself has enough space; narrow/zoomed cards reflow without shrinking labels or controls.
+
+The day editor has distinct essential/optional groups, shorter in-context guidance, toned input surfaces, one total/completeness area and one primary-action position. Save and Show amounts to edit occupy that same reserved position in their respective privacy states; the unavailable alternative is both visually and accessibly hidden. The slot's dimensions and every field remain stable across privacy changes. Error, correction, conflict, prior-version and uncertain-save controls remain in context with the original safeguards. Detailed reporting/eligibility rules remain under How these summaries work.
+
+The week leads with its recorded total. Each workday row shows date, status and amount without competing columns, and the panel no longer stretches to match the editor's height. Annual totals use the established navy treatment; averages share a single surface rather than nested cards. Category analysis, definitions and browsable records follow. Demo connection guidance comes after the useful dashboard. An empty connection message no longer creates a blank warning; a device copy has an explicit reconnect action.
+
+Presentation-only scope: no financial formula, completeness rule, date eligibility, Google scope, persistence schema, unknown-outcome handling or consent path is changed. The shared Apple-style glass shell remains intact. Privacy footprints use the same fixed public maximum amount, not a copy of the current private figure. The report-card typography is sized to its narrower context.
