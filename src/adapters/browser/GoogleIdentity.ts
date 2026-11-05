@@ -1,7 +1,7 @@
 import type { SignInResult } from "../../applications/SessionModel";
 // The browser half of Google sign-in. Google's identity script is loaded only
 // when the user chooses to connect, never on page load, and the access token it
-// returns is reused in session memory until expiry and never persisted.
+// returns can be reused until expiry by the tab-scoped session.
 
 interface TokenResponse {
   readonly access_token?: string;

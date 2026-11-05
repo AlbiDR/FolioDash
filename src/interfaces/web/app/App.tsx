@@ -14,6 +14,7 @@ import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sideba
 import { useMediaQuery } from "../shared/ui/useMediaQuery";
 import { useFocusVisibility } from "../shared/ui/useFocusVisibility";
 import { Icon, type IconName } from "../shared/ui/icons";
+import { watchGoogleFreshness } from "../../../adapters/browser/GoogleFreshness";
 import { createBrowserSession } from "./browserSession";
 import { CHART_RANGES, type ChartRange } from "../features/overview/chartRange";
 import { rememberClientId, resolveClientId } from "../../../adapters/browser/ClientId";
@@ -86,6 +87,7 @@ export function App(): JSX.Element {
   const session = useMemo(() => createBrowserSession(clientId), [clientId]);
   const data = useSession(session);
   const expenseData = useExpenses(session);
+  useEffect(() => watchGoogleFreshness(() => session.refreshIfNeeded(), () => importLocked || expenseLocked), [session, importLocked, expenseLocked]);
   useEffect(() => {
     if (data.mode === "online" && data.sheet === "ok") void session.expenses.refresh();
   }, [session, data.mode, data.sheet, data.workbook?.id, data.syncedAt]);
@@ -154,9 +156,15 @@ export function App(): JSX.Element {
     ? { label: "Demo data", tone: "demo" }
     : needsAttention
       ? { label: "Sheet needs attention", tone: "local" }
-      : data.mode === "online"
-        ? { label: "Synced with Google", tone: "synced" }
-        : { label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" };
+      : data.connection === "checking"
+        ? { label: "Checking Google…", tone: "local" }
+        : data.connection === "reconnect"
+          ? { label: "Reconnect to Google", tone: "local" }
+          : data.connection === "offline"
+            ? { label: "Google unavailable · device copy", tone: "local" }
+            : data.mode === "online"
+              ? { label: `Checked with Google${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "synced" }
+              : { label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" };
   const clientConfigured = clientId !== "";
   const pageTitle = titleOf(route, model);
   useEffect(() => {
@@ -252,7 +260,7 @@ export function App(): JSX.Element {
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
               <p class="notice" role="status">
-                Saving will ask you to sign in with Google first.
+                Your saved copy is available. Google access is checked before saving; reconnect if your session has expired.
               </p>
             )}
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>

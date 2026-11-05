@@ -128,7 +128,7 @@ export function AccountView(props: {
         ) : (
           <>
             <p class="card-subtitle">
-              {state.mode === "online" ? "In step with your Google Sheet." : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
+              {state.connection === "checking" ? "Checking Google for changes from your other devices…" : state.connection === "reconnect" ? "Your Google session has expired. Reconnect to check your latest history." : state.connection === "offline" ? "Google could not be reached. Showing your saved copy; automatic checks resume when available." : state.mode === "online" ? "Your last Google check completed. Changes are checked automatically while the app is open." : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
             </p>
             <dl class="facts stacked">
               <div>
@@ -161,11 +161,11 @@ export function AccountView(props: {
               )}
             </dl>
             <button type="button" class="primary" disabled={busy} onClick={() => void run(() => actions.refresh(), "sync")}>
-              <Icon name="history" size={16} /> {pending === "sync" ? "Syncing…" : "Sync now"}
+              <Icon name="history" size={16} /> {pending === "sync" ? "Syncing…" : state.connection === "reconnect" ? "Reconnect with Google" : "Sync now"}
             </button>
           </>
         )}
-        {!signedOut && <p class="hint">Google access is reused during this visit. After reopening the app, choose Sync now to reconnect; Google can reuse permission you already granted.</p>}
+        {!signedOut && <p class="hint">Google access survives reloads in this tab until its short-lived session expires. FolioDash checks for changes when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic refresh resumes.</p>}
         <Result message={message} />
       </div>
 
@@ -231,7 +231,7 @@ export function AccountView(props: {
             <strong>This device keeps a copy</strong> so FolioDash opens instantly. It can always be rebuilt from your Google Sheet.
           </li>
           <li>
-            <strong>Anyone who can use this unlocked device and browser</strong> could see that copy. If this device is shared, use Forget this device when you
+            <strong>Anyone who can use this unlocked device and browser</strong> could see that copy and use an unexpired Google session in this tab. If this device is shared, use Forget this device when you
             finish.
           </li>
         </ul>

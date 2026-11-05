@@ -13,6 +13,21 @@ export type SignInResult =
   | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
   | { readonly ok: false; readonly reason: "denied" | "closed" | "blocked" | "timeout" | "unavailable" };
 
+/** Tab-scoped, short-lived Google access, bound to the connected workbook. */
+export interface GoogleSession {
+  readonly clientId: string;
+  readonly workbookId: string;
+  readonly scope: string;
+  readonly accessToken: string;
+  readonly validUntil: number;
+}
+
+export interface GoogleSessionStore {
+  load(clientId: string, workbookId: string, now: number): GoogleSession | null;
+  save(value: GoogleSession): void;
+  clear(): void;
+}
+
 /** Where the person's data stands on this device. */
 export type Mode =
   /** Nothing is stored here and nobody is signed in. */
@@ -35,6 +50,7 @@ export type SheetStatus =
 
 export interface SessionState {
   readonly mode: Mode;
+  readonly connection?: "checking" | "connected" | "reconnect" | "offline";
   readonly ledger: LedgerState;
   readonly workbook: Workbook | null;
   /** When the ledger was last confirmed against the spreadsheet, in milliseconds since 1970. */

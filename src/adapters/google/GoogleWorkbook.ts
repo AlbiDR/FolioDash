@@ -1,3 +1,5 @@
+import { canonicalJson } from "../../core/CanonicalJson";
+import { sha256Hex } from "../../core/Sha256";
 import type { Workbook } from "../../applications/SessionModel";
 import type { Grid, GridCell } from "../../applications/SheetGrid";
 import type { LedgerRow } from "../ledger/RowLedgerStore";
@@ -126,17 +128,24 @@ export async function readLedgerRows(rest: RestClient, accessToken: string, work
   return { ok: true, value: { rows } };
 }
 
-/** Appends rows in one request, as text, so the change is applied whole or not at all. */
-export async function appendLedgerRows(rest: RestClient, accessToken: string, workbookId: string, rows: readonly LedgerRow[]): Promise<RestResult<number>> {
+/** Claims a predecessor and appends typed rows atomically. Never retry this request blindly. */
+export async function appendLedgerRows(rest: RestClient, accessToken: string, workbookId: string, rows: readonly LedgerRow[], predecessor?: readonly LedgerRow[]): Promise<RestResult<number>> {
+  const tabs = await listTabs(rest, accessToken, workbookId);
+  if (!tabs.ok) return tabs;
+  const ledger = tabs.value.find((tab) => tab.title === LEDGER_TAB);
+  if (ledger === undefined) return fail("not-found");
+  const marker = `FolioDash_${predecessor === undefined ? "restore" : "commit"}_${sha256Hex(canonicalJson(predecessor ?? []))}`;
   const answer = await callRest(rest, accessToken, {
     method: "POST",
-    url: `${SHEETS}/${encodeURIComponent(workbookId)}/values/${encodeURIComponent(`${LEDGER_TAB}!A:D`)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
-    body: { values: rows.map((row) => [row.revision, row.type, row.payload, row.checksum]) },
+    url: `${SHEETS}/${encodeURIComponent(workbookId)}:batchUpdate`,
+    body: { requests: [
+      { addNamedRange: { namedRange: { namedRangeId: marker, name: marker, range: { sheetId: ledger.id, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 1 } } } },
+      { appendCells: { sheetId: ledger.id, rows: rows.map((row) => ({ values: [row.revision, row.type, row.payload, row.checksum].map((value) => ({ userEnteredValue: { stringValue: value } })) })), fields: "userEnteredValue" } },
+    ] },
   });
   if (!answer.ok) return answer;
-  const updated = record(record(answer.value)?.["updates"])?.["updatedRows"];
-  // A different count than was sent is not a success we can describe, so say the answer was lost.
-  return typeof updated === "number" && updated === rows.length ? { ok: true, value: updated } : fail("network");
+  // The caller reads back and checks complete committed content, not a response row count.
+  return { ok: true, value: rows.length };
 }
 
 interface TabInfo {

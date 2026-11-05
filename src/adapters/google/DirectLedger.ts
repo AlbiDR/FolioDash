@@ -86,9 +86,9 @@ const LOST = "The save may or may not have been recorded. Check what happened be
 
 /**
  * Runs one ledger operation in memory against the rows already stored, checks once
- * more that nobody else wrote in the meantime, and sends what the operation added
- * in a single request. Only a refusal Google made before doing anything counts as
- * "not written"; a lost answer is unknown and is resolved by reading the sheet,
+ * more that nobody else wrote in the meantime, then claims that predecessor and
+ * appends rows in one atomic request. Only a refusal Google made before doing
+ * anything counts as "not written"; a lost answer is unknown and is resolved by reading the sheet,
  * never by trying again.
  */
 async function writeOnce(
@@ -111,14 +111,26 @@ async function writeOnce(
   if (!again.ok) return notWritten(again.failure);
   if ("notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows)) return { status: "stale" };
 
-  const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending);
+  const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending, before.value.rows);
   if (sent.ok) {
     const verified = await readLedgerRows(deps.rest, accessToken, workbookId);
     if (!verified.ok || "notALedger" in verified.value) return { status: "unknown", message: LOST };
     const loaded = storeOf(verified.value.rows).store.load();
     const expected = store.load();
-    if (loaded.status !== "ok" || expected.status !== "ok" || canonicalJson(loaded.state) !== canonicalJson(expected.state)) return { status: "unknown", message: LOST };
+    if (loaded.status !== "ok" || expected.status !== "ok" || canonicalJson(verified.value.rows.slice(0, before.value.rows.length + sheet.pending.length)) !== canonicalJson([...before.value.rows, ...sheet.pending])) return { status: "unknown", message: LOST };
     return result;
+  }
+  if (sent.failure === "unexpected") {
+    // A duplicate predecessor marker is refused atomically. Only report a stale
+    // review when a valid different winner is visible and our revision is absent.
+    const check = await readLedgerRows(deps.rest, accessToken, workbookId);
+    if (check.ok && !("notALedger" in check.value)) {
+      const checked = storeOf(check.value.rows).store;
+      if (checked.load().status === "ok" && canonicalJson(check.value.rows) !== canonicalJson(before.value.rows)) {
+        const reconciled = operate({ store: checked, withLock: (action) => action(), newRevision: deps.newRevision });
+        if (!reconciled.wrote) return reconciled.result;
+      }
+    }
   }
   return sent.failure === "unavailable" || sent.failure === "network" || sent.failure === "unexpected" ? { status: "unknown", message: LOST } : notWritten(sent.failure);
 }

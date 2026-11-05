@@ -445,7 +445,7 @@ export function CashQuestions(props: {
         <div class="review-problem" role="alert">
           <h4>Not saved</h4>
           {saving.outcome.status === "stale" && (
-            <p>The ledger in the spreadsheet changed after you loaded it, so nothing was saved. Connect again on the Your data screen to load the latest ledger, then repeat this import.</p>
+            <p>Another device changed your portfolio. This statement was not saved. Your inputs are still here. Check the updated history and review your decisions before confirming again; reconnect in Your data if Google could not be checked.</p>
           )}
           {saving.outcome.status === "rejected" && (
             <>

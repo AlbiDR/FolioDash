@@ -1,4 +1,4 @@
-import type { ConnectOutcome, RestoreOutcome, SessionState, SheetStatus, SignInResult, TidyOutcome, VerifyOutcome, Workbook } from "../../../applications/SessionModel";
+import type { ConnectOutcome, GoogleSessionStore, RestoreOutcome, SessionState, SheetStatus, SignInResult, TidyOutcome, VerifyOutcome, Workbook } from "../../../applications/SessionModel";
 import {
   type DirectDeps,
   attachDirect,
@@ -30,6 +30,7 @@ export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 export interface SessionDeps {
   readonly clientId: string;
+  readonly googleSession?: GoogleSessionStore;
   readonly workbookIdentity?: WorkbookIdentity;
   /** Re-reads a stored bank statement with today's reader, to prove the ledger can be rebuilt from them. */
   readonly interpret: InterpretStatement;
@@ -46,6 +47,10 @@ export interface SessionDeps {
   readonly quietMilliseconds?: number;
 }
 
+const AUTO_CHECK_MINIMUM_MILLISECONDS = 30_000;
+const TOKEN_MAXIMUM_SECONDS = 3600;
+const TOKEN_MARGIN_SECONDS = 120;
+
 const NEEDS: Readonly<Record<Exclude<SheetStatus, "unchecked" | "ok">, string>> = {
   missing: "Your Google Sheet can no longer be opened. It may have been deleted or moved to the bin. This device still has your saved copy.",
   emptied: "Your Google Sheet holds no statements, but this device still has your saved copy.",
@@ -56,7 +61,7 @@ const NEEDS: Readonly<Record<Exclude<SheetStatus, "unchecked" | "ok">, string>> 
 /**
  * One person's data on one device: the Google spreadsheet (the record), the saved
  * copy (an accelerator), and the sign-in that connects them. It holds no figure
- * of its own. The sign-in token lives only in this object's memory.
+ * of its own. Short-lived access may also survive reload in this tab's session store.
  */
 export class Session {
   readonly expenses: ExpenseSession;
@@ -71,13 +76,20 @@ export class Session {
   private quietTimer: ReturnType<typeof setTimeout> | null = null;
   private tidied: string | null = null;
   private generation = 0;
+  private syncSequence = 0;
+  private freshness: Promise<void> | null = null;
+  private lastAutoCheck = -Infinity;
   private signingIn: Promise<Awaited<ReturnType<Session["accessToken"]>>> | null = null;
   private connecting: Promise<ConnectOutcome> | null = null;
 
   constructor(deps: SessionDeps) {
     this.deps = { ...deps, rest: async (request) => {
       const response = await deps.rest(request);
-      if (response.status === 401 && request.headers["Authorization"] === `Bearer ${this.token?.accessToken ?? ""}`) this.token = null;
+      if (response.status === 401 && request.headers["Authorization"] === `Bearer ${this.token?.accessToken ?? ""}`) {
+        this.token = null;
+        deps.googleSession?.clear();
+        this.set({ ...this.current, connection: "reconnect" });
+      }
       return response;
     } };
     const copy = deps.cache.load();
@@ -85,6 +97,7 @@ export class Session {
       copy === null
         ? { mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 }
         : { mode: "device-copy", ledger: copy.ledger, workbook: copy.workbook, syncedAt: copy.syncedAt, sheet: "unchecked", trailingRows: 0 };
+    if (copy !== null) this.token = deps.googleSession?.load(deps.clientId, copy.workbook.id, deps.now()) ?? null;
     this.expenses = new ExpenseSession({ rest: this.deps.rest, newId: deps.newId, workbookId: this.current.workbook?.id ?? null, today: () => {
       const now = new Date(deps.now());
       const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -168,6 +181,8 @@ export class Session {
 
   private async accessToken(): Promise<{ readonly ok: true; readonly token: string } | { readonly ok: false; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }> {
     if (this.token !== null && this.deps.now() < this.token.validUntil) return { ok: true, token: this.token.accessToken };
+    this.token = null;
+    this.deps.googleSession?.clear();
     if (this.signingIn !== null) return this.signingIn;
     const work = this.requestToken();
     this.signingIn = work;
@@ -192,12 +207,13 @@ export class Session {
       return result;
     }
     // Reused only while Google says it is valid (with a margin), so a run of actions asks once.
-    this.token = result.expiresInSeconds === undefined ? null : { accessToken: result.accessToken, validUntil: this.deps.now() + (result.expiresInSeconds - 120) * 1000 };
+    this.token = result.expiresInSeconds === undefined ? null : { accessToken: result.accessToken, validUntil: this.deps.now() + (Math.min(result.expiresInSeconds, TOKEN_MAXIMUM_SECONDS) - TOKEN_MARGIN_SECONDS) * 1000 };
     return { ok: true, token: result.accessToken };
   }
 
   private keep(workbook: Workbook, ledger: LedgerState): void {
     this.deps.cache.save({ workbook, ledger, syncedAt: this.deps.now() });
+    if (this.token !== null && this.validToken() !== null) this.deps.googleSession?.save({ ...this.token, clientId: this.deps.clientId, workbookId: workbook.id, scope: DRIVE_FILE_SCOPE });
   }
 
   /** Signs in, finds or creates the spreadsheet, and loads the ledger. This is the whole of getting started. */
@@ -233,8 +249,9 @@ export class Session {
   }
 
   private async load(workbook: Workbook, accessToken: string, created: boolean, generation: number): Promise<ConnectOutcome> {
+    const sequence = ++this.syncSequence;
     const read = await readDirect(this.deps.rest, accessToken, workbook.id);
-    if (generation !== this.generation) return { status: "call-failed", failure: "unauthorised" };
+    if (generation !== this.generation || sequence !== this.syncSequence) return { status: "call-failed", failure: "unauthorised" };
     if (this.current.workbook !== null && this.current.workbook.id !== workbook.id) {
       // A newly selected account/workbook cannot inherit the previous feature's private cache.
       this.deps.cache.clear();
@@ -244,11 +261,12 @@ export class Session {
     const copy = this.current.ledger;
     const attention = (sheet: Exclude<SheetStatus, "unchecked" | "ok">): ConnectOutcome => {
       // The device copy is left exactly as it was, so it can still be shown and, with consent, restored.
-      this.set({ ...this.current, mode: this.current.mode === "signed-out" ? "signed-out" : "online", workbook, sheet });
+      this.set({ ...this.current, mode: this.current.mode === "signed-out" ? "signed-out" : "online", connection: "connected", workbook, sheet });
       return { status: "needs-attention", sheet, message: NEEDS[sheet] };
     };
     switch (read.status) {
       case "call-failed":
+        this.set({ ...this.current, connection: read.failure === "unauthorised" ? "reconnect" : "offline" });
         return { status: "call-failed", failure: read.failure };
       case "unrecognised":
         return { status: "call-failed", failure: "unexpected" };
@@ -264,12 +282,38 @@ export class Session {
     if (read.state.snapshots.length === 0 && copy.snapshots.length > 0) return attention("emptied");
     const changed = read.state.revision !== copy.revision;
     this.keep(workbook, read.state);
-    this.set({ mode: "online", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
+    this.set({ mode: "online", connection: "connected", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
     if (this.tidied !== workbook.id) {
       this.tidied = workbook.id;
       this.later(tidyLedgerTab(this.deps.rest, accessToken, workbook.id));
     }
     return { status: "connected", created, statements: read.state.snapshots.length, changed };
+  }
+
+  /** A bounded read using existing access. Background work never opens OAuth or creates a workbook. */
+  refreshIfNeeded(): Promise<void> {
+    if (this.freshness !== null) return this.freshness;
+    if (this.current.workbook === null || this.deps.now() - this.lastAutoCheck < AUTO_CHECK_MINIMUM_MILLISECONDS) return Promise.resolve();
+    if (this.validToken() === null) {
+      this.token = null;
+      this.deps.googleSession?.clear();
+      this.set({ ...this.current, connection: "reconnect" });
+      return Promise.resolve();
+    }
+    this.lastAutoCheck = this.deps.now();
+    const generation = this.generation;
+    const workbook = this.current.workbook;
+    const token = this.validToken();
+    if (token === null) return Promise.resolve();
+    this.set({ ...this.current, connection: "checking" });
+    const work = this.load(workbook, token, false, generation).then(async (outcome) => {
+      if (generation === this.generation && outcome.status === "connected") await this.expenses.refresh();
+    }).catch(() => {
+      if (generation === this.generation) this.set({ ...this.current, connection: "offline" });
+    });
+    this.freshness = work;
+    void work.finally(() => { if (this.freshness === work) this.freshness = null; });
+    return work;
   }
 
   /**
@@ -366,6 +410,10 @@ export class Session {
   /** Wipes everything this device holds and signs out. The spreadsheet in Google is not touched. */
   forget(): void {
     this.generation++;
+    this.syncSequence++;
+    this.lastAutoCheck = -Infinity;
+    this.freshness = null;
+    this.deps.googleSession?.clear();
     this.signingIn = null;
     this.connecting = null;
     this.expenses.forget();
@@ -385,6 +433,7 @@ export class Session {
     newCommandId: () => this.deps.newId(),
 
     record: async (request: RecordRequest, commandId: string, expectedRevision: string): Promise<RecordResult> => {
+      const generation = this.generation;
       const { workbook } = this.current;
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
       const signed = await this.accessToken();
@@ -398,11 +447,13 @@ export class Session {
         commands: request.commands,
         ...(request.source === undefined ? {} : { source: request.source }),
       });
+      if (generation !== this.generation) return { status: "unknown", message: "The account changed during this save. Check its outcome in the original workbook before another attempt." };
       switch (commit.status) {
         case "committed":
         case "already-committed":
           return this.readBack(workbook, signed.token, request.source === undefined ? [] : [{ date: request.date, sheet: request.source.sheet }]);
         case "stale":
+          await this.load(workbook, signed.token, false, generation);
           return { status: "stale" };
         case "rejected":
           return { status: "rejected", messages: commit.messages };
@@ -420,17 +471,20 @@ export class Session {
     },
 
     attach: async (items: readonly AttachItem[], commandId: string, expectedRevision: string): Promise<RecordResult> => {
+      const generation = this.generation;
       const { workbook } = this.current;
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
       const signed = await this.accessToken();
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
       const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
       const commit = await attachDirect(deps, signed.token, workbook.id, { commandId, expectedRevision, items });
+      if (generation !== this.generation) return { status: "unknown", message: "The account changed during this save. Check its outcome in the original workbook before another attempt." };
       switch (commit.status) {
         case "committed":
         case "already-committed":
           return this.readBack(workbook, signed.token, items.map((item) => ({ date: item.date, sheet: item.source.sheet })));
         case "stale":
+          await this.load(workbook, signed.token, false, generation);
           return { status: "stale" };
         case "rejected":
           return { status: "rejected", messages: commit.messages };
@@ -479,12 +533,13 @@ export class Session {
 
   private async readBack(workbook: Workbook, accessToken: string, mirror: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[] = []): Promise<RecordResult> {
     const generation = this.generation;
+    const sequence = ++this.syncSequence;
     if (this.current.workbook?.id !== workbook.id) return { status: "saved-not-reloaded" };
     const read = await readDirect(this.deps.rest, accessToken, workbook.id);
-    if (generation !== this.generation) return { status: "saved-not-reloaded" };
+    if (generation !== this.generation || sequence !== this.syncSequence) return { status: "saved-not-reloaded" };
     if (read.status !== "ok") return { status: "saved-not-reloaded" };
     this.keep(workbook, read.state);
-    this.set({ mode: "online", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
+    this.set({ mode: "online", connection: "connected", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
     // The readable tab is a convenience; its failure never affects the saved records.
     this.queueViews(workbook, read.state, mirror);
     return { status: "recorded", ledger: read.state };

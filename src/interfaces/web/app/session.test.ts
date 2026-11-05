@@ -1,3 +1,4 @@
+import { createGoogleSessionStore } from "../../../adapters/browser/GoogleSession";
 import type { SignInResult } from "../../../applications/SessionModel";
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
@@ -286,7 +287,7 @@ describe("saving through the session", () => {
     const { google, make } = world();
     const session = make();
     await session.connect();
-    google.faults.push({ match: /:append$/u, network: true, applyFirst: true });
+    google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
     const request = { ...january };
     const id = session.save.newCommandId();
     expect((await session.save.record(request, id, "")).status).toBe("unknown");
@@ -418,10 +419,10 @@ describe("attaching statements to months saved earlier, through the session", ()
     const { google, session, items } = await twoMonthsWithoutStatements();
     expect(await session.save.statementDates()).toEqual(new Set());
     expect(await session.verifyHistory()).toMatchObject({ report: { months: 2, matching: 0, withoutStatement: 2 } });
-    const appends = google.callsMatching(/:append$/u).length;
+    const appends = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     const result = await session.save.attach(items, session.save.newCommandId(), session.state.ledger.revision);
     expect(result.status).toBe("recorded");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appends + 1);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appends + 1);
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
@@ -442,7 +443,7 @@ describe("attaching statements to months saved earlier, through the session", ()
   it("a lost answer is unknown, the check finds it, and a repeat cannot attach twice", async () => {
     const { google, session, items } = await twoMonthsWithoutStatements();
     const id = session.save.newCommandId();
-    google.faults.push({ match: /:append$/u, network: true, applyFirst: true });
+    google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
     expect((await session.save.attach(items, id, session.state.ledger.revision)).status).toBe("unknown");
     expect((await session.save.check(id)).status).toBe("recorded");
     expect((await session.save.attach(items, id, "whatever")).status).toBe("recorded");
@@ -513,7 +514,7 @@ describe("the readable tabs and summary are written once after a run of saves", 
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     // One batch for both months and one for the summary: never one per save.
-    expect(google.callsMatching(/:batchUpdate$/u)).toHaveLength(2);
+    expect(google.batches.filter((batch) => batch.some((request) => request["updateCells"] !== undefined))).toHaveLength(2);
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
     expect(google.tab(id, "Bank 2026-02-28")?.rows.length).toBeGreaterThan(5);
   });
@@ -523,7 +524,7 @@ describe("the readable tabs and summary are written once after a run of saves", 
     const session = make();
     await session.connect();
     // Google refuses both the summary's batch and the months' batch.
-    google.faults.push({ match: /:batchUpdate$/u, status: 429 }, { match: /:batchUpdate$/u, status: 429 });
+    google.faults.push({ match: /:batchUpdate$/u, status: 429, append: false }, { match: /:batchUpdate$/u, status: 429, append: false });
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);
     if (!read.ok) throw new Error("setup failed");
@@ -589,5 +590,109 @@ describe("connection authentication resilience", () => {
     complete?.({ ok: true, accessToken: "synthetic-token", expiresInSeconds: 3600 });
     expect(await connection).toEqual({ status: "sign-in-failed", reason: "closed" });
     expect(session.state.mode).toBe("signed-out");
+  });
+});
+
+
+describe("persistent Google access and two-device freshness", () => {
+  it("reuses the tab session after reload and refreshes another device's saved history without signing in", async () => {
+    const { make, google, log } = world();
+    const storage = memory();
+    const googleSession = createGoogleSessionStore(() => storage);
+    const phone = make({ googleSession });
+    await phone.connect();
+    await saved(phone, january);
+    await phone.idle();
+    const laptopWorld = world({ google, store: memory() });
+    const laptop = laptopWorld.make({ newId: () => `laptop-${String(++laptopWorld.log.ids).padStart(6, "0")}` });
+    await laptop.connect();
+    expect((await saved(laptop, february)).status).toBe("recorded");
+    const reloaded = make({ googleSession });
+    expect(reloaded.state.ledger.snapshots).toHaveLength(1);
+    await reloaded.refreshIfNeeded();
+    expect(reloaded.state.ledger.snapshots).toHaveLength(2);
+    expect(reloaded.state.connection).toBe("connected");
+    expect(log.signIns).toBe(1);
+  });
+
+  it("throttles repeated foreground events and never opens sign-in when access expires", async () => {
+    const { make, google, log } = world();
+    const session = make();
+    await session.connect();
+    await session.idle();
+    await session.refreshIfNeeded();
+    const calls = google.calls.length;
+    await Promise.all([session.refreshIfNeeded(), session.refreshIfNeeded()]);
+    expect(google.calls).toHaveLength(calls);
+    log.clock += 3_600_000;
+    await session.refreshIfNeeded();
+    expect(session.state.connection).toBe("reconnect");
+    expect(log.signIns).toBe(1);
+  });
+
+  it("clears persisted access on rejection and forgetting, while preserving the workbook", async () => {
+    const { make, google } = world();
+    const storage = memory();
+    const googleSession = createGoogleSessionStore(() => storage);
+    const session = make({ googleSession });
+    await session.connect();
+    await session.idle();
+    expect(storage.data.size).toBe(1);
+    google.faults.push({ match: /./u, status: 401 });
+    await session.refreshIfNeeded();
+    expect(storage.data.size).toBe(0);
+    expect(session.state.connection).toBe("reconnect");
+    await session.refresh();
+    expect(storage.data.size).toBe(1);
+    session.forget();
+    expect(storage.data.size).toBe(0);
+    expect(google.files.size).toBe(1);
+  });
+
+  it("keeps a checked device copy after a failed background check", async () => {
+    const { make, google } = world();
+    const session = make();
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
+    google.faults.push({ match: /./u, network: true });
+    await session.refreshIfNeeded();
+    expect(session.state.connection).toBe("offline");
+    expect(session.state.ledger.snapshots).toHaveLength(1);
+  });
+});
+
+describe("out-of-order Google reads", () => {
+  it("does not let an older background response replace a newer manual refresh", async () => {
+    const { google, make } = world();
+    let delayNext = false;
+    let entered: (() => void) | undefined;
+    let release: (() => void) | undefined;
+    const reading = new Promise<void>((resolve) => { entered = resolve; });
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const session = make({ rest: async (request) => {
+      const response = await google.client(request);
+      if (delayNext && request.method === "GET" && request.url.includes("/values/")) {
+        delayNext = false;
+        entered?.();
+        await gate;
+      }
+      return response;
+    } });
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
+    delayNext = true;
+    const background = session.refreshIfNeeded();
+    await reading;
+    const other = world({ google, store: memory() });
+    const laptop = other.make({ newId: () => `laptop-${String(++other.log.ids).padStart(6, "0")}` });
+    await laptop.connect();
+    expect((await saved(laptop, february)).status).toBe("recorded");
+    expect((await session.refresh()).status).toBe("connected");
+    release?.();
+    await background;
+    expect(session.state.ledger.snapshots).toHaveLength(2);
+    expect(session.state.connection).toBe("connected");
   });
 });

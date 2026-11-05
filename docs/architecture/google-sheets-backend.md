@@ -167,6 +167,10 @@ The Apps Script side is in `src/interfaces/server/` (four named operations: chec
 
 Proved by tests against the in-memory sheet: interruption before the commit record, a failure before any write, a lost acknowledgement after the commit record, an unreadable store after a failure, a repeated and a conflicting command, a stale review, a rejected statement, and tampering with a snapshot, the header, the commit record and a timeline reference. Gate G5 remains NOT RUN against real Sheets and Apps Script: concurrent executions, the lock's real scope, quotas and the actual publication primitive are still to be proven.
 
+### 7.2 FD-020 direct-writer amendment (2026-11-05)
+
+[FD-020](decision-register.md) replaces the direct writer's check-then-append race with an atomic named-range predecessor claim plus typed ledger append. It also permits a bounded tab-scoped access session and foreground/reconnect polling. The [operational contract and evidence](../operations/google-setup.md#persistent-tab-session-and-two-device-freshness-fd-020-2026-11-05) owns its implementation details and limits. Same-revision contention is exercised with a synthetic provider; live Google race proof remains required. This amends the concurrency limitation for updated participating clients, not unsupported old clients, manual edits or indefinite login.
+
 ## 8. What "live" means
 
 The app reads committed Google data on connect/open, after a confirmed write, on explicit refresh, and on foreground/reconnect using a bounded freshness policy. A lightweight revision check can avoid repeatedly transferring all history.

@@ -206,7 +206,7 @@ export function ExcelHistoryView(props: {
           {failure?.status === "unknown" && <p>{failure.message} Do not retry this save until its outcome is checked.</p>}
           {failure?.status === "saved-not-reloaded" && <p>This statement was saved, but its history could not be read back. Check again before continuing.</p>}
           {failure?.status === "not-saved" && <p>{failure.message}</p>}
-          {failure?.status === "stale" && <p>The spreadsheet changed. Nothing from the stopped statement was saved. Refresh your connected history, then review the remaining statements again.</p>}
+          {failure?.status === "stale" && <p>Another device changed your history. Nothing from the stopped statement was saved. Return to selection and review the remaining statements against the updated history; reconnect in Your data if Google could not be checked.</p>}
           {failure?.status === "rejected" && <ul>{failure.messages.map((item, index) => <li key={index}>{item}</li>)}</ul>}
           {failure?.status === "damaged" && <p>{failure.message} Do not save more until your history is recovered.</p>}
           {uncertain && props.save !== undefined && <button type="button" disabled={checking} onClick={() => { void check(props.save as RemoteSave); }}>{checking ? "Checking the save…" : "Check what happened"}</button>}

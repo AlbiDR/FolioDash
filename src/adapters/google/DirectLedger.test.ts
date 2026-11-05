@@ -293,7 +293,7 @@ describe("commitDirect: saving", () => {
     const workbook = await readyWorkbook(google);
     const result = await commitDirect(deps, google.token, workbook.id, first());
     expect(result).toMatchObject({ status: "committed" });
-    expect(google.callsMatching(/:append$/u)).toHaveLength(1);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(1);
     const rows = google.tab(workbook.id, LEDGER_TAB)?.rows ?? [];
     expect(rows.slice(1).every((row) => row.every((cell) => typeof cell === "string"))).toBe(true);
     expect(rows[rows.length - 1]?.[1]).toBe("COMMIT");
@@ -315,9 +315,9 @@ describe("commitDirect: saving", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     await commitDirect(deps, google.token, workbook.id, first());
-    const appendsBefore = google.callsMatching(/:append$/u).length;
+    const appendsBefore = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("already-committed");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appendsBefore);
     const different = { ...first(), statement: statement(1234) };
     expect((await commitDirect(deps, google.token, workbook.id, different)).status).toBe("rejected");
   });
@@ -326,9 +326,9 @@ describe("commitDirect: saving", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     await commitDirect(deps, google.token, workbook.id, first());
-    const appends = google.callsMatching(/:append$/u).length;
+    const appends = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await commitDirect(deps, google.token, workbook.id, second("a-revision-nobody-has"))).status).toBe("stale");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appends);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appends);
   });
 
   it("notices another writer arriving between the read and the write, and writes nothing", async () => {
@@ -342,7 +342,7 @@ describe("commitDirect: saving", () => {
     };
     const result = await commitDirect(deps, google.token, workbook.id, first());
     expect(result.status).toBe("stale");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(0);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(0);
   });
 
   it("detects same-length content edits between reads without appending", async () => {
@@ -353,9 +353,9 @@ describe("commitDirect: saving", () => {
       const rows = google.tab(workbook.id, LEDGER_TAB)?.rows;
       if (rows?.[1] !== undefined) rows[1][2] = "changed without adding rows";
     } };
-    const before = google.callsMatching(/:append$/u).length;
+    const before = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await commitDirect(deps, google.token, workbook.id, second("revision-0001"))).status).toBe("stale");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(before);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(before);
   });
 
   it("does not call an acknowledged append successful when verification cannot be read", async () => {
@@ -365,26 +365,26 @@ describe("commitDirect: saving", () => {
     const rest: DirectDeps["rest"] = async request => {
       if (appended && request.method === "GET") throw new Error("verification connection lost");
       const response = await google.client(request);
-      if (request.method === "POST" && request.url.includes(":append?")) appended = true;
+      if (request.method === "POST" && request.url.includes(":batchUpdate")) appended = true;
       return response;
     };
     expect((await commitDirect({ ...deps, rest }, google.token, workbook.id, first())).status).toBe("unknown");
     expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe("committed");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(1);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(1);
   });
 
-  it("treats an unexpected response after an applied append as unknown", async () => {
+  it("reconciles an unexpected response against the original command receipt before reporting success", async () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
-    google.faults.push({ match: /:append$/u, status: 418, applyFirst: true });
-    expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("unknown");
+    google.faults.push({ match: /:batchUpdate$/u, status: 418, applyFirst: true });
+    expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("already-committed");
     expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe("committed");
   });
 
   it("treats a refusal Google made before doing anything as not written, and the retry then works", async () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
-    google.faults.push({ match: /:append$/u, status: 403 });
+    google.faults.push({ match: /:batchUpdate$/u, status: 403 });
     expect(await commitDirect(deps, google.token, workbook.id, first())).toEqual({ status: "not-sent", failure: "forbidden" });
     expect((await readDirect(google.client, google.token, workbook.id)).status === "ok").toBe(true);
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("committed");
@@ -393,7 +393,7 @@ describe("commitDirect: saving", () => {
   it("calls a lost answer unknown, resolves it by reading, and a retry cannot record it twice", async () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
-    google.faults.push({ match: /:append$/u, network: true, applyFirst: true });
+    google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
     const lost = await commitDirect(deps, google.token, workbook.id, first());
     expect(lost.status).toBe("unknown");
     expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "committed" });
@@ -405,7 +405,7 @@ describe("commitDirect: saving", () => {
   it("calls a busy answer unknown too, because Google may have applied it; reading shows the truth", async () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
-    google.faults.push({ match: /:append$/u, status: 503 });
+    google.faults.push({ match: /:batchUpdate$/u, status: 503 });
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("unknown");
     expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "not-found" });
   });
@@ -416,9 +416,9 @@ describe("commitDirect: saving", () => {
     await commitDirect(deps, google.token, workbook.id, first());
     const snapshot = (google.tab(workbook.id, LEDGER_TAB)?.rows ?? []).find((row) => row[1] === "SNAPSHOT");
     if (snapshot !== undefined) snapshot[2] = "{}";
-    const appends = google.callsMatching(/:append$/u).length;
+    const appends = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await commitDirect(deps, google.token, workbook.id, second("anything"))).status).toBe("damaged");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appends);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appends);
   });
 
   it("does not use the token anywhere but the authorisation header", async () => {
@@ -501,7 +501,7 @@ describe("saving the bank statement with the month", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     expect((await commitDirect(deps, google.token, workbook.id, withSource())).status).toBe("committed");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(1);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(1);
     const all = await readAllDirect(google.client, google.token, workbook.id);
     expect(all.status).toBe("ok");
     if (all.status !== "ok") return;
@@ -682,13 +682,13 @@ describe("attachDirect: statements for months saved earlier", () => {
     const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "Fondi" }]] };
     // The earlier save had no statement; this statement must reproduce the saved month, so it is the same funds and figures.
     const request = { commandId: "attach-0001", expectedRevision: revision, items: [{ date: date("2026-01-31"), statement: statement(1000), commands: [start], source: { sheetName: "Il Mio Patrimonio", sheet } }] };
-    const appendsBefore = google.callsMatching(/:append$/u).length;
+    const appendsBefore = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("committed");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore + 1);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appendsBefore + 1);
     const all = await readAllDirect(google.client, google.token, workbook.id);
     expect(all.status === "ok" && [all.state.snapshots.length, all.sources.length]).toEqual([1, 1]);
     expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("already-committed");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore + 1);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appendsBefore + 1);
   });
 
   it("refuses a statement that does not reproduce the saved month, and writes nothing", async () => {
@@ -698,8 +698,74 @@ describe("attachDirect: statements for months saved earlier", () => {
     const revision = one.status === "committed" ? one.revision : "";
     const sheet: RawSheet = { date1904: false, rows: [] };
     const request = { commandId: "attach-0002", expectedRevision: revision, items: [{ date: date("2026-01-31"), statement: statement(999), commands: [start], source: { sheetName: "S", sheet } }] };
-    const appendsBefore = google.callsMatching(/:append$/u).length;
+    const appendsBefore = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("rejected");
-    expect(google.callsMatching(/:append$/u)).toHaveLength(appendsBefore);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appendsBefore);
+  });
+});
+
+describe("atomic predecessor guard", () => {
+  it.each([
+    { command: "device-two", value: 1200, statuses: ["committed", "stale"], receipt: "not-found" },
+    { command: "device-one", value: 1000, statuses: ["already-committed", "committed"], receipt: "committed" },
+  ])("coordinates two devices past the final read ($command), preserving one valid save", async ({ command, value, statuses, receipt }) => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let waiting = 0;
+    const rest: DirectDeps["rest"] = async (request) => {
+      if (request.body?.includes('"appendCells"')) {
+        waiting++;
+        if (waiting === 2) release?.();
+        await gate;
+      }
+      return google.client(request);
+    };
+    const results = await Promise.all([
+      commitDirect({ ...deps, rest }, google.token, workbook.id, first("", "device-one")),
+      commitDirect({ ...deps, rest }, google.token, workbook.id, { ...first("", command), statement: statement(value) }),
+    ]);
+    expect(results.map((result) => result.status).sort()).toEqual(statuses);
+    expect(google.namedRanges.get(workbook.id)?.size).toBe(1);
+    const read = await readDirect(google.client, google.token, workbook.id);
+    expect(read).toMatchObject({ status: "ok", ignoredTrailingRows: 0 });
+    if (read.status !== "ok") throw new Error("ledger must stay readable");
+    expect(read.state.snapshots).toHaveLength(1);
+    expect((await outcomeDirect(google.client, google.token, workbook.id, "device-one")).status).toBe("committed");
+    expect((await outcomeDirect(google.client, google.token, workbook.id, command)).status).toBe(receipt);
+  });
+
+  it("does not mark an acknowledged save uncertain when a legitimate successor arrives before read-back", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    let followed = false;
+    const rest: DirectDeps["rest"] = async (request) => {
+      const response = await google.client(request);
+      if (!followed && request.body?.includes('"appendCells"')) {
+        followed = true;
+        expect((await commitDirect(deps, google.token, workbook.id, second("revision-0001"))).status).toBe("committed");
+      }
+      return response;
+    };
+    expect((await commitDirect({ ...deps, rest }, google.token, workbook.id, first())).status).toBe("committed");
+    const read = await readDirect(google.client, google.token, workbook.id);
+    expect(read.status === "ok" && read.state.snapshots).toHaveLength(2);
+  });
+
+  it("rolls back the predecessor marker if the append in its batch is invalid", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const rest: DirectDeps["rest"] = (request) => {
+      if (!request.body?.includes('"appendCells"')) return google.client(request);
+      const body = JSON.parse(request.body) as { requests: { appendCells?: { sheetId: number } }[] };
+      const append = body.requests.find((item) => item.appendCells !== undefined)?.appendCells;
+      if (append !== undefined) append.sheetId = -999;
+      return google.client({ ...request, body: JSON.stringify(body) });
+    };
+    expect((await commitDirect({ ...deps, rest }, google.token, workbook.id, first())).status).toBe("unknown");
+    expect(google.namedRanges.get(workbook.id)?.size ?? 0).toBe(0);
+    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "not-found" });
+    expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("committed");
   });
 });

@@ -59,6 +59,7 @@ function newTab(id: number, hidden: boolean, size: GridSize | undefined): FakeTa
 
 interface Fault {
   readonly match: RegExp;
+  readonly append?: boolean;
   readonly status?: number;
   readonly network?: boolean;
   /** Apply the change before failing, like an answer lost on the way back. */
@@ -77,8 +78,10 @@ export class FakeGoogle {
   /** Google does not always honour "hidden" when a tab is created; this reproduces that. */
   ignoreHiddenOnCreate = false;
   private nextTabId = 100;
+  readonly namedRanges = new Map<string, Set<string>>();
   /** Every structural request seen, so a test can check what was asked of Google. */
   requests: Record<string, unknown>[] = [];
+  batches: Record<string, unknown>[][] = [];
   files = new Map<string, FakeFile>();
   workbooks = new Map<string, Map<string, FakeTab>>();
   faults: Fault[] = [];
@@ -109,7 +112,7 @@ export class FakeGoogle {
     if (request.headers["Authorization"] !== `Bearer ${this.token}`) return Promise.resolve(this.respond(401, { error: "unauthenticated" }));
 
     const label = `${request.method} ${decodeURIComponent(url.pathname)}`;
-    const faultIndex = this.faults.findIndex((fault) => fault.match.test(label));
+    const faultIndex = this.faults.findIndex((fault) => fault.match.test(label) && (fault.append === undefined || fault.append === (request.body?.includes("\"appendCells\"") === true)));
     const fault = faultIndex >= 0 ? this.faults.splice(faultIndex, 1)[0] : undefined;
     try {
       if (fault !== undefined && fault.applyFirst !== true) return Promise.resolve(this.fail(fault));
@@ -183,7 +186,9 @@ export class FakeGoogle {
   private batchUpdate(id: string, body: Record<string, unknown> | null): RestResponse {
     const tabs = this.workbooks.get(id);
     if (tabs === undefined) return this.respond(404, {});
+    const markers = new Set(this.namedRanges.get(id) ?? []);
     const requests = (body?.["requests"] as Record<string, unknown>[] | undefined) ?? [];
+    this.batches.push(requests);
     // Google applies a batch whole or not at all, so work on copies and keep them only if every step succeeds.
     const copy = (tab: FakeTab): FakeTab => ({ ...tab, rows: tab.rows.map((row) => [...row]), formats: tab.formats.map((row) => [...row]), widths: new Map(tab.widths), developerMetadata: [...tab.developerMetadata] });
     const backup = new Map([...tabs.entries()].map(([title, tab]) => [title, copy(tab)] as const));
@@ -193,17 +198,30 @@ export class FakeGoogle {
     };
     for (const request of requests) {
       this.requests.push(request);
+      const named = request["addNamedRange"] as { namedRange: { namedRangeId: string } } | undefined;
+      if (named !== undefined) {
+        if (markers.has(named.namedRange.namedRangeId)) { restore(); return this.respond(400, { error: "Named range ID already exists" }); }
+        markers.add(named.namedRange.namedRangeId);
+      }
       const problem = this.applyRequest(tabs, request);
       if (problem !== null) {
         restore();
         return this.respond(400, { error: problem });
       }
     }
+    this.namedRanges.set(id, markers);
     return this.respond(200, {});
   }
 
   private applyRequest(tabs: Map<string, FakeTab>, request: Record<string, unknown>): string | null {
     const byId = (sheetId: unknown): FakeTab | undefined => [...tabs.values()].find((candidate) => candidate.id === sheetId);
+    const append = request["appendCells"] as { sheetId: number; rows: { values: { userEnteredValue: { stringValue: string } }[] }[] } | undefined;
+    if (append !== undefined) {
+      const tab = byId(append.sheetId);
+      if (tab === undefined) return "No such sheet";
+      for (const row of append.rows) tab.rows.push(row.values.map((cell) => cell.userEnteredValue.stringValue));
+      tab.rowCount = Math.max(tab.rowCount, tab.rows.length);
+    }
     const add = request["addSheet"] as { properties: { title: string; sheetId?: number; gridProperties?: GridSize } } | undefined;
     if (add !== undefined) {
       // Google refuses a second tab with the same name or id.
