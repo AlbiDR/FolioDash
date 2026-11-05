@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import process from "node:process";
+import { pngContent } from "./png-content.ts";
 
 const PUBLIC = "src/interfaces/web/public";
 const DIST = "dist/web";
@@ -98,6 +99,26 @@ if (!existsSync(`${DIST}/sw.js`)) {
   check(page.includes("icons/favicon-48.png"), "the page must link the PNG favicon fallback");
   check(/rel="manifest"/u.test(page), "the page does not link the manifest");
   check(/rel="apple-touch-icon"/u.test(page), "the page does not link the Apple touch icon");
+  // Link crawlers read the initial HTML without running the app or signing in.
+  const site = "https://albidr.github.io/FolioDash/";
+  const socialImage = `${site}social/preview.png`;
+  const meta = (key: string): string | undefined => {
+    const tags = [...page.matchAll(/<meta\s+(?:property|name)="([^"]+)"\s+content="([^"]*)"\s*\/?>/gu)].filter(match => match[1] === key);
+    check(tags.length === 1, `expected one static ${key} tag`);
+    return tags[0]?.[2];
+  };
+  check(page.includes(`<link rel="canonical" href="${site}"`), "the page needs the public app canonical URL");
+  check(meta("og:type") === "website", "social previews must describe the public application");
+  check(meta("og:site_name") === "FolioDash" && meta("og:title") === "FolioDash", "social previews need the product name");
+  check(meta("og:url") === site, "social previews must point to the public app, without account or route parameters");
+  check(meta("og:image") === socialImage && meta("twitter:image") === socialImage, "social cards need the absolute public PNG URL including the Pages subpath");
+  check(meta("og:image:type") === "image/png", "social cards must declare their image type");
+  check(meta("og:image:width") === "1200" && meta("og:image:height") === "630", "social card dimensions must match the artwork");
+  check(meta("twitter:card") === "summary_large_image" && meta("twitter:title") === "FolioDash", "social cards must request the large product preview");
+  for (const key of ["og:description", "og:image:alt", "twitter:description", "twitter:image:alt"]) check((meta(key)?.length ?? 0) > 0, `social cards need ${key}`);
+  check(pngSize(`${DIST}/social/preview.png`) === "1200x630", "the built social banner must be a 1200x630 PNG");
+  pngContent(readFileSync(`${DIST}/social/preview.png`));
+
 }
 
 if (failures.length > 0) {

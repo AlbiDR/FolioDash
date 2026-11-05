@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#161f3e"/><stop offset="1" stop-color="#060914"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#0b5fff"/><stop offset="1" stop-color="#8cb6ff"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#275bb4" stop-opacity=".4"/><stop offset="1" stop-color="#275bb4" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <ellipse cx="1030" cy="210" rx="440" ry="440" fill="url(#glow)"/>
+  <g fill="none" stroke="#b4cbff" stroke-opacity=".07">
+    <path d="M740 0V630M860 0V630M980 0V630M1100 0V630M680 110H1200M680 230H1200M680 350H1200M680 470H1200"/>
+  </g>
+  <g transform="translate(72 62)">
+    <rect width="58" height="58" rx="16" fill="#1d2d52" stroke="#8cb6ff" stroke-opacity=".25"/>
+    <path d="M14 38L24 29L32 34L45 20" fill="none" stroke="url(#line)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="45" cy="20" r="4" fill="#8cb6ff"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="148" y="103" fill="#f4f7ff" font-size="32" font-weight="700" letter-spacing="-1">FolioDash</text>
+    <text x="72" y="248" fill="#f4f7ff" font-size="72" font-weight="700" letter-spacing="-3">Your money,</text>
+    <text x="72" y="332" fill="#a9c9ff" font-size="72" font-weight="700" letter-spacing="-3">clearly in view.</text>
+    <text x="76" y="397" fill="#bdc8de" font-size="25">Portfolio and work expenses.</text>
+    <text x="76" y="435" fill="#bdc8de" font-size="25">Backed by your own Google Sheet.</text>
+    <rect x="76" y="523" width="280" height="40" rx="20" fill="#8cb6ff" fill-opacity=".1" stroke="#8cb6ff" stroke-opacity=".2"/>
+    <text x="96" y="549" fill="#c5d8fa" font-size="17" letter-spacing="1">YOUR DATA. YOUR SHEET.</text>
+  </g>
+  <g transform="translate(784 185)">
+    <rect width="330" height="276" rx="32" fill="#111d36" stroke="#8cb6ff" stroke-opacity=".24"/>
+    <path d="M32 78H298M32 138H298M32 198H298" fill="none" stroke="#8cb6ff" stroke-opacity=".12"/>
+    <path d="M36 211L101 151L155 184L247 86L289 65" fill="none" stroke="url(#line)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="289" cy="65" r="10" fill="#8cb6ff"/>
+    <rect x="32" y="31" width="78" height="8" rx="4" fill="#8cb6ff" fill-opacity=".3"/>
+  </g>
+</svg>

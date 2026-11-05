@@ -119,6 +119,14 @@ Do not transplant another project's 55KiB asset budget or 100/100 Lighthouse cla
 - Required checks run before deployment; deployment verifies the exact checked artifact/revision. Least-privilege CI, controlled migrations, locked dependencies and immutable third-party action references are part of that design.
 - A public synthetic demo and private personal app must have separate data/auth/cache boundaries. Do not enable indexing or social previews for private portfolio content.
 
+### Public link preview
+
+The public application entry point at `https://albidr.github.io/FolioDash/` exposes static Open Graph and large-image Twitter card metadata. The shared card describes FolioDash only; it never reflects the signed-in account, workbook, current route, holdings or expenses. Crawlers can fetch the product artwork without authentication or JavaScript. This does not enable previews of private portfolio content.
+
+Artwork lives in `src/interfaces/web/public/social/`: `preview.svg` is the editable design and `preview.png` is the 1200 by 630 delivery image. To regenerate the PNG, open the SVG in headless Chrome with `--hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --screenshot=<absolute output path>` and its absolute `file://` input URL. Inspect the resulting image before committing it. The palette and rising-line motif follow the existing product icon. No financial screenshot or customer data is used.
+
+`npm run verify` builds the card into the checked application and `verify:pwa` checks static metadata, the absolute Pages image URL, PNG integrity and dimensions. Existing Pages composition preserves those checked bytes. A future domain change must update the canonical URL, social URLs and their verification together. These checks prove the release files; fetching by a particular messaging service and the resulting preview still require a real share after deployment. Existing messages may retain a cached preview. The GitHub repository's own link preview is a separate repository setting.
+
 ## 8. Evidence and release gate
 
 Each requirement is tracked with a method and one of PASS, FAIL, BLOCKED or NOT RUN. A proposed script name, test count, screenshot or performance target is not a passing gate.
