@@ -535,3 +535,59 @@ describe("the readable tabs and summary are written once after a run of saves", 
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
   });
 });
+
+
+describe("connection authentication resilience", () => {
+  it("shares concurrent connection attempts and creates only one workbook", async () => {
+    const { make, google, log } = world();
+    const session = make();
+    const outcomes = await Promise.all([session.connect(), session.connect(), session.refresh()]);
+    expect(outcomes.every((outcome) => outcome.status === "connected")).toBe(true);
+    expect(log.signIns).toBe(1);
+    expect(google.files.size).toBe(1);
+  });
+
+  it("shares one renewal across simultaneous actions after expiry", async () => {
+    const { make, log } = world();
+    const session = make();
+    await session.connect();
+    log.clock += 3_600_000;
+    await Promise.all([session.refresh(), session.verifyHistory()]);
+    expect(log.signIns).toBe(2);
+  });
+
+  it("drops a rejected token and renews on the next user action without replaying the failed call", async () => {
+    const { make, log, google } = world();
+    const session = make();
+    await session.connect();
+    await session.idle();
+    google.faults.push({ match: /./u, status: 401 });
+    expect(await session.refresh()).toMatchObject({ status: "call-failed", failure: "unauthorised" });
+    expect(log.signIns).toBe(1);
+    expect(await session.refresh()).toMatchObject({ status: "connected" });
+    expect(log.signIns).toBe(2);
+  });
+
+  it("survives a throwing sign-in provider and allows another attempt", async () => {
+    const { make } = world();
+    let attempts = 0;
+    const session = make({ signIn: () => {
+      attempts++;
+      if (attempts === 1) throw new Error("unavailable");
+      return Promise.resolve({ ok: false, reason: "closed" });
+    } });
+    expect(await session.connect()).toEqual({ status: "sign-in-failed", reason: "unavailable" });
+    expect(await session.connect()).toEqual({ status: "sign-in-failed", reason: "closed" });
+  });
+
+  it("does not accept a sign-in that completes after forgetting the device", async () => {
+    const { make } = world();
+    let complete: ((result: SignInResult) => void) | undefined;
+    const session = make({ signIn: () => new Promise((resolve) => { complete = resolve; }) });
+    const connection = session.connect();
+    session.forget();
+    complete?.({ ok: true, accessToken: "synthetic-token", expiresInSeconds: 3600 });
+    expect(await connection).toEqual({ status: "sign-in-failed", reason: "closed" });
+    expect(session.state.mode).toBe("signed-out");
+  });
+});

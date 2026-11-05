@@ -1,11 +1,12 @@
 import type { SignInResult } from "../../applications/SessionModel";
 // The browser half of Google sign-in. Google's identity script is loaded only
 // when the user chooses to connect, never on page load, and the access token it
-// returns is held in memory for one call and never stored.
+// returns is reused in session memory until expiry and never persisted.
 
 interface TokenResponse {
   readonly access_token?: string;
   readonly expires_in?: number | string;
+  readonly scope?: string;
   readonly error?: string;
 }
 
@@ -35,6 +36,7 @@ declare global {
 
 const IDENTITY_SCRIPT = "https://accounts.google.com/gsi/client";
 const LOAD_TIMEOUT_MILLISECONDS = 15_000;
+const SIGN_IN_TIMEOUT_MILLISECONDS = 120_000;
 
 let loading: Promise<boolean> | null = null;
 
@@ -42,18 +44,21 @@ function loadIdentityScript(): Promise<boolean> {
   if (window.google !== undefined) return Promise.resolve(true);
   loading ??= new Promise<boolean>((resolve) => {
     const script = document.createElement("script");
-    const timer = window.setTimeout(() => {
-      resolve(false);
-    }, LOAD_TIMEOUT_MILLISECONDS);
+    const finish = (loaded: boolean): void => {
+      window.clearTimeout(timer);
+      script.onload = null;
+      script.onerror = null;
+      if (!loaded) script.remove();
+      resolve(loaded);
+    };
+    const timer = window.setTimeout(() => { finish(false); }, LOAD_TIMEOUT_MILLISECONDS);
     script.src = IDENTITY_SCRIPT;
     script.async = true;
     script.onload = () => {
-      window.clearTimeout(timer);
-      resolve(window.google !== undefined);
+      finish(window.google !== undefined);
     };
     script.onerror = () => {
-      window.clearTimeout(timer);
-      resolve(false);
+      finish(false);
     };
     document.head.append(script);
   });
@@ -68,22 +73,40 @@ export async function signIn(clientId: string, scope: string): Promise<SignInRes
   if (!(await loadIdentityScript()) || window.google === undefined) return { ok: false, reason: "unavailable" };
   const identity = window.google;
   return new Promise<SignInResult>((resolve) => {
-    const client = identity.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope,
-      callback: (response) => {
-        if (response.access_token !== undefined && response.error === undefined) {
-          const lifetime = Number(response.expires_in);
-          resolve({ ok: true, accessToken: response.access_token, ...(Number.isFinite(lifetime) && lifetime > 0 ? { expiresInSeconds: lifetime } : {}) });
-        } else {
-          resolve({ ok: false, reason: response.error === "access_denied" ? "denied" : "unavailable" });
-        }
-      },
-      error_callback: (error) => {
-        resolve({ ok: false, reason: error.type === "popup_closed" ? "closed" : "unavailable" });
-      },
-    });
-    client.requestAccessToken();
+    let settled = false;
+    const finish = (result: SignInResult): void => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = window.setTimeout(() => { finish({ ok: false, reason: "timeout" }); }, SIGN_IN_TIMEOUT_MILLISECONDS);
+    try {
+      const client = identity.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope,
+        callback: (response) => {
+          if (response.access_token && response.error === undefined) {
+            const granted = new Set((response.scope ?? "").split(/\s+/u));
+            if (!scope.split(/\s+/u).every((item) => granted.has(item))) {
+              finish({ ok: false, reason: "denied" });
+              return;
+            }
+            const lifetime = Number(response.expires_in);
+            finish({ ok: true, accessToken: response.access_token, ...(Number.isFinite(lifetime) && lifetime > 0 ? { expiresInSeconds: lifetime } : {}) });
+          } else {
+            finish({ ok: false, reason: response.error === "access_denied" ? "denied" : "unavailable" });
+          }
+        },
+        error_callback: (error) => {
+          finish({ ok: false, reason: error.type === "popup_closed" ? "closed" : error.type === "popup_failed_to_open" ? "blocked" : "unavailable" });
+        },
+      });
+      // Let Google reuse existing consent instead of forcing its default account picker.
+      client.requestAccessToken({ prompt: "" });
+    } catch {
+      finish({ ok: false, reason: "unavailable" });
+    }
   });
 }
 

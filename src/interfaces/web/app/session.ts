@@ -71,15 +71,21 @@ export class Session {
   private quietTimer: ReturnType<typeof setTimeout> | null = null;
   private tidied: string | null = null;
   private generation = 0;
+  private signingIn: Promise<Awaited<ReturnType<Session["accessToken"]>>> | null = null;
+  private connecting: Promise<ConnectOutcome> | null = null;
 
   constructor(deps: SessionDeps) {
-    this.deps = deps;
+    this.deps = { ...deps, rest: async (request) => {
+      const response = await deps.rest(request);
+      if (response.status === 401 && request.headers["Authorization"] === `Bearer ${this.token?.accessToken ?? ""}`) this.token = null;
+      return response;
+    } };
     const copy = deps.cache.load();
     this.current =
       copy === null
         ? { mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 }
         : { mode: "device-copy", ledger: copy.ledger, workbook: copy.workbook, syncedAt: copy.syncedAt, sheet: "unchecked", trailingRows: 0 };
-    this.expenses = new ExpenseSession({ rest: deps.rest, newId: deps.newId, workbookId: this.current.workbook?.id ?? null, today: () => {
+    this.expenses = new ExpenseSession({ rest: this.deps.rest, newId: deps.newId, workbookId: this.current.workbook?.id ?? null, today: () => {
       const now = new Date(deps.now());
       const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
       if (today === null) throw new Error("The device date is outside the supported range.");
@@ -162,8 +168,24 @@ export class Session {
 
   private async accessToken(): Promise<{ readonly ok: true; readonly token: string } | { readonly ok: false; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }> {
     if (this.token !== null && this.deps.now() < this.token.validUntil) return { ok: true, token: this.token.accessToken };
+    if (this.signingIn !== null) return this.signingIn;
+    const work = this.requestToken();
+    this.signingIn = work;
+    try {
+      return await work;
+    } finally {
+      if (this.signingIn === work) this.signingIn = null;
+    }
+  }
+
+  private async requestToken(): ReturnType<Session["accessToken"]> {
     const generation = this.generation;
-    const result = await this.deps.signIn(this.deps.clientId, DRIVE_FILE_SCOPE);
+    let result: SignInResult;
+    try {
+      result = await this.deps.signIn(this.deps.clientId, DRIVE_FILE_SCOPE);
+    } catch {
+      result = { ok: false, reason: "unavailable" };
+    }
     if (generation !== this.generation) return { ok: false, reason: "closed" };
     if (!result.ok) {
       this.token = null;
@@ -180,6 +202,17 @@ export class Session {
 
   /** Signs in, finds or creates the spreadsheet, and loads the ledger. This is the whole of getting started. */
   async connect(): Promise<ConnectOutcome> {
+    if (this.connecting !== null) return this.connecting;
+    const work = this.connectOnce();
+    this.connecting = work;
+    try {
+      return await work;
+    } finally {
+      if (this.connecting === work) this.connecting = null;
+    }
+  }
+
+  private async connectOnce(): Promise<ConnectOutcome> {
     const generation = this.generation;
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
@@ -333,6 +366,8 @@ export class Session {
   /** Wipes everything this device holds and signs out. The spreadsheet in Google is not touched. */
   forget(): void {
     this.generation++;
+    this.signingIn = null;
+    this.connecting = null;
     this.expenses.forget();
     this.deps.cache.clear();
     if (this.token !== null) this.deps.revoke?.(this.token.accessToken);
@@ -457,6 +492,8 @@ export class Session {
 }
 
 const SIGN_IN_TEXT: Readonly<Record<Extract<SignInResult, { ok: false }>["reason"], string>> = {
+  blocked: "The Google window was blocked. Allow pop-ups for this site and try again; nothing was saved.",
+  timeout: "Google sign-in took too long. Close the old Google window and try again; nothing was saved.",
   denied: "Permission was declined, so nothing was saved.",
   closed: "The sign-in window was closed, so nothing was saved.",
   unavailable: "Google sign-in could not start, so nothing was saved.",

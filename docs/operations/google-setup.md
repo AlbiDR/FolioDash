@@ -24,6 +24,18 @@ Before appending, the direct writer now compares complete ledger rows rather tha
 
 **Concurrency limitation:** these are detection/reconciliation improvements, not an atomic compare-and-swap. Another device can still write after the final read and before the append. Direct Sheets API storage has no shared service lock in this design. Do not claim this release makes simultaneous cross-device financial writes safe. A properly verified serialization/conditional-write mechanism needs a further architecture decision before that guarantee. Real Google write/read-back and interactive-device proof are not supplied by unit tests.
 
+### Sign-in reliability (2026-11-05)
+
+Token requests use `prompt: ""` so Google can reuse an existing session and grant instead of FolioDash forcing the default account picker. Google may still require sign-in, account selection or consent. This follows the [Google token client reference](https://developers.google.com/identity/oauth2/web/reference/js-reference) and [token model guide](https://developers.google.com/identity/oauth2/web/guides/use-token-model); it is not silent background authentication.
+
+Concurrent actions share one token request, and concurrent connection attempts share one workbook discovery/creation. A token rejected with HTTP 401 is removed from session memory; the next user action requests fresh access. The rejected request is not automatically replayed. Financial writes retain their existing explicit confirmation and uncertain-outcome reconciliation.
+
+Blocked pop-ups, closed windows, missing grants and sign-in timeout have separate recovery messages. Loading Google's script has a 15-second deadline and removes failed script elements before another attempt. An unanswered sign-in ends after two minutes; late responses cannot install a token. Forget this device also invalidates in-flight sign-in and connection results.
+
+Access tokens remain only in memory. Reloading or reopening the app still requires a user-triggered reconnection; a long-lived login or refresh-token service would require a separate authentication and deployment decision. The workbook and checked device copy remain available through their existing recovery paths.
+
+Local evidence: `GoogleIdentity.test.ts` uses a synthetic provider to exercise prompt configuration, granted scope checks, blocked/closed/throwing provider paths, timeout, late callback and script reload. `session.test.ts` covers shared connection/renewal, rejected-token recovery and forgetting during sign-in. Real Google consent/regrant behavior on Mac and Android remains NOT RUN for this change. No Google Cloud configuration or deployment was changed.
+
 ### Connection configuration
 
 Decided by the owner on 2026-11-01 and **built and tested only against a stand-in for Google, not yet on real Google**. The browser signs the person in with the narrow `drive.file` permission, creates their spreadsheet itself, and reads and writes it through the Sheets API. There is no script to deploy per person and no unverified-app warning.

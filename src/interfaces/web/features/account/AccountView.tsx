@@ -165,6 +165,7 @@ export function AccountView(props: {
             </button>
           </>
         )}
+        {!signedOut && <p class="hint">Google access is reused during this visit. After reopening the app, choose Sync now to reconnect; Google can reuse permission you already granted.</p>}
         <Result message={message} />
       </div>
 

@@ -17,6 +17,8 @@ const CALL_FAILED: Readonly<Record<string, string>> = {
 };
 
 const SIGN_IN: Readonly<Record<string, string>> = {
+  blocked: "Your browser blocked the Google window. Allow pop-ups for this site, then choose Continue with Google or Sync now again.",
+  timeout: "Google sign-in took too long. Close the old Google window and try again. Your saved copy is still available.",
   denied: "Permission was declined. Nothing was created or changed.",
   closed: "The sign-in window was closed. Nothing was created or changed.",
   unavailable: "Google sign-in could not start. Check that pop-ups are allowed and that this site's address is allowed for its client ID.",

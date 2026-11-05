@@ -11,7 +11,7 @@ export type CallFailure = "unauthorised" | "forbidden" | "not-found" | "unavaila
 
 export type SignInResult =
   | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
-  | { readonly ok: false; readonly reason: "denied" | "closed" | "unavailable" };
+  | { readonly ok: false; readonly reason: "denied" | "closed" | "blocked" | "timeout" | "unavailable" };
 
 /** Where the person's data stands on this device. */
 export type Mode =
