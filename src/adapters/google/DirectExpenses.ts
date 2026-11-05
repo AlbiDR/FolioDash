@@ -244,7 +244,7 @@ export async function refreshExpenseView(rest: RestClient, token: string, id: st
     rows.push([plainCell(monday), money(unresolved || total.completeDays + total.partialDays === 0 ? null : total.total), plainCell(unresolved ? "Resolve conflicting versions first" : `${String(total.partialDays)} partial day(s); sum of entered amounts`)]);
   }
   if (today !== undefined) {
-    rows.push([plainCell(`Annual recap: ${EXPENSE_REPORTING_POLICY}, completed-periods`, "header")], [plainCell(`As of ${today}; Dinner and Other Expenses may stay blank. Missing commute/lunch entries are excluded from averages. Estimates exclude leave and holidays.`)]);
+    rows.push([plainCell(`Annual recap: ${EXPENSE_REPORTING_POLICY}, completed-periods`, "header")], [plainCell(`As of ${today}; Dinner and Other Expenses may stay blank. An entered Dinner or Other Expenses amount, including zero, completes a day; otherwise missing commute/lunch entries are excluded from averages. Estimates exclude leave and holidays.`)]);
     for (const year of [...new Set([Number(today.slice(0, 4)), ...days.map((day) => Number(day.date.slice(0, 4)))])].sort()) {
       const report = expenseReport(days, year, today);
       const unresolved = conflicts.some((conflict) => Number(conflict.date.slice(0, 4)) === year);

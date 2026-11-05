@@ -7,7 +7,7 @@ Scope: PWA, calculation kernel, import pipeline, private persistence, synchronis
 
 **2026-11-01 amendment - FD-013:** the owner selected GitHub-managed frontend delivery, a user-owned private Google workbook and Apps Script as the service/backend. [Google-backed architecture](google-sheets-backend.md) defines that direction and the still-unverified FD-014 runtime route. No separate database provider is required; GitHub secrets are not the browser's data connection. Remaining proposed rules below must be read with this amendment, not as a claim that any service is deployed.
 
-**2026-11-05 amendment - FD-020:** the owner's persistence and two-device request permits short-lived Google access in tab-scoped `sessionStorage`, bounded automatic reads and an atomic predecessor marker in direct Sheets write batches. [FD-020](decision-register.md) and [Google setup](../operations/google-setup.md) define storage boundaries, expiry, draft safeguards and concurrency/live-proof limits. This supersedes memory-only token persistence; financial rules, consent and unknown-outcome recovery remain unchanged.
+**2026-11-05 amendment - FD-021:** the owner's persistence and two-device request permits short-lived Google access in tab-scoped `sessionStorage`, bounded automatic reads and an atomic predecessor marker in direct Sheets write batches. [FD-021](decision-register.md) and [Google setup](../operations/google-setup.md) define storage boundaries, expiry, draft safeguards and concurrency/live-proof limits. This supersedes memory-only token persistence; financial rules, consent and unknown-outcome recovery remain unchanged.
 
 ## 1. Purpose and authority
 

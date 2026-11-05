@@ -65,16 +65,16 @@ describe("expense boundaries and classification", () => {
     const amounts: ExpenseAmounts = [cents(200), cents(800), cents(200), null, null];
     expect(EXPENSE_REQUIRED_INDICES).toEqual([0, 1, 2]);
     expect(EXPENSE_OPTIONAL_INDICES).toEqual([3, 4]);
-    expect(EXPENSE_REPORTING_POLICY).toBe("work-expenses-v2");
+    expect(EXPENSE_REPORTING_POLICY).toBe("work-expenses-v3");
     expect(expenseEntryStatus(amounts)).toEqual({ filled: 3, missingRequired: [], complete: true, partial: false });
     expect(expenseDayKind(day("2026-11-03", null, { amounts }), date("2026-11-03"), date("2026-11-05"))).toBe("complete");
     expect(expenseEntryStatus([cents(0), cents(0), cents(0), null, null]).complete).toBe(true);
   });
 
-  it("counts only missing required fields for review, including when only optional spending was recorded", () => {
+  it("counts missing routine fields for review only when no optional cost was recorded", () => {
     expect(expenseEntryStatus([cents(200), null, cents(200), null, null])).toEqual({ filled: 2, missingRequired: [1], complete: false, partial: true });
-    expect(expenseEntryStatus([null, null, null, cents(1500), null])).toEqual({ filled: 1, missingRequired: [0, 1, 2], complete: false, partial: true });
-    expect(expenseEntryStatus([null, null, null, null, cents(500)]).partial).toBe(true);
+    expect(expenseEntryStatus([null, null, null, cents(1500), null])).toEqual({ filled: 1, missingRequired: [], complete: true, partial: false });
+    expect(expenseEntryStatus([null, null, null, null, cents(500)]).partial).toBe(false);
     const blank = expenseEntryStatus([null, null, null, null, null]);
     expect(blank.complete).toBe(false);
     expect(blank.partial).toBe(false);
@@ -158,11 +158,11 @@ describe("canonical expense reporting", () => {
     expect(report.yearlyProjection).toBe(369750);
   });
 
-  it("still excludes a period with missing commute or lunch evidence rather than guessing it from optional costs", () => {
+  it("still excludes a period with incomplete routine costs and no optional entry", () => {
     const days = [
       day("2026-01-01", null),
       day("2026-01-05", null, { amounts: [cents(200), cents(800), cents(200), null, null] }),
-      day("2026-01-06", null, { amounts: [cents(200), null, cents(200), cents(1500), cents(350)] }),
+      day("2026-01-06", null, { amounts: [cents(200), null, cents(200), null, null] }),
     ];
     const report = expenseReport(days, 2026, date("2026-02-02"));
     expect(report.completeDays).toBe(1);
@@ -170,7 +170,7 @@ describe("canonical expense reporting", () => {
     expect(report.averageDaily).toBe(1200);
     expect(report.averageWeekly).toBeNull();
     expect(report.averageMonthly).toBeNull();
-    expect(report.totalYearly).toBe(3450);
+    expect(report.totalYearly).toBe(1600);
   });
 
   it("does not fabricate metrics from an empty record", () => {
@@ -207,7 +207,7 @@ describe("canonical expense reporting", () => {
   });
 
   it("reports partial-only evidence without inventing complete-day averages or projections", () => {
-    const report = expenseReport([day("2026-11-02", null, { amounts: [null, cents(700), null, null, cents(200)] })], 2026, date("2026-12-01"));
+    const report = expenseReport([day("2026-11-02", null, { amounts: [null, cents(900), null, null, null] })], 2026, date("2026-12-01"));
     expect(report.partialDays).toBe(1);
     expect(report.completeDays).toBe(0);
     expect(report.totalYearly).toBe(900);
@@ -268,11 +268,12 @@ describe("canonical expense reporting", () => {
     expect(report.startDate).toBe("2025-12-31");
   });
 
-  it("retains the fifth category and partial-day evidence in a weekly readout", () => {
+  it("retains fifth-category spending as a complete day in a weekly readout", () => {
     const days = [day("2026-11-02", 100), day("2026-11-03", null, { amounts: [null, null, null, null, cents(500)] }), day("2026-11-06", 900)];
     const week = expenseWeek(days, date("2026-11-05"), date("2026-11-05"));
     expect(week.total).toBe(600);
-    expect(week.partialDays).toBe(1);
+    expect(week.partialDays).toBe(0);
+    expect(week.completeDays).toBe(2);
     expect(week.categoryTotals).toEqual([100, 0, 0, 0, 500]);
     expect(sumExpenseDays(days.slice(0, 2))).toBe(600);
   });
@@ -287,5 +288,38 @@ describe("canonical expense reporting", () => {
     expect(report.overflow).toBe(true);
     expect(expenseTotals(days).categoryTotals[0]).toBeNull();
     expect(sumExpenseAmounts([cents(max), cents(1), null, null, null] as ExpenseAmounts)).toBeNull();
+  });
+});
+
+
+describe("optional work costs can close a day", () => {
+  it.each([3, 4])("accepts category %i alone, including zero, and preserves every blank", (index) => {
+    for (const amount of [cents(0), cents(500)]) {
+      const amounts = [null, null, null, null, null].map((_, field) => field === index ? amount : null) as unknown as ExpenseAmounts;
+      const before = JSON.stringify(amounts);
+      expect(expenseEntryStatus(amounts)).toEqual({ filled: 1, missingRequired: [], complete: true, partial: false });
+      expect(expenseDayKind(day("2026-01-05", null, { amounts }), date("2026-01-05"), date("2026-01-06"))).toBe("complete");
+      expect(JSON.stringify(amounts)).toBe(before);
+    }
+  });
+
+  it("includes optional-only and mixed days in averages without filling routine blanks", () => {
+    const days = [
+      day("2026-01-01", null),
+      day("2026-01-05", null, { amounts: [null, null, null, cents(1500), null] }),
+      day("2026-01-06", null, { amounts: [null, null, null, null, cents(500)] }),
+      day("2026-01-07", null, { amounts: [null, null, null, cents(0), null] }),
+      day("2026-01-08", null, { amounts: [cents(200), null, null, null, cents(200)] }),
+    ];
+    const before = JSON.stringify(days);
+    const report = expenseReport(days, 2026, date("2026-02-02"));
+    expect(report.completeDays).toBe(4);
+    expect(report.partialDays).toBe(0);
+    expect(report.averageDaily).toBe(600);
+    expect(report.averageWeekly).toBe(2400);
+    expect(report.averageMonthly).toBe(2400);
+    expect(report.totalYearly).toBe(2400);
+    expect(report.yearlyProjection).toBe(156600);
+    expect(JSON.stringify(days)).toBe(before);
   });
 });

@@ -2,7 +2,7 @@ import { type IsoDate, parseIsoDate, toIsoDate } from "./IsoDate";
 import { type EuroCents, toEuroCents } from "./Money";
 
 export const EXPENSE_LABELS = ["Outbound Commute", "Lunch", "Inbound Commute", "Dinner", "Other Expenses"] as const;
-/** Normal costs of working in the city need explicit amounts or zeroes; occasional extras may stay blank. */
+/** Routine fields require amounts or zeroes unless an optional work cost is entered. */
 export const EXPENSE_REQUIRED_INDICES = [0, 1, 2] as const;
 export const EXPENSE_OPTIONAL_INDICES = [3, 4] as const;
 export type ExpenseAmounts = readonly [EuroCents | null, EuroCents | null, EuroCents | null, EuroCents | null, EuroCents | null];
@@ -23,7 +23,7 @@ export interface ExpenseCommand {
 }
 
 export type ExpenseAveragingPolicy = "completed-periods" | "typical-periods";
-export const EXPENSE_REPORTING_POLICY = "work-expenses-v2";
+export const EXPENSE_REPORTING_POLICY = "work-expenses-v3";
 
 /** Proleptic Gregorian civil-day arithmetic. It has no runtime clock or time-zone dependency. */
 function dayNumber(date: IsoDate): number {
@@ -91,7 +91,8 @@ export function expenseEntryStatus(amounts: ExpenseAmounts): {
   readonly partial: boolean;
 } {
   const filled = filledExpenseFields(amounts);
-  const missingRequired = EXPENSE_REQUIRED_INDICES.filter((index) => amounts[index] === null);
+  const hasOptionalCost = EXPENSE_OPTIONAL_INDICES.some((index) => amounts[index] !== null);
+  const missingRequired = hasOptionalCost ? [] : EXPENSE_REQUIRED_INDICES.filter((index) => amounts[index] === null);
   const complete = filled > 0 && missingRequired.length === 0;
   return { filled, missingRequired, complete, partial: filled > 0 && !complete };
 }
@@ -212,9 +213,9 @@ export interface ExpenseReport extends ExpenseTotals {
 }
 
 /**
- * Versioned reporting policy: completed workdays have explicit commute/lunch amounts,
- * including zeroes. Dinner and Other Expenses are optional, while any entered extras
- * remain part of the total. Optional blanks are preserved. Partial days
+ * Versioned reporting policy: an entered optional cost completes a workday; otherwise
+ * all routine commute/lunch amounts require explicit values, including zeroes.
+ * Every entered amount remains part of the total. Optional blanks are preserved. Partial days
  * contribute only their known amounts to annual/category totals. Completed periods
  * must be wholly inside the selected year and tracked coverage, ended before today,
  * contain a complete workday and contain no partial day. Blank weekdays mean no work.
