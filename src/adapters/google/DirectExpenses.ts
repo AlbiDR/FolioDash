@@ -3,7 +3,7 @@ import { bufferedGrid, plainCell, type GridCell } from "../../applications/Sheet
 import { canonicalJson } from "../../core/CanonicalJson";
 import { toSpreadsheetSerial, type IsoDate } from "../../core/IsoDate";
 import { sha256Hex } from "../../core/Sha256";
-import { EXPENSE_LABELS, expenseDayKind, expenseReport, expenseWeek, filledExpenseFields, parseExpenseCommand, sumExpenseAmounts, weekDates, type ExpenseCommand, type ExpenseDay } from "../../core/WorkExpenses";
+import { EXPENSE_LABELS, EXPENSE_OPTIONAL_INDICES, EXPENSE_REPORTING_POLICY, expenseDayKind, expenseReport, expenseWeek, filledExpenseFields, parseExpenseCommand, sumExpenseAmounts, weekDates, type ExpenseCommand, type ExpenseDay } from "../../core/WorkExpenses";
 import type { EuroCents } from "../../core/Money";
 import { writeGridTabs } from "./GoogleWorkbook";
 import { LEDGER_TAB } from "./SheetsLayout";
@@ -224,11 +224,11 @@ export async function saveExpense(rest: RestClient, token: string, id: string, c
 export async function refreshExpenseView(rest: RestClient, token: string, id: string, days: readonly ExpenseDay[], conflicts: readonly ExpenseConflict[] = [], today?: IsoDate): Promise<boolean> {
   const money = (amount: EuroCents | null): GridCell => amount === null ? plainCell("") : { value: amount / 100, format: '#,##0.00" €"', emphasis: null };
   const startDate = [...days].sort((left, right) => left.date.localeCompare(right.date))[0]?.date ?? null;
-  const descriptions = { complete: "Recorded workday", partial: "Needs review; amount recorded so far", "no-work": "No work", "not-entered": "Not entered yet", future: "Future date", "outside-history": "Outside tracked history", weekend: "Weekend" };
+  const descriptions = { complete: "Recorded workday", partial: "Needs review; amount recorded so far", "no-work": "No onsite work", "not-entered": "Not entered yet", future: "Future date", "outside-history": "Outside tracked history", weekend: "Weekend" };
   const rows: GridCell[][] = [
     [plainCell("Work expenses", "header")],
-    [plainCell("Rebuilt from checked records. Edit in FolioDash; download a backup before recovery.")],
-    [plainCell("Date", "header"), ...EXPENSE_LABELS.map((label) => plainCell(label, "header")), plainCell("Recorded amount", "header"), plainCell("State", "header")],
+    [plainCell("Costs incurred because of onsite work. Dinner and Other Expenses are optional. Rebuilt from checked records; edit in FolioDash.")],
+    [plainCell("Date", "header"), ...EXPENSE_LABELS.map((label, index) => plainCell(EXPENSE_OPTIONAL_INDICES.some(optional => optional === index) ? `${label} (optional)` : label, "header")), plainCell("Recorded amount", "header"), plainCell("State", "header")],
     ...days.map((day) => [
       { value: toSpreadsheetSerial(day.date), format: "dd/mm/yyyy", emphasis: null },
       ...day.amounts.map(money),
@@ -244,7 +244,7 @@ export async function refreshExpenseView(rest: RestClient, token: string, id: st
     rows.push([plainCell(monday), money(unresolved || total.completeDays + total.partialDays === 0 ? null : total.total), plainCell(unresolved ? "Resolve conflicting versions first" : `${String(total.partialDays)} partial day(s); sum of entered amounts`)]);
   }
   if (today !== undefined) {
-    rows.push([plainCell("Annual recap: completed-periods policy", "header")], [plainCell(`As of ${today}; estimates exclude leave and holidays. Partial days are excluded from averages.`)]);
+    rows.push([plainCell(`Annual recap: ${EXPENSE_REPORTING_POLICY}, completed-periods`, "header")], [plainCell(`As of ${today}; Dinner and Other Expenses may stay blank. Missing commute/lunch entries are excluded from averages. Estimates exclude leave and holidays.`)]);
     for (const year of [...new Set([Number(today.slice(0, 4)), ...days.map((day) => Number(day.date.slice(0, 4)))])].sort()) {
       const report = expenseReport(days, year, today);
       const unresolved = conflicts.some((conflict) => Number(conflict.date.slice(0, 4)) === year);

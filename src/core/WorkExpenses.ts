@@ -2,10 +2,13 @@ import { type IsoDate, parseIsoDate, toIsoDate } from "./IsoDate";
 import { type EuroCents, toEuroCents } from "./Money";
 
 export const EXPENSE_LABELS = ["Outbound Commute", "Lunch", "Inbound Commute", "Dinner", "Other Expenses"] as const;
+/** Normal costs of working in the city need explicit amounts or zeroes; occasional extras may stay blank. */
+export const EXPENSE_REQUIRED_INDICES = [0, 1, 2] as const;
+export const EXPENSE_OPTIONAL_INDICES = [3, 4] as const;
 export type ExpenseAmounts = readonly [EuroCents | null, EuroCents | null, EuroCents | null, EuroCents | null, EuroCents | null];
 export const EMPTY_EXPENSE_AMOUNTS: ExpenseAmounts = [null, null, null, null, null];
 
-/** Expense revisions are independent of the portfolio ledger. A blank stays unknown, never a guessed zero. */
+/** Expense revisions are independent of the portfolio ledger. Unentered values stay null; field policy determines review needs. */
 export interface ExpenseDay {
   readonly date: IsoDate;
   readonly amounts: ExpenseAmounts;
@@ -20,7 +23,7 @@ export interface ExpenseCommand {
 }
 
 export type ExpenseAveragingPolicy = "completed-periods" | "typical-periods";
-export const EXPENSE_REPORTING_POLICY = "work-expenses-v1";
+export const EXPENSE_REPORTING_POLICY = "work-expenses-v2";
 
 /** Proleptic Gregorian civil-day arithmetic. It has no runtime clock or time-zone dependency. */
 function dayNumber(date: IsoDate): number {
@@ -80,6 +83,19 @@ export function filledExpenseFields(amounts: ExpenseAmounts): number {
   return amounts.filter((amount) => amount !== null).length;
 }
 
+/** Completeness is a reporting policy; it never fills blanks or changes recorded values. */
+export function expenseEntryStatus(amounts: ExpenseAmounts): {
+  readonly filled: number;
+  readonly missingRequired: readonly number[];
+  readonly complete: boolean;
+  readonly partial: boolean;
+} {
+  const filled = filledExpenseFields(amounts);
+  const missingRequired = EXPENSE_REQUIRED_INDICES.filter((index) => amounts[index] === null);
+  const complete = filled > 0 && missingRequired.length === 0;
+  return { filled, missingRequired, complete, partial: filled > 0 && !complete };
+}
+
 export function sumExpenseAmounts(amounts: ExpenseAmounts): EuroCents | null {
   return exactCents(amounts.reduce<bigint>((total, amount) => total + BigInt(amount ?? 0), BigInt(0)));
 }
@@ -123,10 +139,10 @@ export type ExpenseDayKind = "complete" | "partial" | "no-work" | "not-entered" 
 
 export function expenseDayKind(day: ExpenseDay | undefined, date: IsoDate, today: IsoDate, startDate: IsoDate | null = null): ExpenseDayKind {
   if (!isWorkday(date)) return "weekend";
-  const filled = day === undefined ? 0 : filledExpenseFields(day.amounts);
+  const status = expenseEntryStatus(day?.amounts ?? EMPTY_EXPENSE_AMOUNTS);
   if (date > today) return "future";
-  if (filled === 5) return "complete";
-  if (filled > 0) return "partial";
+  if (status.complete) return "complete";
+  if (status.partial) return "partial";
   if (date === today) return "not-entered";
   if (startDate === null || date < startDate) return "outside-history";
   return "no-work";
@@ -148,8 +164,8 @@ export function expenseTotals(days: readonly ExpenseDay[]): ExpenseTotals {
   return {
     total,
     categoryTotals,
-    completeDays: days.filter((day) => filledExpenseFields(day.amounts) === 5).length,
-    partialDays: days.filter((day) => { const count = filledExpenseFields(day.amounts); return count > 0 && count < 5; }).length,
+    completeDays: days.filter((day) => expenseEntryStatus(day.amounts).complete).length,
+    partialDays: days.filter((day) => expenseEntryStatus(day.amounts).partial).length,
     overflow: total === null || categoryTotals.some((amount) => amount === null),
   };
 }
@@ -196,7 +212,9 @@ export interface ExpenseReport extends ExpenseTotals {
 }
 
 /**
- * Versioned reporting policy: completed workdays include explicit zeroes; partial days
+ * Versioned reporting policy: completed workdays have explicit commute/lunch amounts,
+ * including zeroes. Dinner and Other Expenses are optional, while any entered extras
+ * remain part of the total. Optional blanks are preserved. Partial days
  * contribute only their known amounts to annual/category totals. Completed periods
  * must be wholly inside the selected year and tracked coverage, ended before today,
  * contain a complete workday and contain no partial day. Blank weekdays mean no work.
@@ -208,7 +226,7 @@ export function expenseReport(days: readonly ExpenseDay[], year: number, today: 
   const startDate = [...days].sort((left, right) => left.date < right.date ? -1 : left.date > right.date ? 1 : 0)[0]?.date ?? null;
   const recorded = days.filter((day) => day.date.slice(0, 4) === String(year) && day.date <= today);
   const totals = expenseTotals(recorded);
-  const complete = recorded.filter((day) => filledExpenseFields(day.amounts) === 5);
+  const complete = recorded.filter((day) => expenseEntryStatus(day.amounts).complete);
   const completeSum = fullDaySum(complete);
   const weeks = new Map<string, ExpenseDay[]>();
   const months = new Map<string, ExpenseDay[]>();
@@ -227,12 +245,12 @@ export function expenseReport(days: readonly ExpenseDay[], year: number, today: 
   const eligibleWeeks = [...weeks].filter(([monday, entries]) => {
     const dates = weekDates(monday as IsoDate);
     const friday = dates[4];
-    return dates.length === 5 && first !== null && last !== null && monday >= first && startDate !== null && monday >= startDate && friday !== undefined && friday <= last && friday < today && entries.some((entry) => filledExpenseFields(entry.amounts) === 5) && entries.every((entry) => { const count = filledExpenseFields(entry.amounts); return count === 0 || count === 5; });
+    return dates.length === 5 && first !== null && last !== null && monday >= first && startDate !== null && monday >= startDate && friday !== undefined && friday <= last && friday < today && entries.some((entry) => expenseEntryStatus(entry.amounts).complete) && entries.every((entry) => !expenseEntryStatus(entry.amounts).partial);
   });
   const eligibleMonths = [...months].filter(([month, entries]) => {
     const monthFirst = parseIsoDate(`${month}-01`);
     const end = monthFirst === null ? null : monthEnd(monthFirst);
-    return monthFirst !== null && startDate !== null && monthFirst >= startDate && end !== null && end < today && entries.some((entry) => filledExpenseFields(entry.amounts) === 5) && entries.every((entry) => { const count = filledExpenseFields(entry.amounts); return count === 0 || count === 5; });
+    return monthFirst !== null && startDate !== null && monthFirst >= startDate && end !== null && end < today && entries.some((entry) => expenseEntryStatus(entry.amounts).complete) && entries.every((entry) => !expenseEntryStatus(entry.amounts).partial);
   });
   let weekdaysInYear = 0;
   if (first !== null && last !== null) {

@@ -6,7 +6,7 @@ import { sha256Hex } from "../../core/Sha256";
 import { isWorkday, shiftDate, parseExpenseAmounts, type ExpenseCommand } from "../../core/WorkExpenses";
 import { createWorkbook, writeGridTabs } from "./GoogleWorkbook";
 import { bufferedGrid, plainCell } from "../../applications/SheetGrid";
-import { checkExpense, decodeExpenseBackup, encodeExpenseBackup, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE, parseExpenseHistory, readExpenses, restoreExpenses, saveExpense } from "./DirectExpenses";
+import { checkExpense, decodeExpenseBackup, encodeExpenseBackup, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE, parseExpenseHistory, readExpenses, refreshExpenseView, restoreExpenses, saveExpense } from "./DirectExpenses";
 import type { RestClient } from "./Rest";
 import { LEDGER_TAB } from "./SheetsLayout";
 
@@ -49,6 +49,27 @@ async function setupEmptyExpenseStore(): Promise<{ google: FakeGoogle; id: strin
 }
 
 describe("direct work expense records", () => {
+  it("classifies old optional blanks through the current policy without changing committed records or backups", async () => {
+    const { google, id } = await setup();
+    await saveExpense(google.client, google.token, id, command("required-only", "2026-11-02", null, [100, 700, 100, null, null]));
+    await saveExpense(google.client, google.token, id, command("extras-paid", "2026-11-03", null, [100, 500, 100, 300, 200]), true);
+    const before = await readExpenses(google.client, google.token, id, true);
+    if (before.status !== "ok") throw new Error("Synthetic expense setup failed");
+    const rowsBefore = canonicalJson(required(google.tab(id, EXPENSE_LOG_TITLE)).rows);
+    const backupBefore = encodeExpenseBackup(before.commands);
+    expect(await refreshExpenseView(google.client, google.token, id, before.days, [], required(parseIsoDate("2026-11-05")))).toBe(true);
+    const view = required(google.tab(id, EXPENSE_VIEW_TITLE)).rows;
+    expect(view[3]?.[5]).toBe("Dinner (optional)");
+    expect(view[3]?.[6]).toBe("Other Expenses (optional)");
+    expect(view[4]?.slice(2, 7)).toEqual([1, 7, 1, "", ""]);
+    expect(view[4]?.[8]).toBe("Recorded workday");
+    expect(view.find(row => row[1] === "Average Daily")?.[2]).toBe(10.5);
+    expect(view.find(row => row[1] === "Total Yearly")?.[2]).toBe(21);
+    expect(canonicalJson(required(google.tab(id, EXPENSE_LOG_TITLE)).rows)).toBe(rowsBefore);
+    const after = await readExpenses(google.client, google.token, id, true);
+    expect(after.status === "ok" && encodeExpenseBackup(after.commands)).toBe(backupBefore);
+    expect(after.status === "ok" && after.days[0]?.amounts).toEqual([100, 700, 100, null, null]);
+  });
   it("refuses a future expense before creating or writing its records", async () => {
     const { google, id } = await setup();
     const before = google.calls.length;
@@ -171,7 +192,7 @@ describe("direct work expense records", () => {
     expect((await saveExpense(google.client, google.token, id, command("zero", undefined, null, [0, 0, 0, 0, 0]), true, required(parseIsoDate("2026-11-05")))).status).toBe("saved");
     const rows = required(google.tab(id, EXPENSE_VIEW_TITLE)).rows;
     expect(rows[4]?.[7]).toBe("");
-    expect(rows[4]?.[8]).toBe("No work");
+    expect(rows[4]?.[8]).toBe("No onsite work");
     expect(rows[5]?.[7]).toBe(0);
     for (const label of ["Average Daily", "Average Weekly", "Average Monthly", "Total Yearly", "Yearly Projection (estimate)"]) expect(rows.some((row) => row[1] === label)).toBe(true);
     expect(rows.find((row) => row[1] === "Average Daily")?.[2]).toBe(0);

@@ -30,6 +30,8 @@ The five expense fields are the initial fixed categories. A future model should 
 
 ### Confirmed day interpretation (owner agreement, 2026-11-04)
 
+The historical completion table below was amended by the owner on 2026-11-05: Dinner and Other Expenses are optional work costs; only Outbound Commute, Lunch and Inbound Commute require an amount or explicit zero. A missing optional entry does not trigger review or exclude a workday from averages. Stored blanks stay blank, including imported history. See [work-expenses-v2](../operations/work-expenses.md#versioned-reporting-choices) and FD-020 for the current contract. The tracker concerns onsite work costs, not proof of employment or leave on a blank date.
+
 | Entry state | Meaning and required presentation |
 |---|---|
 | Past Monday-Friday date with all five fields blank | No work that day; exclude it from workday averages |

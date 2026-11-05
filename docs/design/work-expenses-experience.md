@@ -6,6 +6,8 @@ Status: Refined and audited design proposal, followed by owner-authorised implem
 
 This plan moves from the whole application to the dashboard, then to entry and recovery. Each pass was audited against existing source and consolidated into the recommendations below. The audit is a source and design review, not independent reviewer, usability or browser evidence.
 
+Owner refinement, 2026-11-05: the implemented editor keeps all five categories but groups Dinner and Other Expenses as optional costs of onsite work. Missing optional amounts are not incomplete workdays. The owner also requires Hide amounts to censor the existing form and readouts in place, preserving the card composition, input positions and drafts rather than collapsing the editor. Current behaviour and verification belong to the [implementation record](../operations/work-expenses.md); the original proposal below retains its historical reasoning.
+
 ## 1. Whole-product narrative
 
 FolioDash should make a person's recorded money understandable at a glance and make the next useful action obvious. Portfolio explains the investments recorded in bank statements. Work expenses explains the cost of recorded working days. They share one visual language, privacy control and connection, while retaining their own dates, facts and calculations.

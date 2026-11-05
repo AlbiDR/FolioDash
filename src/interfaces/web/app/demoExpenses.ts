@@ -10,7 +10,7 @@ export function demoExpenses(today: IsoDate): readonly ExpenseDay[] {
     if (previous === null) break;
     date = previous;
     if (index === 4 || index === 8) continue;
-    const amounts = index === 2 ? [0, 0, 0, 0, 0] : index === 5 ? [240, 850, null, 0, null] : [240, 700 + index * 25, 240, index % 3 === 0 ? 1200 : 0, 0];
+    const amounts = index === 2 ? [0, 0, 0, null, null] : index === 5 ? [240, 850, null, null, null] : [240, 700 + index * 25, 240, index === 3 ? 1200 : null, null];
     days.push({ date, amounts: parseExpenseAmounts(amounts) ?? EMPTY_EXPENSE_AMOUNTS, revision: `demo:${date}` });
   }
   return days.sort((a, b) => a.date.localeCompare(b.date));
