@@ -268,6 +268,23 @@ The mechanism has five layers, each with its own tests:
 4. **Renewal ladder (fallback).** A quiet attempt names the account. After two failures, or at once if the browser blocked the window or the person declined, quiet renewal stops and the person is asked. A requested attempt after a failure drops the possibly stale hint and shows Google's chooser. A failure that was only the network is forgiven when it returns.
 5. **Always-reachable recovery (fallback).** When access is missing the status chip on every screen becomes a button whose own click is the gesture Google needs. Your data adds Use a different Google account. Storage degrades from `localStorage` to `sessionStorage` to memory instead of failing.
 
+## FD-023: brand mark, the cut ring (owner direction, 2026-11-07)
+
+```text
+ID / title: FD-023 / Brand mark: the cut ring
+Status: accepted by the owner after reviewing the rendered icon and banner; implemented; real-device appearance and similar-mark clearance NOT verified
+Decision owner / approval date: owner, 2026-11-07
+Context and constraints: the first icon, a rising line on a dark tile, was judged generic and homemade. The owner wants a mark with character that works both as an app icon and as a logo, and liked two of the drawn ideas: a ring and a dashboard grid. A letter monogram (an F) was drawn and rejected. The mark must keep its shape from 16 to 512 pixels, on light and dark backgrounds, and inside Android's maskable safe circle. The generator draws every file with no image library.
+Options considered: (1) the rising trend line (the previous icon); (2) an F monogram (rejected by the owner); (3) six letter-free ideas drawn side by side: allocation ring, bento grid, exploded pie, stacked folios, ramp and gauge; (4) developed versions of the two the owner liked, plus a gradient sliced into tiles, which lost its shape once the tile was removed and was dropped; (5) a ring cut by a grid (chosen), shown with sharp corners and with corner radii of 8, 14 and 22 before settling on 10.
+Decision and rationale: a portfolio ring, whose pieces are shares, cut by the straight gaps of a dashboard grid. The cross sits off-centre, so the four pieces differ in size and tone (white at full, 62% and 36% opacity), and the smallest is one amber spark. The ring says what the app is about, the grid says it is a dashboard, and the off-centre cut and the single spark give it a silhouette that survives without a background. Corners share one small radius so the mark matches the rounded tile. One set of numbers in scripts/generate-icons.ts draws the SVG, every PNG and the banner logo.
+Consequences and known limits: the amber is the only warm colour in FolioDash's imagery and is not a UI token; it is not a warning state. The tonal steps need a single-ink variant for one-colour printing, which has not been drawn. No wordmark or lockup was designed; the interface typography is unchanged. No Android themed (monochrome) icon is provided. No trademark or similar-mark search was made, so the mark is not cleared for any use beyond this project.
+Affected architecture sections and contracts: scripts/generate-icons.ts and its --check in verify:pwa; src/interfaces/web/public/icons/*; the social banner (its logo is embedded from icon.svg and its PNG regenerated); the README header and the app header image, which read icon.svg. The manifest and its colours are unchanged.
+Security/privacy and cost implications: none. Static assets only, no external fonts, services or cost.
+Migration / rollback: regenerate with the previous geometry from git history. An installed Android app updates its launcher icon on Chrome's own schedule, so a refreshed page does not prove the installed icon changed.
+Proof required and current evidence: generate-icons --check passes in verify:pwa. In headless Chrome the SVG matched the 512 pixel PNG (mean difference 0.4 of 255 per channel, with larger differences only along antialiased edges). A circle mask of 80% of the canvas keeps the whole ring. The 48, 180, 192 and 512 pixel outputs were inspected. NOT RUN: a physical Android launcher, iOS home screen, installed-icon update, and any trademark search.
+Revisit trigger / superseding decision: a similar-mark finding, a legibility defect on a real device, or the owner's direction. The aim is that the mark is not changed again.
+```
+
 ## Decision record template
 
 When a decision is ready, append its detailed record here; split into a dedicated ADR only when its size warrants it.
