@@ -2,7 +2,7 @@
 
 Read `docs/README.md`, `docs/architecture/cleanstack.md`, the relevant decision entries and `docs/operations/web-quality.md` before changing this project.
 
-- The GitHub + user-owned Google Sheets + Apps Script direction is selected in FD-013. Read `docs/architecture/google-sheets-backend.md` before integration work. Framework, exact authenticated route/deployment ownership, scopes, retention and licence are still unresolved; do not silently settle them.
+- The GitHub + user-owned Google Sheets direction is selected in FD-013. FD-017 replaces the Apps Script service route for new users with direct browser access to the user's own spreadsheet under the narrow `drive.file` scope, and FD-008 settles TypeScript, Preact and Vite. Read `docs/architecture/google-sheets-backend.md` and the FD-017 to FD-021 records before integration work. Deployed-origin, two-account, simultaneous-device and physical-device proof, original-source retention (FD-004), backup and retention (FD-009) and the licence (FD-011) are still open; do not silently settle them.
 - GitHub secrets belong to deployment/CI, not browser runtime. Never publish Google credentials or private data to simulate live access. Prove the authenticated Google route with synthetic data before promising it works.
 - Keep financial calculations pure and canonical; UI, parsers and persistence must not grow alternative implementations.
 - Keep references to the existing Sheets implementation outside production dependencies. Do not change that working project as a side effect of FolioDash work.
@@ -15,4 +15,4 @@ Read `docs/README.md`, `docs/architecture/cleanstack.md`, the relevant decision 
 - Distinguish unknown write outcomes from failures known not to have committed. Do not blindly retry financial writes.
 - Financial imports, corrections, restoration and destructive actions require the documented user consent and recovery path.
 - Cloud provisioning, publication, real-data migration, repository visibility changes and licensing need explicit task authority; documents are not blanket authorization.
-- Report what was implemented, what was checked and what remains unverified. The application runs locally and CI runs `npm run verify`, but nothing is hosted and no branch or environment protection is enforced yet.
+- Report what was implemented, what was checked and what remains unverified. The repository is public and a synthetic-data demo is published on GitHub Pages from the checked CI artifact, so every commit is public the moment it lands. CI runs `npm run verify` on Node 22 and 24. `main` is protected only against deletion and force-push: required checks and pull requests are not enforced and the `apps-script-deploy` environment has no protection. See `docs/operations/repository-configuration.md` and `docs/operations/github-actions.md`.
