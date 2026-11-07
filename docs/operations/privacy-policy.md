@@ -4,11 +4,11 @@ Status: **Draft. Not published, not linked from the app, and not legal advice.**
 
 ## Open before this can be published
 
-1. **Operator name.** The policy must say who runs FolioDash: a personal name, a handle or an entity. The repository owner is `AlbiDR`; whether to publish a real name is the owner's choice.
-2. **Contact.** A way to reach the operator about privacy. It will be public, so choose an address meant to be. GitHub issues are public and unsuited to personal requests. No address has been chosen or invented here.
+1. **Operator name: decided.** The owner chose to publish the display name `ADR`, with the GitHub handle `AlbiDR`, as the operator (2026-11-07). Google requires an app to represent accurately who manages it.
+2. **Contact: not yet chosen.** An email address or web page printed on the public policy so people can ask about their data. Choose one meant to be public: a dedicated address, or an alias that forwards to a private inbox. No address has been chosen or invented here. Google's pages do not require the policy itself to carry contact details, but the consent screen shows a **user support email** to users, which can be the same address, and some privacy laws expect a contact.
 3. **Jurisdiction and legal basis.** Not researched. The interface uses Italian and euro formatting, so EU rules may apply to the operator; get advice if that matters. This draft states what the app does, not that it meets any law.
-4. **Google's required wording.** The Limited Use sentence below is the form Google asks for under its API Services User Data Policy, written from memory of that policy. Check it against the [current policy](https://developers.google.com/terms/api-services-user-data-policy) before publishing. That page was not fetched.
-5. **Where it is hosted.** Google's branding help says the homepage and policy must sit on a domain you own and have verified. Whether `albidr.github.io` can be verified and accepted is not confirmed. A custom domain would be a cost and a separate decision.
+4. **Google's wording: checked, with gaps.** Google's [User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), [policy compliance](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance) and [brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification) pages were read on 2026-11-07. None of them gives a required sentence for a privacy policy. The Limited Use rules in the User Data Policy are stated for Sensitive and Restricted scopes, and `drive.file` is listed as non-sensitive, so they are not stated to apply here. The policy below therefore describes the same commitments in plain words instead of quoting a Google sentence. What those pages do require: disclose how the app accesses, uses, stores, deletes and shares Google user data, and keep to what is disclosed. The Drive-specific policy and Google's OAuth policies page were not read.
+5. **Where it is hosted.** Google's brand verification page says the policy must be visible to users, hosted within the same domain as the app's home page, and linked on the consent screen. Domains tied to the home page and policy must be owned and verified through Google Search Console, by an owner or editor of the Cloud project, and listed under Authorized domains. Whether `albidr.github.io` can be verified and accepted is not confirmed. A custom domain would be a cost and a separate decision.
 6. **Publication authority.** The working agreement requires explicit task authority to publish. A page added to the web app ships to the live site on the next push to `main`.
 
 ## Where each statement comes from
@@ -29,6 +29,8 @@ Every claim in the policy below, with the evidence it rests on. If the app chang
 | It does not remove display choices or a client ID you typed | `forgetDevice` does not touch `foliodash.privacy.v1`, `foliodash.sidebar.v1` or `foliodash.client.v1` |
 | An expense backup is a file you download | `ExpenseDataTools.tsx` creates it with `URL.createObjectURL`; nothing is uploaded |
 | Google's script loads when a connection exists or you connect, never for the demo | Observed in the browser pane on 2026-11-07: no Google request for a signed-out visitor, script preloaded for a remembered connection |
+| Data sent to Google travels over HTTPS | Every Google endpoint in the bundle is an `https://` URL; the site's canonical address is `https://albidr.github.io/FolioDash/` |
+| The device copy is not encrypted | FD-018: a plain copy, with encryption at rest and a passcode offered and not chosen; the Your data page says anyone using the unlocked browser could see it |
 | GitHub hosts the static files | Pages deployment, [GitHub Actions](github-actions.md). What GitHub logs is governed by GitHub's own statement, which was not reviewed here |
 
 ## The policy text
@@ -41,7 +43,7 @@ The text below is what would be published. Square brackets are the open items ab
 
 Last updated: [date of publication]
 
-FolioDash is a personal dashboard for your investment statements and your work expenses. It runs in your web browser. It is operated by [operator name]. Contact: [contact].
+FolioDash is a personal dashboard for your investment statements and your work expenses. It runs in your web browser. It is operated by ADR (AlbiDR on GitHub). Contact: [contact].
 
 ## The short version
 
@@ -73,7 +75,11 @@ FolioDash does not receive your name, contacts, email or any other Drive file.
 
 ## Google user data
 
-FolioDash's use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements. Information from Google is used only to provide FolioDash's features to you. It is not transferred to anyone else, not used for advertising and not read by people.
+FolioDash follows the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy). Information received from Google is used only to provide FolioDash's features to you. It is not transferred to anyone else, not used for advertising and not read by people, because FolioDash has no server through which any person could read it.
+
+## Security
+
+Everything FolioDash sends to Google travels over encrypted HTTPS connections. In your Google account your spreadsheet is protected by Google, and by whoever you share it with. The copy on your device is ordinary browser storage and is **not encrypted**, so anyone who can use your unlocked device and browser could see it and could open FolioDash as you while your Google account stays signed in. On a shared device, use Forget this device when you finish.
 
 ## Your choices
 
@@ -87,7 +93,7 @@ FolioDash is not directed at children.
 
 ## Changes
 
-If this policy changes, the date above changes. Earlier versions are kept in the project's public history at github.com/AlbiDR/FolioDash.
+If this policy changes, the date above changes. If FolioDash ever changes how it uses your Google data, it will tell you and ask for your agreement before the new use begins. Earlier versions are kept in the project's public history at github.com/AlbiDR/FolioDash.
 
 ## Contact
 
@@ -99,5 +105,5 @@ If this policy changes, the date above changes. Earlier versions are kept in the
 
 1. The owner settles the open items and says to publish.
 2. The text becomes a static page in the web app's public folder, so it ships in the verified build and the offline cache, linked from Your data and the README.
-3. The page's address goes on the consent screen's Branding page. Confirm the console accepts the domain; that is the unverified part.
+3. The page's address goes on the consent screen's Branding page, together with a homepage on the same domain and a user support email. The domain must be verified in Google Search Console by an owner or editor of the Cloud project and listed under Authorized domains. Confirm the console accepts it; that is the unverified part.
 4. Any later change to what the app collects, such as analytics, a new scope or a server, updates this document and the table above first.
