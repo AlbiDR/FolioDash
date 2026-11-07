@@ -18,7 +18,25 @@ export function shouldHandle(method: string, requestUrl: string, scopeUrl: strin
   const scope = new URL(scopeUrl);
   if (request.origin !== scope.origin) return false;
   if (!request.pathname.startsWith(scope.pathname)) return false;
+  // The host redirects a folder page to its trailing slash. Answering it here would keep the wrong
+  // address, and the page's relative links would then point outside the app.
+  if (STANDALONE_PAGES.some((page) => request.pathname === `${scope.pathname}${page.slice(0, -1)}`)) return false;
   return request.pathname !== `${scope.pathname}sw.js`;
+}
+
+/** Pages that are not the app, such as the privacy policy. A page load for one gets that page, not the app. */
+const STANDALONE_PAGES = ["privacy/"] as const;
+
+/** The saved file a page load should get when it is for a standalone page; null for the app itself. */
+export function standalonePageKey(requestUrl: string, scopeUrl: string): string | null {
+  const request = new URL(requestUrl);
+  const scope = new URL(scopeUrl);
+  if (request.origin !== scope.origin || !request.pathname.startsWith(scope.pathname)) return null;
+  const relative = request.pathname.slice(scope.pathname.length);
+  for (const page of STANDALONE_PAGES) {
+    if (relative === page || relative === `${page}index.html`) return new URL(`${page}index.html`, scope).href;
+  }
+  return null;
 }
 
 /** A page load (not a script, style or image request). */

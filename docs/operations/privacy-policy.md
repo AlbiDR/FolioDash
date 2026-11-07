@@ -1,15 +1,15 @@
-# Privacy policy (draft for owner review)
+# Privacy policy
 
-Status: **Draft. Not published, not linked from the app, and not legal advice.** Created 2026-11-07 because Google's branding help requires a privacy-policy link for external production apps (see [Google setup](google-setup.md#remembered-connection-fd-022-2026-11-07)). Nothing here goes live until the owner decides the open items and authorises publication.
+Status: **Page added 2026-11-07 on the owner's instruction to leave the consent screen's Testing status. Not legal advice.** The text of record is the static page [`src/interfaces/web/public/privacy/index.html`](../../src/interfaces/web/public/privacy/index.html), shipped at `https://albidr.github.io/FolioDash/privacy/` by the site deployment and linked from the connect card, Your data and the README. It is not duplicated here, so there is one text to keep true. This document holds the evidence behind each claim and what is still open. Google's reason for it is in [Google setup](google-setup.md#remembered-connection-fd-022-2026-11-07).
 
-## Open before this can be published
+## What was decided and what is still open
 
-1. **Operator name: decided.** The owner chose to publish the display name `ADR`, with the GitHub handle `AlbiDR`, as the operator (2026-11-07). Google requires an app to represent accurately who manages it.
-2. **Contact: decided.** The owner chose `aalbi97+foliodash@gmail.com` (2026-11-07), knowing it becomes public in this repository's history as soon as it is committed, and on the page once published. The `+foliodash` tag lets the owner filter mail to it; it does not hide the address behind it. Google's pages do not require the policy itself to carry contact details, but the consent screen shows a **user support email** to users, which can be the same address, and some privacy laws expect a contact.
-3. **Jurisdiction and legal basis.** Not researched. The interface uses Italian and euro formatting, so EU rules may apply to the operator; get advice if that matters. This draft states what the app does, not that it meets any law.
-4. **Google's wording: checked, with gaps.** Google's [User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), [policy compliance](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance) and [brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification) pages were read on 2026-11-07. None of them gives a required sentence for a privacy policy. The Limited Use rules in the User Data Policy are stated for Sensitive and Restricted scopes, and `drive.file` is listed as non-sensitive, so they are not stated to apply here. The policy below therefore describes the same commitments in plain words instead of quoting a Google sentence. What those pages do require: disclose how the app accesses, uses, stores, deletes and shares Google user data, and keep to what is disclosed. The Drive-specific policy and Google's OAuth policies page were not read.
-5. **Where it is hosted.** Google's brand verification page says the policy must be visible to users, hosted within the same domain as the app's home page, and linked on the consent screen. Domains tied to the home page and policy must be owned and verified through Google Search Console, by an owner or editor of the Cloud project, and listed under Authorized domains. Whether `albidr.github.io` can be verified and accepted is not confirmed. A custom domain would be a cost and a separate decision.
-6. **Publication authority.** The working agreement requires explicit task authority to publish. A page added to the web app ships to the live site on the next push to `main`.
+1. **Operator: decided.** `ADR`, with the GitHub handle `AlbiDR` (2026-11-07). Google requires an app to represent accurately who manages it.
+2. **Contact: decided.** `aalbi97+foliodash@gmail.com` (2026-11-07), chosen knowing it is public in this repository's history and on the page. The `+foliodash` tag lets the owner filter mail to it; it does not hide the address behind it.
+3. **Jurisdiction and legal basis: not researched.** The owner chose to proceed. The interface uses Italian and euro formatting, so EU rules may apply to the operator. The page states what the app does; it does not claim to meet any law.
+4. **Google's wording: checked, with gaps.** Google's [User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), [policy compliance](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance) and [brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification) pages were read on 2026-11-07. None gives a required sentence for a privacy policy, and the Limited Use rules are stated for Sensitive and Restricted scopes while `drive.file` is non-sensitive. The page states the same commitments in plain words. The Drive-specific policy and Google's OAuth policies page were not read.
+5. **Domain: unverified.** Google's brand verification page says the policy must be on the same domain as the app's home page, linked on the consent screen, and that domains tied to the home page and policy must be verified in Google Search Console and listed under Authorized domains. Whether `albidr.github.io` can be verified and accepted is not confirmed. A custom domain would be a cost and a separate decision.
+6. **Publication authority: given.** The owner asked to complete leaving Testing (2026-11-07), which includes publishing this page.
 
 ## Where each statement comes from
 
@@ -33,77 +33,6 @@ Every claim in the policy below, with the evidence it rests on. If the app chang
 | The device copy is not encrypted | FD-018: a plain copy, with encryption at rest and a passcode offered and not chosen; the Your data page says anyone using the unlocked browser could see it |
 | GitHub hosts the static files | Pages deployment, [GitHub Actions](github-actions.md). What GitHub logs is governed by GitHub's own statement, which was not reviewed here |
 
-## The policy text
+## Keeping it true
 
-The text below is what would be published. The one square bracket left is the publication date, set when the page goes live.
-
----
-
-# FolioDash privacy policy
-
-Last updated: [date of publication]
-
-FolioDash is a personal dashboard for your investment statements and your work expenses. It runs in your web browser. It is operated by ADR (AlbiDR on GitHub). Contact: aalbi97+foliodash@gmail.com.
-
-## The short version
-
-- Your data lives in a Google spreadsheet in your own Google Drive, and in a copy on your own device.
-- FolioDash has no server. It does not collect, receive, store or sell your data, and its developer cannot see your portfolio or your expenses.
-- FolioDash uses no analytics, no advertising and no tracking, and sets no cookies of its own.
-- The demo uses invented data and needs no account.
-
-## What FolioDash accesses in your Google account
-
-- **One permission, `drive.file`.** It lets FolioDash create one spreadsheet in your Google Drive and read and write that spreadsheet. It does not let FolioDash see your other files.
-- **Your account's email address.** FolioDash reads it once so it can tell Google which account to use next time, and Google does not ask you to choose again. It is kept only on your device.
-
-FolioDash does not receive your name, contacts, email or any other Drive file.
-
-## What is stored, and where
-
-**In your Google spreadsheet:** your portfolio records (fund names, values, money in and out, and comments you enter), the monthly bank statements you import exactly as the bank file wrote them, and your work-expense entries. A bank statement can include your name and your contract or account numbers. The spreadsheet belongs to you. You decide whether to share, edit or delete it.
-
-**On your device, in your browser's storage:** a copy of your portfolio and expense records, without the bank-statement identifiers; Google access that lasts at most an hour; the email address of the account to use; the Google client ID, only if you typed one; your display choices, such as hiding amounts; and a cached copy of the app's own files so it works offline.
-
-**Files you choose:** Excel exports are read inside your browser. FolioDash does not upload the file. The statement as read is saved to your spreadsheet. If you download an expense backup, it is a file saved to your device and nowhere else.
-
-## Who else is involved
-
-- **Google** provides sign-in, Drive and Sheets, under [Google's privacy policy](https://policies.google.com/privacy). Google's sign-in script is loaded in your browser when you connect, or when you return with a saved connection. It is not loaded for the demo.
-- **GitHub** hosts the app's files. Like any web host, it may log requests, such as your IP address, under [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
-- Nobody else. Nothing is shared with anyone, sold or used for advertising.
-
-## Google user data
-
-FolioDash follows the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy). Information received from Google is used only to provide FolioDash's features to you. It is not transferred to anyone else, not used for advertising and not read by people, because FolioDash has no server through which any person could read it.
-
-## Security
-
-Everything FolioDash sends to Google travels over encrypted HTTPS connections. In your Google account your spreadsheet is protected by Google, and by whoever you share it with. The copy on your device is ordinary browser storage and is **not encrypted**, so anyone who can use your unlocked device and browser could see it and could open FolioDash as you while your Google account stays signed in. On a shared device, use Forget this device when you finish.
-
-## Your choices
-
-- **Forget this device** (on the Your data page) removes the saved copies, Google access and remembered account from this device and asks Google to cancel any access it holds. Your spreadsheet is not touched. Display choices and a client ID you typed stay until you clear this site's data in your browser.
-- **Delete your data** by deleting the spreadsheet in your Google Drive. FolioDash holds nothing else to delete.
-- **Withdraw permission** at any time at [myaccount.google.com/permissions](https://myaccount.google.com/permissions).
-
-## Children
-
-FolioDash is not directed at children.
-
-## Changes
-
-If this policy changes, the date above changes. If FolioDash ever changes how it uses your Google data, it will tell you and ask for your agreement before the new use begins. Earlier versions are kept in the project's public history at github.com/AlbiDR/FolioDash.
-
-## Contact
-
-aalbi97+foliodash@gmail.com
-
----
-
-## How it would be published
-
-1. The owner settles the open items and says to publish.
-2. The text becomes a static page in the web app's public folder, so it ships in the verified build and the offline cache, linked from Your data and the README.
-3. The page's address goes on the consent screen's Branding page, together with a homepage on the same domain and a user support email. The domain must be verified in Google Search Console by an owner or editor of the Cloud project and listed under Authorized domains. Confirm the console accepts it; that is the unverified part.
-4. Any later change to what the app collects, such as analytics, a new scope or a server, updates this document and the table above first.
+Any later change to what the app collects or stores, such as analytics, a new scope, a server or a new storage key, updates the page and the table above first. The page promises to ask for agreement before Google data is used in a new way, so that change is not only an edit. The build checks that the page ships, contains no script, carries the contact, links back to the app, links only to expected sites and is linked from the app (`scripts/verify-pwa.ts`). The service worker serves it as itself rather than as the app (`standalonePageKey`).

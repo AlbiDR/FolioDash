@@ -168,7 +168,7 @@ export function AccountView(props: {
             </button>
           </>
         )}
-        {!signedOut && <p class="hint">FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic checks resume.</p>}
+        {!signedOut && <p class="hint">FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic checks resume. <a href="./privacy/" target="_blank" rel="noopener">Privacy policy</a></p>}
         <Result message={message} />
         {message !== null && !message.good && state.connection !== "reconnect" && <button type="button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect(), "connect")}>Reconnect with Google</button>}
         {!signedOut && <button type="button" class="link-button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect({ differentAccount: true }), "connect")}>Use a different Google account</button>}

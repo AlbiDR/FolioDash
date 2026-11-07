@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="How FolioDash handles your data: it stays in your own Google Sheet and on your own device." />
+    <link rel="canonical" href="https://albidr.github.io/FolioDash/privacy/" />
+    <link rel="icon" type="image/png" sizes="48x48" href="../icons/favicon-48.png" />
+    <link rel="icon" type="image/svg+xml" href="../icons/icon.svg" />
+    <title>Privacy policy · FolioDash</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: #f3f5f8;
+        --surface: #ffffff;
+        --text: #19263b;
+        --muted: #59677c;
+        --accent: #285bd4;
+        --border: rgba(16, 19, 28, 0.12);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #0f1624;
+          --surface: #172033;
+          --text: #e6ebf5;
+          --muted: #a4b0c5;
+          --accent: #8fb0ff;
+          --border: rgba(255, 255, 255, 0.14);
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 1rem;
+        background: var(--background);
+        color: var(--text);
+        font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      main {
+        max-width: 44rem;
+        margin: 1.5rem auto;
+        padding: clamp(1.25rem, 4vw, 2.25rem);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+      }
+      h1 { margin: 0 0 0.25rem; font-size: 1.75rem; line-height: 1.25; }
+      h2 { margin: 2rem 0 0.5rem; font-size: 1.15rem; line-height: 1.3; }
+      p, ul { margin: 0.5rem 0; }
+      ul { padding-left: 1.25rem; }
+      li { margin: 0.35rem 0; }
+      a { color: var(--accent); text-underline-offset: 0.15em; }
+      a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 0.25rem; }
+      .updated, .back { color: var(--muted); font-size: 0.9rem; }
+      .back { margin-top: 2rem; }
+      code { font-size: 0.92em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>FolioDash privacy policy</h1>
+      <p class="updated">Last updated: 7 November 2026</p>
+
+      <p>
+        FolioDash is a personal dashboard for your investment statements and your work expenses. It runs in your web browser. It is operated by ADR (AlbiDR on GitHub). Contact:
+        <a href="mailto:aalbi97+foliodash@gmail.com">aalbi97+foliodash@gmail.com</a>.
+      </p>
+
+      <h2>The short version</h2>
+      <ul>
+        <li>Your data lives in a Google spreadsheet in your own Google Drive, and in a copy on your own device.</li>
+        <li>FolioDash has no server. It does not collect, receive, store or sell your data, and its developer cannot see your portfolio or your expenses.</li>
+        <li>FolioDash uses no analytics, no advertising and no tracking, and sets no cookies of its own.</li>
+        <li>The demo uses invented data and needs no account.</li>
+      </ul>
+
+      <h2>What FolioDash accesses in your Google account</h2>
+      <ul>
+        <li>
+          <strong>One permission, <code>drive.file</code>.</strong> It lets FolioDash create one spreadsheet in your Google Drive and read and write that spreadsheet. It does not let FolioDash see your other files.
+        </li>
+        <li>
+          <strong>Your account's email address.</strong> FolioDash reads it once so it can tell Google which account to use next time, and Google does not ask you to choose again. It is kept only on your device.
+        </li>
+      </ul>
+      <p>FolioDash does not receive your name, contacts, Gmail messages or any other Drive file.</p>
+
+      <h2>What is stored, and where</h2>
+      <p>
+        <strong>In your Google spreadsheet:</strong> your portfolio records (fund names, values, money in and out, and comments you enter), the monthly bank statements you import exactly as the bank file wrote them, and your work-expense entries. A bank statement can include your name and your contract or account numbers. The spreadsheet belongs to you. You decide whether to share, edit or delete it.
+      </p>
+      <p>
+        <strong>On your device, in your browser's storage:</strong> a copy of your portfolio and expense records, without the bank-statement identifiers; Google access that lasts at most an hour; the email address of the account to use; the Google client ID, only if you typed one; your display choices, such as hiding amounts; and a cached copy of the app's own files so it works offline.
+      </p>
+      <p>
+        <strong>Files you choose:</strong> Excel exports are read inside your browser. FolioDash does not upload the file. The statement as read is saved to your spreadsheet. If you download an expense backup, it is a file saved to your device and nowhere else.
+      </p>
+
+      <h2>Who else is involved</h2>
+      <ul>
+        <li>
+          <strong>Google</strong> provides sign-in, Drive and Sheets, under <a href="https://policies.google.com/privacy">Google's privacy policy</a>. Google's sign-in script is loaded in your browser when you connect, or when you return with a saved connection. It is not loaded for the demo.
+        </li>
+        <li>
+          <strong>GitHub</strong> hosts the app's files. Like any web host, it may log requests, such as your IP address, under
+          <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.
+        </li>
+        <li>Nobody else. Nothing is shared with anyone, sold or used for advertising.</li>
+      </ul>
+
+      <h2>Google user data</h2>
+      <p>
+        FolioDash follows the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>. Information received from Google is used only to provide FolioDash's features to you. It is not transferred to anyone else, not used for advertising and not read by people, because FolioDash has no server through which any person could read it.
+      </p>
+
+      <h2>Security</h2>
+      <p>
+        Everything FolioDash sends to Google travels over encrypted HTTPS connections. In your Google account your spreadsheet is protected by Google, and by whoever you share it with. The copy on your device is ordinary browser storage and is <strong>not encrypted</strong>, so anyone who can use your unlocked device and browser could see it and could open FolioDash as you while your Google account stays signed in. On a shared device, use Forget this device when you finish.
+      </p>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li>
+          <strong>Forget this device</strong> (on the Your data page) removes the saved copies, Google access and remembered account from this device and asks Google to cancel any access it holds. Your spreadsheet is not touched. Display choices and a client ID you typed stay until you clear this site's data in your browser.
+        </li>
+        <li><strong>Delete your data</strong> by deleting the spreadsheet in your Google Drive. FolioDash holds nothing else to delete.</li>
+        <li><strong>Withdraw permission</strong> at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>FolioDash is not directed at children.</p>
+
+      <h2>Changes</h2>
+      <p>
+        If this policy changes, the date above changes. If FolioDash ever changes how it uses your Google data, it will tell you and ask for your agreement before the new use begins. Earlier versions are kept in the project's public history at
+        <a href="https://github.com/AlbiDR/FolioDash">github.com/AlbiDR/FolioDash</a>.
+      </p>
+
+      <h2>Contact</h2>
+      <p><a href="mailto:aalbi97+foliodash@gmail.com">aalbi97+foliodash@gmail.com</a></p>
+
+      <p class="back"><a href="../">Back to FolioDash</a></p>
+    </main>
+  </body>
+</html>

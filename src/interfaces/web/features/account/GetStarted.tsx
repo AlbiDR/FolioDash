@@ -46,7 +46,7 @@ export function GetStarted(props: { readonly clientConfigured: boolean; readonly
       <div class="status" data-busy={busy} aria-live="polite">{busy && <p>Complete the Google sign-in to continue. Your portfolio opens after the connection is checked.</p>}</div>
       {!props.clientConfigured && <p class="hint">This site has no Google client set up yet. Add it on the Your data screen.</p>}
       {problem !== null && <p class="field-error" role="alert">{problem}</p>}
-      <p class="footnote">The sample figures are invented. Your own data stays in your Google Sheet.</p>
+      <p class="footnote">The sample figures are invented. Your own data stays in your Google Sheet. <a href="./privacy/" target="_blank" rel="noopener">Privacy policy</a></p>
     </div>
   );
 }

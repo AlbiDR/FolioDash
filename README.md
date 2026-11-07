@@ -159,6 +159,7 @@ Keep real statements, identifiers, private screenshots, backups and credentials 
 
 <p align="center">
   <a href="https://albidr.github.io/FolioDash/"><strong>Explore FolioDash</strong></a> ·
+  <a href="https://albidr.github.io/FolioDash/privacy/">Privacy policy</a> ·
   <a href="docs/README.md">Documentation</a> ·
   <a href="docs/architecture/decision-register.md">Project decisions</a>
 </p>

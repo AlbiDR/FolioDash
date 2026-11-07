@@ -117,6 +117,20 @@ if (!existsSync(`${DIST}/sw.js`)) {
   check(meta("twitter:card") === "summary_large_image" && meta("twitter:title") === "FolioDash", "social cards must request the large product preview");
   for (const key of ["og:description", "og:image:alt", "twitter:description", "twitter:image:alt"]) check((meta(key)?.length ?? 0) > 0, `social cards need ${key}`);
   check(pngSize(`${DIST}/social/preview.png`) === "1200x630", "the built social banner must be a 1200x630 PNG");
+  // The privacy policy is a standalone page Google's consent screen links to. It must ship, stay static
+  // (the policy says there is no tracking), carry the public contact and be reachable from the app.
+  if (!existsSync(`${DIST}/privacy/index.html`)) {
+    failures.push("the build has no privacy/index.html");
+  } else {
+    const policy = readFileSync(`${DIST}/privacy/index.html`, "utf8");
+    check(!/<script/iu.test(policy), "the privacy page must contain no script");
+    check(policy.includes('<link rel="canonical" href="https://albidr.github.io/FolioDash/privacy/"'), "the privacy page needs its public canonical URL");
+    check(policy.includes("aalbi97+foliodash@gmail.com"), "the privacy page must carry the public contact");
+    check(policy.includes('href="../"'), "the privacy page must link back to the app with a relative link");
+    check(!/https?:\/\/(?!albidr\.github\.io|policies\.google\.com|developers\.google\.com|myaccount\.google\.com|docs\.github\.com|github\.com)/u.test(policy.replace(/<link[^>]*>/gu, "")), "the privacy page links an unexpected site");
+    const linked = filesUnder(DIST).filter((file) => file.endsWith(".js") && file !== `${DIST}/sw.js`).some((file) => readFileSync(file, "utf8").includes("./privacy/"));
+    check(linked, "no app script links to the privacy page");
+  }
   pngContent(readFileSync(`${DIST}/social/preview.png`));
 
 }
