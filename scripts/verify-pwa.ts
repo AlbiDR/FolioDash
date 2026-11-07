@@ -51,6 +51,7 @@ function filesUnder(directory: string): string[] {
 
 // Check artwork and PNG integrity independently of compression, plus the safe circle.
 execFileSync(process.execPath, ["--test", "scripts/png-content.test.ts"], { stdio: "inherit" });
+execFileSync(process.execPath, ["--test", "scripts/icon-raster.test.ts"], { stdio: "inherit" });
 execFileSync(process.execPath, ["scripts/generate-icons.ts", "--check"], { stdio: "inherit" });
 
 const manifest = JSON.parse(readFileSync(`${PUBLIC}/manifest.webmanifest`, "utf8")) as Manifest;
