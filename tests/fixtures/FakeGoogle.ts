@@ -75,6 +75,8 @@ interface Fault {
  */
 export class FakeGoogle {
   token = "good-token";
+  /** The signed-in account's address, as Drive's about.get reports it. A reserved test domain, not a real person. */
+  account = "person@example.test";
   /** Google does not always honour "hidden" when a tab is created; this reproduces that. */
   ignoreHiddenOnCreate = false;
   private nextTabId = 100;
@@ -134,6 +136,7 @@ export class FakeGoogle {
     const path = decodeURIComponent(url.pathname);
     const body = request.body === undefined ? null : (JSON.parse(request.body) as Record<string, unknown>);
 
+    if (request.method === "GET" && path === "/drive/v3/about") return this.respond(200, { user: { emailAddress: this.account } });
     if (request.method === "GET" && path === "/drive/v3/files") return this.listFiles(url.query("q") ?? "");
     const patch = /^\/drive\/v3\/files\/([^/]+)$/u.exec(path);
     if (request.method === "PATCH" && patch !== null) {

@@ -1,4 +1,6 @@
-import type { ConnectOutcome, GoogleSessionStore, RestoreOutcome, SessionState, SheetStatus, SignInOptions, SignInResult, TidyOutcome, VerifyOutcome, Workbook } from "../../../applications/SessionModel";
+import type { AccountHintStore, ConnectOutcome, GoogleSessionStore, RenewalCoordination, RestoreOutcome, SessionState, SheetStatus, SignInOptions, SignInResult, TidyOutcome, VerifyOutcome, Workbook } from "../../../applications/SessionModel";
+import { FRESH_RENEWAL, type RenewalHistory, type RenewalTrigger, afterAttempt, afterReconnectingToNetwork, mayRenewAutomatically, renewalNeedsThePerson, signInOptionsFor } from "../../../applications/RenewalPolicy";
+import { fetchAccountHint } from "../../../adapters/google/AccountHint";
 import {
   type DirectDeps,
   attachDirect,
@@ -31,6 +33,10 @@ export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 export interface SessionDeps {
   readonly clientId: string;
   readonly googleSession?: GoogleSessionStore;
+  /** Which Google account owns the workbook, so quiet renewal can name it. */
+  readonly accountHint?: AccountHintStore;
+  /** Keeps several windows of one browser from opening competing Google windows. */
+  readonly coordination?: RenewalCoordination;
   readonly workbookIdentity?: WorkbookIdentity;
   /** Re-reads a stored bank statement with today's reader, to prove the ledger can be rebuilt from them. */
   readonly interpret: InterpretStatement;
@@ -50,6 +56,13 @@ export interface SessionDeps {
 const AUTO_CHECK_MINIMUM_MILLISECONDS = 30_000;
 const TOKEN_MAXIMUM_SECONDS = 3600;
 const TOKEN_MARGIN_SECONDS = 120;
+/** With less than this left, the next click renews access quietly, before it can fail. */
+const RENEW_AHEAD_MILLISECONDS = 10 * 60_000;
+/**
+ * A save reads, appends and reads back. It needs this much left so Google's expiry cannot fall
+ * between those requests and leave an outcome unknown. Reads need no more than a valid token.
+ */
+const WRITE_MINIMUM_MILLISECONDS = 8 * 60_000;
 
 const NEEDS: Readonly<Record<Exclude<SheetStatus, "unchecked" | "ok">, string>> = {
   missing: "Your Google Sheet can no longer be opened. It may have been deleted or moved to the bin. This device still has your saved copy.",
@@ -61,7 +74,9 @@ const NEEDS: Readonly<Record<Exclude<SheetStatus, "unchecked" | "ok">, string>> 
 /**
  * One person's data on one device: the Google spreadsheet (the record), the saved
  * copy (an accelerator), and the sign-in that connects them. It holds no figure
- * of its own. Short-lived access may also survive reload in this tab's session store.
+ * of its own. Short-lived access is kept on the device and renewed quietly on the
+ * person's next click, naming the remembered account, so the connection outlasts
+ * Google's one-hour token without asking them to sign in again.
  */
 export class Session {
   readonly expenses: ExpenseSession;
@@ -81,15 +96,17 @@ export class Session {
   private lastAutoCheck = -Infinity;
   private signingIn: Promise<Awaited<ReturnType<Session["accessToken"]>>> | null = null;
   private connecting: Promise<ConnectOutcome> | null = null;
-  private selectAccountOnSignIn = false;
+  private chooserOnNextSignIn = false;
+  private renewal: RenewalHistory = FRESH_RENEWAL;
+  private hint: string | null;
 
   constructor(deps: SessionDeps) {
+    this.hint = deps.accountHint?.load(deps.clientId) ?? null;
     this.deps = { ...deps, rest: async (request) => {
       const response = await deps.rest(request);
       if (response.status === 401 && request.headers["Authorization"] === `Bearer ${this.token?.accessToken ?? ""}`) {
-        this.token = null;
-        deps.googleSession?.clear();
-        this.set({ ...this.current, connection: "reconnect" });
+        this.dropToken();
+        this.set({ ...this.current, connection: this.unrenewedConnection() });
       }
       return response;
     } };
@@ -98,16 +115,20 @@ export class Session {
       copy === null
         ? { mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 }
         : { mode: "device-copy", ledger: copy.ledger, workbook: copy.workbook, syncedAt: copy.syncedAt, sheet: "unchecked", trailingRows: 0 };
-    if (copy !== null) this.token = deps.googleSession?.load(deps.clientId, copy.workbook.id, deps.now()) ?? null;
+    if (copy !== null) {
+      this.token = deps.googleSession?.load(deps.clientId, copy.workbook.id, deps.now()) ?? null;
+      // Remembered, but not yet confirmed this visit: the next click renews access if it is missing.
+      if (this.token === null) this.current = { ...this.current, connection: "waiting" };
+    }
     this.expenses = new ExpenseSession({ rest: this.deps.rest, newId: deps.newId, workbookId: this.current.workbook?.id ?? null, today: () => {
       const now = new Date(deps.now());
       const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
       if (today === null) throw new Error("The device date is outside the supported range.");
       return today;
-    }, ...(deps.expenseCache === undefined ? {} : { cache: deps.expenseCache }), access: async () => {
+    }, ...(deps.expenseCache === undefined ? {} : { cache: deps.expenseCache }), access: async (purpose) => {
       if (this.current.workbook === null) return { ok: false, message: "Continue with Google first to create or find your private FolioDash workbook." };
       if (this.current.sheet !== "ok") return { ok: false, message: "Sync and check your Google workbook in Your data before changing expenses." };
-      const signed = await this.accessToken();
+      const signed = await this.accessToken(purpose === "write" ? WRITE_MINIMUM_MILLISECONDS : 0);
       return signed.ok ? { ok: true, token: signed.token, workbook: this.current.workbook } : { ok: false, message: SIGN_IN_TEXT[signed.reason] };
     } });
   }
@@ -180,12 +201,17 @@ export class Session {
     for (const listener of this.listeners) listener();
   }
 
-  private async accessToken(): Promise<{ readonly ok: true; readonly token: string } | { readonly ok: false; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }> {
-    if (this.token !== null && this.deps.now() < this.token.validUntil) return { ok: true, token: this.token.accessToken };
-    this.token = null;
-    this.deps.googleSession?.clear();
+  /**
+   * Access with at least `minimumMilliseconds` left. A token that is valid but too short for
+   * the action is kept for reads and replaced first for a save, so Google's expiry cannot fall
+   * in the middle of one. If that replacement fails the save is refused, never started.
+   */
+  private async accessToken(minimumMilliseconds = 0): Promise<{ readonly ok: true; readonly token: string } | { readonly ok: false; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }> {
+    const now = this.deps.now();
+    if (this.token !== null && now + minimumMilliseconds < this.token.validUntil) return { ok: true, token: this.token.accessToken };
+    if (this.token !== null && now >= this.token.validUntil) this.dropToken();
     if (this.signingIn !== null) return this.signingIn;
-    const work = this.requestToken();
+    const work = this.requestToken("requested");
     this.signingIn = work;
     try {
       return await work;
@@ -194,29 +220,128 @@ export class Session {
     }
   }
 
-  private async requestToken(): ReturnType<Session["accessToken"]> {
+  /** Forgets the access this window holds and the stored copy of it, unless another window has stored a newer one. */
+  private dropToken(): void {
+    if (this.token !== null) this.deps.googleSession?.discard(this.token.accessToken);
+    this.token = null;
+  }
+
+  /**
+   * Starts a Google request in the current call stack, so a person's click still counts as the
+   * gesture Google's window requires. Quiet attempts name the remembered account; once one has
+   * failed, a requested one lets the person choose.
+   */
+  private async requestToken(trigger: RenewalTrigger): ReturnType<Session["accessToken"]> {
     const generation = this.generation;
+    const chooser = this.chooserOnNextSignIn;
+    this.chooserOnNextSignIn = false;
+    const options: SignInOptions = signInOptionsFor(trigger, this.renewal, this.hint, chooser);
+    this.deps.coordination?.claim();
     let result: SignInResult;
     try {
-      const selectAccount = this.selectAccountOnSignIn;
-      this.selectAccountOnSignIn = false;
-      result = await this.deps.signIn(this.deps.clientId, DRIVE_FILE_SCOPE, ...(selectAccount ? [{ selectAccount: true }] : []));
+      result = await this.deps.signIn(this.deps.clientId, DRIVE_FILE_SCOPE, options);
     } catch {
       result = { ok: false, reason: "unavailable" };
+    } finally {
+      this.deps.coordination?.release();
     }
     if (generation !== this.generation) return { ok: false, reason: "closed" };
+    this.renewal = afterAttempt(this.renewal, result, this.deps.now());
     if (!result.ok) {
-      this.token = null;
+      // A token that is still valid stays usable for reads even when its replacement did not arrive.
+      if (this.validToken() === null) {
+        this.dropToken();
+        if (this.current.workbook !== null && this.current.mode !== "signed-out") this.set({ ...this.current, connection: this.unrenewedConnection() });
+      }
       return result;
     }
     // Reused only while Google says it is valid (with a margin), so a run of actions asks once.
     this.token = result.expiresInSeconds === undefined ? null : { accessToken: result.accessToken, validUntil: this.deps.now() + (Math.min(result.expiresInSeconds, TOKEN_MAXIMUM_SECONDS) - TOKEN_MARGIN_SECONDS) * 1000 };
+    this.persistToken();
+    if (this.hint === null || options.prompt === "select_account") this.later(this.learnHint(result.accessToken, generation));
     return { ok: true, token: result.accessToken };
+  }
+
+  private persistToken(): void {
+    const { workbook } = this.current;
+    if (this.token !== null && workbook !== null && this.validToken() !== null) this.deps.googleSession?.save({ ...this.token, clientId: this.deps.clientId, workbookId: workbook.id, scope: DRIVE_FILE_SCOPE });
+  }
+
+  /** Remembers which account the access belongs to, so the next quiet renewal can name it. Best effort. */
+  private async learnHint(accessToken: string, generation: number): Promise<void> {
+    if (this.deps.accountHint === undefined) return;
+    const address = await fetchAccountHint(this.deps.rest, accessToken);
+    if (address === null || generation !== this.generation) return;
+    this.hint = address;
+    this.deps.accountHint.save(this.deps.clientId, address);
+  }
+
+  /** What the connection looks like with no usable access: renewed on the next click, or waiting for the person. */
+  private unrenewedConnection(): "waiting" | "reconnect" {
+    return renewalNeedsThePerson(this.renewal) ? "reconnect" : "waiting";
   }
 
   private keep(workbook: Workbook, ledger: LedgerState): void {
     this.deps.cache.save({ workbook, ledger, syncedAt: this.deps.now() });
     if (this.token !== null && this.validToken() !== null) this.deps.googleSession?.save({ ...this.token, clientId: this.deps.clientId, workbookId: workbook.id, scope: DRIVE_FILE_SCOPE });
+  }
+
+  /** Whether the next click should renew Google access quietly: a remembered connection with little or no access left. */
+  needsRenewal(): boolean {
+    const { workbook, mode } = this.current;
+    if (workbook === null || mode === "signed-out" || this.signingIn !== null || this.connecting !== null) return false;
+    if (this.deps.coordination?.heldElsewhere() === true) return false;
+    const remaining = this.token === null ? 0 : this.token.validUntil - this.deps.now();
+    return remaining <= RENEW_AHEAD_MILLISECONDS && mayRenewAutomatically(this.renewal, this.deps.now());
+  }
+
+  /**
+   * Renews Google access on a click the person made for another reason. Call it synchronously
+   * from inside the click: Google's window opens only from a user gesture. It names the
+   * remembered account, so when Google still has the person's session and grant, nothing needs
+   * choosing. It never creates a workbook and never writes. Resolves to whether access was renewed.
+   */
+  async renewFromGesture(options: { readonly sync: boolean }): Promise<boolean> {
+    if (!this.needsRenewal()) return false;
+    const usable = this.validToken() !== null;
+    // Access that is still valid keeps working while its replacement is on the way.
+    if (!usable) this.set({ ...this.current, connection: "renewing" });
+    const work = this.requestToken("automatic");
+    this.signingIn = work;
+    let result: Awaited<typeof work>;
+    try {
+      result = await work;
+    } finally {
+      if (this.signingIn === work) this.signingIn = null;
+    }
+    if (!result.ok) return false;
+    this.lastAutoCheck = -Infinity;
+    this.set(this.afterRenewal());
+    if (options.sync) await this.refreshIfNeeded();
+    return true;
+  }
+
+  private afterRenewal(): SessionState {
+    const { mode, ledger, workbook, syncedAt, sheet, trailingRows } = this.current;
+    return { mode, ledger, workbook, syncedAt, sheet, trailingRows, ...(mode === "online" ? { connection: "connected" as const } : {}) };
+  }
+
+  /** The network is back: a failure that was only the network is forgiven. */
+  resumeRenewal(): void {
+    this.renewal = afterReconnectingToNetwork(this.renewal);
+  }
+
+  /** Takes up Google access another window of this browser stored, if it is newer than this window's. */
+  adoptStoredAccess(): boolean {
+    const { workbook } = this.current;
+    if (workbook === null || this.deps.googleSession === undefined) return false;
+    const stored = this.deps.googleSession.load(this.deps.clientId, workbook.id, this.deps.now());
+    if (stored === null || (this.token !== null && this.token.validUntil >= stored.validUntil)) return false;
+    this.token = { accessToken: stored.accessToken, validUntil: stored.validUntil };
+    this.renewal = FRESH_RENEWAL;
+    this.lastAutoCheck = -Infinity;
+    if (this.current.connection === "waiting" || this.current.connection === "reconnect" || this.current.connection === "renewing") this.set(this.afterRenewal());
+    return true;
   }
 
   /** Signs in, finds or creates the spreadsheet, and loads the ledger. This is the whole of getting started. */
@@ -241,13 +366,17 @@ export class Session {
     return this.load(ensured.workbook, signed.token, ensured.created, generation);
   }
 
-  /** Explicit recovery: replace access only, retaining the workbook, history and unresolved writes. */
-  reconnect(): Promise<ConnectOutcome> {
+  /**
+   * Explicit recovery: replace access only, retaining the workbook, history and unresolved writes.
+   * It asks for the remembered account first, so it rarely shows a chooser. After a failed attempt,
+   * or when the person wants another account, it lets them choose.
+   */
+  reconnect(options?: { readonly differentAccount?: boolean }): Promise<ConnectOutcome> {
     this.token = null;
     this.deps.googleSession?.clear();
-    this.selectAccountOnSignIn = this.signingIn === null;
+    this.chooserOnNextSignIn = options?.differentAccount === true && this.signingIn === null;
     this.syncSequence++;
-    this.set({ ...this.current, connection: "reconnect" });
+    this.set({ ...this.current, connection: "renewing" });
     return this.refresh();
   }
 
@@ -279,7 +408,7 @@ export class Session {
     };
     switch (read.status) {
       case "call-failed":
-        this.set({ ...this.current, connection: read.failure === "unauthorised" ? "reconnect" : "offline" });
+        this.set({ ...this.current, connection: read.failure === "unauthorised" ? this.unrenewedConnection() : "offline" });
         return { status: "call-failed", failure: read.failure };
       case "unrecognised":
         return { status: "call-failed", failure: "unexpected" };
@@ -307,10 +436,11 @@ export class Session {
   refreshIfNeeded(): Promise<void> {
     if (this.freshness !== null) return this.freshness;
     if (this.current.workbook === null || this.deps.now() - this.lastAutoCheck < AUTO_CHECK_MINIMUM_MILLISECONDS) return Promise.resolve();
+    // Google's window is open: the renewal in progress will bring its own check.
+    if (this.signingIn !== null) return Promise.resolve();
     if (this.validToken() === null) {
-      this.token = null;
-      this.deps.googleSession?.clear();
-      this.set({ ...this.current, connection: "reconnect" });
+      this.dropToken();
+      this.set({ ...this.current, connection: this.unrenewedConnection() });
       return Promise.resolve();
     }
     this.lastAutoCheck = this.deps.now();
@@ -341,7 +471,7 @@ export class Session {
     if (this.expenses.state.pending) return { status: "failed", message: "Check the unresolved expense save or recovery before restoring the workbook." };
     if (ledger.snapshots.length === 0 && !hasExpenses) return { status: "nothing-to-restore" };
     if (sheet !== "missing" && sheet !== "emptied") return { status: "not-needed" };
-    const signed = await this.accessToken();
+    const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
     if (ledger.snapshots.length === 0) {
       const ensured = sheet === "missing" ? await ensureWorkbook(this.deps.rest, signed.token, this.deps.workbookIdentity) : workbook === null ? null : { status: "ready" as const, workbook, created: false };
@@ -422,16 +552,30 @@ export class Session {
 
   /** Wipes everything this device holds and signs out. The spreadsheet in Google is not touched. */
   forget(): void {
+    this.forgetDevice(true);
+  }
+
+  /** Another window of this browser forgot the device: this one drops its copy too, and must not write anything back. */
+  forgetFromElsewhere(): void {
+    this.forgetDevice(false);
+  }
+
+  private forgetDevice(announce: boolean): void {
     this.generation++;
     this.syncSequence++;
     this.lastAutoCheck = -Infinity;
     this.freshness = null;
     this.deps.googleSession?.clear();
+    this.deps.accountHint?.clear();
+    this.hint = null;
+    this.renewal = FRESH_RENEWAL;
+    this.chooserOnNextSignIn = false;
+    if (announce) this.deps.coordination?.announceForgotten();
     this.signingIn = null;
     this.connecting = null;
     this.expenses.forget();
     this.deps.cache.clear();
-    if (this.token !== null) this.deps.revoke?.(this.token.accessToken);
+    if (this.token !== null && announce) this.deps.revoke?.(this.token.accessToken);
     this.token = null;
     if (this.quietTimer !== null) clearTimeout(this.quietTimer);
     this.quietTimer = null;
@@ -449,7 +593,7 @@ export class Session {
       const generation = this.generation;
       const { workbook } = this.current;
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
-      const signed = await this.accessToken();
+      const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
       const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
       const commit = await commitDirect(deps, signed.token, workbook.id, {
@@ -487,7 +631,7 @@ export class Session {
       const generation = this.generation;
       const { workbook } = this.current;
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
-      const signed = await this.accessToken();
+      const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
       const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
       const commit = await attachDirect(deps, signed.token, workbook.id, { commandId, expectedRevision, items });

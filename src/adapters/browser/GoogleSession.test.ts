@@ -10,7 +10,7 @@ function memory() {
   return { data, getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, text: string) => { data.set(key, text); }, removeItem: (key: string) => { data.delete(key); } };
 }
 
-describe("tab-scoped Google session", () => {
+describe("device-kept Google session", () => {
   it("survives reconstruction until expiry, then removes the credential", () => {
     const storage = memory();
     createGoogleSessionStore(() => storage).save(value);
@@ -38,6 +38,17 @@ describe("tab-scoped Google session", () => {
     expect(acceptance.load(value.clientId, value.workbookId, now)).toBeNull();
     acceptance.clear();
     expect(normal.load(value.clientId, value.workbookId, now)).toEqual(value);
+  });
+
+  it("discards only the rejected access, so a newer one stored by another window survives", () => {
+    const storage = memory();
+    const store = createGoogleSessionStore(() => storage);
+    store.save(value);
+    store.discard("some-other-token");
+    expect(store.load(value.clientId, value.workbookId, now)).toEqual(value);
+    store.discard(value.accessToken);
+    expect(storage.data.size).toBe(0);
+    expect(() => { createGoogleSessionStore(() => { throw new Error("blocked"); }).discard("any"); }).not.toThrow();
   });
 
   it("survives blocked, full and malformed storage", () => {

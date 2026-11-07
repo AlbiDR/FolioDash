@@ -15,7 +15,10 @@ import { useMediaQuery } from "../shared/ui/useMediaQuery";
 import { useFocusVisibility } from "../shared/ui/useFocusVisibility";
 import { Icon, type IconName } from "../shared/ui/icons";
 import { watchGoogleFreshness } from "../../../adapters/browser/GoogleFreshness";
-import { createBrowserSession } from "./browserSession";
+import { armGestureRenewal } from "../../../adapters/browser/GestureRenewal";
+import { prepareGoogleIdentity } from "../../../adapters/browser/GoogleIdentity";
+import { createBrowserSession, watchOtherWindows } from "./browserSession";
+import { DRIVE_FILE_SCOPE } from "./session";
 import { CHART_RANGES, type ChartRange } from "../features/overview/chartRange";
 import { rememberClientId, resolveClientId } from "../../../adapters/browser/ClientId";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
@@ -88,6 +91,28 @@ export function App(): JSX.Element {
   const data = useSession(session);
   const expenseData = useExpenses(session);
   useEffect(() => watchGoogleFreshness(() => session.refreshIfNeeded(), () => importLocked || expenseLocked), [session, importLocked, expenseLocked]);
+  // A remembered connection loads Google's script and builds its token client ahead of time, so the first
+  // renewal can start inside a click. The signed-out demo never loads it.
+  const remembered = data.mode !== "signed-out" && data.workbook !== null;
+  useEffect(() => {
+    if (remembered && clientId !== "") prepareGoogleIdentity(clientId, DRIVE_FILE_SCOPE);
+  }, [remembered, clientId]);
+  // Google access lasts an hour and its window needs a click, so it is renewed quietly on the next click,
+  // naming the remembered account. Drafts being edited pause only the check that follows, never the renewal.
+  useEffect(() => armGestureRenewal(document, {
+    needed: () => navigator.onLine && session.needsRenewal(),
+    renew: () => { void session.renewFromGesture({ sync: !(importLocked || expenseLocked) }); },
+  }, navigator.userActivation), [session, importLocked, expenseLocked]);
+  useEffect(() => {
+    const resume = (): void => { session.resumeRenewal(); };
+    window.addEventListener("online", resume);
+    return () => { window.removeEventListener("online", resume); };
+  }, [session]);
+  // Another window of this browser (a tab, or the installed app) may renew access or forget the device.
+  useEffect(() => watchOtherWindows({
+    adopt: () => { if (session.adoptStoredAccess() && !(importLocked || expenseLocked)) void session.refreshIfNeeded(); },
+    forgotten: () => { session.forgetFromElsewhere(); },
+  }), [session, importLocked, expenseLocked]);
   useEffect(() => {
     if (data.mode === "online" && data.sheet === "ok") void session.expenses.refresh();
   }, [session, data.mode, data.sheet, data.workbook?.id, data.syncedAt]);
@@ -158,6 +183,10 @@ export function App(): JSX.Element {
       ? { label: "Sheet needs attention", tone: "local" }
       : data.connection === "checking"
         ? { label: "Checking Google…", tone: "local" }
+        : data.connection === "renewing"
+          ? { label: "Renewing Google access…", tone: "local" }
+        : data.connection === "waiting"
+          ? { label: `Saved on this device · tap to sync${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" }
         : data.connection === "reconnect"
           ? { label: "Reconnect to Google", tone: "local" }
           : data.connection === "offline"
@@ -222,10 +251,18 @@ export function App(): JSX.Element {
                 <p class="eyebrow">FolioDash</p>
                 <h1 key={pageTitle} id="page-title" class="page-title-arrival">{pageTitle}</h1>
               </div>
-              <a class={`status-chip ${source.tone}`} href="#connection" title="Where your data lives">
-                <span key={source.tone} class="status-dot" aria-hidden="true" />
-                <span key={source.label} class="source-label">{source.label}</span>
-              </a>
+              {data.connection === "waiting" || data.connection === "reconnect" ? (
+                // Always one tap away, on every screen, and its own click is the gesture Google's window needs.
+                <button type="button" class={`status-chip ${source.tone}`} title="Sync with Google now" onClick={() => { void session.reconnect(); }}>
+                  <span key={source.tone} class="status-dot" aria-hidden="true" />
+                  <span key={source.label} class="source-label">{source.label}</span>
+                </button>
+              ) : (
+                <a class={`status-chip ${source.tone}`} href="#connection" title="Where your data lives">
+                  <span key={source.tone} class="status-dot" aria-hidden="true" />
+                  <span key={source.label} class="source-label">{source.label}</span>
+                </a>
+              )}
               <div class="topbar-controls">
                 <PrivacyToggle hidden={hidden} onChange={setHidden} />
               </div>
@@ -260,7 +297,7 @@ export function App(): JSX.Element {
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
               <p class="notice" role="status">
-                Your saved copy is available. Google access is checked before saving; reconnect if your session has expired.
+                Your saved copy is available. Google access is renewed quietly on your next tap, and checked before saving.
               </p>
             )}
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
@@ -352,7 +389,7 @@ export function App(): JSX.Element {
                   actions={{
                     connect: () => session.connect(),
                     refresh: () => session.refresh(),
-                    reconnect: () => session.reconnect(),
+                    reconnect: (options) => session.reconnect(options),
                     restore: () => session.restoreFromDevice(),
                     verify: () => session.verifyHistory(),
                     tidy: () => session.tidySheet(),

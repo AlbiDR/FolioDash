@@ -9,6 +9,8 @@ Scope: PWA, calculation kernel, import pipeline, private persistence, synchronis
 
 **2026-11-05 amendment - FD-021:** the owner's persistence and two-device request permits short-lived Google access in tab-scoped `sessionStorage`, bounded automatic reads and an atomic predecessor marker in direct Sheets write batches. [FD-021](decision-register.md) and [Google setup](../operations/google-setup.md) define storage boundaries, expiry, draft safeguards and concurrency/live-proof limits. This supersedes memory-only token persistence; financial rules, consent and unknown-outcome recovery remain unchanged.
 
+**2026-11-07 amendment - FD-022:** the owner's top-priority request that the Google connection stay on keeps short-lived access and the account's sign-in hint on the device (`localStorage`, falling back to `sessionStorage` and memory) and renews access quietly on the person's next click. This supersedes FD-021's tab-only storage; it adds no refresh token, server, scope or secret, and financial rules, consent and unknown-outcome recovery remain unchanged. See [FD-022](decision-register.md) and [Google setup](../operations/google-setup.md).
+
 ## 1. Purpose and authority
 
 FolioDash turns dated fund valuations and explicitly recorded cash movements into a clear personal portfolio history. It is a proposed successor to the working Google Sheets application, not a destructive rewrite of that application.

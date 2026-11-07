@@ -4,11 +4,24 @@ import type { KeyValueStore } from "./LedgerCache";
 const MAX_SESSION_MILLISECONDS = 3_600_000;
 const MAX_TOKEN_CHARACTERS = 8192;
 
-/** Short-lived access only, scoped to this browser tab. Never extends Google's expiry. */
+/**
+ * Short-lived Google access kept on this device, so a reload, a new tab or the installed app
+ * need not ask again within Google's one hour. It never extends Google's expiry and holds no
+ * refresh token. Same-origin scripts can read it, as they can the device copy of the ledger.
+ */
 export function createGoogleSessionStore(open: () => KeyValueStore, key = "foliodash.google-session.v1"): GoogleSessionStore {
   const clear = (): void => { try { open().removeItem(key); } catch { /* Storage can be blocked. */ } };
   return {
     clear,
+    discard(accessToken) {
+      try {
+        const text = open().getItem(key);
+        if (text === null) return;
+        const value = JSON.parse(text) as { accessToken?: unknown } | null;
+        // Another window may have renewed since this one was rejected, so only the rejected token is removed.
+        if (value === null || value.accessToken === accessToken) clear();
+      } catch { clear(); }
+    },
     load(clientId, workbookId, now) {
       try {
         const text = open().getItem(key);

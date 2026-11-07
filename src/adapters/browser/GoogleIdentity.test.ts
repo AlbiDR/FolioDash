@@ -30,10 +30,67 @@ describe("Google sign-in recovery", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("opens account selection for an explicit reconnection", async () => {
+  it("opens account selection when asked for another account", async () => {
     const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
-    expect(await signIn("synthetic-client", SCOPE, { selectAccount: true })).toMatchObject({ ok: true });
+    expect(await signIn("synthetic-client", SCOPE, { prompt: "select_account" })).toMatchObject({ ok: true });
     expect(request).toHaveBeenCalledWith({ prompt: "select_account" });
+  });
+
+  it("names the remembered account so Google can skip its chooser", async () => {
+    const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
+    await signIn("synthetic-client", SCOPE, { prompt: "", loginHint: "person@example.test" });
+    expect(request).toHaveBeenCalledWith({ prompt: "", hint: "person@example.test", login_hint: "person@example.test" });
+  });
+
+  it("opens Google's window in the same call stack as the click once the client is ready", async () => {
+    const { signIn, request } = await setup(() => {});
+    void signIn("synthetic-client", SCOPE);
+    // No await between the call and the request: the person's click is still the gesture.
+    expect(request).toHaveBeenCalledOnce();
+  });
+
+  it("builds one token client and reuses it, and shares one window between concurrent requests", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const init = vi.fn();
+    const request = vi.fn();
+    let pending: Config | undefined;
+    vi.stubGlobal("window", {
+      setTimeout, clearTimeout,
+      google: { accounts: { oauth2: { initTokenClient: (config: Config) => { init(); pending = config; return { requestAccessToken: request }; }, revoke: vi.fn() } } },
+    });
+    const { signIn } = await import("./GoogleIdentity");
+    const first = signIn("synthetic-client", SCOPE);
+    const second = signIn("synthetic-client", SCOPE);
+    pending?.callback({ access_token: "synthetic-token", expires_in: 3600, scope: SCOPE });
+    expect(await first).toMatchObject({ ok: true });
+    expect(await second).toEqual(await first);
+    expect(request).toHaveBeenCalledOnce();
+    void signIn("synthetic-client", SCOPE);
+    expect(init).toHaveBeenCalledOnce();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("prepares the client ahead of any click, loading Google's script once", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const init = vi.fn();
+    const append = vi.fn();
+    const scripts: { onload: (() => void) | null }[] = [];
+    const win: Record<string, unknown> = { setTimeout, clearTimeout };
+    vi.stubGlobal("window", win);
+    vi.stubGlobal("document", {
+      createElement: () => { const script = { remove: vi.fn(), onload: null as (() => void) | null, onerror: null }; scripts.push(script); return script; },
+      head: { append },
+    });
+    const { prepareGoogleIdentity } = await import("./GoogleIdentity");
+    prepareGoogleIdentity("synthetic-client", SCOPE);
+    prepareGoogleIdentity("synthetic-client", SCOPE);
+    expect(scripts).toHaveLength(1);
+    win["google"] = { accounts: { oauth2: { initTokenClient: () => { init(); return { requestAccessToken: vi.fn() }; }, revoke: vi.fn() } } };
+    scripts[0]?.onload?.();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(init).toHaveBeenCalledOnce();
   });
 
   it("refuses tokens that do not grant the required permission", async () => {

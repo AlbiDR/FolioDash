@@ -29,7 +29,7 @@ export class ExpenseSession {
   private busy = false;
   private sequence = 0;
   private refreshing: Promise<void> | null = null;
-  constructor(private readonly deps: { readonly rest: RestClient; readonly cache?: ExpenseCache; readonly newId: () => string; readonly access: () => Promise<Access>; readonly workbookId?: string | null; readonly today?: () => IsoDate }) {
+  constructor(private readonly deps: { readonly rest: RestClient; readonly cache?: ExpenseCache; readonly newId: () => string; readonly access: (purpose: "read" | "write") => Promise<Access>; readonly workbookId?: string | null; readonly today?: () => IsoDate }) {
     const copy = deps.cache?.load();
     if (copy !== null && copy !== undefined && (deps.workbookId === undefined || deps.workbookId === copy.workbookId)) {
       const history = parseExpenseHistory(copy.commands);
@@ -71,7 +71,7 @@ export class ExpenseSession {
     if (this.busy) return;
     const sequence = ++this.sequence;
     const epoch = this.epoch;
-    const access = await this.deps.access();
+    const access = await this.deps.access("read");
     if (epoch !== this.epoch || sequence !== this.sequence) return;
     if (!access.ok) { this.set({ ...this.current, ready: false, message: access.message }); return; }
     if (this.workbookId !== null && this.workbookId !== access.workbook.id) this.forget();
@@ -98,7 +98,7 @@ export class ExpenseSession {
     const epoch = this.epoch;
     try {
       if (this.pendingRestore !== null) return { status: "unknown", message: "Check the unresolved expense recovery before saving a day." };
-      const access = await this.deps.access();
+      const access = await this.deps.access("write");
       if (epoch !== this.epoch) return { status: "unknown", message: "The account changed while checking this save. Reconnect to check the original workbook." };
       if (!access.ok) return { status: "not-saved", message: access.message };
       if (this.workbookId !== null && this.workbookId !== access.workbook.id) return { status: "not-saved", message: "The connected workbook changed. Reload expenses before saving." };
@@ -169,7 +169,7 @@ export class ExpenseSession {
     this.sequence++;
     const epoch = this.epoch;
     try {
-      const access = await this.deps.access();
+      const access = await this.deps.access("write");
       if (epoch !== this.epoch) return { status: "unknown", message: "The account changed. Check the original workbook before continuing recovery." };
       if (!access.ok) return { status: "not-saved", message: access.message };
       if (this.pendingRestore !== null && this.workbookId !== access.workbook.id) return { status: "unknown", message: "The workbook changed. Check the original recovery workbook before continuing." };

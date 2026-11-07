@@ -303,12 +303,22 @@ select:focus-visible {
   font-weight: 600;
 }
 
-a.status-chip {
+a.status-chip,
+button.status-chip {
   color: inherit;
   text-decoration: none;
 }
 
-a.status-chip:hover {
+button.status-chip {
+  border: 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+a.status-chip:hover,
+button.status-chip:hover {
   background: var(--color-accent-soft);
 }
 

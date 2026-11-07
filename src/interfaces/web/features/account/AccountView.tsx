@@ -8,7 +8,8 @@ import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeTid
 export interface AccountActions {
   connect(): Promise<ConnectOutcome>;
   refresh(): Promise<ConnectOutcome>;
-  reconnect(): Promise<ConnectOutcome>;
+  /** Renews Google access with the remembered account, or lets the person choose another. */
+  reconnect(options?: { readonly differentAccount?: boolean }): Promise<ConnectOutcome>;
   restore(): Promise<RestoreOutcome>;
   verify(): Promise<VerifyOutcome>;
   tidy(): Promise<TidyOutcome>;
@@ -130,7 +131,7 @@ export function AccountView(props: {
         ) : (
           <>
             <p class="card-subtitle">
-              {state.connection === "checking" ? "Checking Google for changes from your other devices…" : state.connection === "reconnect" ? "Google access needs renewing. Reconnect to check your latest history." : state.connection === "offline" ? "Google could not be reached. Showing your saved copy; automatic checks resume when available." : state.mode === "online" ? "Your last Google check completed. Changes are checked automatically while the app is open." : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
+              {state.connection === "checking" ? "Checking Google for changes from your other devices…" : state.connection === "renewing" ? "Renewing Google access with the account FolioDash remembers…" : state.connection === "waiting" ? "Showing your saved copy. Your next tap renews Google access quietly, then checks for changes." : state.connection === "reconnect" ? "Google access could not be renewed quietly. Reconnect to check your latest history." : state.connection === "offline" ? "Google could not be reached. Showing your saved copy; automatic checks resume when available." : state.mode === "online" ? "Your last Google check completed. Changes are checked automatically while the app is open." : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
             </p>
             <dl class="facts stacked">
               <div>
@@ -167,9 +168,10 @@ export function AccountView(props: {
             </button>
           </>
         )}
-        {!signedOut && <p class="hint">Google access survives reloads in this tab until its short-lived session expires. FolioDash checks for changes when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic refresh resumes.</p>}
+        {!signedOut && <p class="hint">FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic checks resume.</p>}
         <Result message={message} />
         {message !== null && !message.good && state.connection !== "reconnect" && <button type="button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect(), "connect")}>Reconnect with Google</button>}
+        {!signedOut && <button type="button" class="link-button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect({ differentAccount: true }), "connect")}>Use a different Google account</button>}
       </div>
 
       {!signedOut && state.workbook !== null && (

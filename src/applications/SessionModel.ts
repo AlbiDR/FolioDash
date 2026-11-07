@@ -9,15 +9,22 @@ export interface Workbook {
 /** Why a call failed before or instead of an answer. A subset applies to any one route. */
 export type CallFailure = "unauthorised" | "forbidden" | "not-found" | "unavailable" | "network" | "unexpected" | "script-error";
 
+/** "" lets Google reuse an existing grant and session; "select_account" always shows its account chooser. */
+export type SignInPrompt = "" | "select_account";
+
 export interface SignInOptions {
-  readonly selectAccount: boolean;
+  readonly prompt?: SignInPrompt;
+  /** The remembered account (an email address), so Google can skip its account chooser. */
+  readonly loginHint?: string;
 }
+
+export type SignInFailure = "denied" | "closed" | "blocked" | "timeout" | "unavailable";
 
 export type SignInResult =
   | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
-  | { readonly ok: false; readonly reason: "denied" | "closed" | "blocked" | "timeout" | "unavailable" };
+  | { readonly ok: false; readonly reason: SignInFailure };
 
-/** Tab-scoped, short-lived Google access, bound to the connected workbook. */
+/** Short-lived Google access kept on this device, bound to the connected workbook. */
 export interface GoogleSession {
   readonly clientId: string;
   readonly workbookId: string;
@@ -29,7 +36,27 @@ export interface GoogleSession {
 export interface GoogleSessionStore {
   load(clientId: string, workbookId: string, now: number): GoogleSession | null;
   save(value: GoogleSession): void;
+  /** Removes whatever is kept. */
   clear(): void;
+  /** Removes the kept access only if it is this one, so a newer one renewed by another window survives. */
+  discard(accessToken: string): void;
+}
+
+/** The Google account that owns the person's workbook, so Google can skip its account chooser. Not a credential. */
+export interface AccountHintStore {
+  load(clientId: string): string | null;
+  save(clientId: string, hint: string): void;
+  clear(): void;
+}
+
+/** How windows of the same browser avoid opening competing Google pop-ups. */
+export interface RenewalCoordination {
+  /** Another window is renewing Google access right now. */
+  heldElsewhere(): boolean;
+  claim(): void;
+  release(): void;
+  /** Tells other windows this device was forgotten, so none of them writes a credential back. */
+  announceForgotten(): void;
 }
 
 /** Where the person's data stands on this device. */
@@ -54,7 +81,12 @@ export type SheetStatus =
 
 export interface SessionState {
   readonly mode: Mode;
-  readonly connection?: "checking" | "connected" | "reconnect" | "offline";
+  /**
+   * checking: a read of the spreadsheet is in flight. connected: the last read succeeded.
+   * waiting: no usable Google access, and the next click renews it quietly.
+   * renewing: Google's window is open. reconnect: quiet renewal gave up, so the person is asked.
+   */
+  readonly connection?: "checking" | "connected" | "waiting" | "renewing" | "reconnect" | "offline";
   readonly ledger: LedgerState;
   readonly workbook: Workbook | null;
   /** When the ledger was last confirmed against the spreadsheet, in milliseconds since 1970. */

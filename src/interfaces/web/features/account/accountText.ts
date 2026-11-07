@@ -8,7 +8,7 @@ export interface Message {
 }
 
 const CALL_FAILED: Readonly<Record<string, string>> = {
-  unauthorised: "Google no longer accepts this session. Choose Reconnect with Google to sign in again and select the account that owns your FolioDash sheet.",
+  unauthorised: "Google no longer accepts this session. Choose Reconnect with Google. FolioDash asks for the account it remembers; if that is not the account that owns your FolioDash sheet, choose Use a different Google account.",
   forbidden: "Google refused the request. Check that you allowed FolioDash to create and manage its own spreadsheet.",
   "not-found": "Google could not find the spreadsheet. Open Your data to check it.",
   unavailable: "Google is busy or unavailable. Try again shortly.",
