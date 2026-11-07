@@ -236,7 +236,7 @@ export function AccountView(props: {
             <strong>This device keeps a copy</strong> so FolioDash opens instantly. It can always be rebuilt from your Google Sheet.
           </li>
           <li>
-            <strong>Anyone who can use this unlocked device and browser</strong> could see that copy and use an unexpired Google session in this tab. If this device is shared, use Forget this device when you
+            <strong>Anyone who can use this unlocked device and browser</strong> could see that copy and open FolioDash as you. Its Google access lasts up to an hour and is renewed on a tap while your Google account stays signed in here. If this device is shared, use Forget this device when you
             finish.
           </li>
         </ul>
@@ -245,7 +245,7 @@ export function AccountView(props: {
             {confirmForget ? (
               <div class="review-problem" role="alert">
                 <h3>Forget this device?</h3>
-                <p>This removes the saved copy from this device and signs you out. Your Google Sheet is not touched, and you can continue with Google again any time.</p>
+                <p>This removes the saved copy, Google access and the remembered account from this device and signs you out. Your Google Sheet is not touched, and you can continue with Google again any time.</p>
                 <button
                   type="button"
                   disabled={busy}
