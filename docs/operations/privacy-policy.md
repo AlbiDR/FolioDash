@@ -5,7 +5,7 @@ Status: **Draft. Not published, not linked from the app, and not legal advice.**
 ## Open before this can be published
 
 1. **Operator name: decided.** The owner chose to publish the display name `ADR`, with the GitHub handle `AlbiDR`, as the operator (2026-11-07). Google requires an app to represent accurately who manages it.
-2. **Contact: not yet chosen.** An email address or web page printed on the public policy so people can ask about their data. Choose one meant to be public: a dedicated address, or an alias that forwards to a private inbox. No address has been chosen or invented here. Google's pages do not require the policy itself to carry contact details, but the consent screen shows a **user support email** to users, which can be the same address, and some privacy laws expect a contact.
+2. **Contact: decided.** The owner chose `aalbi97+foliodash@gmail.com` (2026-11-07), knowing it becomes public in this repository's history as soon as it is committed, and on the page once published. The `+foliodash` tag lets the owner filter mail to it; it does not hide the address behind it. Google's pages do not require the policy itself to carry contact details, but the consent screen shows a **user support email** to users, which can be the same address, and some privacy laws expect a contact.
 3. **Jurisdiction and legal basis.** Not researched. The interface uses Italian and euro formatting, so EU rules may apply to the operator; get advice if that matters. This draft states what the app does, not that it meets any law.
 4. **Google's wording: checked, with gaps.** Google's [User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), [policy compliance](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance) and [brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification) pages were read on 2026-11-07. None of them gives a required sentence for a privacy policy. The Limited Use rules in the User Data Policy are stated for Sensitive and Restricted scopes, and `drive.file` is listed as non-sensitive, so they are not stated to apply here. The policy below therefore describes the same commitments in plain words instead of quoting a Google sentence. What those pages do require: disclose how the app accesses, uses, stores, deletes and shares Google user data, and keep to what is disclosed. The Drive-specific policy and Google's OAuth policies page were not read.
 5. **Where it is hosted.** Google's brand verification page says the policy must be visible to users, hosted within the same domain as the app's home page, and linked on the consent screen. Domains tied to the home page and policy must be owned and verified through Google Search Console, by an owner or editor of the Cloud project, and listed under Authorized domains. Whether `albidr.github.io` can be verified and accepted is not confirmed. A custom domain would be a cost and a separate decision.
@@ -35,7 +35,7 @@ Every claim in the policy below, with the evidence it rests on. If the app chang
 
 ## The policy text
 
-The text below is what would be published. Square brackets are the open items above.
+The text below is what would be published. The one square bracket left is the publication date, set when the page goes live.
 
 ---
 
@@ -43,7 +43,7 @@ The text below is what would be published. Square brackets are the open items ab
 
 Last updated: [date of publication]
 
-FolioDash is a personal dashboard for your investment statements and your work expenses. It runs in your web browser. It is operated by ADR (AlbiDR on GitHub). Contact: [contact].
+FolioDash is a personal dashboard for your investment statements and your work expenses. It runs in your web browser. It is operated by ADR (AlbiDR on GitHub). Contact: aalbi97+foliodash@gmail.com.
 
 ## The short version
 
@@ -97,7 +97,7 @@ If this policy changes, the date above changes. If FolioDash ever changes how it
 
 ## Contact
 
-[contact]
+aalbi97+foliodash@gmail.com
 
 ---
 
