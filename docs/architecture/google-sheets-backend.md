@@ -169,7 +169,7 @@ Proved by tests against the in-memory sheet: interruption before the commit reco
 
 ### 7.2 FD-021 direct-writer amendment (2026-11-05)
 
-FD-021 replaces the direct writer's check-then-append race with an atomic named-range predecessor claim plus typed ledger append. It also permits a bounded access session and foreground/reconnect polling; FD-022 (2026-11-07) moved that session from tab-only storage to the device, with quiet renewal on the next click. The [operational contract and evidence](../operations/google-setup.md#persistent-tab-session-and-two-device-freshness-fd-020-2026-11-05) owns its implementation details and limits. Same-revision contention is exercised with a synthetic provider; live Google race proof remains required. This amends the concurrency limitation for updated participating clients, not unsupported old clients, manual edits or indefinite login.
+FD-021 replaces the direct writer's check-then-append race with an atomic named-range predecessor claim plus typed ledger append. It also permits a bounded access session and foreground/reconnect polling; FD-022 (2026-11-07) moved that session from tab-only storage to the device, with quiet renewal on the next click. The [operational contract and evidence](../operations/google-setup.md#persistent-tab-session-and-two-device-freshness-fd-021-2026-11-05) owns its implementation details and limits. Same-revision contention is exercised with a synthetic provider; live Google race proof remains required. This amends the concurrency limitation for updated participating clients, not unsupported old clients, manual edits or indefinite login.
 
 ## 8. What "live" means
 
