@@ -393,13 +393,6 @@ a.icon-button { text-decoration: none; }
   }
 }
 
-.notice {
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-notice);
-  color: var(--color-notice-text);
-  border-radius: var(--shape-md);
-  font-size: 0.9375rem;
-}
 
 /* ---------- The dashboard grid ---------- */
 
@@ -1374,23 +1367,11 @@ table {
   margin: 0;
 }
 
-.review-problem,
-.review-adjustments,
 fieldset {
   padding: var(--space-3);
   background: var(--color-surface-2);
   border: 0;
   border-radius: var(--shape-lg);
-}
-
-.review-problem {
-  box-shadow: inset 0 0 0 2px var(--color-error);
-}
-
-.review-problem h4,
-.review-problem h3 {
-  color: var(--color-error);
-  margin: 0 0 var(--space-2);
 }
 
 .status {
@@ -1929,6 +1910,79 @@ details.card > summary {
   cursor: pointer;
 }
 
+/* ---------- Notices: one family ----------
+ * Every banner, result, warning and confirmation shares one anatomy: a tinted panel inside its own shape, a leading
+ * icon whose shape (not only its colour) names the tone, text in the normal text colour, and actions drawn as the
+ * app's own buttons. Tone: info (the default), success, warning, error. The classes that already existed keep their
+ * meaning: .notice is information, .review-adjustments is a neutral result, .review-problem is an error. Add
+ * .notice-success or .notice-warning to change the tone of a notice or a result. */
+.notice, .review-adjustments, .expense-note { --tone: var(--color-accent); --notice-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v2h-2V7Zm0 4h2v6h-2v-6Z'/%3E%3C/svg%3E"); }
+.notice-success { --tone: var(--color-gain); --notice-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM7.2 12.4l1.4-1.4 1.8 1.8 5-5 1.4 1.4-6.4 6.4-3.2-3.2Z'/%3E%3C/svg%3E"); }
+.notice-warning, .expense-review, .expense-conflict { --tone: var(--color-notice-text); --tint: #ff9500; --notice-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' fill-rule='evenodd' d='M12 2.5 22.5 20.5h-21L12 2.5Zm-1 6.5v5h2V9h-2Zm0 6.5v2h2v-2h-2Z'/%3E%3C/svg%3E"); }
+.review-problem { --tone: var(--color-error); --notice-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v6h-2V7Zm0 8h2v2h-2v-2Z'/%3E%3C/svg%3E"); }
+.notice, .review-problem, .review-adjustments, .expense-note, .expense-review, .expense-conflict {
+  position: relative;
+  padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--space-3) + 1.75rem);
+  border-radius: var(--shape-md);
+  background: color-mix(in srgb, var(--tint, var(--tone)) 10%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 32%, transparent);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.notice::before, .review-problem::before, .review-adjustments::before, .expense-note::before, .expense-review::before, .expense-conflict::before {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  top: calc(var(--space-3) + 0.125rem);
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--tone);
+  -webkit-mask: var(--notice-icon) center / contain no-repeat;
+  mask: var(--notice-icon) center / contain no-repeat;
+}
+/* Work in progress swaps the icon for a spinner that stops under reduced motion. */
+.notice[data-busy="true"]::before {
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  border: 2px solid color-mix(in srgb, var(--tone) 25%, transparent);
+  border-top-color: var(--tone);
+  border-radius: 50%;
+  animation: busy-turn var(--duration-busy) linear infinite;
+}
+.notice h3, .notice h4, .review-problem h3, .review-problem h4, .review-adjustments h3, .review-adjustments h4, .expense-review h3, .expense-conflict h3 {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.notice p + p, .review-problem p + p, .review-adjustments p + p { margin-top: var(--space-2); }
+.notice ul, .review-problem ul, .review-adjustments ul { margin: var(--space-2) 0 0; padding-left: 1.1rem; }
+.notice a, .review-problem a, .review-adjustments a { color: inherit; font-weight: 650; text-underline-offset: 0.2em; }
+/* An action sits on its own row under the text, so the icon always lines up with the first line and the sentence
+ * around the action is never split. */
+:is(.notice, .review-problem, .review-adjustments) > button:not(.primary) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--shape-full);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+}
+.notice > button:not(.primary) { display: flex; width: fit-content; margin: var(--space-2) 0 0; }
+:is(.review-problem, .review-adjustments) > button:not(.primary) { margin: var(--space-2) var(--space-2) 0 0; }
+:is(.notice, .review-problem, .review-adjustments) > button:not(.primary):disabled { opacity: 0.5; cursor: default; }
+
 /* Hover feedback only where a pointer can really hover. On a touch screen a hover state sticks after a tap and
  * looks like a selection, so none of these apply there; touch gets the pressed state in interactions.css. */
 @media (hover: hover) and (pointer: fine) {
@@ -1939,5 +1993,6 @@ details.card > summary {
   .legend a:hover .legend-name { color: var(--color-accent); }
   .holdings-table tbody tr:hover { background: var(--color-surface-2); }
   .statement-action:hover { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); }
+  :is(.notice, .review-problem, .review-adjustments) > button:not(.primary):not(:disabled):hover { background: color-mix(in srgb, var(--color-accent) 86%, var(--color-text)); }
   .page-nav button.page-nav-item:hover { background: var(--color-accent-soft); }
 }

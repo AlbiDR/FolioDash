@@ -287,7 +287,7 @@ export function App(): JSX.Element {
               </p>
             )}
             {portfolioScreen && needsAttention && (
-              <p class="notice" role="status">
+              <p class="notice notice-warning" role="status">
                 Your Google Sheet needs attention. <a href="#connection">See what to do</a>
               </p>
             )}
@@ -305,7 +305,7 @@ export function App(): JSX.Element {
               </p>
             )}
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
-              {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
+              {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice notice-warning" role="status">{importNavigationMessage}</p>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && <OverviewView model={model} range={range} onRangeChange={setRange} />}
               {route.name === "expenses" && <ExpensesView

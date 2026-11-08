@@ -167,7 +167,7 @@ details[open] > summary::before { transform: rotate(45deg); }
 @keyframes busy-turn { to { transform: rotate(360deg); } }
 
 /* 29: New notices and validation messages enter once; they never auto-dismiss. */
-.notice, .field-error, .review-problem { animation: disclosure-enter var(--duration-short) var(--ease-standard); }
+.notice, .field-error, .review-problem, .expense-note { animation: disclosure-enter var(--duration-short) var(--ease-standard); }
 
 /* 30: Chart legend spotlight (bounds and every plotted observation stay unchanged). */
 .chart-legend-button {
@@ -243,7 +243,8 @@ details[open] > summary::before { transform: rotate(45deg); }
     outline-offset: -2px;
   }
   .status-dot { border: 1px solid CanvasText; }
-  .card, .chart, .notice, .review-problem, .review-adjustments { border: 1px solid CanvasText; }
+  .card, .chart, .notice, .review-problem, .review-adjustments, .expense-note, .expense-review, .expense-conflict { border: 1px solid CanvasText; }
+  .notice::before, .review-problem::before, .review-adjustments::before, .expense-note::before, .expense-review::before, .expense-conflict::before { background: CanvasText; }
 }
 
 @media (prefers-reduced-motion: reduce) {

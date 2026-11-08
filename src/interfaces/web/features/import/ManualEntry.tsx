@@ -70,7 +70,7 @@ export function ManualEntry(props: {
       <p>Enter every fund held on the same date. Money movements are reviewed separately before saving.</p>
       <p class="hint">{editing ? "Step 1 of 3: values and date" : "Step 2 of 3: movements and review. Confirm save when ready."}</p>
     </header>
-    {savedDate && <p id="manual-recorded" class="notice" role="status" tabIndex={-1}>Update for {savedDate} recorded. You can start another update below.</p>}
+    {savedDate && <p id="manual-recorded" class="notice notice-success" role="status" tabIndex={-1}>Update for {savedDate} recorded. You can start another update below.</p>}
     <form hidden={!editing} onSubmit={continueReview}>
       <div class="field"><label for="manual-date">Valuation date</label>
         <input id="manual-date" type="date" required aria-describedby="manual-date-hint" value={date} onInput={event => { setDate(event.currentTarget.value); }} />

@@ -162,7 +162,7 @@ export function ExcelHistoryView(props: {
         <p class="hint">One statement per calendar month is currently supported. If you have more than one export for a month, select the one you want to use.</p>
         <p class="hint">For a workbook with several statements, a full date in each sheet name is proposed (YYYY-MM-DD or DD-MM-YYYY). Otherwise enter it below. The workbook's creation date is never applied to all its sheets.</p>
         {props.review.problems.length > 0 && <div class="review-problem" role="alert"><h4>Choose the files again to resolve these problems</h4><ul>{props.review.problems.map((problem, index) => <li key={index}>{problem}</li>)}</ul></div>}
-        {props.review.notices.length > 0 && <div class="notice"><h4>Sheets not included</h4><p>Check that none of these sheets contain statements you need.</p><ul>{props.review.notices.map((notice, index) => <li key={index}>{notice}</li>)}</ul></div>}
+        {props.review.notices.length > 0 && <div class="notice notice-warning"><h4>Sheets not included</h4><p>Check that none of these sheets contain statements you need.</p><ul>{props.review.notices.map((notice, index) => <li key={index}>{notice}</li>)}</ul></div>}
         {props.ledger.snapshots.at(-1) !== undefined && <button type="button" onClick={() => {
           const latest = props.ledger.snapshots.at(-1)?.date;
           setEntries((current) => current.map((entry) => {
@@ -198,7 +198,7 @@ export function ExcelHistoryView(props: {
         <ol>{statements.map((statement, index) => <li key={statement.commandId}>{formatDateLong(statement.date)}: {statement.statement.funds.length} funds, <Amount cents={statement.statement.fundsSubtotal} />. {index < saved ? "Saved and checked." : "Not yet confirmed saved."}</li>)}</ol>
         {stage === "confirm" && <>
           <p>Confirm to save these statements, including their bank-sheet contents and your reviewed cash decisions, to your connected Google spreadsheet.</p>
-          {props.save === undefined ? <p class="notice">Connect to Google before saving. No history has been saved.</p> : <button type="button" class="primary" onClick={() => { void saveRemaining(props.save as RemoteSave); }}>Confirm and save {statements.length} statements</button>}
+          {props.save === undefined ? <p class="notice notice-warning">Connect to Google before saving. No history has been saved.</p> : <button type="button" class="primary" onClick={() => { void saveRemaining(props.save as RemoteSave); }}>Confirm and save {statements.length} statements</button>}
         </>}
         {stage === "saving" && <div class="status" data-busy="true" role="status"><p>Saving and checking statement {Math.min(saved + 1, statements.length)} of {statements.length}. Keep this page open.</p><div class="history-progress" role="progressbar" aria-label="Statements confirmed saved" aria-valuemin={0} aria-valuemax={Math.max(1, statements.length)} aria-valuenow={saved} style={{ "--completion": `${String(saved / Math.max(1, statements.length) * 100)}%` }} /></div>}
         {stage === "stopped" && <div class="review-problem" role="alert">

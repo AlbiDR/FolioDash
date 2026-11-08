@@ -55,10 +55,13 @@
 .expense-date-controls > button { white-space: nowrap; padding-inline: var(--space-2); }
 .expense-jump { grid-column: 1 / -1; }
 .expense-jump input { width: 100%; }
-.expense-note, .expense-review, .expense-conflict { padding: var(--space-3); border-radius: var(--shape-md); background: var(--color-notice); color: var(--color-notice-text); margin-bottom: var(--space-3); font-size: 0.8125rem; line-height: 1.5; }
+.expense-note, .expense-review, .expense-conflict { margin-bottom: var(--space-3); }
 .expense-note > p + .expense-note-actions { margin-top: var(--space-2); }
 .expense-note-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .expense-note-actions > button { flex: 1 1 8rem; }
+/* Buttons inside these panels are pills with a tone outline, like every notice action. */
+.expense-note button, .expense-review button:not(.primary), .expense-conflict button { border: 0; border-radius: var(--shape-full); background: var(--color-surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 45%, transparent); }
+.expense-review button.primary { border-radius: var(--shape-full); }
 .expense-review { margin-top: var(--space-3); }
 .expense-review h3, .expense-conflict h3 { margin-bottom: var(--space-2); font-size: 0.9375rem; }
 .expense-review dl, .expense-conflict dl { margin-block: var(--space-3); display: grid; gap: var(--space-2); }

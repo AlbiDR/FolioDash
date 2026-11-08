@@ -191,7 +191,7 @@ export function HistoryView(props: {
         resumes after what the spreadsheet already holds.
       </p>
       {props.save === undefined && (
-        <p class="notice" role="status">
+        <p class="notice notice-warning" role="status">
           Connect to your spreadsheet on the Your data screen first. Nothing can be saved until then.
         </p>
       )}
