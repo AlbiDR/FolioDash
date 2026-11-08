@@ -5,6 +5,9 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* The browser's tap highlight is a rectangle that ignores a control's shape. Pressed states are drawn by
+   * interactions.css, inside each control's own shape. The property is inherited, so this covers every element. */
+  -webkit-tap-highlight-color: transparent;
   scroll-padding-block: calc(var(--header-clearance, 0px) + var(--space-3)) calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--space-4));
 }
 
@@ -84,6 +87,8 @@ select:focus-visible {
 }
 
 .main-nav {
+  /* One shape for a dock item and for the selection that slides behind it (motion.css reads the same token). */
+  --nav-radius: var(--shape-sm);
   position: fixed;
   z-index: 20;
   left: var(--page-inset);
@@ -117,7 +122,7 @@ select:focus-visible {
   align-items: center;
   gap: 0.1rem;
   padding: 0.45rem 0.25rem;
-  border-radius: var(--shape-full);
+  border-radius: var(--nav-radius);
   color: var(--color-muted);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -211,10 +216,6 @@ select:focus-visible {
     font-size: 0.9375rem;
   }
 
-  .nav-link:hover {
-    background: var(--color-accent-soft);
-  }
-
   .content {
     padding-bottom: var(--space-4);
   }
@@ -250,10 +251,6 @@ select:focus-visible {
   border-radius: var(--shape-full);
   cursor: pointer;
   transition: background var(--duration-short) var(--ease-standard), transform var(--duration-short) var(--ease-spring);
-}
-
-.icon-button:hover {
-  background: var(--color-accent-soft);
 }
 
 .icon-button:active {
@@ -315,11 +312,6 @@ button.status-chip {
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-}
-
-a.status-chip:hover,
-button.status-chip:hover {
-  background: var(--color-accent-soft);
 }
 
 .link-button {
@@ -828,10 +820,6 @@ details.account-section > summary { font-weight: 650; }
   color: var(--color-muted);
 }
 
-.row-link:hover {
-  color: var(--color-accent);
-}
-
 /* ---------- Allocation, bars, rankings ---------- */
 
 .donut {
@@ -889,10 +877,6 @@ details.account-section > summary { font-weight: 650; }
   padding: 0.4rem 0;
   color: inherit;
   text-decoration: none;
-}
-
-.legend a:hover .legend-name {
-  color: var(--color-accent);
 }
 
 .dot {
@@ -1116,10 +1100,6 @@ table {
 .holdings-table tbody tr:last-child th,
 .holdings-table tbody tr:last-child td {
   border-bottom: 0;
-}
-
-.holdings-table tbody tr:hover {
-  background: var(--color-surface-2);
 }
 
 .holdings-table tr.closed {
@@ -1856,7 +1836,6 @@ details.card > summary {
   text-underline-offset: 0.25em;
   white-space: nowrap;
 }
-.statement-action:hover { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); }
 .portfolio-dashboard .hero-value { margin-top: var(--space-1); }
 .card-label > .hero-caption { font-weight: 400; }
 .card-label > .hero-caption::before { content: "\00b7\00a0"; }
@@ -1949,4 +1928,16 @@ details.card > summary {
   white-space: nowrap;
   cursor: pointer;
 }
-.page-nav button.page-nav-item:hover { background: var(--color-accent-soft); }
+
+/* Hover feedback only where a pointer can really hover. On a touch screen a hover state sticks after a tap and
+ * looks like a selection, so none of these apply there; touch gets the pressed state in interactions.css. */
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover { background: var(--color-accent-soft); }
+  .icon-button:hover { background: var(--color-accent-soft); }
+  a.status-chip:hover, button.status-chip:hover { background: var(--color-accent-soft); }
+  .row-link:hover { color: var(--color-accent); }
+  .legend a:hover .legend-name { color: var(--color-accent); }
+  .holdings-table tbody tr:hover { background: var(--color-surface-2); }
+  .statement-action:hover { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); }
+  .page-nav button.page-nav-item:hover { background: var(--color-accent-soft); }
+}

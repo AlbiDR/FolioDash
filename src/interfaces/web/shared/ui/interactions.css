@@ -2,6 +2,14 @@
  * This layer only changes feedback. It never delays an action or interpolates money.
  */
 
+/* Pressed state, for touch as much as for a mouse. It is a translucent layer painted as the control's own
+ * background image, so it is clipped by that control's border radius and can never have another shape. It uses the
+ * control's text colour, so it reads on light, dark and navy surfaces alike. Zero specificity: a control that has a
+ * pressed style of its own simply replaces it. Fields are not pressed, they take focus. */
+:where(a[href], button:not(:disabled), summary, [role="button"], label:has(> input[type="checkbox"]), label:has(> input[type="radio"])):active {
+  background-image: linear-gradient(color-mix(in srgb, currentcolor 14%, transparent), color-mix(in srgb, currentcolor 14%, transparent));
+}
+
 /* Keep the same usable hit area with mouse, keyboard and touch. */
 button, .nav-link, .status-chip, summary, .field input:not([type="checkbox"]):not([type="radio"]), .field select {
   min-height: var(--touch-target);

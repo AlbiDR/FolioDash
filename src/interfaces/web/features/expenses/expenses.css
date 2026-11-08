@@ -19,9 +19,7 @@
   transition: border-color var(--duration-short) var(--ease-standard), background var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard);
 }
 .expenses-dashboard button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; font-weight: 600; }
-.expenses-dashboard button:hover:not(:disabled) { border-color: var(--color-accent); background: var(--color-accent-soft); }
 .expenses-dashboard button.primary { color: var(--color-on-accent); background: var(--color-accent); border-color: transparent; }
-.expenses-dashboard button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 90%, var(--color-text)); }
 .expenses-dashboard button:disabled { cursor: default; opacity: 0.5; }
 .expenses-dashboard label { display: grid; gap: var(--space-1); font-size: 0.8125rem; font-weight: 600; }
 .expenses-dashboard select { cursor: pointer; }
@@ -219,4 +217,10 @@
   .expense-average-grid > * + * { border-top: 0; border-left: 1px solid var(--color-border); padding-left: var(--space-3); }
   .expense-metric { grid-template-columns: minmax(0, 1fr); padding-block: var(--space-1); }
   .expense-metric .expense-metric-value { grid-column: 1; text-align: left; }
+}
+
+/* Hover only where a pointer can hover; on touch it would stick after a tap and look selected. */
+@media (hover: hover) and (pointer: fine) {
+  .expenses-dashboard button:hover:not(:disabled) { border-color: var(--color-accent); background: var(--color-accent-soft); }
+  .expenses-dashboard button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 90%, var(--color-text)); }
 }
