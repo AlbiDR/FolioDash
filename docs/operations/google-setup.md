@@ -92,6 +92,14 @@ The consent screen shows the **user support email** from the Branding page. The 
 
 **Observed, owner report, 2026-11-07:** after publishing, the owner signed in from a phone on the live site and saw no warning, error or notice; it logged in without issues. The device, the browser, whether it was the installed app and whether Google showed a consent screen were not recorded. This is a first observation of a plain sign-in. It does not show whether approvals given under Testing survived, and it says nothing about renewal.
 
+**Logo and brand verification, 2026-11-08.** The FD icon (FD-024) was uploaded as the app logo on the Branding page, which is the step item 2 above avoided. The console then showed "Your branding is not being shown to users" and one issue: the home page `https://albidr.github.io/FolioDash/` "is not registered to you", with advice to verify ownership and wait 24 hours before retrying. The same console wording had said a logo triggers verification, so this was foreseeable. What was done, signed in as the owner in the in-app browser:
+
+1. Search Console, property type **URL prefix** (a Domain property needs DNS records, which a `github.io` address does not offer), for `https://albidr.github.io/FolioDash/`, verified by **HTML file**.
+2. The file `google9102f72497c75ed8.html` was added to `src/interfaces/web/public/` (commit `a2199db`). It holds one line, Google's standard token text. CI passed on Node 22 and 24 and the Pages deploy served it with HTTP 200 and 53 bytes. Search Console then reported "Ownership verified". **Keep this file:** Google says removing it loses verification.
+3. The Branding page's "I have fixed the issues" request was **not** pressed, because the console says to wait 24 hours after ownership is proven. It can be pressed from about 11:10 GMT on 2026-11-09.
+
+Not known: whether Google accepts a property on a path of a shared `github.io` address for this check, and whether the account that proved ownership is accepted for this project (both are the owner's account, but that is not a confirmed match). While the check is pending, Google says the branding is hidden; whether sign-in or the consent screen changed in any other way was not observed. Removing the logo from the Branding page returns to the earlier state.
+
 Still to observe on a real device, none of which has been seen: a quiet renewal after more than an hour, where the next tap should open Google's window briefly and close it by itself; whether grants made under Testing survive publishing (Google's pages do not say); whether the seven-day expiry actually stops (Google's pages describe it only under Testing, and a forum report, not Google's documentation, says one app kept it until new OAuth credentials were created); and what happens after a week.
 
 **Evidence, 2026-11-07.**
