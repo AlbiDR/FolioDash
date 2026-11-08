@@ -209,11 +209,11 @@ Same harness, same states and the same measurement definitions as the baseline a
 | Portfolio | 4,303 | 2,984 | -30.7% | 12 to 8 | 3 to 0 | 8 to 6 | 1 to 1 | 132 to 56 | 400 to 185 | yes to yes |
 | Fund | 1,929 | 1,462 | -24.2% | 2 to 2 | 0 to 0 | 3 to 3 | 1 to 1 | 132 to 56 | 554 to 280 | yes to yes |
 | Month by month | 1,772 | 1,354 | -23.6% | 6 to 3 | 0 to 0 | 4 to 1 | 1 to 1 | 132 to 56 | 625 to 440 | partly to partly |
-| Expenses, Sunday | 5,508 | 3,588 | -34.9% | 8 to 6 | 0 to 0 | 15 to 7 | 2 to 2 | 132 to 56 | 776 to 502 | no to yes |
+| Expenses, Sunday | 5,508 | 3,646 | -33.8% | 8 to 6 | 0 to 0 | 15 to 7 | 2 to 2 | 132 to 56 | 776 to 559 | no to yes |
 | Expenses, Wednesday | 5,398 | 3,401 | -37.0% | 8 to 6 | 0 to 0 | 15 to 6 | 2 to 1 | 132 to 56 | 702 to 314 | partly to yes |
-| Import | 1,153 | 893 | -22.5% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 871 to 454 | no to yes |
-| Import history | 1,083 | 823 | -24.0% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 801 to 384 | no to yes |
-| Your data, device copy | 3,045 | 2,818 | -7.5% | 5 to 1 | 0 to 0 | 6 to 2 | 2 to 1 | 132 to 56 | 307 to 169 | partly to yes |
+| Import | 1,153 | 920 | -20.2% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 871 to 481 | no to yes |
+| Import history | 1,083 | 850 | -21.5% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 801 to 411 | no to yes |
+| Your data, device copy | 3,045 | 2,826 | -7.2% | 5 to 1 | 0 to 0 | 6 to 2 | 2 to 1 | 132 to 56 | 307 to 169 | partly to yes |
 | Portfolio, twelve funds | 7,521 | 4,556 | -39.4% | 12 to 8 | 3 to 0 | 8 to 6 | 1 to 1 | 132 to 56 | 400 to 222 | yes to yes |
 | Portfolio, device copy, four funds | 4,213 | 2,777 | -34.1% | 11 to 7 | 3 to 0 | 7 to 5 | 1 to 1 | 132 to 56 | 400 to 222 | yes to yes |
 
@@ -226,7 +226,7 @@ The fixed bottom navigation went from 72.8px to 58.4px, so the space between the
 | Top chrome about 80px or less | Met: the bar's bottom edge is at 56px on every destination (132px before). The navigation is reported separately above. |
 | Portfolio headline value and trend visible in the first screen | Headline value: met, fully visible at y=185 to 222. Trend: **partly met.** The chart starts in the first screen and the top 60% of its plot is visible; its lower part and the date slider sit under the navigation. Getting the whole plot above the navigation needed about 100px more, which would have meant removing the hero captions or splitting the summary, so it was not done. |
 | Portfolio at least 30% shorter, nothing frequent hidden | Met: 30.7% on the demo, 34.1% on the four-fund device copy, 39.4% with twelve funds. Every figure and action that was visible is still visible. |
-| Expenses first entry input visible whenever entry is available; on a non-recordable day show the restriction and the route to an eligible date | Met on Wednesday (y=314) and on Sunday (y=502, disabled), with the weekend note and its two workday buttons in the same screen. The selected date is unchanged. |
+| Expenses first entry input visible whenever entry is available; on a non-recordable day show the restriction and the route to an eligible date | Met on Wednesday (y=314) and on Sunday (y=559, disabled), with the weekend note and its two workday buttons in the same screen. The selected date is unchanged. |
 | Main destinations reach their primary section in one tap with no scrolling | Met in the journey check for Expenses, Import, Your data and Portfolio. |
 | No card inside a card | Met for `.card` (3 to 0) and for every computed surface in the default states, except tinted notice panels: the weekend note with its two buttons sits inside the Expenses entry card on a weekend (nesting 2 on Sunday), and Import review states use tinted fieldsets and notices for outcomes. |
 | No single-word button label wraps within the word at 320px | Met: 0 cases at 320 and at every other width (20 cases before). |
@@ -263,6 +263,20 @@ Browser default font size set to 32px (not a CSS zoom), at 320, 375 and 768 wide
 
 The owner saw the dock's selection start as a rectangle and animate as a rounded shape. Cause, confirmed: this redesign deleted the late rule `.nav-link, .nav-list::before { border-radius: var(--shape-sm) }`, so dock items became pills while the sliding selection stayed an 8px rectangle, and the browser's own rectangular tap highlight showed on every link because only `<button>` had turned it off. A computed-style audit over all 28 distinct controls then found 15 with no pressed state and 11 hover rules that stick after a tap on touch screens. All are fixed in the shared layers (rules in [Microanimations and interactions](../operations/interactions.md)): one shared radius for the dock, the tap highlight off at the root, one shape-clipped pressed layer, and hover limited to hover devices. After the fix: 0 mismatched indicators, 0 controls with the browser tap highlight, 0 enabled controls without a pressed state, 0 ungated hover rules; the 140-case matrix and the 39 journey checks are unchanged. Not changed: the app still uses two button shapes (pills for the dock-adjacent chrome, primary and tonal buttons; 8px rectangles in Expenses and Month by month). That is a design-language choice for the owner, not a state mismatch.
 
+### Notices and banners (added after the owner called the update banner off-theme)
+
+The owner reported the "Reload to update" banner, and "similar ones", as unpolished. Rendering every notice-like pattern in light and dark showed five unrelated looks: an amber `.notice` used for everything (so "Statement saved" looked like a warning), a grey `.review-adjustments` panel that gave success no sign of success, `.review-problem` errors drawn with a heavy 2px outline, Expenses panels with their own copy of the styling, and loading and failure cards. Every action button inside them was an unstyled browser button, because only a few screens had button styles.
+
+They are now one family (rules in `app.css`, "Notices: one family"):
+
+- **Anatomy:** a panel tinted by its tone inside its own shape, a leading icon, text in the normal text colour so contrast does not depend on the tone, and the app's pill button for the action, on its own row under the text.
+- **Tones:** information (blue, the default), success (green), warning (amber), error (red). The tone is told by the icon's shape as well as its colour (info circle, check circle, warning triangle, error circle). The existing classes keep their meaning (`.notice` information, `.review-adjustments` a neutral result, `.review-problem` an error); `.notice-success` and `.notice-warning` change the tone.
+- **Assigned by meaning:** saved and consistent results are success; a sheet that needs attention, leaving mid-import, unresolved conflicts, sheets not included and "connect before saving" are warning; the update, demo, device-copy and checking banners stay information; failures are error.
+- **Busy:** the loading notice swaps its icon for a spinner (still under reduced motion and forced colours).
+- Expenses panels (weekend note, correction review, conflicts) use the same family; the loading and failure cards are notices and no longer cards.
+
+Checked in the rendered app, light and dark, on a phone and on desktop, with the 140-case matrix, the 39 journeys and the shape audit unchanged, and 200% text with no overflow. The Sunday first input moved from y=502 to y=559 because the weekend note is now a fuller panel; it is still in the first screen.
+
 ### Evidence categories
 
 - Deterministic: `npm run verify` locally, PASS. CI on Node 22 and 24: separate result.
@@ -272,4 +286,4 @@ The owner saw the dock's selection start as a rectangle and animate as a rounded
 
 ### Remaining decisions and limits
 
-The wide-screen order of Expenses is the one owner decision still open (the weekend default date was decided, see above). Month by month starts its primary content in the first screen but does not fit it. Your data is only 7.5% shorter because its content is a list of safeguards that all remain visible.
+The wide-screen order of Expenses is the one owner decision still open (the weekend default date was decided, see above). Month by month starts its primary content in the first screen but does not fit it. Your data is only 7.2% shorter because its content is a list of safeguards that all remain visible.
