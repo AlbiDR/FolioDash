@@ -186,7 +186,7 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 
 ## Owner decisions
 
-1. **Weekend default date.** Expenses still opens on today's date, which is a Sunday on 2026-11-08 and so cannot be recorded. The redesign makes the restriction and the way to the nearest eligible days visible in the first screen without changing which date is selected. Whether Expenses should open on the latest workday instead remains the owner's call; nothing was changed.
+1. **Weekend default date: decided, 2026-11-08.** Expenses keeps opening on today's date, which is a Sunday on 2026-11-08 and so cannot be recorded. The redesign makes the restriction and the way to the nearest eligible days visible in the first screen without changing which date is selected. The owner chose to keep this behaviour; opening on the latest workday was considered and not adopted.
 2. **Expenses order on wide screens.** To make DOM order equal visual order on every width, the entry and week now lead and the reporting cards follow. Wide screens previously placed the reporting cards first. This follows the product narrative in the experience plan ("record a day, review the week, understand the pattern"). Say if wide screens should lead with reports; that would need the reports first in the DOM on phones too.
 3. **Shortened status words on phones.** The full sentences are kept as accessible names, tooltips and on Your data. Only the visible phone label changes.
 
@@ -266,4 +266,4 @@ Browser default font size set to 32px (not a CSS zoom), at 320, 375 and 768 wide
 
 ### Remaining decisions and limits
 
-The weekend default date and the wide-screen order of Expenses are the owner decisions listed above. Month by month starts its primary content in the first screen but does not fit it. Your data is only 7.5% shorter because its content is a list of safeguards that all remain visible.
+The wide-screen order of Expenses is the one owner decision still open (the weekend default date was decided, see above). Month by month starts its primary content in the first screen but does not fit it. Your data is only 7.5% shorter because its content is a list of safeguards that all remain visible.
