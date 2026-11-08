@@ -139,6 +139,17 @@ Allocation inspection stays inside its own component, so pointer movement does n
 - Most added cues take 150-220ms and move at most 2px. Interactive transforms never change the dimensions of a financial bar, series, axis, amount or hit target. Native choice/slider glyphs can scale inside their existing hit regions.
 - History progress animates a presentation width towards the actual confirmed count. It never advances while waiting for an acknowledgement; its accessible count and accompanying status update immediately. It is not a financial value animation.
 
+## Shape and touch rules, 2026-11-08
+
+A control keeps one shape through rest, press, selection and animation. These rules are in the shared layers, not per control:
+
+- **Pressed state.** `interactions.css` draws one translucent layer, in the control's own text colour, as that control's background image. A background is clipped by the element's border radius, so the pressed shape is the control's shape. It has zero specificity, so a control with its own pressed style replaces it. Fields take focus instead of a pressed layer.
+- **No browser tap highlight.** It is a rectangle that ignores shapes, so `-webkit-tap-highlight-color` is transparent at the root and inherited. Before this, only `<button>` turned it off; links, summaries and labels (the dock among them) showed a rectangle before the rounded animation.
+- **Hover only where a pointer can hover.** Every `:hover` style sits inside `@media (hover: hover) and (pointer: fine)`. An unconditional hover style sticks after a tap on a touch screen and looks like a selection.
+- **An indicator takes its host's radius.** The sliding dock selection and the dock items share `--nav-radius`; the period selector's indicator inherits its container's radius.
+
+Check, with forced `:active` over the Chrome DevTools Protocol at a phone width, on every distinct control of Portfolio, Fund, Month by month, Expenses, Import and Your data (28 distinct controls): the shape of each control against any pseudo-element that paints its selection, its tap-highlight colour, and whether a press changes anything. Before the fix: one indicator with a different shape (dock items were pills, their sliding selection an 8px rectangle, caused by a rule deleted during the 2026-11-08 redesign), 22 of 28 controls with the browser's tap highlight, 15 of 28 with no visible pressed state, and 11 hover rules not limited to hover devices. After: 0, 0, 0 (the remaining three are disabled controls), 0. This is a computed-style check in an emulated browser; it does not replace looking at a press on a physical phone.
+
 ## Verification
 
 Run `npm run verify` for the full source and build gates. Browser acceptance additionally checks the numbered behaviours, range focus/shortcuts, add/remove/undo focus, chart spotlight with unchanged paths/ticks, monthly pinning, draft retention, narrow-layout overflow, and reduced-motion computed styles. Record actual results separately from physical Android/WebAPK, screen-reader and live Google testing.
