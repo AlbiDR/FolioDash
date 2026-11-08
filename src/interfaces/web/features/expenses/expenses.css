@@ -209,7 +209,7 @@
   .expense-required-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
   .expense-optional-fields .expense-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
   .expense-field { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
-  .expense-field > input { text-align: left; }
+  .expense-field > input { width: 100%; max-width: none; margin-left: 0; text-align: left; }
 }
 @container expense-averages (min-width: 36rem) {
   .expense-average-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
