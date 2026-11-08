@@ -41,7 +41,7 @@ function StatCard(props: {
           <p class="stat-caption">{props.caption}</p>
         </>
       )}
-      <Sparkline times={props.trend.times} values={props.trend.values} width={220} height={52} area />
+      <Sparkline times={props.trend.times} values={props.trend.values} tone={kpi.signed ? tone(kpi.amount) : ""} width={220} height={52} area />
     </div>
   );
 }
