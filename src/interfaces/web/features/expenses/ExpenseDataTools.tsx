@@ -74,7 +74,7 @@ export function ExpenseDataTools(props: {
     } catch { setMessage("The backup could not be read. Nothing was changed."); }
   }
   return <section class="account screen" aria-labelledby="expense-data-heading">
-    <div class="card">
+    <div class="account-section">
       <h2 id="expense-data-heading" class="card-title">Your work expense history</h2>
       <p class="card-subtitle">A separate checked record in the same Google workbook. Portfolio figures and expense history keep their own recovery coverage.</p>
       <dl class="facts stacked"><div><dt>Recorded days</dt><dd>{props.days}</dd></div><div><dt>Saved entries and corrections</dt><dd>{props.commands}</dd></div><div><dt>Conflicting days to review</dt><dd>{props.conflicts}</dd></div></dl>

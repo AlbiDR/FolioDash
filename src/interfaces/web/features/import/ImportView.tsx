@@ -354,7 +354,7 @@ export function ImportView(props: {
 
   return (
     <section aria-labelledby="import-heading" class="import">
-      <header class="journey-intro"><p class="eyebrow">Build your portfolio, one statement at a time</p><h2 id="import-heading">{props.historyMode ? "Bring your history together" : "Update your portfolio"}</h2><p>One export or a whole history. Review the details, then save with confidence.</p></header>
+      <h2 id="import-heading" class="import-heading">{props.historyMode ? "Choose your history files" : method === "manual" ? "Enter a statement" : "Choose bank statements"}</h2>
       <ol class="journey-steps" aria-label="Import process"><li aria-current={phase.name === "idle" && method === "file" ? "step" : undefined}><span>01</span> Choose statements</li><li aria-current={!saveLocked && (method === "manual" || phase.name === "reviewed" || phase.name === "batch") ? "step" : undefined}><span>02</span> Review dates &amp; movements</li><li aria-current={saveLocked ? "step" : undefined}><span>03</span> Save &amp; check</li></ol>
       {recorded !== null && <p ref={recordedMessage} class="notice" role="status" tabIndex={-1}>Statement for {formatDateLong(recorded)} {props.save === undefined ? "recorded in this browser tab" : "saved to your spreadsheet and checked"}. You can choose another statement below.</p>}
       {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
@@ -365,11 +365,6 @@ export function ImportView(props: {
         {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setManualSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
       </div>
       <div id="file-entry-panel" class="entry-panel" hidden={method !== "file"}>
-      <p>
-        Choose one or more Excel files exported by your bank, or one workbook containing a statement on each sheet.
-        Supported Fideuram holdings sheets are checked in this browser. The original Excel files are not uploaded;
-        confirming an import saves the reviewed sheet contents and your decisions to your private Google spreadsheet.
-      </p>
       <div class="field">
         <label for="statement-file">Bank statements (.xlsx)</label>
         <input
@@ -378,6 +373,7 @@ export function ImportView(props: {
           type="file"
           multiple
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          aria-describedby="file-entry-help"
           onChange={(event) => {
             const input = event.currentTarget;
             const files = Array.from(input.files ?? []);
@@ -385,6 +381,11 @@ export function ImportView(props: {
             input.value = "";
           }}
         />
+        <p class="hint" id="file-entry-help">
+          One export or a whole history. Choose one or more Excel files exported by your bank, or one workbook containing a statement on each sheet.
+          Supported Fideuram holdings sheets are checked in this browser. The original Excel files are not uploaded;
+          confirming an import saves the reviewed sheet contents and your decisions to your private Google spreadsheet. Review the details, then save with confidence.
+        </p>
       </div>
 
       <div aria-live="polite" data-busy={phase.name === "reading"} class="status">
