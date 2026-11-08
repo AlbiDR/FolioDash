@@ -1,5 +1,7 @@
 # Dashboard coherence
 
+> **Partly superseded on 2026-11-08 by [Structural UI and UX redesign](structural-ui-redesign.md).** That brief replaces this document's page identity and screen composition (the shared header plus a second per-screen intro block, per-metric stat cards, the bordered analysis disclosure and the separate glossary and definitions disclosures). The product narrative, the financial and chart rules in the later amendments (metric visibility, chart date labels, glass kept to navigation) and the recorded verification remain valid and unchanged below as the historical record.
+
 Implemented 2026-11-04 under the owner's request to consolidate the whole UI, then repeat the review at progressively smaller scales. This governs presentation; financial policy, import consent and data authority remain unchanged.
 
 ## Pass 1: the product story

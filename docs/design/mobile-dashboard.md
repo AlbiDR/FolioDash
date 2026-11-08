@@ -1,5 +1,7 @@
 # Mobile dashboard layout
 
+> **Partly superseded on 2026-11-08 by [Structural UI and UX redesign](structural-ui-redesign.md).** That brief replaces this document's phone card sequence, its "larger number of vertical cards is a deliberate tradeoff" position, the period results as separate cards, the floating header card and the holdings row density. The reflow rules, type and touch-target rules, safe-area handling and verification matrix below remain valid. The findings and results that follow are kept unchanged as the historical record.
+
 Implemented 2026-11-04. This is a presentation change; financial definitions,
 account access and import consent retain their existing owners.
 

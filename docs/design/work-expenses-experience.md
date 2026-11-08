@@ -1,5 +1,7 @@
 # Work expenses in FolioDash: consolidated experience plan
 
+> **Partly superseded on 2026-11-08 by [Structural UI and UX redesign](structural-ui-redesign.md).** That brief replaces the layout in this document's "Experience revision, 2026-11-06" section and the composition table in section 2: report cards no longer lead the DOM and are not reordered with CSS, the reporting-year control moves from the page intro to the reporting section, and entry fields are no longer boxed wrappers. The day-meaning and persistence vocabulary, privacy, correction, recovery and reporting-policy rules, and the product narrative remain in force. The text below is kept unchanged as the historical record.
+
 Date: 2026-11-04
 
 Status: Refined and audited design proposal, followed by owner-authorised implementation on 2026-11-05. [Implementation and acceptance](../operations/work-expenses.md) records the resulting tracker, reporting choices and verification. This document preserves the design rationale and historical sequence; owner-confirmed day meanings remain authoritative in the [preparation contract](../architecture/work-expenses-tracker.md). Live private writes and migration are not authorised by a design document.
