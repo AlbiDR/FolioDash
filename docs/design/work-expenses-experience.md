@@ -1,6 +1,6 @@
 # Work expenses in FolioDash: consolidated experience plan
 
-> **Partly superseded on 2026-11-08 by [Structural UI and UX redesign](structural-ui-redesign.md).** That brief replaces the layout in this document's "Experience revision, 2026-11-06" section and the composition table in section 2: report cards no longer lead the DOM and are not reordered with CSS, the reporting-year control moves from the page intro to the reporting section, and entry fields are no longer boxed wrappers. The day-meaning and persistence vocabulary, privacy, correction, recovery and reporting-policy rules, and the product narrative remain in force. The text below is kept unchanged as the historical record.
+> **Partly superseded on 2026-11-08 by [Structural UI and UX redesign](structural-ui-redesign.md).** That brief replaces the layout in this document's "Experience revision, 2026-11-06" section and the composition table in section 2: report cards no longer lead the DOM and are not reordered with CSS, Previous and Next step one calendar day (weekends can be viewed; the earlier "browse Monday-Friday" rule no longer applies), the reporting-year control moves from the page intro to the reporting section, and entry fields are no longer boxed wrappers. The day-meaning and persistence vocabulary, privacy, correction, recovery and reporting-policy rules, and the product narrative remain in force. The text below is kept unchanged as the historical record.
 
 Date: 2026-11-04
 

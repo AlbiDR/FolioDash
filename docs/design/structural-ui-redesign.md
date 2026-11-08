@@ -136,10 +136,10 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 ### Work expenses (`#expenses`)
 
 - Primary task: record today's costs.
-- First viewport on any day: the selected date and its state, the date controls, and the first entry input. On a non-recordable day the same viewport also shows why (the tracker covers Monday to Friday) and the way to the nearest eligible days, named with their dates. The input is present and disabled; which date is selected is unchanged.
+- First viewport on any day: the selected date and its state, the date controls, and the first entry input. On a non-recordable day the same viewport also shows why (the tracker covers Monday to Friday) and two buttons that open the previous and the next workday, named with their dates. The input is present and disabled; which date is selected is unchanged. Previous and Next step one calendar day, so weekend days can be viewed (owner request, 2026-11-08); only a workday can be recorded.
 - Section order (also the DOM and tab order): the day-entry card, the week, in-page navigation (Year, Categories, Record), the year (reporting-year control, annual total and projection, the three averages), where it goes (disclosure), how these summaries work (disclosure), the record, the demo notice.
 - Cards: the entry card (the primary group), the week, the year, the averages, the record. Fields are labelled inputs in rows without boxes; the day total is a divider-separated row inside the entry card. The three averages are rows, not bordered columns.
-- Visible: all five fields, optional costs labelled as optional, Previous, Today, Next and the date picker (text-only, never wrapping), the draft total and completeness, save and its feedback, review and conflict panels. The reporting-year control moves from the page intro to the year section because it governs only the report figures.
+- Visible: all five fields, optional costs labelled as optional, Previous, Today, Next and the date picker (text-only, never wrapping; Previous and Next carry the calendar day they open in their accessible names), the draft total and completeness, save and its feedback, review and conflict panels. The reporting-year control moves from the page intro to the year section because it governs only the report figures.
 - Disclosure: where it goes, how these summaries work, previous saved versions.
 - Context: previous, next, week and record actions keep the draft guard exactly as today. The in-page navigation moves focus to a section heading.
 - Before and after (Sunday):
@@ -149,17 +149,18 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
   SAMPLE WORK EXPENSES          { Sun, 8 Nov 2026       [Weekend]
   Your working costs              [Previous][ Today ][ Next ]
   Try recording…                  [ 08/11/2026          ]
-  Reporting year [2026]           Weekend: Mon-Fri only. Previous
-  { RECORD A DAY                  is Fri 6 Nov, Next is Mon 9 Nov.
-    Sun 8 Nov  [Weekend]          Outbound commute   [ ____ ]
-    [Previo|us][Today][Next]      Lunch              [ ____ ]
-    [ 08/11/2026 ]                Inbound commute    [ ____ ]
-    note (84px)                   Optional: Dinner, Other
-    Daily essentials              Recorded so far …  [ Save ] }
-    ▢ ▢ ▢ ▢ ▢ (below fold) }      { Your week ... }
+  Reporting year [2026]           Weekend: Mon to Fri only.
+  { RECORD A DAY                  [Previous workday: Fri 6 Nov]
+    Sun 8 Nov  [Weekend]          [Next workday: Mon 9 Nov]
+    [Previo|us][Today][Next]      Outbound commute   [ ____ ]
+    [ 08/11/2026 ]                Lunch              [ ____ ]
+    note (84px)                   Inbound commute    [ ____ ]
+    Daily essentials              Optional: Dinner, Other
+    ▢ ▢ ▢ ▢ ▢ (below fold) }      Recorded so far ...  [ Save ] }
+                                  { Your week ... }
                                   [Year][Categories][Record]
   ```
-- States: Today and weekday as today; weekend and future dates keep their notices and disabled inputs; hidden amounts keep their reserved save position; error, correction, conflict, uncertain-save and demo states are unchanged in meaning.
+- States: Today and weekday as today; weekend and future dates keep their notices and disabled inputs, and a weekend note offers the nearest workdays as buttons; hidden amounts keep their reserved save position; error, correction, conflict, uncertain-save and demo states are unchanged in meaning.
 - Accessibility: DOM order equals visual order; the date label is an `aria-live` heading; Previous and Next carry accessible names that include the destination date.
 
 ### Import (`#import`) and Import history (`#history`)
@@ -188,7 +189,8 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 
 1. **Weekend default date: decided, 2026-11-08.** Expenses keeps opening on today's date, which is a Sunday on 2026-11-08 and so cannot be recorded. The redesign makes the restriction and the way to the nearest eligible days visible in the first screen without changing which date is selected. The owner chose to keep this behaviour; opening on the latest workday was considered and not adopted.
 2. **Expenses order on wide screens.** To make DOM order equal visual order on every width, the entry and week now lead and the reporting cards follow. Wide screens previously placed the reporting cards first. This follows the product narrative in the experience plan ("record a day, review the week, understand the pattern"). Say if wide screens should lead with reports; that would need the reports first in the DOM on phones too.
-3. **Shortened status words on phones.** The full sentences are kept as accessible names, tooltips and on Your data. Only the visible phone label changes.
+3. **Previous and Next include weekends: decided, 2026-11-08.** The owner asked that Previous and Next step through weekend days too. They now move one calendar day (Sunday, Saturday, Friday); the weekend note keeps two buttons that jump to the previous and next workday. Recording stays Monday to Friday, and a weekend date is read-only.
+4. **Shortened status words on phones.** The full sentences are kept as accessible names, tooltips and on Your data. Only the visible phone label changes.
 
 ## Verification plan and evidence categories
 
@@ -207,7 +209,7 @@ Same harness, same states and the same measurement definitions as the baseline a
 | Portfolio | 4,303 | 2,984 | -30.7% | 12 to 8 | 3 to 0 | 8 to 6 | 1 to 1 | 132 to 56 | 400 to 185 | yes to yes |
 | Fund | 1,929 | 1,462 | -24.2% | 2 to 2 | 0 to 0 | 3 to 3 | 1 to 1 | 132 to 56 | 554 to 280 | yes to yes |
 | Month by month | 1,772 | 1,354 | -23.6% | 6 to 3 | 0 to 0 | 4 to 1 | 1 to 1 | 132 to 56 | 625 to 440 | partly to partly |
-| Expenses, Sunday | 5,508 | 3,499 | -36.5% | 8 to 6 | 0 to 0 | 15 to 6 | 2 to 1 | 132 to 56 | 776 to 412 | no to yes |
+| Expenses, Sunday | 5,508 | 3,588 | -34.9% | 8 to 6 | 0 to 0 | 15 to 7 | 2 to 2 | 132 to 56 | 776 to 502 | no to yes |
 | Expenses, Wednesday | 5,398 | 3,401 | -37.0% | 8 to 6 | 0 to 0 | 15 to 6 | 2 to 1 | 132 to 56 | 702 to 314 | partly to yes |
 | Import | 1,153 | 893 | -22.5% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 871 to 454 | no to yes |
 | Import history | 1,083 | 823 | -24.0% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 801 to 384 | no to yes |
@@ -224,9 +226,9 @@ The fixed bottom navigation went from 72.8px to 58.4px, so the space between the
 | Top chrome about 80px or less | Met: the bar's bottom edge is at 56px on every destination (132px before). The navigation is reported separately above. |
 | Portfolio headline value and trend visible in the first screen | Headline value: met, fully visible at y=185 to 222. Trend: **partly met.** The chart starts in the first screen and the top 60% of its plot is visible; its lower part and the date slider sit under the navigation. Getting the whole plot above the navigation needed about 100px more, which would have meant removing the hero captions or splitting the summary, so it was not done. |
 | Portfolio at least 30% shorter, nothing frequent hidden | Met: 30.7% on the demo, 34.1% on the four-fund device copy, 39.4% with twelve funds. Every figure and action that was visible is still visible. |
-| Expenses first entry input visible whenever entry is available; on a non-recordable day show the restriction and the route to an eligible date | Met on Wednesday (y=314) and on Sunday (y=412, disabled), with the weekend note naming the previous and next workday. The selected date is unchanged. |
+| Expenses first entry input visible whenever entry is available; on a non-recordable day show the restriction and the route to an eligible date | Met on Wednesday (y=314) and on Sunday (y=502, disabled), with the weekend note and its two workday buttons in the same screen. The selected date is unchanged. |
 | Main destinations reach their primary section in one tap with no scrolling | Met in the journey check for Expenses, Import, Your data and Portfolio. |
-| No card inside a card | Met for `.card` (3 to 0) and for every computed surface in the default states of all destinations. Review states of Import still use tinted fieldsets and notices for outcomes. |
+| No card inside a card | Met for `.card` (3 to 0) and for every computed surface in the default states, except tinted notice panels: the weekend note with its two buttons sits inside the Expenses entry card on a weekend (nesting 2 on Sunday), and Import review states use tinted fieldsets and notices for outcomes. |
 | No single-word button label wraps within the word at 320px | Met: 0 cases at 320 and at every other width (20 cases before). |
 | Primary DOM order equals visual order | Met: 0 of 140 matrix cases differ (24 before). On Expenses the reordering CSS is removed. |
 | Existing workflows, information and financial meaning preserved | No calculation, parser, persistence, Google or consent file was changed. Copy was moved or shortened only where noted in the brief (header eyebrows and repeated headings; hero captions now share the label's line). |
@@ -255,7 +257,7 @@ Browser default font size set to 32px (not a CSS zoom), at 320, 375 and 768 wide
 
 ### Journeys
 
-36 keyboard and touch checks pass in headless Chrome using real key and pointer events: one tap to each main destination with the primary section on screen; Sunday restriction, accessible Previous and Next names and moving to Friday; a keyboard entry of three amounts, a forward-only tab order through the card, the live total and a demo save; the in-page jump chips moving focus without changing the route and opening the analysis disclosure; a fund opening and the back control returning; the privacy control and the short status word contained in its accessible name; Previous, Next and Latest staying on one line and moving between statements; every direct link (`#overview`, `#expenses`, `#import`, `#history`, `#connection`, `#months`, a fund); the skip link; forced colours and dark with no overflow; the wide Expenses and Portfolio layouts.
+39 keyboard and touch checks pass in headless Chrome using real key and pointer events: one tap to each main destination with the primary section on screen; the Sunday restriction, Previous and Next carrying the calendar day they open, Previous stepping Sunday to Saturday to Friday and Next stepping back, and the Next workday button opening Monday; a keyboard entry of three amounts, a forward-only tab order through the card, the live total and a demo save; the in-page jump chips moving focus without changing the route and opening the analysis disclosure; a fund opening and the back control returning; the privacy control and the short status word contained in its accessible name; Previous, Next and Latest staying on one line and moving between statements; every direct link (`#overview`, `#expenses`, `#import`, `#history`, `#connection`, `#months`, a fund); the skip link; forced colours and dark with no overflow; the wide Expenses and Portfolio layouts.
 
 ### Evidence categories
 
