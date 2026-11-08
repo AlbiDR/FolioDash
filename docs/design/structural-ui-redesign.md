@@ -1,6 +1,6 @@
 # Structural UI and UX redesign
 
-Status: **Design brief, written before implementation. Implementation and verification results are recorded in the final section.**
+Status: **Implemented 2026-11-08 and checked in an emulated browser. Physical-device, deployed-origin, other-engine and screen-reader checks are not done. The brief below was written before implementation; the final section records what was built and measured.**
 Date: 2026-11-08
 Owner request: "The UI is still pretty much a mess, especially on mobile. The hierarchy and organisation are not thought out. There are a lot of containers that hinder navigation and reaching the main section."
 
@@ -109,7 +109,7 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 - Section order: summary, trend chart (with its period control), in-page navigation, changes, holdings, allocation, trends and comparisons (disclosure), what the numbers mean (one disclosure that now also holds the exact definitions), setup (demo only).
 - Cards: the navy summary; the chart; one card for the three changes; one card for holdings; one card for allocation. The three change rows are rows, not cards. The trends disclosure is a plain row; its charts remain cards.
 - Visible: every figure that is visible today. The chart period control moves into the chart it governs. "Add a statement" stays, as a compact action in the summary's header row. The fund search stays and becomes one line with an inline clear control. Holdings rows keep the four labelled figures (value, gain %, gain, net invested), laid out two by two with tighter spacing.
-- Disclosure: trends and comparisons, what the numbers mean (merged with exact definitions), per-chart tools and values, the demo-portfolio picker. Three fewer disclosures than before on the demo screen, none hidden that was visible.
+- Disclosure: trends and comparisons, what the numbers mean (merged with exact definitions), per-chart tools and values, the demo-portfolio picker. One fewer disclosure than before on the demo screen (the exact definitions joined the glossary), and none hidden that was visible.
 - Context: the statement date is the first line of the summary ("As of 15 August 2025"). Holdings link to the fund screen; the bar's back control returns to Portfolio.
 - Before and after:
   ```
@@ -137,7 +137,7 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 
 - Primary task: record today's costs.
 - First viewport on any day: the selected date and its state, the date controls, and the first entry input. On a non-recordable day the same viewport also shows why (the tracker covers Monday to Friday) and the way to the nearest eligible days, named with their dates. The input is present and disabled; which date is selected is unchanged.
-- Section order (also the DOM and tab order): the day-entry card, in-page navigation, the week, the year (reporting-year control, annual total and projection, the three averages), where it goes (disclosure), how these summaries work (disclosure), the record, the demo notice.
+- Section order (also the DOM and tab order): the day-entry card, the week, in-page navigation (Year, Categories, Record), the year (reporting-year control, annual total and projection, the three averages), where it goes (disclosure), how these summaries work (disclosure), the record, the demo notice.
 - Cards: the entry card (the primary group), the week, the year, the averages, the record. Fields are labelled inputs in rows without boxes; the day total is a divider-separated row inside the entry card. The three averages are rows, not bordered columns.
 - Visible: all five fields, optional costs labelled as optional, Previous, Today, Next and the date picker (text-only, never wrapping), the draft total and completeness, save and its feedback, review and conflict panels. The reporting-year control moves from the page intro to the year section because it governs only the report figures.
 - Disclosure: where it goes, how these summaries work, previous saved versions.
@@ -156,7 +156,8 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
     [ 08/11/2026 ]                Inbound commute    [ ____ ]
     note (84px)                   Optional: Dinner, Other
     Daily essentials              Recorded so far …  [ Save ] }
-    ▢ ▢ ▢ ▢ ▢ (below fold) }      [Week][Year][Record]
+    ▢ ▢ ▢ ▢ ▢ (below fold) }      { Your week ... }
+                                  [Year][Categories][Record]
   ```
 - States: Today and weekday as today; weekend and future dates keep their notices and disabled inputs; hidden amounts keep their reserved save position; error, correction, conflict, uncertain-save and demo states are unchanged in meaning.
 - Accessibility: DOM order equals visual order; the date label is an `aria-live` heading; Previous and Next carry accessible names that include the destination date.
@@ -195,4 +196,74 @@ Deterministic: `npm run verify` (types, lint, unit tests, repository policy, bui
 
 ## Results
 
-Recorded in the final section of this document after implementation.
+Revision: commits f1758e6 (shell, Portfolio, Fund, Month by month), d30df62 (Expenses) and ab1667a (Import, Import history, Your data) on top of the brief in e3d0a5a. Local `npm run verify` passed on Node v26.13.0 (repository policy, punctuation, types, lint, 823 tests, Pages checks, production build, PWA and Apps Script bundle checks). CI runs it on Node 22 and 24 and is a separate gate.
+
+### Before and after, 375 x 812, demo data, amounts hidden, disclosures closed
+
+Same harness, same states and the same measurement definitions as the baseline above. The "before" build is the unchanged parent revision, rebuilt separately.
+
+| Destination | Height before | Height after | Change | `.card` | Card in card | Computed surfaces | Max nesting | Top chrome (bottom edge) | Primary at y | Primary in first screen |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Portfolio | 4,303 | 2,984 | -30.7% | 12 to 8 | 3 to 0 | 8 to 6 | 1 to 1 | 132 to 56 | 400 to 185 | yes to yes |
+| Fund | 1,929 | 1,462 | -24.2% | 2 to 2 | 0 to 0 | 3 to 3 | 1 to 1 | 132 to 56 | 554 to 280 | yes to yes |
+| Month by month | 1,772 | 1,354 | -23.6% | 6 to 3 | 0 to 0 | 4 to 1 | 1 to 1 | 132 to 56 | 625 to 440 | partly to partly |
+| Expenses, Sunday | 5,508 | 3,499 | -36.5% | 8 to 6 | 0 to 0 | 15 to 6 | 2 to 1 | 132 to 56 | 776 to 412 | no to yes |
+| Expenses, Wednesday | 5,398 | 3,401 | -37.0% | 8 to 6 | 0 to 0 | 15 to 6 | 2 to 1 | 132 to 56 | 702 to 314 | partly to yes |
+| Import | 1,153 | 893 | -22.5% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 871 to 454 | no to yes |
+| Import history | 1,083 | 823 | -24.0% | 0 to 0 | 0 to 0 | 1 to 0 | 1 to 0 | 132 to 56 | 801 to 384 | no to yes |
+| Your data, device copy | 3,045 | 2,818 | -7.5% | 5 to 1 | 0 to 0 | 6 to 2 | 2 to 1 | 132 to 56 | 307 to 169 | partly to yes |
+| Portfolio, twelve funds | 7,521 | 4,556 | -39.4% | 12 to 8 | 3 to 0 | 8 to 6 | 1 to 1 | 132 to 56 | 400 to 222 | yes to yes |
+| Portfolio, device copy, four funds | 4,213 | 2,777 | -34.1% | 11 to 7 | 3 to 0 | 7 to 5 | 1 to 1 | 132 to 56 | 400 to 222 | yes to yes |
+
+The fixed bottom navigation went from 72.8px to 58.4px, so the space between the bar and the navigation grew from 607.6px to 697.6px. Primary at y is the headline value (Portfolio, Fund, twelve funds, device copy), the first entry input (Expenses), the file picker (Import, Import history), the month summary (Month by month) or the connection summary (Your data). "Partly" means the element starts in the first screen but extends past it.
+
+### Acceptance targets
+
+| Target | Result |
+|---|---|
+| Top chrome about 80px or less | Met: the bar's bottom edge is at 56px on every destination (132px before). The navigation is reported separately above. |
+| Portfolio headline value and trend visible in the first screen | Headline value: met, fully visible at y=185 to 222. Trend: **partly met.** The chart starts in the first screen and the top 60% of its plot is visible; its lower part and the date slider sit under the navigation. Getting the whole plot above the navigation needed about 100px more, which would have meant removing the hero captions or splitting the summary, so it was not done. |
+| Portfolio at least 30% shorter, nothing frequent hidden | Met: 30.7% on the demo, 34.1% on the four-fund device copy, 39.4% with twelve funds. Every figure and action that was visible is still visible. |
+| Expenses first entry input visible whenever entry is available; on a non-recordable day show the restriction and the route to an eligible date | Met on Wednesday (y=314) and on Sunday (y=412, disabled), with the weekend note naming the previous and next workday. The selected date is unchanged. |
+| Main destinations reach their primary section in one tap with no scrolling | Met in the journey check for Expenses, Import, Your data and Portfolio. |
+| No card inside a card | Met for `.card` (3 to 0) and for every computed surface in the default states of all destinations. Review states of Import still use tinted fieldsets and notices for outcomes. |
+| No single-word button label wraps within the word at 320px | Met: 0 cases at 320 and at every other width (20 cases before). |
+| Primary DOM order equals visual order | Met: 0 of 140 matrix cases differ (24 before). On Expenses the reordering CSS is removed. |
+| Existing workflows, information and financial meaning preserved | No calculation, parser, persistence, Google or consent file was changed. Copy was moved or shortened only where noted in the brief (header eyebrows and repeated headings; hero captions now share the label's line). |
+| `npm run verify` passes | Local: yes. CI: separate. |
+
+### Matrix, emulated browser
+
+140 cases: widths 320, 375, 390, 430, 768 and 1440; light and dark; demo, empty demo, synthetic connected-empty, synthetic device copy with four funds, twelve funds, Expenses on Sunday and on Wednesday.
+
+| Check | Cases affected before | After |
+|---|---|---|
+| Page overflowing horizontally | 0 | 0 |
+| Element overflowing outside a scroll region | 0 | 0 |
+| Word broken inside a button, link, label or heading | 20 | 0 |
+| Interactive target under 48px | 22 | 10 |
+| Text under AA contrast (computed estimate) | 54 | 0 |
+| Primary block order differs from DOM order | 24 | 0 |
+
+The 10 remaining small-target cases are two kinds, both present before: the stretched fund links in the desktop holdings table (the visible link text is small but its click area is the whole row), and the individual segments of the allocation ring, whose full-size alternative is the legend link next to each. Contrast figures are computed from rendered colours; glass and gradient backdrops are approximated by the page colour, so they are an estimate, not a WCAG audit.
+
+Fixes the matrix drove, all in this change: the desktop Portfolio first placed holdings above the summary (an explicit grid row left over from the removed intro), the chart header was scrambled by an old flex rule on tablet and desktop, the period buttons were 46px wide at 768px, positive and negative percentage chips and two tonal buttons were under 4.5:1, and the phone bar and navigation labels broke or grew at large text.
+
+### 200% text
+
+Browser default font size set to 32px (not a CSS zoom), at 320, 375 and 768 wide, 22 cases: no horizontal overflow, and words broken inside a word fell from 53 to 0. At very large sizes the bottom navigation labels stop growing (like a tab bar) instead of breaking, and the phone bar wraps its status and privacy control onto a second line.
+
+### Journeys
+
+36 keyboard and touch checks pass in headless Chrome using real key and pointer events: one tap to each main destination with the primary section on screen; Sunday restriction, accessible Previous and Next names and moving to Friday; a keyboard entry of three amounts, a forward-only tab order through the card, the live total and a demo save; the in-page jump chips moving focus without changing the route and opening the analysis disclosure; a fund opening and the back control returning; the privacy control and the short status word contained in its accessible name; Previous, Next and Latest staying on one line and moving between statements; every direct link (`#overview`, `#expenses`, `#import`, `#history`, `#connection`, `#months`, a fund); the skip link; forced colours and dark with no overflow; the wide Expenses and Portfolio layouts.
+
+### Evidence categories
+
+- Deterministic: `npm run verify` locally, PASS. CI on Node 22 and 24: separate result.
+- Emulated browser: headless Google Chrome 157.0.8103.39 on macOS, fresh profile, network limited to the preview origin, synthetic data only. The matrix and journeys are scratch tooling kept outside the repository (a local scratch directory), not a committed suite or durable artifact.
+- Connected states are simulated with a synthetic device copy in browser storage. They do not verify authenticated Google access.
+- Not done: the deployed origin, a physical Android or iOS device, Firefox, WebKit, manual screen-reader review, real touch keyboard behaviour around the sticky navigation.
+
+### Remaining decisions and limits
+
+The weekend default date and the wide-screen order of Expenses are the owner decisions listed above. Month by month starts its primary content in the first screen but does not fit it. Your data is only 7.5% shorter because its content is a list of safeguards that all remain visible.
