@@ -5,6 +5,7 @@ import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
 import { CHART_RANGES, type ChartRange } from "./chartRange";
 import { RangeSelector } from "../../shared/ui/RangeSelector";
+import { PageNav } from "../../shared/ui/PageNav";
 import { type AllocationSlice, type MonthMetric, dashboardFor } from "./dashboardData";
 import { Donut } from "../../presentation/charts/Donut";
 import { LineChart } from "../../presentation/charts/LineChart";
@@ -28,7 +29,7 @@ function StatCard(props: {
 }): JSX.Element {
   const { kpi } = props;
   return (
-    <div class="card stat">
+    <div class="stat">
       <p class="card-label">{kpi.label}</p>
       <p class={`stat-value ${kpi.signed ? tone(kpi.amount) : ""}`}>
         <Amount cents={kpi.amount} signed={kpi.signed} />
@@ -74,7 +75,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
   }
   return (
     <div class="card cell-4 allocation-card">
-      <h3 class="card-title">Allocation</h3>
+      <h3 id="allocation-heading" class="card-title" tabIndex={-1}>Allocation</h3>
       <p class="card-subtitle">Share of total fund value. Select a fund to explore.</p>
       {props.slices.length === 0 ? <p class="empty-note">No fund is held.</p> : <>
         <Donut
@@ -153,20 +154,18 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
 
   return (
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
-      <header class="dashboard-intro cell-12">
-        <div><p class="eyebrow">{props.model.source === "demo" ? "Sample portfolio" : "Your latest picture"}</p><h2 id="overview-heading">As of {formatDateLong(lastDate)}</h2></div>
-        <div class="dashboard-actions"><RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} /><a class="primary statement-action" href="#import"><Icon name="import" size={18} /> Add a statement</a></div>
-      </header>
-
       <div class="card hero cell-4">
-        <p class="card-label">Total fund value</p>
+        <div class="hero-header">
+          <div><p class="eyebrow">{props.model.source === "demo" ? "Sample portfolio" : "Your latest picture"}</p><h2 id="overview-heading">As of {formatDateLong(lastDate)}</h2></div>
+          <a class="statement-action" href="#import"><Icon name="import" size={18} /> Add a statement</a>
+        </div>
+        <p class="card-label">Total fund value <span class="hero-caption">Your funds, excluding account cash.</span></p>
         <p class="hero-value">
           <Amount cents={latestTotal.value} />
         </p>
-        <p class="hero-caption">Your funds, excluding account cash.</p>
-        <div class="hero-gain"><p class="card-label">Total gain</p><p class="hero-sub">
+        <div class="hero-gain"><p class="card-label">Total gain <span class="hero-caption">Fund value minus net invested.</span></p><p class="hero-sub">
           {gain !== undefined && <><Signed cents={gain.amount} /><Pill ratio={gain.percent} signed /></>}
-        </p><p class="hero-caption">Fund value minus net invested.</p></div>
+        </p></div>
         <dl class="facts">
           <div>
             <dt>Net invested</dt>
@@ -186,6 +185,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           key={props.range}
           title="Portfolio performance"
           subtitle="Fund value against net invested. Chart period affects this chart and the sparklines."
+          controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}
           description="Two lines over time: the value of all funds, and the cash invested in them, dashed."
           series={d.totalSeries}
           fillFirst
@@ -195,20 +195,19 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         />
       </div>
 
+      <PageNav items={[{ id: "holdings-heading", label: "Holdings" }, { id: "allocation-heading", label: "Allocation" }, { id: "portfolio-analysis", label: "Trends" }]} />
+
       <section class="card period-results cell-4" aria-label="Changes in gain from the latest statement">
-      {props.model.estimated && <p class="hint">Cash timing affects percentage estimates.</p>}
       {STATS.map((stat) => {
         const entry = kpi(stat.label);
         return entry === undefined ? null : (
-          <div key={stat.label} class="cell-4 kpi-cell">
-            <StatCard kpi={entry} caption={stat.caption} unavailable={stat.unavailable} trend={{ times: d.shownTimes, values: d.metricTrends[stat.metric] }} />
-          </div>
+          <StatCard key={stat.label} kpi={entry} caption={stat.caption} unavailable={stat.unavailable} trend={{ times: d.shownTimes, values: d.metricTrends[stat.metric] }} />
         );
       })}
-
+      {props.model.estimated && <p class="hint">Cash timing affects percentage estimates.</p>}
       </section>
       <div class="card cell-8 portfolio-holdings">
-        <h3 class="card-title">Holdings</h3>
+        <h3 id="holdings-heading" class="card-title" tabIndex={-1}>Holdings</h3>
         <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
         {funds.length > 0 && <div class="field fund-search">
           <label for="fund-search">Find a fund</label>
@@ -276,7 +275,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
 
       <AllocationCard slices={slices} />
 
-      <details class="cell-12 dashboard-analysis">
+      <details id="portfolio-analysis" class="cell-12 dashboard-analysis" tabIndex={-1}>
         <summary><span>Explore trends and comparisons<span class="disclosure-description">Monthly movement, fund performance and the data behind your portfolio.</span></span></summary>
         <div class="dash analysis-grid">
       <div class="card cell-6">
@@ -342,24 +341,12 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           <span>Month by month</span>
           <Icon name="chevron" size={18} />
         </a>
-        <details class="definitions">
-          <summary>Exact definitions</summary>
-          <dl>
-            {kpis.map((entry) => (
-              <div key={entry.label}>
-                <dt>{entry.label}</dt>
-                <dd>{entry.note}</dd>
-              </div>
-            ))}
-          </dl>
-          <p class="hint">These follow the definitions of the earlier spreadsheet so the results can be compared with it. A dash means the figure cannot be calculated from the statements recorded.</p>
-        </details>
       </div>
 
       </div>
       </details>
 
-      <details class="card cell-12 dashboard-glossary">
+      <details class="cell-12 dashboard-glossary">
         <summary>What the numbers mean</summary>
         <dl class="glossary">
           {GLOSSARY.map((entry) => (
@@ -369,6 +356,16 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             </div>
           ))}
         </dl>
+        <h3 class="glossary-subheading">Exact definitions</h3>
+        <dl class="glossary">
+          {kpis.map((entry) => (
+            <div key={entry.label}>
+              <dt>{entry.label}</dt>
+              <dd>{entry.note}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="hint">These follow the definitions of the earlier spreadsheet so the results can be compared with it. A dash means the figure cannot be calculated from the statements recorded.</p>
       </details>
     </section>
   );

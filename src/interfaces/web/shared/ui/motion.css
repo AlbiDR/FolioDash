@@ -228,9 +228,9 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .month-step:not(:disabled):focus-visible > svg { transform: translateX(calc(var(--step-direction) * var(--motion-nudge))); }
 @media (hover: hover) and (pointer: fine) { .month-step:not(:disabled):hover > svg { transform: translateX(calc(var(--step-direction) * var(--motion-nudge))); } }
 
-/* 86: A focused monthly fund card gains a boundary, without elevating static cards. */
-.mobile-months .card { transition: box-shadow var(--duration-short) var(--ease-standard); }
-.mobile-months .card:focus-within { box-shadow: inset 0 0 0 1px var(--color-accent); }
+/* 86: A focused monthly fund row gains a boundary, without elevating anything static. */
+.month-funds > li { border-radius: var(--shape-sm); transition: box-shadow var(--duration-short) var(--ease-standard); }
+.month-funds > li:focus-within { box-shadow: inset 0 0 0 1px var(--color-accent); }
 
 /* 87: Actual source-status text changes soften; no source state is invented. */
 .source-label { animation: motion-fade var(--duration-cue) var(--ease-standard); }

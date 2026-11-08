@@ -10,8 +10,7 @@ button { min-width: var(--touch-target); }
 .icon-button { width: var(--touch-target); height: var(--touch-target); }
 summary { align-content: center; cursor: pointer; }
 
-/* New workflow context arrives with the same short cue as page titles. */
-.journey-intro { animation: feedback-enter var(--duration-short) var(--ease-standard); }
+/* Import progress steps share the same short cue. */
 .journey-steps li { transition: color var(--duration-short) var(--ease-standard); }
 .journey-steps li > span {
   display: inline-grid;
@@ -197,9 +196,9 @@ details[open] > summary::before { transform: rotate(45deg); }
 .chart-legend-button[aria-pressed="true"] .chart-swatch { transform-origin: left center; animation: swatch-confirm var(--duration-feedback) var(--ease-standard); }
 @keyframes swatch-confirm { from { transform: scaleX(0.65); } to { transform: scaleX(1); } }
 
-/* 35: Back-link arrow gently points towards the parent screen. */
-.back-link:focus-visible > svg { animation: back-cue var(--duration-feedback) var(--ease-standard); }
-@media (hover: hover) and (pointer: fine) { .back-link:hover > svg { animation: back-cue var(--duration-feedback) var(--ease-standard); } }
+/* 35: The back control in the bar gently points its arrow towards the parent screen. */
+.back-button:focus-visible > svg { animation: back-cue var(--duration-feedback) var(--ease-standard); }
+@media (hover: hover) and (pointer: fine) { .back-button:hover > svg { animation: back-cue var(--duration-feedback) var(--ease-standard); } }
 @keyframes back-cue { 50% { transform: translateX(-3px); } }
 
 /* 36: Changed statement month receives a brief border confirmation, not a number tween. */

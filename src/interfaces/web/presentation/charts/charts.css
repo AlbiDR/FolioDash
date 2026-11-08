@@ -11,12 +11,36 @@
   margin-bottom: var(--space-2);
 }
 
+/* A control that governs only this chart sits beside its title, and drops under it when space is short. */
+.chart-with-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.chart-with-controls > * {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.chart-with-controls > .chart-title {
+  flex: 1 1 5rem;
+  min-width: min-content;
+  margin: 0;
+}
+
+.chart-with-controls > .chart-controls {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .chart-readout {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--space-1) var(--space-3);
-  min-height: 4rem;
+  min-height: 3.5rem;
   margin-bottom: var(--space-2);
   font-variant-numeric: tabular-nums;
 }
@@ -160,7 +184,7 @@
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
   list-style: none;
-  margin: var(--space-3) 0 0;
+  margin: var(--space-1) 0 0;
   padding: 0;
   font-size: 0.875rem;
 }
@@ -177,7 +201,7 @@
 }
 
 .chart-table {
-  margin-top: var(--space-3);
+  margin-top: 0;
   font-size: 0.875rem;
 }
 
@@ -286,6 +310,7 @@
 }
 
 @media (max-width: 47.5rem) {
+  .chart-title { font-size: 1rem; }
   .chart-readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chart-readout-date { grid-column: 1 / -1; }
   .chart-readout-item { min-width: 0; }
@@ -297,11 +322,10 @@
 }
 
 /* Readout values need their own line when two columns no longer fit comfortably. */
-@media (max-width: 25rem) {
+@media (max-width: 21.875rem) {
   .chart-readout { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
-  .chart-date-control { grid-template-columns: minmax(0, 1fr); }
-  .chart-date-control input { grid-row: auto; }
 }
+
 
 /* Date labels do not intercept bar inspection or chart pointer movement. */
 .chart-time-axis { pointer-events: none; }

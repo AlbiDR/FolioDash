@@ -8,7 +8,6 @@ import { MonthsView } from "../features/overview/MonthsView";
 import type { OverviewModel } from "../features/overview/OverviewModel";
 import { OverviewView } from "../features/overview/OverviewView";
 import { PrivacyProvider, PrivacyToggle, usePrivacyChoice } from "../presentation/privacy/privacy";
-import { RangeSelector } from "../shared/ui/RangeSelector";
 import { DeferredView } from "../shared/ui/DeferredView";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sidebarChoice";
 import { useMediaQuery } from "../shared/ui/useMediaQuery";
@@ -19,7 +18,7 @@ import { armGestureRenewal } from "../../../adapters/browser/GestureRenewal";
 import { prepareGoogleIdentity } from "../../../adapters/browser/GoogleIdentity";
 import { createBrowserSession, watchOtherWindows } from "./browserSession";
 import { DRIVE_FILE_SCOPE } from "./session";
-import { CHART_RANGES, type ChartRange } from "../features/overview/chartRange";
+import type { ChartRange } from "../features/overview/chartRange";
 import { rememberClientId, resolveClientId } from "../../../adapters/browser/ClientId";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
 import { memoizeLast } from "../shared/ui/memo";
@@ -177,23 +176,24 @@ export function App(): JSX.Element {
   const current = navEntryOf(route);
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
+  // The full sentence is the accessible name everywhere. On phones only the short word, always contained in it, is drawn.
   const source = data.mode === "signed-out"
-    ? { label: "Demo data", tone: "demo" }
+    ? { label: "Demo data", short: "Demo", tone: "demo" }
     : needsAttention
-      ? { label: "Sheet needs attention", tone: "local" }
+      ? { label: "Sheet needs attention", short: "Needs attention", tone: "local" }
       : data.connection === "checking"
-        ? { label: "Checking Google…", tone: "local" }
+        ? { label: "Checking Google…", short: "Checking", tone: "local" }
         : data.connection === "renewing"
-          ? { label: "Renewing Google access…", tone: "local" }
+          ? { label: "Renewing Google access…", short: "Renewing", tone: "local" }
         : data.connection === "waiting"
-          ? { label: `Saved on this device · tap to sync${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" }
+          ? { label: `Saved on this device · tap to sync${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, short: "Tap to sync", tone: "local" }
         : data.connection === "reconnect"
-          ? { label: "Reconnect to Google", tone: "local" }
+          ? { label: "Reconnect to Google", short: "Reconnect", tone: "local" }
           : data.connection === "offline"
-            ? { label: "Google unavailable · device copy", tone: "local" }
+            ? { label: "Google unavailable · device copy", short: "Device copy", tone: "local" }
             : data.mode === "online"
-              ? { label: `Checked with Google${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "synced" }
-              : { label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, tone: "local" };
+              ? { label: `Checked with Google${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, short: "Checked", tone: "synced" }
+              : { label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`, short: "Saved", tone: "local" };
   const clientConfigured = clientId !== "";
   const pageTitle = titleOf(route, model);
   useEffect(() => {
@@ -247,20 +247,24 @@ export function App(): JSX.Element {
                   <span class="visually-hidden">{sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}</span>
                 </button>
               )}
+              {(route.name === "fund" || route.name === "months") && (
+                <a class="icon-button back-button" href="#overview" aria-label="Back to Portfolio">
+                  <Icon name="back" size={20} />
+                </a>
+              )}
               <div class="topbar-title">
-                <p class="eyebrow">FolioDash</p>
                 <h1 key={pageTitle} id="page-title" class="page-title-arrival">{pageTitle}</h1>
               </div>
               {data.connection === "waiting" || data.connection === "reconnect" ? (
                 // Always one tap away, on every screen, and its own click is the gesture Google's window needs.
-                <button type="button" class={`status-chip ${source.tone}`} title="Sync with Google now" onClick={() => { void session.reconnect(); }}>
+                <button type="button" class={`status-chip ${source.tone}`} title="Sync with Google now" aria-label={source.label} onClick={() => { void session.reconnect(); }}>
                   <span key={source.tone} class="status-dot" aria-hidden="true" />
-                  <span key={source.label} class="source-label">{source.label}</span>
+                  <span key={source.label} class="source-label"><span class="source-full">{source.label}</span><span class="source-short" aria-hidden="true">{source.short}</span></span>
                 </button>
               ) : (
-                <a class={`status-chip ${source.tone}`} href="#connection" title="Where your data lives">
+                <a class={`status-chip ${source.tone}`} href="#connection" title="Where your data lives" aria-label={source.label}>
                   <span key={source.tone} class="status-dot" aria-hidden="true" />
-                  <span key={source.label} class="source-label">{source.label}</span>
+                  <span key={source.label} class="source-label"><span class="source-full">{source.label}</span><span class="source-short" aria-hidden="true">{source.short}</span></span>
                 </a>
               )}
               <div class="topbar-controls">
@@ -302,7 +306,6 @@ export function App(): JSX.Element {
             )}
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
               {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice" role="status">{importNavigationMessage}</p>}
-              {route.name === "fund" && model.dates.length > 0 && <div class="view-tools"><div><span class="control-label">Chart period</span><span class="hint">Changes the charts, not your latest figures.</span></div><RangeSelector label="Chart time range" options={CHART_RANGES} value={range} onChange={setRange} /></div>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && <OverviewView model={model} range={range} onRangeChange={setRange} />}
               {route.name === "expenses" && <ExpensesView
@@ -362,7 +365,7 @@ export function App(): JSX.Element {
               )}
 
               {route.name === "months" && <MonthsView model={model} />}
-              {route.name === "fund" && <FundView model={model} isin={route.isin} range={range} />}
+              {route.name === "fund" && <FundView model={model} isin={route.isin} range={range} onRangeChange={setRange} />}
               {route.name === "import" && (
                 <div inert={jsonImportLocked}>
                 <ImportView

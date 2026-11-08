@@ -38,8 +38,8 @@
   --secondary: #00897b;
   --tertiary: #7c4dff;
 
-  --color-gain: #0f7b53;
-  --color-loss: #c62850;
+  --color-gain: #0b6e48;
+  --color-loss: #bd2548;
   --color-error: #c62850;
   --color-notice: rgba(255, 149, 0, 0.14);
   --color-notice-text: #8a4b00;
@@ -97,7 +97,7 @@
   --page-inset: clamp(1rem, 2.4vw, 2rem);
   --gap: clamp(0.875rem, 1.3vw, 1.25rem);
   --touch-target: 3rem;
-  --mobile-nav-height: 4.5rem;
+  --mobile-nav-height: 3.75rem;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -1,5 +1,5 @@
 import { useAxisLabels } from "./useAxisLabels";
-import type { JSX, TargetedPointerEvent } from "preact";
+import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacyChoice";
@@ -12,6 +12,8 @@ export interface LineChartProps {
   readonly description: string;
   /** One plain sentence under the title telling anyone what the lines mean. */
   readonly subtitle?: string;
+  /** A control that governs only this chart, shown beside its title. */
+  readonly controls?: ComponentChildren;
   readonly series: readonly ChartSeries[];
   readonly formatTime: (time: number) => string;
   readonly formatValue: (value: number) => string;
@@ -76,10 +78,10 @@ export function LineChart(props: LineChartProps): JSX.Element {
       if (frame !== null) cancelAnimationFrame(frame);
     };
   }, []);
-  const layout = { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height };
+  const layout = { ...LAYOUT, width, height: width < 480 ? 200 : LAYOUT.height };
   // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
   const includeZero = props.includeZero ?? false;
-  const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 240 : LAYOUT.height, includeZero }), [props.series, includeZero, width]);
+  const geometry = useMemo(() => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 200 : LAYOUT.height, includeZero }), [props.series, includeZero, width]);
   const axis = useAxisLabels(geometry.xTicks.map(tick => ({ key: String(tick.time), text: props.formatTime(tick.time), x: tick.x })), geometry.plot.left, geometry.plot.left + geometry.plot.width, !geometry.empty);
   const times = useMemo(() => [...new Set(props.series.flatMap((entry) => entry.points.map((point) => point.time)))].sort(
     (left, right) => left - right,
@@ -139,7 +141,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   }
 
   return (
-    <figure ref={container} class="chart" tabIndex={-1} onKeyDown={(event) => {
+    <figure ref={container} class={props.controls === undefined ? "chart" : "chart chart-with-controls"} tabIndex={-1} onKeyDown={(event) => {
       if (event.key !== "Escape" || (selectedTime === null && hoveredTime === null && highlight === null)) return;
       event.preventDefault();
       resetInspection();
@@ -147,6 +149,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
       <figcaption class="chart-title" id={titleId}>
         {props.title}
       </figcaption>
+      {props.controls !== undefined && <div class="chart-controls">{props.controls}</div>}
       {props.subtitle !== undefined && <p class="chart-subtitle">{props.subtitle}</p>}
       <div class="chart-readout" aria-hidden="true">
         <span class="chart-readout-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span>

@@ -17,10 +17,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
   const month = months[index];
   return (
     <section class="screen months" aria-labelledby="months-heading">
-      <a class="back-link" href="#overview">
-        <Icon name="back" size={18} /> Portfolio
-      </a>
-      <header class="journey-intro"><p class="eyebrow">The story behind your balance</p><h2 id="months-heading" class="screen-title">Month by month</h2><p>Revisit a statement, then compare the complete history below.</p></header>
+      <header class="months-intro"><h2 id="months-heading" class="months-title">Browse statements</h2><p class="hint">Revisit a statement, then compare the complete history below.</p></header>
       {dates.length === 0 ? (
         <p>No statements have been imported yet.</p>
       ) : (
@@ -46,14 +43,18 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 <div><dt>Year to date</dt><dd><Signed cents={month.yearToDateGain} /></dd></div>
                 <div><dt>Year on year</dt><dd><Signed cents={month.yearOverYearGain} /></dd></div>
               </dl>
+              <h4 class="month-funds-heading">Funds</h4>
+              <ul class="month-funds">
+                {funds.map((fund) => <li key={fund.isin}>
+                  <a class="row-link" href={`#fund/${fund.isin}`}>{fund.name}<Icon name="chevron" size={18} /></a>
+                  <dl class="facts stacked">
+                    <div><dt>Value</dt><dd><Amount cents={fund.values[index] ?? null} /></dd></div>
+                    <div><dt>Net invested</dt><dd><Amount cents={fund.netInvested[index] ?? null} /></dd></div>
+                  </dl>
+                </li>)}
+              </ul>
             </div>}
-            {funds.map((fund) => <div class="card" key={fund.isin}>
-              <a class="row-link" href={`#fund/${fund.isin}`}>{fund.name}<Icon name="chevron" size={18} /></a>
-              <dl class="facts stacked">
-                <div><dt>Value</dt><dd><Amount cents={fund.values[index] ?? null} /></dd></div>
-                <div><dt>Net invested</dt><dd><Amount cents={fund.netInvested[index] ?? null} /></dd></div>
-              </dl>
-            </div>)}
+
           </div>
           <p class="hint">The complete tables below scroll horizontally. Swipe inside a table to compare months.</p>
           <details class="month-matrices" open={wide}>

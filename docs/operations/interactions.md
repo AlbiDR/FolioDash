@@ -69,7 +69,7 @@ Allocation inspection stays inside its own component, so pointer movement does n
 | 32 | Monthly bar pin/unpin | Tap/click a bar or activate it with Enter/Space; the selected month remains after the pointer leaves. Activate it again to release it |
 | 33 | Animation: inspection crosshair entrance | Explore a chart date; the guide fades in without tweening its coordinates |
 | 34 | Animation: selected legend swatch | Highlight a chart line; its legend swatch briefly extends to its full width |
-| 35 | Animation: back-link directional cue | Hover or keyboard-focus Portfolio on a detail screen; its arrow briefly nudges left |
+| 35 | Animation: back-control directional cue | Hover or keyboard-focus the back control in the bar on a fund or month screen; its arrow briefly nudges left |
 | 36 | Animation: changed-month boundary | Choose a statement month; the summary border briefly confirms the change |
 | 37 | Animation: restored-fund tone | Undo a fund removal; the restored card briefly changes tone |
 | 38 | Interaction: adjacent statement navigation | Use Previous/Next on the phone month view. They follow recorded dates, skip absent months, and disable at the ends |
@@ -120,7 +120,7 @@ Allocation inspection stays inside its own component, so pointer movement does n
 | 83 | Wide-table focus boundary | Focus a scrollable table region; its boundary appears |
 | 84 | Phone holding-name focus/hover | Hover/focus a phone holding link; its name gains accent |
 | 85 | Month-step arrow cue | Hover/focus Previous/Next; the arrow moves in the matching direction |
-| 86 | Monthly fund-card focus boundary | Focus a fund link in the monthly phone view; its card gains a boundary |
+| 86 | Monthly fund-row focus boundary | Focus a fund link in the monthly phone view; its row gains a boundary |
 | 87 | Source-status text change | Actual source/status wording updates with a short fade |
 | 88 | Chart-reset availability cue | Begin chart inspection; the newly available reset action gets one edge cue |
 | 89 | Account-result heading | A successful account result reveals its heading gently |

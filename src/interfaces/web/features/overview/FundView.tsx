@@ -1,16 +1,16 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import { type ChartRange, rangeStart } from "./chartRange";
+import { CHART_RANGES, type ChartRange, rangeStart } from "./chartRange";
+import { RangeSelector } from "../../shared/ui/RangeSelector";
 import { LineChart } from "../../presentation/charts/LineChart";
 import type { ChartSeries } from "../../presentation/charts/lineChartGeometry";
 import { Amount } from "../../presentation/privacy/privacy";
-import { Icon } from "../../shared/ui/icons";
 import { euroLabel, euros, monthLabel, utcTime } from "./chartData";
 import type { OverviewModel } from "./OverviewModel";
 import { Percent, Pill, Signed } from "./parts";
 
 /** One fund: its value and net invested over time, and its latest figures, on the shared time range. */
-export function FundView(props: { readonly model: OverviewModel; readonly isin: string; readonly range: ChartRange }): JSX.Element {
+export function FundView(props: { readonly model: OverviewModel; readonly isin: string; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void }): JSX.Element {
   const [copyFeedback, setCopyFeedback] = useState<{ isin: string; message: string } | null>(null);
   const [copying, setCopying] = useState(false);
   const copyPending = useRef(false);
@@ -30,15 +30,9 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
     }
   }
   const fund = props.model.funds.find((entry) => entry.isin === props.isin);
-  const back = (
-    <a class="back-link" href="#overview">
-      <Icon name="back" size={18} /> Portfolio
-    </a>
-  );
   if (fund === undefined) {
     return (
       <section class="screen" aria-labelledby="fund-heading">
-        {back}
         <h2 id="fund-heading" class="screen-title">Fund not found</h2>
         <div class="card"><p>No fund with that identifier is in the ledger.</p></div>
       </section>
@@ -56,7 +50,6 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
 
   return (
     <section class="dash" aria-labelledby="fund-heading">
-      <div class="cell-12">{back}</div>
       <div class="card hero cell-4">
         <div class="fund-identity">
           <p class="card-label isin-code">{fund.isin}</p>
@@ -76,6 +69,8 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
           id="fund-chart"
           key={props.range}
           title="Value and net invested"
+          subtitle="Chart period changes the chart, not your latest figures."
+          controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}
           description="Two lines over time for this fund: its value, and the cash invested in it, dashed."
           series={series}
           fillFirst
