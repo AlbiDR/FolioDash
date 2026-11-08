@@ -58,6 +58,9 @@
 .expense-jump { grid-column: 1 / -1; }
 .expense-jump input { width: 100%; }
 .expense-note, .expense-review, .expense-conflict { padding: var(--space-3); border-radius: var(--shape-md); background: var(--color-notice); color: var(--color-notice-text); margin-bottom: var(--space-3); font-size: 0.8125rem; line-height: 1.5; }
+.expense-note > p + .expense-note-actions { margin-top: var(--space-2); }
+.expense-note-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.expense-note-actions > button { flex: 1 1 8rem; }
 .expense-review { margin-top: var(--space-3); }
 .expense-review h3, .expense-conflict h3 { margin-bottom: var(--space-2); font-size: 0.9375rem; }
 .expense-review dl, .expense-conflict dl { margin-block: var(--space-3); display: grid; gap: var(--space-2); }

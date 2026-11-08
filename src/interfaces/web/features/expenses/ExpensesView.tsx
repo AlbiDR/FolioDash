@@ -235,9 +235,12 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
     </div>;
   }
 
-  const previousDay = adjacentWorkday(editor.date, -1);
-  const nextDay = adjacentWorkday(editor.date, 1);
-  const stepName = (direction: "Previous" | "Next", target: IsoDate | null): string => `${direction} workday${target === null ? "" : `, ${formatDateLong(target)}`}`;
+  // Previous and Next step one calendar day, weekends included, so any date can be viewed. Only a workday can be recorded.
+  const previousDay = shiftDate(editor.date, -1);
+  const nextDay = shiftDate(editor.date, 1);
+  const previousWorkday = adjacentWorkday(editor.date, -1);
+  const nextWorkday = adjacentWorkday(editor.date, 1);
+  const stepName = (direction: "Previous" | "Next", target: IsoDate | null): string => `${direction} day${target === null ? "" : `, ${weekdayLabel(target)} ${formatDateLong(target)}`}`;
   const entryDisabled = busy || waiting || !isWorkday(editor.date) || editor.date > props.today || !props.ready || selectedConflict !== undefined && !editor.resolving;
   const yearConflictNote = yearConflicts.length > 0;
 
@@ -255,7 +258,7 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
         <button type="button" aria-label={stepName("Next", nextDay)} disabled={busy || waiting} onClick={() => { if (nextDay !== null) openDay(nextDay); }}>Next</button>
         <label class="expense-jump"><span class="visually-hidden">Jump to date</span><input type="date" aria-label="Jump to date" value={editor.date} disabled={busy || waiting} onChange={event => { const date = parseIsoDate(event.currentTarget.value); if (date !== null) openDay(date); }} /></label>
       </div>
-      {!isWorkday(editor.date) && <p class="expense-note">The tracker covers Monday to Friday. Choose the previous or next workday; nothing is recorded for this weekend date.{previousDay !== null && nextDay !== null && <> Previous opens {workdayLabel(previousDay)}; Next opens {workdayLabel(nextDay)}.</>}</p>}
+      {!isWorkday(editor.date) && <div class="expense-note"><p>The tracker covers Monday to Friday; nothing is recorded for this weekend date. You can still browse it with Previous and Next, or jump to the nearest workday.</p><div class="expense-note-actions">{previousWorkday !== null && <button type="button" disabled={busy || waiting} onClick={() => { openDay(previousWorkday); }}>Previous workday: {workdayLabel(previousWorkday)}</button>}{nextWorkday !== null && <button type="button" disabled={busy || waiting} onClick={() => { openDay(nextWorkday); }}>Next workday: {workdayLabel(nextWorkday)}</button>}</div></div>}
       {editor.date > props.today && <p class="expense-note">This is a future date. You can browse ahead; save expenses when the day arrives.</p>}
       <div class="expense-form">
         <h3 class="expense-group-title">Daily essentials</h3><div class="expense-fields expense-required-fields">{EXPENSE_REQUIRED_INDICES.map(renderField)}</div>
