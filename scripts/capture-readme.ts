@@ -138,7 +138,12 @@ async function capture(file: string, theme: "light" | "dark", route: "overview" 
   await evaluate("(()=>{const toggle=document.querySelector('.privacy-toggle');if(toggle?.getAttribute('aria-pressed')==='true')toggle.click()})()");
   if (route === "expenses") {
     await waitFor(async () => await evaluate("document.querySelector('.expense-entry') !== null") === true, "the expense editor");
-    await evaluate("document.querySelector('.expense-date-controls button')?.click()");
+    // Previous steps one calendar day, so from a weekend or a Monday it takes up to three steps back to the last invented recorded workday.
+    for (let step = 0; step < 4; step++) {
+      if (await evaluate("document.querySelector('.expense-entry .expense-state')?.textContent === 'Recorded workday'") === true) break;
+      await evaluate("document.querySelector('.expense-date-controls button')?.click()");
+      await delay(250);
+    }
     await waitFor(async () => await evaluate("document.querySelectorAll('.expense-fields input').length === 5 && document.querySelector('.expense-entry .expense-state')?.textContent === 'Recorded workday'") === true, "a complete invented workday");
   }
   await waitFor(async () => await evaluate("document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed') === 'false' && document.getAnimations().every(animation => animation.playState !== 'running')") === true, "visible demo values and idle rendering");
