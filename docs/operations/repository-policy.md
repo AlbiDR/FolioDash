@@ -1,6 +1,6 @@
 # Repository policy and automated checks
 
-Implemented 2026-11-04 under the owner's organization audit request. Architecture authority remains [CleanStack sections 4.1 and 4.3](../architecture/cleanstack.md); tooling and root exceptions are recorded in [FD-008 / FD-015](../architecture/decision-register.md). This implementation record does not accept the rest of the draft or close open decisions.
+Implemented 2026-11-04 under the owner's organization audit request. Architecture authority remains [CleanStack sections 4.1 and 4.3](../architecture/cleanstack.md); tooling and root exceptions are recorded in FD-008 / FD-015. This implementation record does not accept the rest of the draft or close open decisions.
 
 ## Current ownership
 

@@ -147,8 +147,8 @@ Read the [working agreement](AGENTS.md), [contribution guide](.github/CONTRIBUTI
 
 - **Imports:** the supported Fideuram XLSX layout, with one statement per calendar month, appended chronologically. Other bank layouts and earlier-history insertion are unsupported. A history import saves statement by statement and preserves confirmed saves if interrupted. [Import workflow](docs/operations/importing-history.md).
 - **Expenses:** today and earlier Monday-Friday workdays, stored separately within the same workbook. Complete correction-history backup and confirmed restoration into a never-initialised expense store are implemented. Portfolio JSON export is not implemented; portfolio device recovery omits original bank statements. [Expense definitions and recovery](docs/operations/work-expenses.md).
-- **Financial meaning:** exact EUR cents and the accepted `legacy-parity-v1` policy. Year to date starts at the January statement. Cash-timing percentages are estimates; no returns are annualised, time-weighted or money-weighted. [Reporting decisions](docs/architecture/decision-register.md#fd-007-financial-policy-questions).
-- **Data ownership:** direct Google access uses user authorisation and `drive.file`. Device copies are plain local data; signing out or choosing Forget this device clears them without deleting the workbook. Financial saves require Google; uncertain outcomes are checked before continuing. This is not FolioDash end-to-end encryption. [Data and connection decisions](docs/architecture/decision-register.md).
+- **Financial meaning:** exact EUR cents and the accepted `legacy-parity-v1` policy. Year to date starts at the January statement. Cash-timing percentages are estimates; no returns are annualised, time-weighted or money-weighted. [Reporting policy](docs/architecture/cleanstack.md#53-reporting-policy).
+- **Data ownership:** direct Google access uses user authorisation and `drive.file`. Device copies are plain local data; signing out or choosing Forget this device clears them without deleting the workbook. Financial saves require Google; uncertain outcomes are checked before continuing. This is not FolioDash end-to-end encryption. [Data and connection design](docs/architecture/google-sheets-backend.md).
 - **Evidence:** a one-account synthetic portfolio create/save/read-back/replay flow passed from an Android emulator at a local origin. Live expense writes, deployed-origin and two-account acceptance, simultaneous-device proof, and physical Android/WebAPK checks remain separate gates. Screenshots establish presentation only. [Onboarding evidence](docs/operations/onboarding-acceptance.md) · [Web quality contract](docs/operations/web-quality.md).
 
 Keep real statements, identifiers, private screenshots, backups and credentials outside the repository, fixtures, logs and builds. GitHub secrets belong to deployment/CI. Original-file archival, retention duration and broader session/privacy acceptance remain open. The existing Google Sheets project stays separate.
@@ -160,6 +160,5 @@ Keep real statements, identifiers, private screenshots, backups and credentials 
 <p align="center">
   <a href="https://albidr.github.io/FolioDash/"><strong>Explore FolioDash</strong></a> ·
   <a href="https://albidr.github.io/FolioDash/privacy/">Privacy policy</a> ·
-  <a href="docs/README.md">Documentation</a> ·
-  <a href="docs/architecture/decision-register.md">Project decisions</a>
+  <a href="docs/README.md">Documentation</a>
 </p>

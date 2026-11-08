@@ -3,7 +3,7 @@
 Status: **Acceptance contract; automated checks partially implemented, live acceptance incomplete**
 Created: 2026-11-01  
 Architecture authority: [CleanStack ADR](../architecture/cleanstack.md)  
-Open decisions: [Decision register](../architecture/decision-register.md)
+Open decisions: the owner's private decision register
 
 These are product/release requirements, not optional polish. The repository now has a local PWA, CI and tests. Individual requirements still need their named evidence; implementation does not imply full acceptance.
 

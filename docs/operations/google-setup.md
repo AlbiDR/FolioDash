@@ -50,7 +50,7 @@ Evidence: `GoogleIdentity.test.ts`, `session.test.ts` and `accountText.test.ts` 
 
 ### Persistent tab session and two-device freshness (FD-021, 2026-11-05)
 
-The owner's request for persistence and safer two-device use is recorded in [FD-021](../architecture/decision-register.md). Google access now survives a reload in the same tab through `sessionStorage`, bound to the OAuth client, granted `drive.file` scope and checked workbook. Its validity is capped at one hour minus a two-minute margin and never extended past Google's expiry. Blocked storage falls back to memory. It is not an indefinite login: closing the tab or expiry can require another user-triggered Google interaction. No refresh token or new scope is used. FD-022 below supersedes the tab-only storage. Same-origin JavaScript can read the tab session; Forget this device removes it, and an HTTP 401 invalidates it immediately.
+The owner's request for persistence and safer two-device use is recorded in FD-021. Google access now survives a reload in the same tab through `sessionStorage`, bound to the OAuth client, granted `drive.file` scope and checked workbook. Its validity is capped at one hour minus a two-minute margin and never extended past Google's expiry. Blocked storage falls back to memory. It is not an indefinite login: closing the tab or expiry can require another user-triggered Google interaction. No refresh token or new scope is used. FD-022 below supersedes the tab-only storage. Same-origin JavaScript can read the tab session; Forget this device removes it, and an HTTP 401 invalidates it immediately.
 
 Opening a saved session, returning to the foreground, coming back online and the visible-page minute timer check for changes. The session coalesces checks and spaces automatic attempts at least 30 seconds apart. Hidden/offline pages and edited import/expense drafts pause these automatic checks. They never open a Google popup, create a workbook or submit a financial draft. Portfolio and expense reads retain the checked copy on failure; the interface distinguishes checking, expired access and an unavailable Google connection. The last successful check stays visible. Browser requests have a 30-second deadline and bypass HTTP caches. Checks after an import conflict read the winning history while preserving the draft; another confirmation is still required.
 
@@ -62,7 +62,7 @@ Local evidence: `npm run verify` exercises synthetic tab reload, expiry, client/
 
 ### Remembered connection (FD-022, 2026-11-07)
 
-The owner's top-priority request was that the connection stays on and the person is not asked to sign in every time. [FD-022](../architecture/decision-register.md) records the decision, its five layers and its limits.
+The owner's top-priority request was that the connection stays on and the person is not asked to sign in every time. FD-022 records the decision, its five layers and its limits.
 
 **Why it did not stay on.** Each of these was observed in the code before the change, or comes from Google's documentation:
 

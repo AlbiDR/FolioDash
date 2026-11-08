@@ -1,6 +1,6 @@
 # Growth assessment and synthetic history measurements
 
-Recorded 2026-11-04. Architecture authority: [CleanStack](../architecture/cleanstack.md). Quality targets and supported devices remain open under FD-012 in the [decision register](../architecture/decision-register.md). These measurements are engineering evidence, not accepted product capacity or a Google quota guarantee.
+Recorded 2026-11-04. Architecture authority: [CleanStack](../architecture/cleanstack.md). Quality targets and supported devices remain open under FD-012 in the owner's private decision register. These measurements are engineering evidence, not accepted product capacity or a Google quota guarantee.
 
 ## Reproduce
 

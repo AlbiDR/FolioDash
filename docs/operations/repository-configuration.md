@@ -43,8 +43,8 @@ Public OAuth client IDs are public by design, so they are variables and never se
 | `.github/workflows/verify.yml` | Runs contributor attribution through `npm run verify` on each supported Node version with complete history; no separate attribution workflow |
 | `scripts/verify-workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
 | `scripts/verify-punctuation.ts`, `scripts/punctuation.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
-| `.github/CODEOWNERS` | Review ownership of `.github/`, `docs/architecture/` (CleanStack and the register) and `scripts/` |
-| `.github/pull_request_template.md` | Includes the conformance check against CleanStack and the decision register |
+| `.github/CODEOWNERS` | Review ownership of `.github/`, `docs/architecture/` (CleanStack and the other architecture documents) and `scripts/` |
+| `.github/pull_request_template.md` | Includes the conformance check against CleanStack |
 | `.github/SECURITY.md`, `.github/CONTRIBUTING.md` | Short, and they point to the docs rather than repeat them |
 
 Attribution failure blocks the dependent site deployment. CODEOWNERS and quality checks do not block direct pushes without required reviews/status checks (section 2b). Adapted from the Playlist Tidy project; its licence headers, typography check and deployment workflows were deliberately not copied.

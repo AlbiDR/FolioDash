@@ -9,7 +9,6 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Work expenses tracker preparation](architecture/work-expenses-tracker.md) | Original parity scope, confirmed day semantics, workbook compatibility proposal and setup/view safeguards | Followed by authorised implementation; live expense proof pending |
 | [Work expenses implementation](operations/work-expenses.md) | Current tracker journey, reporting definitions, checked Google records, complete correction backup/recovery and evidence | Implemented locally; provider and physical-device acceptance pending |
 | [Fideuram XLSX layout v1](architecture/fideuram-xlsx-layout.md) | Observed bank export layout, cell formats, reconciliation relations and proposed bank-adapter rules | Observed layout reference; parser and synthetic fixtures implemented, live acceptance separate |
-| [Decision register](architecture/decision-register.md) | Decisions, alternatives, approval state and implementation blockers | Google-backed direction selected; implementation details open |
 | [Repository configuration](operations/repository-configuration.md) | GitHub variables, secrets, environments and the historical public-release gate | Existing Pages/main restriction inspected 2026-11-05; Apps Script environment has no protection; required checks/reviews remain absent |
 | [GitHub Actions](operations/github-actions.md) | Workflow dependency graph, checked artifacts, cancellation, deployment guards and maintenance | Single verification pipeline and guarded deployment implemented; evidence and remaining gates recorded with the change |
 | [Google setup](operations/google-setup.md) | Owner steps in the owner's Google account, the remembered-connection design (FD-022) and its evidence | Synthetic proof performed 2026-11-01 and 2026-11-04; remembered connection implemented locally 2026-11-07 with real renewal NOT verified; consent screen published to production 2026-11-07, its effect not yet observed |
@@ -32,6 +31,8 @@ Each rule has one authoritative home. Other documents link to that home rather t
 The CleanStack ADR is the canonical architecture proposal. Once accepted, subordinate documents and implementation must conform to it. An amendment must identify affected rules, consequences, tests and migration needs. An accepted historical decision is superseded explicitly, not silently rewritten.
 
 FD-013 amends the initial provider-neutral draft: the user selected Google Sheets and Apps Script as the backend, with the interface managed through GitHub. The linked Google-backed architecture owns that concrete storage/transport proposal; it supersedes the earlier expectation of a separate cloud database, not the financial/safety invariants. FD-014 records the still-unverified authenticated route. This is a design amendment, not an implemented deployment.
+
+Decision IDs (`FD-nnn`) cited in these documents refer to the owner's decision register, which is kept privately and is not published in this repository.
 
 The following are different sources of truth, not competing ones:
 

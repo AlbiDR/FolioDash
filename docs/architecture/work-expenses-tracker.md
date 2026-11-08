@@ -2,7 +2,7 @@
 
 Date: 2026-11-04
 
-Decision: FD-020 in the [decision register](decision-register.md)
+Decision: FD-020 in the owner's private decision register
 
 Status: Preparation contract, followed by implementation authorised on 2026-11-05. The tracker is now implemented locally; [implementation and acceptance](../operations/work-expenses.md) records concrete reporting choices, persistence, recovery and evidence. The original preparation sections below retain their historical proposals and release gates; they do not describe all current source.
 
