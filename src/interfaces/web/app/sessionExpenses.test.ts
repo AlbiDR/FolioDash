@@ -106,3 +106,53 @@ describe("portfolio and expenses sharing a session", () => {
     await session.idle();
   });
 });
+
+/** A reopened device whose one-hour Google access has lapsed: the saved expense copy is shown, and nothing else has been checked yet. */
+async function reopenedAfterLapse(rest?: RestClient) {
+  const { make, zeroDay, google } = world();
+  const first = make(); await first.connect(); await first.expenses.refresh();
+  await first.expenses.save(zeroDay); await first.idle();
+  const reopened = make(rest);
+  expect(reopened.state.sheet).toBe("unchecked");
+  expect(reopened.expenses.state.cached).toBe(true);
+  return { reopened, zeroDay, google };
+}
+
+describe("expenses after Google access has lapsed", () => {
+  it("Check records reads the saved expenses without the portfolio being checked first", async () => {
+    const { reopened, zeroDay } = await reopenedAfterLapse();
+    await reopened.expenses.refresh();
+    expect(reopened.expenses.state.ready).toBe(true);
+    expect(reopened.expenses.state.cached).toBe(false);
+    expect(reopened.expenses.state.message).toBe("");
+    expect(reopened.expenses.state.days[0]?.amounts).toEqual(zeroDay.amounts);
+    expect(reopened.state.sheet).toBe("ok");
+    await reopened.idle();
+  });
+  it("a quiet renewal that left the portfolio unchecked does not block Check records", async () => {
+    const { reopened } = await reopenedAfterLapse();
+    expect(await reopened.renewFromGesture({ sync: false })).toBe(true);
+    expect(reopened.state.sheet).toBe("unchecked");
+    await reopened.expenses.refresh();
+    expect(reopened.expenses.state.ready).toBe(true);
+    expect(reopened.expenses.state.message).toBe("");
+    await reopened.idle();
+  });
+  it("keeps the saved copy and says Google could not check when the check fails", async () => {
+    const unreachable: RestClient = () => Promise.resolve({ status: 503, json: () => Promise.resolve({}) });
+    const { reopened, zeroDay } = await reopenedAfterLapse(unreachable);
+    await reopened.expenses.refresh();
+    expect(reopened.expenses.state.ready).toBe(false);
+    expect(reopened.expenses.state.days[0]?.amounts).toEqual(zeroDay.amounts);
+    expect(reopened.expenses.state.message).toContain("saved expense copy was kept");
+    await reopened.idle();
+  });
+  it("a save still requires a checked portfolio and writes nothing to Google", async () => {
+    const { reopened, zeroDay, google } = await reopenedAfterLapse();
+    const before = google.files.size;
+    const outcome = await reopened.expenses.save({ ...zeroDay, date: date("2026-11-03") });
+    expect(outcome).toEqual({ status: "not-saved", message: "Sync and check your Google workbook in Your data before changing expenses." });
+    expect(google.files.size).toBe(before);
+    await reopened.idle();
+  });
+});

@@ -127,7 +127,14 @@ export class Session {
       return today;
     }, ...(deps.expenseCache === undefined ? {} : { cache: deps.expenseCache }), access: async (purpose) => {
       if (this.current.workbook === null) return { ok: false, message: "Continue with Google first to create or find your private FolioDash workbook." };
-      if (this.current.sheet !== "ok") return { ok: false, message: "Sync and check your Google workbook in Your data before changing expenses." };
+      // The expenses tab can be opened before the portfolio was checked on this visit. A read checks the workbook
+      // itself, as the portfolio does, so Check records works without sending the person to another tab. A write
+      // still needs a check that has succeeded.
+      if (this.current.sheet !== "ok" && purpose === "read") {
+        const outcome = await this.refresh();
+        if (outcome.status === "sign-in-failed") return { ok: false, message: SIGN_IN_TEXT[outcome.reason] };
+      }
+      if (this.current.sheet !== "ok") return { ok: false, message: this.expenseBlockedMessage(purpose) };
       const signed = await this.accessToken(purpose === "write" ? WRITE_MINIMUM_MILLISECONDS : 0);
       return signed.ok ? { ok: true, token: signed.token, workbook: this.current.workbook } : { ok: false, message: SIGN_IN_TEXT[signed.reason] };
     } });
@@ -284,6 +291,14 @@ export class Session {
   private keep(workbook: Workbook, ledger: LedgerState): void {
     this.deps.cache.save({ workbook, ledger, syncedAt: this.deps.now() });
     if (this.token !== null && this.validToken() !== null) this.deps.googleSession?.save({ ...this.token, clientId: this.deps.clientId, workbookId: workbook.id, scope: DRIVE_FILE_SCOPE });
+  }
+
+  /** Why expenses cannot be read or changed now, in the same words the portfolio uses for its sheet. */
+  private expenseBlockedMessage(purpose: "read" | "write"): string {
+    const { sheet } = this.current;
+    if (sheet !== "ok" && sheet !== "unchecked") return NEEDS[sheet];
+    if (purpose === "read") return "Google could not check your workbook, so your saved expense copy was kept. Check again shortly.";
+    return "Sync and check your Google workbook in Your data before changing expenses.";
   }
 
   /** Whether the next click should renew Google access quietly: a remembered connection with little or no access left. */
