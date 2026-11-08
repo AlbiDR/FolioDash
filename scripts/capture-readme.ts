@@ -150,7 +150,8 @@ async function capture(file: string, theme: "light" | "dark", route: "overview" 
     await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
     await delay(100);
   }
-  const safe = await evaluate(`(()=>{const text=document.body.innerText;return text.includes('Demo data') && !text.includes('Synced with Google') && !text.includes('Saved on this device') && document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed')==='false' && ![...document.scripts].some(script=>script.src && new URL(script.src).origin!==location.origin) && document.documentElement.scrollWidth<=innerWidth})()`);
+  // A phone draws the short word "Demo"; the full "Demo data" sentence is then the status control's accessible name.
+  const safe = await evaluate(`(()=>{const text=document.body.innerText;const chip=document.querySelector('.status-chip');return (text.includes('Demo data') || (text.includes('Demo') && chip?.getAttribute('aria-label')==='Demo data')) && !text.includes('Synced with Google') && !text.includes('Saved on this device') && document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed')==='false' && ![...document.scripts].some(script=>script.src && new URL(script.src).origin!==location.origin) && document.documentElement.scrollWidth<=innerWidth})()`);
   if (safe !== true || browserErrors.length > 0 || blockedOrigins.size > 0) throw new Error("Capture stopped: synthetic-demo, network or rendering checks failed.");
   await evaluate("window.scrollTo(0,0)");
   const screenshot = await call("Page.captureScreenshot", { format: "png", captureBeyondViewport: false, fromSurface: true });
