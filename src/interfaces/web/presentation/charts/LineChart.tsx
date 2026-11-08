@@ -10,8 +10,10 @@ export interface LineChartProps {
   readonly title: string;
   /** One sentence for assistive technology describing what the chart shows. */
   readonly description: string;
-  /** One plain sentence under the title telling anyone what the lines mean. */
+  /** One plain sentence under the title telling anyone what the lines mean. Use it when the lines need explaining up front. */
   readonly subtitle?: string;
+  /** A sentence of reference kept with the chart tools instead of above the chart. */
+  readonly note?: string;
   /** A control that governs only this chart, shown beside its title. */
   readonly controls?: ComponentChildren;
   readonly series: readonly ChartSeries[];
@@ -123,6 +125,28 @@ export function LineChart(props: LineChartProps): JSX.Element {
     setHovered(null);
     setHighlighted(null);
   }
+
+  // With two lines the readout above already names them. The highlight buttons stay inline only where a legend is
+  // the way to tell many lines apart; otherwise they live with the chart tools.
+  const legendInline = geometry.series.filter(entry => !entry.muted).length > 2;
+  const legend = (
+    <ul class="chart-legend">
+      {geometry.series.map((entry, index) =>
+        entry.muted ? null : (
+          <li key={entry.id} class={`chart-legend-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
+            <button type="button" class="chart-legend-button" aria-pressed={highlight === entry.id} aria-label={`Highlight ${entry.label}`} onClick={() => {
+              setHighlighted(current => current === entry.id ? null : entry.id);
+            }}>
+              <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
+                <line x1="0" x2="32" y1="4" y2="4" />
+              </svg>
+              {entry.label}
+            </button>
+          </li>
+        ),
+      )}
+    </ul>
+  );
 
   function scrubTo(event: TargetedPointerEvent<SVGSVGElement>): void {
     const box = event.currentTarget.getBoundingClientRect();
@@ -249,26 +273,12 @@ export function LineChart(props: LineChartProps): JSX.Element {
           onFocus={() => { setHovered(null); }}
           onInput={(event) => { setHovered(null); setScrubbed(times[Number(event.currentTarget.value)] ?? null); }}
         />
-        <span aria-hidden="true"><span key={activeTime} class="inspection-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span></span>
       </label>
-      <ul class="chart-legend">
-        {geometry.series.map((entry, index) =>
-          entry.muted ? null : (
-            <li key={entry.id} class={`chart-legend-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
-              <button type="button" class="chart-legend-button" aria-pressed={highlight === entry.id} aria-label={`Highlight ${entry.label}`} onClick={() => {
-                setHighlighted(current => current === entry.id ? null : entry.id);
-              }}>
-              <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
-                <line x1="0" x2="32" y1="4" y2="4" />
-              </svg>
-              {entry.label}
-              </button>
-            </li>
-          ),
-        )}
-      </ul>
+      {legendInline && legend}
       <details class="chart-table">
         <summary>Chart tools and values</summary>
+      {props.note !== undefined && <p class="chart-note">{props.note}</p>}
+      {!legendInline && legend}
       <div class="chart-inspection-actions">
         <button class="quiet-action chart-reset" type="button" disabled={selectedTime === null && hoveredTime === null && highlight === null} onClick={() => {
           resetInspection();

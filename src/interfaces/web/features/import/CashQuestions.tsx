@@ -389,31 +389,22 @@ export function CashQuestions(props: {
       {result?.ok === true && (
         <section aria-labelledby={`${prefix}-summary-heading`} class="summary">
           <h4 id={`${prefix}-summary-heading`}>What will be recorded for {formatDateLong(props.date)}</h4>
-          <table class="funds">
-            <thead>
-              <tr>
-                <th scope="col">Fund</th>
-                <th scope="col">Decision</th>
-                <th scope="col">Money in</th>
-                <th scope="col">Money out</th>
-                <th scope="col">Net invested</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const holding = result.state.snapshots[result.state.snapshots.length - 1]?.holdings[row.isin];
-                return holding === undefined ? null : (
-                  <tr key={row.isin}>
-                    <th scope="row">{result.state.funds.find((fund) => fund.isin === row.isin)?.name ?? row.name}</th>
-                    <td>{holding.action}</td>
-                    <td><Amount cents={holding.moneyIn} /></td>
-                    <td><Amount cents={holding.moneyOut} /></td>
-                    <td><Amount cents={holding.netInvested} /></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <ul class="fund-summary">
+            {rows.map((row) => {
+              const holding = result.state.snapshots[result.state.snapshots.length - 1]?.holdings[row.isin];
+              return holding === undefined ? null : (
+                <li key={row.isin}>
+                  <p class="fund-summary-name">{result.state.funds.find((fund) => fund.isin === row.isin)?.name ?? row.name}</p>
+                  <dl class="facts">
+                    <div><dt>Decision</dt><dd>{holding.action}</dd></div>
+                    <div><dt>Money in</dt><dd><Amount cents={holding.moneyIn} /></dd></div>
+                    <div><dt>Money out</dt><dd><Amount cents={holding.moneyOut} /></dd></div>
+                    <div><dt>Net invested</dt><dd><Amount cents={holding.netInvested} /></dd></div>
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
           <p>
             Check that every contribution, full withdrawal or distribution, and both sides of any switch are included.
             Percentages that depend on when cash moved are estimates.

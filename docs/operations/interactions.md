@@ -4,6 +4,8 @@ The inventory contains **92** named behaviours: the original 32, five additional
 
 The shared presentation layers are `src/interfaces/web/shared/ui/interactions.css` and `motion.css`, imported after the base styles. Motion durations, distances and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
 
+> **Amended 2026-11-08 by the [UI system](../design/ui-system.md).** Cards, charts, stat blocks, facts, glossary entries and import-review totals no longer react to hover, keyboard focus within or press, because none of them can be pressed. The hover lift of the four gain cards, the card edge and elevation, and the inspection surface on facts, glossary entries and totals described below (and the matching touchpoints and evidence) are removed. Feedback stays on links, buttons, fields, rows that open something, chart marks and the allocation legend.
+
 ## Polish and consolidation, 2026-11-05
 
 This pass refines the existing interaction system without adding another animation quota:

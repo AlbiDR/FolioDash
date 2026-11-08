@@ -79,12 +79,12 @@ export function ExpenseDataTools(props: {
       <p class="card-subtitle">A separate checked record in the same Google workbook. Portfolio figures and expense history keep their own recovery coverage.</p>
       <dl class="facts stacked"><div><dt>Recorded days</dt><dd>{props.days}</dd></div><div><dt>Saved entries and corrections</dt><dd>{props.commands}</dd></div><div><dt>Conflicting days to review</dt><dd>{props.conflicts}</dd></div></dl>
       <p class="hint">The JSON backup contains private amounts and every saved correction. It can restore expense history into an empty expense store; it does not replace or merge an existing history.</p>
-      {!props.ready && <div class="review-problem" role="status">
+      {!props.ready && <div class="notice notice-warning" role="status">
         <p>{props.message || (props.connected ? "Check your expense records against Google before restoring. Your selected backup stays here." : "Connect to Google and check your expense records before restoring. Your selected backup stays here.")}</p>
         <button type="button" disabled={busy} onClick={() => { void sync(); }}>{props.connected ? "Check expense records" : "Connect and check expense records"}</button>
       </div>}
       <button type="button" disabled={props.commands === 0 || busy} onClick={download}>Download expense backup</button>
-      <details class="definitions"><summary>Restore an expense backup</summary>
+      <div class="more"><details><summary>Restore an expense backup</summary>
         <p>Choose a FolioDash expense backup to check it first. Selecting a file does not write to Google. Restore requires your confirmation and preserves portfolio data.</p>
         <label class="field">Expense backup (JSON)<input type="file" accept=".json,application/json" disabled={busy || uncertain || props.pending} onChange={event => { void chooseBackup(event.currentTarget.files?.[0]); }} /></label>
         {preview !== null && <div class="review-adjustments"><p>{preview.days} recorded days, {preview.commands} saved entries and corrections, {preview.conflicts} conflicting days requiring review.</p>
@@ -94,7 +94,7 @@ export function ExpenseDataTools(props: {
           <button type="button" class="primary" disabled={busy || !confirmed || !props.ready || hasHistory || props.pending || uncertain} onClick={() => void recover()}>Restore expense history</button>
         </div>}
         {(uncertain || props.pending) && <button type="button" disabled={busy} onClick={() => void recover(true)}>Check original recovery or save</button>}
-      </details>
+      </details></div>
       <div role="status" aria-live="polite">{busy ? <p>{operation === "connect" ? "Connecting to Google and checking your expense records…" : operation === "check" ? "Checking the original operation…" : "Restoring your expense records and checking the result…"}</p> : message !== "" ? <p class="notice">{message}</p> : null}</div>
     </div>
   </section>;

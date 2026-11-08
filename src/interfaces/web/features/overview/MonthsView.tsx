@@ -16,8 +16,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
   const index = dates.findIndex((entry) => entry === date);
   const month = months[index];
   return (
-    <section class="screen months" aria-labelledby="months-heading">
-      <header class="months-intro"><h2 id="months-heading" class="months-title">Browse statements</h2><p class="hint">Revisit a statement, then compare the complete history below.</p></header>
+    <section class="screen months" aria-label="Statements by month">
       {dates.length === 0 ? (
         <p>No statements have been imported yet.</p>
       ) : (
@@ -33,9 +32,9 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               <button type="button" class="month-step next" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates[index + 1] ?? ""); }}>Next<Icon name="chevron" size={16} /></button>
               <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates.at(-1) ?? ""); }}>Latest</button>
             </div>
-            <p class="hint statement-position" role="status" aria-atomic="true">Statement {index + 1} of {dates.length}{date === undefined ? "" : ` · ${formatDateLong(date)}`}</p>
+            <p class="statement-position" role="status" aria-atomic="true">Statement {index + 1} of {dates.length}{date === undefined ? "" : ` · ${formatDateLong(date)}`}</p>
             {month !== undefined && <div class="card month-summary" key={month.date}>
-              <h3 class="card-title"><time dateTime={month.date}>{formatDateLong(month.date)}</time></h3>
+              <h2 class="card-title"><time dateTime={month.date}>{formatDateLong(month.date)}</time></h2>
               <dl class="facts stacked">
                 <div><dt>Fund value</dt><dd><Amount cents={month.value} /></dd></div>
                 <div><dt>Gain since invested</dt><dd><Signed cents={month.gain} /></dd></div>
@@ -43,7 +42,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 <div><dt>Year to date</dt><dd><Signed cents={month.yearToDateGain} /></dd></div>
                 <div><dt>Year on year</dt><dd><Signed cents={month.yearOverYearGain} /></dd></div>
               </dl>
-              <h4 class="month-funds-heading">Funds</h4>
+              <h3 class="month-funds-heading">Funds</h3>
               <ul class="month-funds">
                 {funds.map((fund) => <li key={fund.isin}>
                   <a class="row-link" href={`#fund/${fund.isin}`}>{fund.name}<Icon name="chevron" size={18} /></a>
@@ -56,9 +55,8 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
             </div>}
 
           </div>
-          <p class="hint">The complete tables below scroll horizontally. Swipe inside a table to compare months.</p>
-          <details class="month-matrices" open={wide}>
-          <summary>Compare all months in tables</summary>
+          <div class="more"><details class="month-matrices" open={wide}>
+          <summary>Compare all months in tables<span class="disclosure-description">The tables scroll sideways. Swipe inside one to compare months.</span></summary>
           <div class="card"><div class="table-scroll flat" role="region" aria-label="Fund history by month" tabIndex={0}>
             <table class="matrix" aria-label="Value and net invested by fund and month">
               <thead>
@@ -134,7 +132,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               </tbody>
             </table>
           </div></div>
-          </details>
+          </details></div>
           <p class="footnote">A dash means the figure cannot be calculated from the statements recorded. Average growth is not shown yet.</p>
         </>
       )}

@@ -272,14 +272,16 @@ export function App(): JSX.Element {
               </div>
             </header>
             {applyUpdate !== null && (
-              <p class="notice app-update" role="status">
-                A new version of FolioDash is ready.{" "}
+              <div class="notice app-update" role="status">
+                <p>
+                  A new version of FolioDash is ready.
+                  {importLocked && <> Finish the import or return to statement selection before updating.</>}
+                  {expenseLocked && <> Save or discard the expense draft, or check its uncertain save, before updating.</>}
+                </p>
                 <button type="button" disabled={importLocked || expenseLocked} onClick={applyUpdate}>
                   Reload to update
                 </button>
-                {importLocked && <> Finish the import or return to statement selection before updating.</>}
-                {expenseLocked && <> Save or discard the expense draft, or check its uncertain save, before updating.</>}
-              </p>
+              </div>
             )}
             {portfolioScreen && route.name !== "overview" && data.mode === "signed-out" && (
               <p class="notice" role="status">
@@ -292,12 +294,14 @@ export function App(): JSX.Element {
               </p>
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
-              <p class="notice" role="status">
-                Continue with Google to save your statements. You can review the files first.{" "}
+              <div class="notice" role="status">
+                <p>
+                  Continue with Google to save your statements. You can review the files first.
+                  {!clientConfigured && <> Set up Google on <a href="#connection">Your data</a> first.</>}
+                  {importConnectMessage !== "" && <> {importConnectMessage}</>}
+                </p>
                 <button type="button" disabled={importConnecting || !clientConfigured} onClick={() => { void connectForImport(); }}>{importConnecting ? "Connecting to Google…" : "Continue with Google"}</button>
-                {!clientConfigured && <> Set up Google on <a href="#connection">Your data</a> first.</>}
-                {importConnectMessage !== "" && <span>{importConnectMessage}</span>}
-              </p>
+              </div>
             )}
             {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
               <p class="notice" role="status">
@@ -307,6 +311,15 @@ export function App(): JSX.Element {
             <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
               {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice notice-warning" role="status">{importNavigationMessage}</p>}
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
+              {route.name === "overview" && data.mode === "signed-out" && (
+                <GetStarted
+                  clientConfigured={clientConfigured}
+                  connect={() => session.connect()}
+                  onReady={() => {
+                    window.location.hash = "#import";
+                  }}
+                />
+              )}
               {route.name === "overview" && <OverviewView model={model} range={range} onRangeChange={setRange} />}
               {route.name === "expenses" && <ExpensesView
                 days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
@@ -338,16 +351,7 @@ export function App(): JSX.Element {
                 }}
               />}
               {route.name === "overview" && data.mode === "signed-out" && (
-                <GetStarted
-                  clientConfigured={clientConfigured}
-                  connect={() => session.connect()}
-                  onReady={() => {
-                    window.location.hash = "#import";
-                  }}
-                />
-              )}
-              {route.name === "overview" && data.mode === "signed-out" && (
-                <details class="demo-picker">
+                <div class="more"><details class="demo-picker">
                   <summary>Explore demo portfolios</summary>
                   <nav aria-label="Demonstration portfolios">
                     <ul class="demo-nav">
@@ -361,7 +365,7 @@ export function App(): JSX.Element {
                       ))}
                     </ul>
                   </nav>
-                </details>
+                </details></div>
               )}
 
               {route.name === "months" && <MonthsView model={model} />}
@@ -381,7 +385,7 @@ export function App(): JSX.Element {
               {route.name === "history" && (
                 <div inert={jsonImportLocked}><ImportView historyMode prepare={prepareImport} ledger={data.ledger} createRevision={() => crypto.randomUUID()} onRecord={() => undefined} save={session.save} onWorkflowLock={setStatementLocked} /></div>
               )}
-              {(route.name === "import" || route.name === "history") && <details class="setup-details" inert={statementLocked}><summary>Import an existing FolioDash JSON history file</summary><HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} onWorkflowLock={setJsonImportLocked} /></details>}
+              {(route.name === "import" || route.name === "history") && <div class="more" inert={statementLocked}><details><summary>Import an existing FolioDash JSON history file</summary><HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} onWorkflowLock={setJsonImportLocked} /></details></div>}
               {route.name === "connection" && (
                 <AccountView
                   state={data}

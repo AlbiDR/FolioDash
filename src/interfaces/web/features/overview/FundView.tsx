@@ -11,7 +11,7 @@ import { Percent, Pill, Signed } from "./parts";
 
 /** One fund: its value and net invested over time, and its latest figures, on the shared time range. */
 export function FundView(props: { readonly model: OverviewModel; readonly isin: string; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void }): JSX.Element {
-  const [copyFeedback, setCopyFeedback] = useState<{ isin: string; message: string } | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<{ isin: string; message: string; ok: boolean } | null>(null);
   const [copying, setCopying] = useState(false);
   const copyPending = useRef(false);
   async function copyIsin(isin: string): Promise<void> {
@@ -21,9 +21,9 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
     setCopyFeedback(null);
     try {
       await navigator.clipboard.writeText(isin);
-      setCopyFeedback({ isin, message: "ISIN copied." });
+      setCopyFeedback({ isin, message: "ISIN copied.", ok: true });
     } catch {
-      setCopyFeedback({ isin, message: "Could not copy. Select and copy the ISIN above." });
+      setCopyFeedback({ isin, message: "Could not copy. Select and copy the ISIN above.", ok: false });
     } finally {
       copyPending.current = false;
       setCopying(false);
@@ -33,8 +33,7 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
   if (fund === undefined) {
     return (
       <section class="screen" aria-labelledby="fund-heading">
-        <h2 id="fund-heading" class="screen-title">Fund not found</h2>
-        <div class="card"><p>No fund with that identifier is in the ledger.</p></div>
+        <div class="card"><h2 id="fund-heading" class="card-title">Fund not found</h2><p>No fund with that identifier is in the ledger.</p></div>
       </section>
     );
   }
@@ -49,27 +48,26 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
   const latest = fund.latest;
 
   return (
-    <section class="dash" aria-labelledby="fund-heading">
+    <div class="dash">
       <div class="card hero cell-4">
-        <div class="fund-identity">
-          <p class="card-label isin-code">{fund.isin}</p>
-          <button class="quiet-action" type="button" disabled={copying} onClick={() => { void copyIsin(fund.isin); }}>{copying ? "Copying…" : "Copy ISIN"}</button>
+        <div class="hero-header">
+          <p class="hero-context isin-code">{fund.isin}</p>
+          <button class="hero-action" type="button" disabled={copying} onClick={() => { void copyIsin(fund.isin); }}>{copying ? "Copying…" : copyFeedback?.isin === fund.isin && copyFeedback.ok ? "Copied" : "Copy ISIN"}</button>
         </div>
-        <p class="copy-feedback hint" role="status" aria-atomic="true">{copying ? "Copying ISIN…" : copyFeedback?.isin === fund.isin && <span key={copyFeedback.message} class="copy-result">{copyFeedback.message}</span>}</p>
-        <h2 id="fund-heading" class="fund-title">{fund.name}</h2>
+        <p class="copy-feedback" role="status" aria-atomic="true">{copying ? "Copying ISIN…" : copyFeedback?.isin === fund.isin && <span key={copyFeedback.message} class={copyFeedback.ok ? "visually-hidden" : "copy-result"}>{copyFeedback.message}</span>}</p>
+        <p class="hero-label">Value</p>
         <p class="hero-value"><Amount cents={latest?.value ?? null} /></p>
-        <p class="hero-sub">
+        <div class="hero-gain"><p class="hero-label">Gain{fund.status === "closed" ? " · closed" : ""}</p><p class="hero-sub">
           <Signed cents={latest?.gain ?? null} />
           <Pill ratio={latest?.gainPercent ?? null} signed />
-          <span>gain{fund.status === "closed" ? " · closed" : ""}</span>
-        </p>
+        </p></div>
       </div>
       <div class="cell-8">
         <LineChart
           id="fund-chart"
           key={props.range}
-          title="Value and net invested"
-          subtitle="Chart period changes the chart, not your latest figures."
+          title="Performance"
+          note="Value and net invested for this fund. The chart period changes the chart, not your latest figures."
           controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}
           description="Two lines over time for this fund: its value, and the cash invested in it, dashed."
           series={series}
@@ -80,18 +78,15 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
         />
       </div>
       <div class="card cell-12">
-        <h3 class="card-title">Latest figures</h3>
+        <h2 class="card-title">Latest figures</h2>
         <dl class="facts grid">
-          <div><dt>Value</dt><dd><Amount cents={latest?.value ?? null} /></dd></div>
           <div><dt>Net invested</dt><dd><Amount cents={latest?.netInvested ?? null} /></dd></div>
-          <div><dt>Gain</dt><dd><Signed cents={latest?.gain ?? null} /></dd></div>
-          <div><dt>Gain %</dt><dd><Percent ratio={latest?.gainPercent ?? null} signed /></dd></div>
+          <div><dt>Share of portfolio</dt><dd><Percent ratio={latest?.share ?? null} /></dd></div>
           <div><dt>Month on month</dt><dd><Signed cents={latest?.monthlyGain ?? null} /></dd></div>
           <div><dt>Month on month %</dt><dd><Percent ratio={latest?.monthlyGainPercent ?? null} signed /></dd></div>
-          <div><dt>Share of portfolio</dt><dd><Percent ratio={latest?.share ?? null} /></dd></div>
         </dl>
-        <p class="footnote">Net invested = cumulative cash in minus cash out. Gain % is since invested.</p>
+        <p class="footnote">Net invested is cash in minus cash out. Gain % is measured against it.</p>
       </div>
-    </section>
+    </div>
   );
 }

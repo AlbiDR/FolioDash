@@ -1,0 +1,213 @@
+/* The portfolio family: Portfolio, Fund and Month by month.
+ * Reading order is DOM order. Wide screens only place the same blocks side by side. Every size is a role from
+ * tokens.css; nothing here invents one. A card holds one group; rows inside it are rows, never cards. */
+
+/* ---------- The summary: one headline figure, then the rest of the story ---------- */
+.hero {
+  --hero-gain: var(--color-hero-gain);
+  --hero-rule: color-mix(in srgb, var(--color-hero-muted) 40%, transparent);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  border-radius: var(--shape-lg);
+  background: var(--color-hero);
+  color: var(--color-on-hero);
+  box-shadow: none;
+}
+
+.hero .gain { color: var(--hero-gain); }
+.hero .loss { color: var(--color-on-hero); }
+.hero .masked { color: inherit; }
+.hero .pill { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); color: inherit; }
+.hero .pill.gain { background: color-mix(in srgb, var(--hero-gain) 20%, transparent); color: var(--hero-gain); }
+.hero .pill.loss { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); color: var(--color-on-hero); }
+
+/* The date or identity on the left, the one action that belongs to this summary on the right. */
+.hero-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+.hero-context { min-width: 0; margin: 0; color: var(--color-hero-muted); font-size: var(--text-small); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.hero-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--color-on-hero) 38%, transparent);
+  border-radius: var(--shape-full);
+  background: transparent;
+  color: var(--color-on-hero);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hero-action:disabled { opacity: 0.6; cursor: default; }
+
+.hero-label { margin: 0; color: var(--color-hero-muted); font-size: var(--text-small); font-weight: var(--weight-semibold); }
+.hero-value { margin: var(--space-1) 0 0; font-size: var(--text-display); font-weight: var(--weight-bold); line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.hero-caption { margin: var(--space-1) 0 0; color: var(--color-hero-muted); font-size: var(--text-small); line-height: var(--leading-body); }
+.hero-gain { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--hero-rule); }
+.hero-sub { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: var(--space-1) 0 0; font-size: var(--text-title); font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
+.hero .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--hero-rule); }
+.hero .facts dt { color: var(--color-hero-muted); }
+.copy-feedback { margin: 0; color: var(--color-hero-muted); font-size: var(--text-small); }
+.hero .copy-feedback:not(:empty) { margin-bottom: var(--space-2); }
+
+/* ---------- Changes: three rows in one card ---------- */
+.period-results { container: periods / inline-size; display: grid; align-content: start; gap: 0; min-width: 0; }
+.period-results > .card-title { margin-bottom: var(--space-1); }
+.period-results > .stat { padding-block: var(--space-3); }
+.period-results > .stat + .stat { border-top: 1px solid var(--color-border); }
+.period-results > .stat:last-of-type { padding-bottom: 0; }
+.period-results > .footnote { margin-top: var(--space-3); }
+.stat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 4.5rem;
+  grid-template-areas: "label label spark" "value pill spark" "caption caption spark";
+  align-items: center;
+  justify-items: start;
+  column-gap: var(--space-2);
+  row-gap: 0;
+  min-width: 0;
+}
+.stat > * { min-width: 0; max-width: 100%; }
+.stat > .card-label { grid-area: label; }
+.stat > .stat-value { grid-area: value; margin: 0; font-size: var(--text-title); font-weight: var(--weight-bold); line-height: var(--leading-tight); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat > .pill { grid-area: pill; }
+.stat > .stat-caption { grid-area: caption; margin: 0; }
+.stat > .sparkline { grid-area: spark; justify-self: end; width: 4.5rem; height: 3rem; margin: 0; }
+@container periods (min-width: 38rem) {
+  .period-results { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--space-4); }
+  .period-results > .card-title, .period-results > .footnote { grid-column: 1 / -1; }
+  .period-results > .stat, .period-results > .stat:last-of-type { padding-block: var(--space-2) 0; }
+  .period-results > .stat + .stat { border-top: 0; }
+  .stat { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label label" "value pill" "caption caption" "spark spark"; }
+  .stat > .sparkline { width: 100%; height: 2.5rem; justify-self: stretch; }
+}
+
+/* ---------- Holdings: a row per fund ---------- */
+.portfolio-holdings { container: holdings / inline-size; align-self: start; }
+.fund-search { margin: var(--space-2) 0; gap: var(--space-1); }
+.fund-search > .hint { line-height: var(--leading-body); }
+.mobile-holdings { display: none; margin: 0; padding: 0; list-style: none; }
+.mobile-holdings li + li { border-top: 1px solid var(--color-border); }
+@container holdings (max-width: 42rem) {
+  .desktop-holdings { display: none; }
+  .mobile-holdings { display: block; }
+}
+.holding {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 1.125rem;
+  grid-template-areas: "id headline chevron" "detail detail detail";
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: var(--space-2);
+  padding: var(--space-3) var(--space-1);
+  border-radius: var(--shape-sm);
+  color: inherit;
+  text-decoration: none;
+}
+.holding-id { grid-area: id; display: grid; min-width: 0; }
+.holding-name { font-size: var(--text-body); font-weight: var(--weight-semibold); line-height: 1.3; overflow-wrap: anywhere; }
+.holding-headline { grid-area: headline; display: grid; justify-items: end; gap: var(--space-1); font-variant-numeric: tabular-nums; }
+.holding-value { font-size: var(--text-body); font-weight: var(--weight-semibold); }
+.holding > svg { grid-area: chevron; color: var(--color-muted); }
+.holding-detail { grid-area: detail; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1) var(--space-3); font-size: var(--text-small); font-variant-numeric: tabular-nums; }
+.holding-fact { display: grid; align-content: start; min-width: 0; }
+.holding-label { color: var(--color-muted); font-size: var(--text-caption); }
+.holding-meta { display: block; color: var(--color-muted); font-size: var(--text-caption); font-weight: var(--weight-regular); }
+
+/* ---------- Allocation: the ring and its legend ---------- */
+.allocation-card { align-self: start; }
+.allocation-card .legend a { padding-block: var(--space-2); }
+@media (max-width: 47.5rem) {
+  .allocation-card { display: grid; grid-template-columns: 7rem minmax(0, 1fr); column-gap: var(--space-3); align-items: center; }
+  .allocation-card > :not(.donut):not(.legend) { grid-column: 1 / -1; }
+  .allocation-card > .donut { grid-column: 1; width: 7rem; margin: 0; }
+  .allocation-card > .legend { grid-column: 2; }
+  .allocation-card .donut-number { font-size: min(1.75rem, 16cqi); }
+  .allocation-card .donut[data-inspecting="true"] .donut-number { font-size: min(1.25rem, 13cqi); }
+  .allocation-card .legend a { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot name" "dot value"; column-gap: var(--space-2); row-gap: 0; align-items: center; }
+  .allocation-card .legend .dot { grid-area: dot; }
+  .allocation-card .legend-name { grid-area: name; }
+  .allocation-card .legend-value { grid-area: value; font-size: var(--text-small); }
+}
+
+/* ---------- Reference rows: trends, definitions, the demo picker ---------- */
+.analysis-grid { margin-top: var(--space-3); }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: var(--space-3) var(--space-4); margin: var(--space-2) 0 0; }
+.glossary dt { font-weight: var(--weight-semibold); }
+.glossary dd { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-small); line-height: var(--leading-body); }
+.glossary-subheading { margin: var(--space-4) 0 var(--space-2); font-size: var(--text-body); font-weight: var(--weight-semibold); }
+.dashboard-glossary > .hint { margin-top: var(--space-3); }
+.demo-nav { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); margin: 0; padding: var(--space-1) 0 var(--space-2); list-style: none; font-size: var(--text-small); }
+.demo-nav a { display: inline-flex; align-items: center; min-height: var(--touch-target); padding-inline: var(--space-2); border-radius: var(--shape-sm); text-decoration: none; }
+.demo-nav a[aria-current="page"] { color: var(--color-text); font-weight: var(--weight-bold); }
+.demo-label { flex-basis: 100%; color: var(--color-muted); font-weight: var(--weight-semibold); }
+
+/* ---------- First run: what the sample is and the one thing to do next ---------- */
+.get-started { display: grid; align-content: start; gap: var(--space-2); background: var(--primary-container); color: var(--on-primary-container); box-shadow: none; }
+.get-started .card-title { margin: 0; }
+.get-started .card-subtitle { margin: 0 0 var(--space-1); color: inherit; }
+.get-started .hint, .get-started .footnote { color: inherit; }
+.get-started .primary { justify-self: start; }
+.get-started a { color: inherit; font-weight: var(--weight-semibold); }
+.get-started .status { min-height: 0; }
+.get-started .status:empty { display: none; }
+.get-started .setup-details > summary { padding-inline: 0; font-weight: var(--weight-semibold); }
+.get-started .steps { margin: 0 0 var(--space-2); }
+@media (min-width: 47.501rem) {
+  /* On a wide screen the message and the button share one row, so the sample below is not pushed down. */
+  .get-started { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-4); align-items: center; }
+  .get-started > * { grid-column: 1 / -1; }
+  .get-started > .card-title, .get-started > .card-subtitle { grid-column: 1; }
+  .get-started > .primary { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+}
+
+/* ---------- Empty portfolio ---------- */
+.empty-portfolio { display: grid; justify-items: start; gap: var(--space-3); padding: var(--space-4) var(--card-padding); }
+.empty-title { margin: 0; font-size: var(--text-title); line-height: var(--leading-tight); letter-spacing: -0.01em; }
+.empty-portfolio > p { max-width: 55ch; line-height: var(--leading-body); }
+
+/* ---------- Month by month ---------- */
+.months { display: grid; gap: var(--space-3); }
+.mobile-months { display: none; }
+@media (max-width: 47.5rem) { .mobile-months { display: grid; gap: var(--space-3); } }
+.statement-position { margin: 0; color: var(--color-muted); font-size: var(--text-small); }
+.month-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+.month-actions button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); padding-inline: var(--space-2); white-space: nowrap; }
+.month-funds-heading { margin: var(--space-3) 0 var(--space-1); color: var(--color-muted); font-size: var(--text-small); font-weight: var(--weight-semibold); }
+.month-funds { margin: 0; padding: 0; list-style: none; }
+.month-funds > li { padding-block: var(--space-1); }
+.month-funds > li + li { border-top: 1px solid var(--color-border); }
+.month-funds .facts.stacked > div { min-height: 2.5rem; padding-block: var(--space-1); }
+.row-link { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--touch-target); color: inherit; font-weight: var(--weight-semibold); text-decoration: none; }
+.row-link svg { flex: none; color: var(--color-muted); }
+.month-matrices > .card { margin-top: var(--space-3); }
+
+/* ---------- Wide screens ---------- */
+@media (min-width: 73.751rem) {
+  .portfolio-dashboard > .hero { grid-column: 1 / 5; grid-row: 1; }
+  .portfolio-dashboard > .portfolio-trend { grid-column: 5 / -1; grid-row: 1 / 3; }
+  .portfolio-dashboard > .period-results { grid-column: 1 / 5; grid-row: 2; }
+}
+@media (min-width: 47.501rem) {
+  .portfolio-trend > .chart { height: 100%; align-content: flex-start; }
+}
+@media (min-width: 47.501rem) and (max-width: 73.75rem) {
+  .portfolio-dashboard > .hero, .portfolio-dashboard > .portfolio-trend, .portfolio-dashboard > .period-results { grid-column: 1 / -1; }
+}
+
+/* Hover only where a pointer can hover; on touch it would stick after a tap and look selected. */
+@media (hover: hover) and (pointer: fine) {
+  .hero-action:hover:not(:disabled) { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); }
+  .holding:hover { background: var(--color-surface-2); }
+  .row-link:hover { color: var(--color-accent); }
+}
+
+@media (forced-colors: active) {
+  .hero { border: 1px solid CanvasText; }
+  .hero-action { border-color: CanvasText; }
+}

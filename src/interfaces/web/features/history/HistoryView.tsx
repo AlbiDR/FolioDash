@@ -184,7 +184,7 @@ export function HistoryView(props: {
   useEffect(() => () => { props.onWorkflowLock?.(false); }, [props.onWorkflowLock]);
   return (
     <section aria-labelledby="history-heading" class="import">
-      <h2 id="history-heading">Import history</h2>
+      <h2 id="history-heading" class="card-title">Import history</h2>
       <p>
         Saves a whole history file to your connected spreadsheet, one statement at a time, in order. Each statement is
         checked with the same rules as a single import, and each save is read back. It can be repeated safely: it

@@ -2,6 +2,7 @@
 
 Status: **Implemented 2026-11-08 and checked in an emulated browser. Physical-device, deployed-origin, other-engine and screen-reader checks are not done. The brief below was written before implementation; the final section records what was built and measured.**
 Date: 2026-11-08
+Amended 2026-11-08 by the [UI system](ui-system.md) pass, which keeps this document's screen order and container policy and changes the details marked "amended" below.
 Owner request: "The UI is still pretty much a mess, especially on mobile. The hierarchy and organisation are not thought out. There are a lot of containers that hinder navigation and reaching the main section."
 
 This is a presentation and structure change. Financial calculations, parsers, persistence, Google access, save and recovery semantics, consent flows, routes and destinations are untouched. All figures still come from the existing canonical models. Every screenshot and measurement uses invented data.
@@ -136,8 +137,8 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 ### Work expenses (`#expenses`)
 
 - Primary task: record today's costs.
-- First viewport on any day: the selected date and its state, the date controls, and the first entry input. On a non-recordable day the same viewport also shows why (the tracker covers Monday to Friday) and two buttons that open the previous and the next workday, named with their dates. The input is present and disabled; which date is selected is unchanged. Previous and Next step one calendar day, so weekend days can be viewed (owner request, 2026-11-08); only a workday can be recorded.
-- Section order (also the DOM and tab order): the day-entry card, the week, in-page navigation (Year, Categories, Record), the year (reporting-year control, annual total and projection, the three averages), where it goes (disclosure), how these summaries work (disclosure), the record, the demo notice.
+- First viewport on any day: the selected date and its state, the date controls, and the first entry input. On a non-recordable day the same viewport also shows why (the tracker covers Monday to Friday) and two buttons that open the previous and the next workday, named with their dates. Amended: an empty weekend or future day no longer renders the disabled form, total and save row, only the reason and the workday buttons (a day that already holds amounts still shows them); which date is selected is unchanged. Previous and Next step one calendar day, so weekend days can be viewed (owner request, 2026-11-08); only a workday can be recorded.
+- Section order (also the DOM and tab order): the day-entry card, the week, in-page navigation (Year, Categories, Record), the year (reporting-year control, annual total and projection, the three averages), where it goes (disclosure), how these summaries work (disclosure), the record. Amended: the sample banner is the first block in the demo, not the last, and the two status notices are one.
 - Cards: the entry card (the primary group), the week, the year, the averages, the record. Fields are labelled inputs in rows without boxes; the day total is a divider-separated row inside the entry card. The three averages are rows, not bordered columns.
 - Visible: all five fields, optional costs labelled as optional, Previous, Today, Next and the date picker (text-only, never wrapping; Previous and Next carry the calendar day they open in their accessible names), the draft total and completeness, save and its feedback, review and conflict panels. The reporting-year control moves from the page intro to the year section because it governs only the report figures.
 - Disclosure: where it goes, how these summaries work, previous saved versions.
@@ -175,7 +176,7 @@ Wireframes are text sketches of a 375px phone. `[ ]` is a control, `{ }` a card,
 
 - Primary task: see whether the data is current and sync it.
 - First viewport: the connection summary and the sync action.
-- Section order: connection card (the primary group), verify history, tidy sheet, restore (only when it applies), how your data is kept with Forget this device, advanced (only without a client id). Sections other than the connection summary and the restore card are plain sections with a heading and a divider; result messages and confirmations remain tinted panels. The sections are reachable from the in-page navigation.
+- Section order: connection card (the primary group), verify history, tidy sheet, restore (only when it applies), then the work expense history, where your data lives with Forget this device (amended name; its long explanation is a disclosure), advanced (only without a client id). Sections other than the connection summary and the restore card are plain sections with a heading and a divider; result messages and confirmations remain tinted panels. The sections are reachable from the in-page navigation.
 - States: all existing confirm, busy and result states keep their copy, roles and focus handoffs.
 
 ## Alternatives rejected

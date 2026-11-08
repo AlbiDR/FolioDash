@@ -7,6 +7,7 @@ import type { JSX } from "preact";
 export function PageNav(props: { readonly items: readonly { readonly id: string; readonly label: string }[] }): JSX.Element {
   return (
     <nav class="page-nav" aria-label="On this page">
+      <p class="page-nav-label" aria-hidden="true">Jump to</p>
       <ul>
         {props.items.map((item) => (
           <li key={item.id}>

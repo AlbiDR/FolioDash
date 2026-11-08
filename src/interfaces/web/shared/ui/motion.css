@@ -174,8 +174,6 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .chart-date-control > span { transition: color var(--duration-short) var(--ease-standard); }
 .chart-date-control:focus-within > span { color: var(--color-text); }
 
-/* 73: Inspected date changes get a small text cue, not an animated amount. */
-.inspection-date { display: inline-block; animation: motion-fade var(--duration-cue) var(--ease-standard); }
 
 /* 74: Monthly bar pin outline fades to the actual selected state. */
 .bars-item .bar { stroke: var(--color-text); stroke-opacity: 0; transition: opacity var(--duration-short) var(--ease-standard), stroke-opacity var(--duration-short) var(--ease-standard); }
@@ -217,9 +215,9 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .table-scroll:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 /* 84: Phone holding name responds to focus/hover. */
-.mobile-holding-name { transition: color var(--duration-short) var(--ease-standard); }
-.mobile-holdings a:focus-visible .mobile-holding-name { color: var(--color-accent); }
-@media (hover: hover) and (pointer: fine) { .mobile-holdings a:hover .mobile-holding-name { color: var(--color-accent); } }
+.holding-name { transition: color var(--duration-short) var(--ease-standard); }
+.mobile-holdings a:focus-visible .holding-name { color: var(--color-accent); }
+@media (hover: hover) and (pointer: fine) { .mobile-holdings a:hover .holding-name { color: var(--color-accent); } }
 
 /* 85: Previous/next month arrows indicate their direction. */
 .month-step { display: inline-flex; align-items: center; gap: var(--space-1); --step-direction: 1; }
@@ -227,10 +225,6 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .month-step > svg { flex-shrink: 0; transition: transform var(--duration-short) var(--ease-standard); }
 .month-step:not(:disabled):focus-visible > svg { transform: translateX(calc(var(--step-direction) * var(--motion-nudge))); }
 @media (hover: hover) and (pointer: fine) { .month-step:not(:disabled):hover > svg { transform: translateX(calc(var(--step-direction) * var(--motion-nudge))); } }
-
-/* 86: A focused monthly fund row gains a boundary, without elevating anything static. */
-.month-funds > li { border-radius: var(--shape-sm); transition: box-shadow var(--duration-short) var(--ease-standard); }
-.month-funds > li:focus-within { box-shadow: inset 0 0 0 1px var(--color-accent); }
 
 /* 87: Actual source-status text changes soften; no source state is invented. */
 .source-label { animation: motion-fade var(--duration-cue) var(--ease-standard); }
@@ -253,17 +247,9 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .app-update { animation: motion-update var(--duration-feedback) var(--ease-standard); }
 @keyframes motion-update { from { opacity: var(--motion-reveal-opacity); transform: translateY(calc(-1 * var(--motion-nudge))); } to { opacity: 1; transform: none; } }
 
-/* Surface feedback is shared across screens, including cards without controls.
- * Elevation does not move charts, forms or their hit targets. Only the decorative
- * stat cards lift; they retain normal text semantics and the default cursor.
+/* Cards, charts and stat blocks are containers, not controls: they get no hover, focus or press
+ * feedback of their own. The links and buttons inside them carry it.
  */
-.card, .chart {
-  transition: box-shadow var(--duration-feedback) var(--ease-standard), background-color var(--duration-feedback) var(--ease-standard);
-}
-.card:focus-within, .chart:focus-within { box-shadow: var(--shadow-inspect); }
-.card:active, .chart:active { box-shadow: inset 0 0 0 1px var(--color-accent); }
-.stat { transition: translate var(--duration-feedback) var(--ease-standard), box-shadow var(--duration-feedback) var(--ease-standard); }
-.stat .card-label { transition: color var(--duration-short) var(--ease-standard); }
 .spark-area { transition: opacity var(--duration-feedback) var(--ease-standard); }
 .spark-line { transition: stroke-width var(--duration-feedback) var(--ease-standard); }
 .hero::before, .hero::after { transition: translate var(--duration-medium) var(--ease-standard); }
@@ -288,12 +274,7 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .allocation-card .legend a:active .dot { transform: scale(0.9); }
 .allocation-card .legend-name { white-space: normal; overflow-wrap: anywhere; }
 
-/* Readable data rows acknowledge inspection without moving the figures. */
-.facts > div, .glossary > div, .kpis > div {
-  border-radius: var(--shape-xs);
-  transition: background-color var(--duration-short) var(--ease-standard);
-}
-.facts > div:focus-within, .glossary > div:focus-within, .kpis > div:focus-within { background-color: var(--color-accent-soft); }
+/* Static data rows and cards do not react to the pointer: only what can be pressed suggests that it can. */
 .matrix tbody tr { transition: background-color var(--duration-short) var(--ease-standard); }
 .matrix tbody tr:focus-within { background-color: var(--color-accent-soft); }
 .row-link, .demo-nav a, .link-button {
@@ -303,14 +284,7 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .perf-row:active, .row-link:active, .demo-nav a:active { background-color: var(--color-accent-soft); }
 
 @media (hover: hover) and (pointer: fine) {
-  .card:hover, .chart:hover { box-shadow: var(--shadow-inspect); }
-  .stat:hover { translate: 0 var(--motion-lift); }
-  .stat:hover .card-label { color: var(--color-accent); }
-  .stat:hover .spark-area, .hero:hover .spark-area { opacity: 0.24; }
-  .stat:hover .spark-line, .hero:hover .spark-line { stroke-width: 2.5; }
-  .hero:hover::before { translate: var(--motion-nudge) var(--motion-nudge); }
-  .hero:hover::after { translate: calc(-1 * var(--motion-nudge)) calc(-1 * var(--motion-nudge)); }
-  .facts > div:hover, .glossary > div:hover, .kpis > div:hover, .matrix tbody tr:hover { background-color: var(--color-accent-soft); }
+  .matrix tbody tr:hover { background-color: var(--color-accent-soft); }
   .perf-row:hover, .row-link:hover { background-color: var(--color-accent-soft); }
   .mobile-holdings a:hover { background-color: var(--color-accent-soft); }
   .link-button:hover { box-shadow: var(--shadow-inspect); }
@@ -322,5 +296,4 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
   .field input::file-selector-button { transition: none !important; }
   .chart-date-control input::-webkit-slider-thumb { transition: none !important; transform: none !important; }
   .chart-date-control input::-moz-range-thumb { transition: none !important; transform: none !important; }
-  .stat:hover, .hero::before, .hero::after { translate: none !important; }
 }

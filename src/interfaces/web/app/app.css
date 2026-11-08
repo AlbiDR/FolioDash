@@ -17,7 +17,7 @@ body {
   background: var(--color-background);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--text-body);
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   font-optical-sizing: auto;
@@ -124,8 +124,8 @@ select:focus-visible {
   padding: 0.45rem 0.25rem;
   border-radius: var(--nav-radius);
   color: var(--color-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
   text-decoration: none;
   transition: background var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard),
     transform var(--duration-short) var(--ease-spring);
@@ -198,8 +198,8 @@ select:focus-visible {
     align-items: center;
     gap: var(--space-2);
     padding: 0 0.85rem 1.25rem;
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--text-title);
+    font-weight: var(--weight-bold);
     letter-spacing: -0.02em;
   }
 
@@ -213,7 +213,7 @@ select:focus-visible {
     flex-direction: row;
     gap: 0.75rem;
     padding: 0.65rem 0.85rem;
-    font-size: 0.9375rem;
+    font-size: var(--text-body);
   }
 
   .content {
@@ -264,8 +264,8 @@ select:focus-visible {
 
 .topbar-title h1 {
   overflow: hidden;
-  font-size: 1.375rem;
-  font-weight: 700;
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-overflow: ellipsis;
@@ -274,8 +274,8 @@ select:focus-visible {
 
 .eyebrow {
   color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -296,8 +296,8 @@ select:focus-visible {
   padding: 0.3rem 0.8rem;
   border-radius: var(--shape-full);
   background: color-mix(in srgb, var(--color-text) 7%, transparent);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
 }
 
 a.status-chip,
@@ -309,8 +309,8 @@ button.status-chip {
 button.status-chip {
   border: 0;
   font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
 }
 
@@ -350,8 +350,8 @@ a.icon-button { text-decoration: none; }
   height: 2.25rem;
   padding: 0 1rem;
   font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   color: var(--color-text);
   background: color-mix(in srgb, var(--color-text) 7%, transparent);
   border: 0;
@@ -477,178 +477,50 @@ a.icon-button { text-decoration: none; }
   box-shadow: inset 0 0 0 1px var(--color-border), var(--shadow-card);
 }
 
+/* ---------- Type roles ----------
+ * Every piece of text is one of these roles; a component picks a role and does not invent a size. */
+.card-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lead);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.card-subtitle {
+  margin: 0 0 var(--space-3);
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+
+.card-title:has(+ .card-subtitle) { margin-bottom: var(--space-1); }
+
 .card-label {
   color: var(--color-muted);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
 }
 
-.card-title {
-  margin-bottom: var(--space-2);
-  font-size: 1rem;
-  font-weight: 650;
-}
-
-.hero {
-  --hero-gain: #07583a;
-  container-type: inline-size;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  background: var(--primary-container);
-  color: var(--on-primary-container);
-  border-radius: var(--shape-xl);
-  box-shadow: none;
-  padding: 1.5rem;
-}
-
-.hero > * {
-  position: relative;
-}
-
-.hero .card-label,
-.hero .facts dt {
-  color: inherit;
-  opacity: 0.72;
-}
-
-.hero .gain {
-  color: var(--hero-gain);
-}
-
-.hero .masked {
-  color: inherit;
-}
-
-.hero .quiet-action { color: var(--on-primary-container); }
-
-.hero .pill {
-  background: color-mix(in srgb, var(--on-primary-container) 12%, transparent);
-  color: inherit;
-}
-
-.hero .pill.gain {
-  background: color-mix(in srgb, var(--hero-gain) 18%, transparent);
-  color: var(--hero-gain);
-}
-
-.hero .pill.loss {
-  background: color-mix(in srgb, var(--color-loss) 18%, transparent);
-}
-
-@media (prefers-color-scheme: dark) {
-  .hero {
-    --hero-gain: #53e3a6;
-  }
-}
-
-.hero .sparkline,
-.hero .sparkline.gain,
-.hero .sparkline.loss {
-  width: calc(100% + 3rem);
-  height: 5.5rem;
-  margin: auto -1.5rem -1.5rem;
-  color: var(--color-accent);
-}
-
-.hero-value {
-  font-size: clamp(1.75rem, 10cqi, 3.5rem);
-  line-height: 1.03;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums;
-}
-
-.hero-sub {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem 0.6rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.fund-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-  gap: 0.75rem 1rem;
-  margin: 1rem 0 0;
-}
-
-.facts dt {
+.hint,
+.footnote,
+.stat-caption {
   color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
 }
 
-.facts dd {
-  margin: 0.1rem 0 0;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-}
+.footnote { margin-top: var(--space-3); }
 
-.facts.stacked {
-  grid-template-columns: 1fr;
-  gap: 0;
-  margin: 0 0 0.5rem;
-}
-
-.facts.stacked > div {
-  border-radius: 0;
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 0.55rem 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.facts.stacked dd {
-  margin: 0;
-}
-
-.facts.grid {
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-}
-
-.stat {
-  display: grid;
-  align-content: start;
-  gap: 0.35rem;
-  justify-items: start;
-  overflow: hidden;
-}
-
-.stat-value {
-  min-width: 0;
-  max-width: 100%;
-  font-size: 1.75rem;
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat .sparkline {
-  width: calc(100% + 2.5rem);
-  height: 3.25rem;
-  margin: 0.4rem -1.25rem -1.25rem;
+.empty-note {
+  color: var(--color-muted);
 }
 
 .pill {
   display: inline-block;
   padding: 0.1rem 0.6rem;
   border-radius: var(--shape-full);
-  font-size: 0.8125rem;
-  font-weight: 650;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   background: var(--color-surface-2);
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
@@ -672,47 +544,83 @@ a.icon-button { text-decoration: none; }
   color: var(--color-loss);
 }
 
-.footnote {
-  margin-top: 0.75rem;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
+/* ---------- Facts: labelled figures ----------
+ * .facts is a grid of label-over-value pairs. .facts.stacked is the one key-value list: the label on the left, the
+ * value on the right, a hairline between rows. A long value wraps under its label instead of squeezing it. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
 }
 
-.hint {
+.facts > div { min-width: 0; }
+
+.facts dt {
   color: var(--color-muted);
-  font-size: 0.9375rem;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
 }
 
-.empty-note {
-  color: var(--color-muted);
+.facts dd {
+  min-width: 0;
+  margin: var(--space-1) 0 0;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
+
+.facts.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+@media (min-width: 47.501rem) {
+  .facts.grid { grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
+}
+
+.facts.stacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.facts.stacked > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.facts.stacked > div:last-child { border-bottom: 0; }
+.facts.stacked dt { flex: 1 1 9rem; }
+.facts.stacked dd { flex: 0 1 auto; max-width: 100%; margin: 0; text-align: right; }
 
 /* ---------- Page structure shared by every destination ---------- */
-.get-started { margin-top: var(--space-4); }
-.demo-picker { margin-top: var(--space-3); }
-.hero-gain .amount { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
-.months-title, .import-heading { font-size: 1.125rem; font-weight: 650; line-height: 1.25; letter-spacing: -0.02em; }
-.months-intro > .hint { margin-top: var(--space-1); }
-.disclosure-description { display: block; color: var(--color-muted); font-size: 0.875rem; font-weight: 400; line-height: 1.5; margin-block: var(--space-2); }
-.analysis-grid { margin-top: var(--space-3); }
-.empty-portfolio { display: grid; gap: var(--space-4); padding: var(--space-5); }
-.empty-portfolio > p { max-width: 55ch; line-height: 1.6; }
-.empty-portfolio .primary { justify-self: start; }
-.journey-steps { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); padding: var(--space-2) 0; margin: 0; list-style: none; border-block: 1px solid var(--color-border); }
-.journey-steps li { display: flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: 0.875rem; }
-.journey-steps li > span { color: var(--color-accent); font-weight: 700; font-variant-numeric: tabular-nums; }
-.month-funds-heading { margin: var(--space-3) 0 var(--space-1); color: var(--color-muted); font-size: 0.875rem; font-weight: 600; }
-.month-funds { list-style: none; margin: 0; padding: 0; }
-.month-funds > li { padding-block: var(--space-1); }
-.month-funds > li + li { border-top: 1px solid var(--color-border); }
-.month-funds .facts.stacked { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-3); margin: 0; }
-.month-funds .facts.stacked > div { display: grid; gap: 0; padding: 0 0 var(--space-1); border-bottom: 0; }
-.account-lead { color: var(--color-muted); font-size: 0.9375rem; line-height: 1.5; max-width: 55ch; }
-.account-section { display: grid; gap: var(--space-2); align-content: start; border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
-details.account-section > summary { font-weight: 650; }
-@media (max-width: 47.5rem) {
-  .empty-portfolio { padding: var(--space-4); }
-}
+.disclosure-description { display: block; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-small); font-weight: var(--weight-regular); line-height: var(--leading-body); }
+
+/* A group of disclosure rows: plain rows between hairlines, never boxes. The description sits under the title. */
+.more { display: grid; border-block: 1px solid var(--color-border); }
+.more > details + details { border-top: 1px solid var(--color-border); }
+.more > details > summary { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); padding-block: var(--space-2); font-weight: var(--weight-semibold); }
+.more > details > summary::before { margin-top: 0.4rem; }
+.more > details > summary { align-items: start; }
+.more > details > summary > .disclosure-description { grid-column: 2; }
+.more > details[open] > summary { padding-bottom: var(--space-1); }
+.more > details > :not(summary) { margin-bottom: var(--space-3); }
+/* Progress: three equal steps, each a number over its name, so the row never wraps into two lines of unequal length. */
+.journey-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); padding: var(--space-3) 0; margin: 0; list-style: none; border-block: 1px solid var(--color-border); }
+.journey-steps li { display: grid; justify-items: center; align-content: start; gap: var(--space-1); color: var(--color-muted); font-size: var(--text-caption); line-height: 1.3; text-align: center; }
+.journey-steps li > span { display: inline-grid; place-items: center; min-width: 2rem; height: 2rem; border-radius: var(--shape-full); background: var(--color-surface-2); color: var(--color-muted); font-size: var(--text-small); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
+.journey-steps li[aria-current="step"] { color: var(--color-text); font-weight: var(--weight-semibold); }
+.journey-steps li[aria-current="step"] > span { background: var(--color-accent); color: var(--color-on-accent); }
+.import-heading { font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: -0.01em; }
+.account-lead { color: var(--color-muted); font-size: var(--text-small); line-height: var(--leading-body); max-width: 55ch; }
+/* A section of Your data: a title, one sentence of what it does, an optional note, then its single action. */
+.account-section { display: grid; gap: var(--space-2); align-content: start; border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
+.account-section > .card-title, .account-section > .card-subtitle { margin: 0; }
+.account-section > .plain-list { color: var(--color-text); font-size: var(--text-body); }
+.account-section > button, .account-section > .more { margin-top: var(--space-1); }
 
 /* ---------- Controls ---------- */
 
@@ -731,8 +639,8 @@ details.account-section > summary { font-weight: 650; }
   height: 1.9rem;
   padding: 0 0.8rem;
   font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   color: var(--color-muted);
   background: transparent;
   border: 0;
@@ -759,8 +667,8 @@ details.account-section > summary { font-weight: 650; }
   height: 1.9rem;
   padding: 0 0.9rem;
   color: var(--color-muted);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   text-decoration: none;
   border-radius: var(--shape-full);
   transition: background var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard);
@@ -781,8 +689,8 @@ details.account-section > summary { font-weight: 650; }
 
 .control-label {
   color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -791,26 +699,6 @@ details.account-section > summary { font-weight: 650; }
   .control-label {
     display: none;
   }
-}
-
-.demo-label {
-  color: var(--color-muted);
-  font-weight: 600;
-}
-
-.row-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 0.6rem 0;
-  color: inherit;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.row-link svg {
-  color: var(--color-muted);
 }
 
 /* ---------- Allocation, bars, rankings ---------- */
@@ -842,8 +730,8 @@ details.account-section > summary { font-weight: 650; }
 }
 
 .donut-number {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--text-figure);
+  font-weight: var(--weight-bold);
   letter-spacing: -0.03em;
   line-height: 1;
 }
@@ -851,7 +739,7 @@ details.account-section > summary { font-weight: 650; }
 .donut-caption {
   color: var(--color-muted);
   font-size: min(0.75rem, 7cqi);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .legend {
@@ -883,7 +771,7 @@ details.account-section > summary { font-weight: 650; }
   min-width: 0;
   white-space: normal;
   overflow-wrap: anywhere;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .legend-value {
@@ -942,7 +830,7 @@ details.account-section > summary { font-weight: 650; }
   min-width: 0;
   white-space: normal;
   overflow-wrap: anywhere;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .perf-track {
@@ -980,7 +868,7 @@ details.account-section > summary { font-weight: 650; }
 .perf-value {
   min-width: 4.25rem;
   text-align: right;
-  font-weight: 650;
+  font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1002,26 +890,18 @@ details.account-section > summary { font-weight: 650; }
   min-width: 12ch;
 }
 
+/* Where an amount sits next to a label it takes its own width and may wrap rather than clip. */
 .hero .amount,
 .stat .amount,
 .hint .amount,
 .footnote .amount,
+fieldset p .amount,
 .chart-readout .amount,
-.facts .amount {
+.facts .amount,
+.holding .amount {
   min-width: 0;
+  max-width: 100%;
   text-align: inherit;
-}
-
-.hero-value .amount {
-  min-width: 0;
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.stat-value .amount {
-  min-width: 0;
-  max-width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -1032,9 +912,6 @@ details.account-section > summary { font-weight: 650; }
   user-select: none;
 }
 
-/* Financial fact groups must reflow even inside narrow desktop cards. */
-.facts > div, .facts dd { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
-.facts .amount { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 
 /* ---------- Holdings table and month tables ---------- */
 
@@ -1068,8 +945,8 @@ table {
 
 .holdings-table thead th {
   color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.02em;
 }
 
@@ -1082,7 +959,7 @@ table {
 
 .holdings-table tbody th {
   position: relative;
-  font-weight: 650;
+  font-weight: var(--weight-semibold);
 }
 
 .holdings-table tbody tr {
@@ -1114,13 +991,6 @@ table {
   content: "";
   position: absolute;
   inset: 0;
-}
-
-.holding-meta {
-  display: block;
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 500;
 }
 
 .share-bar {
@@ -1171,16 +1041,16 @@ table {
 
 .definitions {
   margin-top: 0.5rem;
-  font-size: 0.9375rem;
+  font-size: var(--text-body);
 }
 
 .definitions summary {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .definitions dt {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   margin-top: var(--space-2);
 }
 
@@ -1196,7 +1066,7 @@ table {
 
 .matrix {
   width: 100%;
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1214,7 +1084,7 @@ table {
 .matrix thead th {
   text-align: right;
   color: var(--color-muted);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .matrix thead th:first-child,
@@ -1224,11 +1094,11 @@ table {
 }
 
 .matrix tbody th {
-  font-weight: 650;
+  font-weight: var(--weight-semibold);
 }
 
 .matrix tbody th[scope="row"]:not([rowspan]) {
-  font-weight: 500;
+  font-weight: var(--weight-regular);
   color: var(--color-muted);
 }
 
@@ -1239,8 +1109,8 @@ table {
 
 .isin {
   color: var(--color-muted);
-  font-weight: 400;
-  font-size: 0.8125rem;
+  font-weight: var(--weight-regular);
+  font-size: var(--text-small);
 }
 
 .tag {
@@ -1248,8 +1118,8 @@ table {
   padding: 0 var(--space-2);
   background: var(--color-surface-2);
   border-radius: var(--shape-full);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
   color: var(--color-muted);
 }
 
@@ -1259,9 +1129,9 @@ table {
 }
 
 .screen-title {
-  font-size: 2rem;
+  font-size: var(--text-figure);
   line-height: 1.12;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   letter-spacing: -0.02em;
 }
 
@@ -1272,6 +1142,9 @@ table {
   display: grid;
   gap: var(--space-3);
 }
+
+/* Reading screens keep a comfortable line length instead of stretching across a wide window. */
+.import, .account { width: 100%; max-width: 52rem; }
 
 [hidden] {
   display: none !important;
@@ -1321,11 +1194,6 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-.import button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .field {
   display: grid;
   gap: var(--space-1);
@@ -1333,7 +1201,7 @@ table {
 }
 
 .field label {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .field input,
@@ -1367,16 +1235,19 @@ table {
   margin: 0;
 }
 
-fieldset {
-  padding: var(--space-3);
-  background: var(--color-surface-2);
-  border: 0;
-  border-radius: var(--shape-lg);
-}
+/* Headings inside the import flow: a step is a lead-size title, a block within it is body size. */
+.import h3 { font-size: var(--text-lead); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.import h4 { font-size: var(--text-body); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.entry-panel:not([hidden]) { display: grid; gap: var(--space-3); }
+.entry-panel > .field { margin-bottom: 0; }
 
 .status {
   min-height: 1.5rem;
 }
+
+/* An empty live region stays in the page for screen readers but takes no room, so it adds no gap of its own. */
+:is(.review, .import, .entry-panel) > .status:empty { min-height: 0; height: 0; margin-top: calc(-1 * var(--space-3)); }
+.account > .status:empty { min-height: 0; height: 0; margin-top: calc(-1 * var(--gap)); }
 
 .questions,
 .summary,
@@ -1391,15 +1262,26 @@ fieldset {
   margin: 0;
 }
 
+/* A group of related fields sits in one tinted box. Its legend is the group's heading inside the box, not a
+ * label cutting across the edge. */
 fieldset {
   margin: 0;
   min-width: 0;
+  padding: var(--space-3);
+  background: var(--color-surface-2);
+  border: 0;
+  border-radius: var(--shape-md);
 }
 
-fieldset legend {
-  padding: 0 var(--space-2);
-  font-weight: 600;
+fieldset > legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-weight: var(--weight-semibold);
 }
+
+fieldset > legend + * { clear: both; }
 
 fieldset label {
   display: block;
@@ -1409,74 +1291,76 @@ fieldset label {
   margin-top: var(--space-2);
 }
 
+.fund-question .tag { display: block; width: fit-content; margin: var(--space-1) 0 0; padding: var(--space-1) var(--space-2); }
+
 .field-error {
   margin: var(--space-2) 0 0;
   color: var(--color-error);
 }
 
-button {
-  font: inherit;
-}
-
-.review button:not(.primary),
-.import button:not(.primary),
-.account button:not(.primary),
-.connection button:not(.primary) {
-  padding: 0.55rem 1.1rem;
-  color: color-mix(in srgb, var(--color-accent) 80%, var(--color-text));
-  background: var(--color-accent-soft);
+/* ---------- Buttons ----------
+ * One shape, a pill, and three levels of emphasis. The label names the action; the level says how much it matters.
+ *   .primary   filled: the one main action of a group
+ *   (default)  tonal: any other action
+ *   .quiet     text only: a minor, reversible action
+ * Components with their own look (the dock, segmented controls, chips, icon buttons) set their own surface;
+ * these defaults have no specificity, so they only fill in what a component leaves out. */
+:where(button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--shape-full);
-  font-weight: 600;
+  background: var(--color-accent-soft);
+  color: color-mix(in srgb, var(--color-accent) 80%, var(--color-text));
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  text-align: center;
   cursor: pointer;
 }
 
 .primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   justify-self: start;
+  gap: var(--space-2);
   min-height: var(--touch-target);
-  padding: 0.5rem 1.6rem;
-  font-weight: 650;
-  color: var(--color-on-accent);
-  background: var(--color-accent);
+  padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--shape-full);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
   cursor: pointer;
-  transition: transform var(--duration-short) var(--ease-spring);
+}
+
+.quiet {
+  background: transparent;
+  padding-inline: var(--space-2);
+  color: var(--color-accent);
 }
 
 .primary:active {
   transform: scale(0.96);
 }
 
-.primary:disabled,
-.review button:disabled {
-  opacity: 0.45;
+button:disabled {
   cursor: default;
+  opacity: 0.5;
 }
 
-.demo-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 0.9375rem;
-}
-
-.demo-nav a {
-  text-decoration: none;
-}
-
-.demo-nav a[aria-current="page"] {
-  font-weight: 700;
-  color: var(--color-text);
-}
-
+/* Tables of funds and categories: the name on the left, figures on the right, a hairline between rows. */
 .import table,
 .review table,
-.recorded table,
-.summary table {
+.recorded table {
   width: 100%;
   font-variant-numeric: tabular-nums;
 }
@@ -1486,66 +1370,44 @@ button {
 .review th,
 .review td,
 .recorded th,
-.recorded td,
-.summary th,
-.summary td {
-  padding: var(--space-2) var(--space-3);
+.recorded td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
+  vertical-align: top;
+}
+
+.import :is(th, td):last-child,
+.review :is(th, td):last-child,
+.recorded :is(th, td):last-child {
+  padding-right: 0;
 }
 
 .import td:not(:first-child),
 .review td:not(:first-child),
 .recorded td:not(:first-child),
-.summary td:not(:first-child) {
+.import th:not(:first-child),
+.review th:not(:first-child),
+.recorded th:not(:first-child) {
   text-align: right;
 }
 
-/* ---------- Clarity: captions, subtitles, glossary ---------- */
-
-.card-title {
-  margin-bottom: 0.15rem;
-}
-
-.card-subtitle {
-  margin-bottom: var(--space-2);
+.fund-isin {
+  display: block;
   color: var(--color-muted);
-  font-size: 0.875rem;
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  overflow-wrap: anywhere;
+  user-select: all;
 }
 
-.stat-caption {
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-  line-height: 1.3;
-}
-
-.hero-caption {
-  opacity: 0.78;
-  font-size: 0.8125rem;
-}
-
-.facts-note {
-  margin: 0;
-  opacity: 0.7;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.glossary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-  gap: 0.9rem 1.5rem;
-  margin: 0.5rem 0 0;
-}
-
-.glossary dt {
-  font-weight: 650;
-}
-
-.glossary dd {
-  margin: 0.1rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.9375rem;
+/* What will be recorded: one block per fund, its four figures in a row where there is room. */
+.fund-summary { display: grid; margin: 0; padding: 0; list-style: none; }
+.fund-summary > li { padding-block: var(--space-3); border-top: 1px solid var(--color-border); }
+.fund-summary-name { margin-bottom: var(--space-2); font-weight: var(--weight-semibold); }
+.fund-summary .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-3); }
+@media (min-width: 47.501rem) {
+  .fund-summary .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 /* ---------- Your data and getting started ---------- */
@@ -1563,8 +1425,7 @@ button {
 }
 
 .account .card > .primary,
-.account .card > button,
-.get-started > .primary {
+.account .card > button {
   justify-self: start;
 }
 
@@ -1582,22 +1443,17 @@ button {
   padding-left: 1.25rem;
 }
 
-.get-started {
-  display: grid;
-  align-content: start;
-  gap: 0.35rem;
-}
-
 .check {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
+  gap: var(--space-2);
+  padding-inline: var(--space-2);
+  font-weight: var(--weight-semibold);
 }
 
 details.card > summary {
   cursor: pointer;
-  font-weight: 650;
+  font-weight: var(--weight-semibold);
 }
 
 .build-stamp {
@@ -1617,32 +1473,6 @@ details.card > summary {
 
 .skip-link:focus { transform: translateY(0); }
 
-.portfolio-holdings { container: holdings / inline-size; }
-.mobile-holdings { display: none; list-style: none; padding: 0; margin: 0; }
-.mobile-holdings li + li { border-top: 1px solid var(--color-border); }
-.mobile-holdings a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-1) var(--space-3); padding: var(--space-2) var(--space-1); color: inherit; text-decoration: none; }
-.mobile-holding-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); min-width: 0; font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
-.mobile-holding-name > .holding-meta { display: inline; overflow-wrap: normal; }
-.mobile-holdings dl { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1) var(--space-3); margin: 0; }
-.mobile-holdings dl > div { display: grid; align-content: start; gap: 0; min-width: 0; }
-.mobile-holdings dt { color: var(--color-muted); font-size: 0.75rem; line-height: 1.4; }
-.mobile-holdings dd { margin: 0; min-width: 0; max-width: 100%; font-size: 0.9375rem; line-height: 1.4; font-variant-numeric: tabular-nums; }
-.mobile-holdings .amount { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; }
-.mobile-holdings .pill { max-width: 100%; overflow-wrap: anywhere; }
-.holdings-table td { width: 19%; white-space: normal; overflow-wrap: anywhere; }
-.holdings-table .amount { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
-.holdings-table .pill { max-width: 100%; overflow-wrap: anywhere; }
-@container holdings (max-width: 42rem) {
-  .desktop-holdings { display: none; }
-  .mobile-holdings { display: grid; }
-}
-@container holdings (max-width: 14rem) {
-  .mobile-holdings dl { grid-template-columns: minmax(0, 1fr); }
-}
-.mobile-months { display: none; }
-.month-matrices { display: block; }
-.month-matrices > .card { margin-top: var(--space-3); }
-.month-matrices > summary { cursor: pointer; min-height: var(--touch-target); align-content: center; }
 
 /* Phone layouts have their own density and navigation, rather than scaled desktop cards. */
 @media (max-width: 47.5rem) {
@@ -1667,7 +1497,7 @@ details.card > summary {
     padding: var(--space-1) max(var(--space-2), env(safe-area-inset-right)) max(var(--space-1), env(safe-area-inset-bottom)) max(var(--space-2), env(safe-area-inset-left));
   }
 
-  .nav-link { min-height: var(--touch-target); padding-block: var(--space-1); font-size: 0.75rem; }
+  .nav-link { min-height: var(--touch-target); padding-block: var(--space-1); font-size: var(--text-caption); }
 
   /* At very large text four labels cannot share a phone's width. Like a tab bar, the labels stop growing
    * rather than breaking inside the word; the icons and 48px targets are unchanged. */
@@ -1688,7 +1518,7 @@ details.card > summary {
   }
 
   .topbar-title { flex: 1 1 8rem; min-width: 0; }
-  .topbar-title h1 { white-space: normal; overflow-wrap: anywhere; font-size: 1.125rem; line-height: 1.2; }
+  .topbar-title h1 { white-space: normal; overflow-wrap: anywhere; font-size: var(--text-lead); line-height: 1.2; }
   .topbar > .status-chip { flex: 0 1 auto; max-width: 48%; padding-inline: var(--space-2); }
   .topbar-controls { flex: none; margin-left: 0; }
   .topbar .privacy-toggle { width: var(--touch-target); height: var(--touch-target); }
@@ -1701,75 +1531,29 @@ details.card > summary {
   .card,
   .chart { padding: var(--space-3); border-radius: var(--shape-md); }
 
-  .hero { padding: 1.25rem; border-radius: var(--shape-lg); }
-  .hero-value { font-size: clamp(1.75rem, 8vw, 2.75rem); overflow-wrap: anywhere; }
-  .fund-title { font-size: 1.25rem; overflow-wrap: anywhere; }
-
-
-  .desktop-holdings { display: none; }
-  .mobile-months { display: grid; gap: var(--gap); }
-  .mobile-holdings { display: grid; }
-
-  .legend a,
-  .row-link,
-  .perf-row { min-height: var(--touch-target); }
-  .legend-name,
+  .perf-row { min-height: var(--touch-target); grid-template-columns: minmax(0, 1fr) auto; }
   .perf-name { white-space: normal; overflow-wrap: anywhere; }
-  .perf-row { grid-template-columns: minmax(0, 1fr) auto; }
   .perf-track { grid-row: 2; grid-column: 1 / -1; }
   .perf-value { grid-column: 2; grid-row: 1; }
 
   .import > *, .connection > *, .review > *, .screen > *, .account > * { min-width: 0; }
-  .funds { display: block; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
-  .field input, .field select { min-height: var(--touch-target); font-size: 1rem; max-width: 100%; scroll-margin-block: var(--space-4) calc(var(--mobile-nav-height) + var(--space-4)); }
+  .field input, .field select { min-height: var(--touch-target); font-size: var(--text-body); max-width: 100%; scroll-margin-block: var(--space-4) calc(var(--mobile-nav-height) + var(--space-4)); }
   .field input[type="file"] { padding-inline: var(--space-2); }
   .field input[type="checkbox"], .field input[type="radio"] { width: auto; }
   button, .primary, .link-button { min-height: var(--touch-target); white-space: normal; }
-  .import .primary, .account .primary, .get-started > .primary { justify-self: stretch; width: 100%; }
+  .import .primary, .account .primary, .get-started .primary { justify-self: stretch; width: 100%; }
   fieldset { padding: var(--space-3); border-radius: var(--shape-md); }
   fieldset label:has(input[type="radio"]), label:has(input[type="checkbox"]) { min-height: var(--touch-target); padding-block: var(--space-2); align-content: center; }
   legend { max-width: 100%; overflow-wrap: anywhere; }
   p, dd, .hint, .notice, .status { overflow-wrap: anywhere; }
   summary { min-height: var(--touch-target); align-content: center; cursor: pointer; }
-  .screen-title { font-size: 1.5rem; }
+  .screen-title { font-size: var(--text-title); }
   .mode-row > .segmented { width: 100%; }
-  .demo-nav { gap: var(--space-2); }
-  .demo-nav a { display: inline-flex; align-items: center; min-height: var(--touch-target); padding-inline: var(--space-2); background: var(--color-surface); border-radius: var(--shape-sm); }
-  .demo-label { flex-basis: 100%; }
   .matrix th, .matrix td { padding: 0.6rem var(--space-2); }
 }
 
-/* Keep secondary guidance available without making it compete with the portfolio. */
-.setup-details > summary,
-.demo-picker > summary,
-.dashboard-glossary > summary {
-  min-height: var(--touch-target);
-  align-content: center;
-  cursor: pointer;
-  font-weight: 650;
-}
-
-.demo-picker .demo-nav { padding-block: var(--space-2); }
-
 @media (max-width: 47.5rem) {
   .topbar > .status-chip { min-height: var(--touch-target); }
-  .card-subtitle, .hero-caption { line-height: 1.5; }
-  .card-title, .chart-title { font-size: 1.125rem; }
-  .card-label, .facts dt { font-size: 0.875rem; }
-  .hero-sub { flex-wrap: wrap; row-gap: var(--space-2); }
-  .hero .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-3); }
-  .facts.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .facts > div, .stat > *, .mobile-holdings dd { min-width: 0; max-width: 100%; }
-  .facts.stacked > div { flex-wrap: wrap; }
-  .hero-value .amount, .stat-value .amount, .facts .amount, .mobile-holdings .amount {
-    min-width: 0;
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-  .fund-identity { flex-wrap: wrap; gap: var(--space-2); }
-  .legend a { padding-block: var(--space-2); }
-  .legend-name { min-width: 0; }
   .import button, .review button, .account button { max-width: 100%; }
 }
 
@@ -1782,130 +1566,28 @@ details.card > summary {
   .perf-value { grid-column: 2; grid-row: 1; }
 }
 
-/* ---------- Portfolio composition ----------
- * One summary, one trend, then rows. A change is a row in one card, never a card in a card.
- * Source order is reading order on every width; wide screens only place the same blocks side by side. */
-.portfolio-dashboard > .hero {
-  background: var(--color-hero);
-  color: var(--color-on-hero);
-  border-radius: var(--shape-lg);
-  --hero-gain: var(--color-hero-gain);
-  padding: var(--space-3);
-  gap: 0;
-}
-.portfolio-dashboard > .hero .card-label,
-.portfolio-dashboard > .hero .facts dt,
-.portfolio-dashboard > .hero .hero-caption { color: var(--color-hero-muted); opacity: 1; }
-.portfolio-dashboard > .hero .loss { color: var(--color-on-hero); }
-.hero-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--space-3); margin-bottom: var(--space-1); }
-.hero-header > div { min-width: 0; }
-.hero-header h2 { font-size: 1.125rem; font-weight: 650; line-height: 1.25; letter-spacing: -0.02em; }
-.hero-header .eyebrow { color: var(--color-hero-muted); }
-.statement-action {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch-target);
-  padding-inline: var(--space-2);
-  margin-right: calc(-1 * var(--space-2));
-  border-radius: var(--shape-sm);
-  color: var(--color-on-hero);
-  font-size: 0.875rem;
-  font-weight: 650;
-  text-decoration: underline;
-  text-decoration-color: var(--color-hero-muted);
-  text-underline-offset: 0.25em;
-  white-space: nowrap;
-}
-.portfolio-dashboard .hero-value { margin-top: var(--space-1); }
-.card-label > .hero-caption { font-weight: 400; }
-.card-label > .hero-caption::before { content: "\00b7\00a0"; }
-.portfolio-dashboard .hero-gain { margin: var(--space-3) 0 0; padding: var(--space-3) 0 0; border-top: 1px solid var(--color-hero-muted); }
-.portfolio-dashboard .hero-gain .hero-sub { font-size: 1.5rem; margin-top: var(--space-1); }
-.portfolio-dashboard > .hero .facts { margin: var(--space-3) 0 0; padding-top: var(--space-3); border-top: 1px solid var(--color-hero-muted); }
 
-.period-results { container: periods / inline-size; display: grid; gap: 0; min-width: 0; }
-.period-results > .hint { margin-top: var(--space-3); font-size: 0.8125rem; }
-.period-results > .stat { padding-block: var(--space-2); }
-.period-results > .stat:first-child { padding-top: 0; }
-.period-results > .stat + .stat { border-top: 1px solid var(--color-border); }
-.period-results > .stat:last-of-type { padding-bottom: 0; }
-.stat {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 4.5rem;
-  grid-template-areas: "label label spark" "value pill spark" "caption caption spark";
-  align-items: center;
-  column-gap: var(--space-2);
-  row-gap: 0;
-  justify-items: start;
-  min-width: 0;
-}
-.stat > .card-label { grid-area: label; }
-.stat > .stat-value { grid-area: value; font-size: 1.5rem; }
-.stat > .pill { grid-area: pill; }
-.stat > .stat-caption { grid-area: caption; line-height: 1.5; }
-.stat > .sparkline { grid-area: spark; width: 4.5rem; height: 3rem; margin: 0; justify-self: end; }
-@container periods (min-width: 38rem) {
-  .period-results { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--space-4); }
-  .period-results > .hint { grid-column: 1 / -1; }
-  .period-results > .stat, .period-results > .stat:first-child, .period-results > .stat:last-of-type { padding-block: 0; }
-  .period-results > .stat + .stat { border-top: 0; }
-  .stat { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label label" "value pill" "caption caption" "spark spark"; }
-  .stat > .sparkline { width: 100%; height: 2.5rem; justify-self: stretch; }
-}
 
-.portfolio-holdings, .allocation-card { align-self: start; }
-.portfolio-holdings .fund-search { margin: var(--space-2) 0; gap: var(--space-1); }
-.fund-search-controls .quiet-action { white-space: nowrap; }
-.fund-search > .hint { font-size: 0.8125rem; line-height: 1.4; }
-.portfolio-holdings .fund-search label { font-size: var(--text-small); }
-.dashboard-analysis, .dashboard-glossary { border-top: 1px solid var(--color-border); }
-.dashboard-analysis > summary, .dashboard-glossary > summary { min-height: var(--touch-target); align-content: center; cursor: pointer; font-weight: 650; font-size: 1rem; }
-.glossary-subheading { margin: var(--space-4) 0 var(--space-2); font-size: 1rem; font-weight: 650; }
-.dashboard-glossary > .hint { margin-top: var(--space-3); }
-@media (min-width: 73.751rem) {
-  .portfolio-dashboard > .hero { grid-column: 1 / 5; grid-row: 1; }
-  .portfolio-dashboard > .portfolio-trend { grid-column: 5 / -1; grid-row: 1 / 3; }
-  .portfolio-dashboard > .period-results { grid-column: 1 / 5; grid-row: 2; }
-  .portfolio-dashboard > .page-nav { display: none; }
-}
-@media (min-width: 47.501rem) {
-  .portfolio-trend > .chart { height: 100%; align-content: flex-start; }
-}
-@media (min-width: 47.501rem) and (max-width: 73.75rem) {
-  .portfolio-dashboard > .hero, .portfolio-dashboard > .portfolio-trend, .portfolio-dashboard > .period-results { grid-column: 1 / -1; }
-}
-@media (max-width: 47.5rem) {
-  .hero-header h2 { font-size: 1rem; }
-  .statement-action { gap: var(--space-1); font-size: 0.8125rem; }
-  .portfolio-dashboard .hero-gain { margin-top: var(--space-2); padding-top: var(--space-1); }
-  .portfolio-dashboard > .hero .facts { margin-top: var(--space-2); padding-top: var(--space-1); }
-  .portfolio-dashboard .hero-gain .hero-sub { font-size: 1.25rem; }
-  .allocation-card { display: grid; grid-template-columns: 7rem minmax(0, 1fr); column-gap: var(--space-3); align-items: center; }
-  .allocation-card > :not(.donut):not(.legend) { grid-column: 1 / -1; }
-  .allocation-card > .donut { grid-column: 1; width: 7rem; margin: 0; }
-  .allocation-card > .legend { grid-column: 2; }
-  .allocation-card .donut-number { font-size: min(1.75rem, 16cqi); }
-  .allocation-card .donut[data-inspecting="true"] .donut-number { font-size: min(1.25rem, 13cqi); }
-  .portfolio-dashboard .hero-value { font-size: clamp(1.75rem, 9vw, 2.5rem); }
-  .portfolio-dashboard > .period-results { grid-column: 1 / -1; }
-}
+/* ---------- Page content: the main landmark stacks its blocks with one rhythm ---------- */
+#main-content { display: grid; gap: var(--space-3); align-content: start; }
+#main-content > * { min-width: 0; }
 
-/* In-page orientation: jump chips, not a wrapper. They never change the route. */
+/* ---------- In-page jump links ----------
+ * Outlined, quiet and labelled, so they read as places to go and never as actions. They never change the route. */
 .dash > .page-nav { grid-column: 1 / -1; }
+.page-nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
+.page-nav-label { margin: 0 var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-small); font-weight: var(--weight-semibold); }
 .page-nav ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.page-nav li { flex: 1 1 auto; display: flex; }
 .page-nav button.page-nav-item {
-  flex: 1 1 auto;
   min-height: var(--touch-target);
   padding: 0 var(--space-3);
-  color: var(--color-text);
-  background: var(--color-surface-2);
-  border: 0;
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
   border-radius: var(--shape-full);
   font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -1927,7 +1609,7 @@ details.card > summary {
   background: color-mix(in srgb, var(--tint, var(--tone)) 10%, var(--color-surface));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 32%, transparent);
   color: var(--color-text);
-  font-size: 0.9375rem;
+  font-size: var(--text-body);
   line-height: 1.5;
 }
 .notice::before, .review-problem::before, .review-adjustments::before, .expense-note::before, .expense-review::before, .expense-conflict::before {
@@ -1954,13 +1636,13 @@ details.card > summary {
 .notice h3, .notice h4, .review-problem h3, .review-problem h4, .review-adjustments h3, .review-adjustments h4, .expense-review h3, .expense-conflict h3 {
   margin: 0 0 var(--space-1);
   color: var(--color-text);
-  font-size: 1rem;
-  font-weight: 650;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
   line-height: 1.35;
 }
 .notice p + p, .review-problem p + p, .review-adjustments p + p { margin-top: var(--space-2); }
 .notice ul, .review-problem ul, .review-adjustments ul { margin: var(--space-2) 0 0; padding-left: 1.1rem; }
-.notice a, .review-problem a, .review-adjustments a { color: inherit; font-weight: 650; text-underline-offset: 0.2em; }
+.notice a, .review-problem a, .review-adjustments a { color: inherit; font-weight: var(--weight-semibold); text-underline-offset: 0.2em; }
 /* An action sits on its own row under the text, so the icon always lines up with the first line and the sentence
  * around the action is never split. */
 :is(.notice, .review-problem, .review-adjustments) > button:not(.primary) {
@@ -1973,13 +1655,13 @@ details.card > summary {
   border-radius: var(--shape-full);
   background: var(--color-accent);
   color: var(--color-on-accent);
-  font-size: 0.875rem;
-  font-weight: 650;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
   line-height: 1.3;
   text-align: center;
   cursor: pointer;
 }
-.notice > button:not(.primary) { display: flex; width: fit-content; margin: var(--space-2) 0 0; }
+.notice > button:not(.primary) { margin: var(--space-2) var(--space-2) 0 0; }
 :is(.review-problem, .review-adjustments) > button:not(.primary) { margin: var(--space-2) var(--space-2) 0 0; }
 :is(.notice, .review-problem, .review-adjustments) > button:not(.primary):disabled { opacity: 0.5; cursor: default; }
 
@@ -1989,10 +1671,8 @@ details.card > summary {
   .nav-link:hover { background: var(--color-accent-soft); }
   .icon-button:hover { background: var(--color-accent-soft); }
   a.status-chip:hover, button.status-chip:hover { background: var(--color-accent-soft); }
-  .row-link:hover { color: var(--color-accent); }
   .legend a:hover .legend-name { color: var(--color-accent); }
   .holdings-table tbody tr:hover { background: var(--color-surface-2); }
-  .statement-action:hover { background: color-mix(in srgb, var(--color-on-hero) 14%, transparent); }
   :is(.notice, .review-problem, .review-adjustments) > button:not(.primary):not(:disabled):hover { background: color-mix(in srgb, var(--color-accent) 86%, var(--color-text)); }
-  .page-nav button.page-nav-item:hover { background: var(--color-accent-soft); }
+  .page-nav button.page-nav-item:hover { background: var(--color-accent-soft); color: var(--color-accent); }
 }

@@ -2,6 +2,7 @@ import { render } from "preact";
 import "../shared/tokens.css";
 import "../presentation/charts/charts.css";
 import "./app.css";
+import "../features/overview/portfolio.css";
 import "../shared/ui/interactions.css";
 import "../shared/ui/motion.css";
 import { App } from "./App";

@@ -175,13 +175,12 @@ export function AccountView(props: {
         {!signedOut && <button type="button" class="link-button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect({ differentAccount: true }), "connect")}>Use a different Google account</button>}
       </div>
 
-      {!signedOut && state.workbook !== null && <PageNav items={[{ id: "account-health-heading", label: "Check history" }, { id: "account-maintenance-heading", label: "Tidy sheet" }, { id: "account-device-heading", label: "This device" }]} />}
+      {!signedOut && state.workbook !== null && <PageNav items={[{ id: "account-health-heading", label: "Verify" }, { id: "account-maintenance-heading", label: "Tidy" }, { id: "account-device-heading", label: "Storage" }]} />}
 
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-health" aria-labelledby="account-health-heading">
           <h2 id="account-health-heading" class="card-title" tabIndex={-1}>Verify your history</h2>
-          <p class="card-subtitle">Every month keeps its exact bank statement. This replays each one and compares it with your saved figures.</p>
-          <p>It only reads. Nothing in your Google Sheet or on this device is changed.</p>
+          <p class="card-subtitle">Every month keeps its exact bank statement. This replays each one and compares it with your saved figures. It only reads: nothing in your Google Sheet or on this device is changed.</p>
           <button type="button" disabled={busy} onClick={() => void verify()}>
             {pending === "verify" ? "Checking your history…" : "Check my history"}
           </button>
@@ -192,8 +191,8 @@ export function AccountView(props: {
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-maintenance" aria-labelledby="account-maintenance-heading">
           <h2 id="account-maintenance-heading" class="card-title" tabIndex={-1}>Keep your sheet tidy</h2>
-          <p class="card-subtitle">Rewrites the summary and every month's tab so they look alike and stay lean.</p>
-          <p>Dates, amounts and prices are shown the same way in every month, with one empty row and column around the data and nothing beyond it. Your saved records are not touched.</p>
+          <p class="card-subtitle">Rewrites the summary and every month's tab so they look alike and stay lean. Your saved records are not touched.</p>
+          <p class="hint">Dates, amounts and prices are shown the same way in every month, with one empty row and column around the data and nothing beyond it.</p>
           <button type="button" disabled={busy} onClick={() => void tidy()}>
             {pending === "tidy" ? "Tidying your sheet…" : "Tidy my sheet"}
           </button>
@@ -229,7 +228,7 @@ export function AccountView(props: {
       )}
 
       <section class="account-section" aria-labelledby="account-device-heading">
-        <h2 id="account-device-heading" class="card-title" tabIndex={-1}>How your data is kept</h2>
+        <h2 id="account-device-heading" class="card-title" tabIndex={-1}>Where your data lives</h2>
         <ul class="plain-list">
           <li>
             <strong>Your Google Sheet is the record.</strong> It lives in your Google Drive and you can open it any time. FolioDash can only see the one
@@ -243,7 +242,6 @@ export function AccountView(props: {
             finish.
           </li>
         </ul>
-        {!signedOut && <p class="hint">FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic checks resume. <a href="./privacy/" target="_blank" rel="noopener">Privacy policy</a></p>}
         {!signedOut && (
           <>
             {confirmForget ? (
@@ -289,10 +287,11 @@ export function AccountView(props: {
             )}
           </>
         )}
+        {!signedOut && <div class="more"><details><summary>How staying connected works</summary><p class="hint">FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic checks resume. <a href="./privacy/" target="_blank" rel="noopener">Privacy policy</a></p></details></div>}
       </section>
 
       {!props.clientConfigured && (
-        <details class="account-section" open>
+        <div class="more"><details open>
           <summary>Advanced: Google client ID</summary>
           <p class="hint">
             A hosted FolioDash already has this. It is the OAuth client ID of the Google Cloud project that signs people in. It is public by design and is not
@@ -327,7 +326,7 @@ export function AccountView(props: {
           >
             Save client ID
           </button>
-        </details>
+        </details></div>
       )}
       <p class="footnote build-stamp">FolioDash build: {props.build}</p>
     </section>

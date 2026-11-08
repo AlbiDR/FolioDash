@@ -70,7 +70,7 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
   const adjustments = groupAdjustments(statement.adjustments);
   return (
     <>
-      <dl class="kpis">
+      <dl class="facts stacked">
         <div>
           <dt>Funds found</dt>
           <dd>{statement.funds.length}</dd>
@@ -114,15 +114,13 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
           <thead>
             <tr>
               <th scope="col">Fund</th>
-              <th scope="col">ISIN</th>
               <th scope="col">Market value</th>
             </tr>
           </thead>
           <tbody>
             {statement.funds.map((fund) => (
               <tr key={fund.isin}>
-                <th scope="row">{fund.name}</th>
-                <td>{fund.isin}</td>
+                <th scope="row">{fund.name}<span class="fund-isin">{fund.isin}</span></th>
                 <td><Amount cents={fund.marketValue} /></td>
               </tr>
             ))}
@@ -264,7 +262,6 @@ function RecordedSummary(props: { readonly ledger: LedgerState }): JSX.Element |
         <thead>
           <tr>
             <th scope="col">Fund</th>
-            <th scope="col">Status</th>
             <th scope="col">Value</th>
             <th scope="col">Net invested</th>
           </tr>
@@ -274,8 +271,7 @@ function RecordedSummary(props: { readonly ledger: LedgerState }): JSX.Element |
             const holding = latest.holdings[fund.isin];
             return holding === undefined ? null : (
               <tr key={fund.isin}>
-                <th scope="row">{fund.name}</th>
-                <td>{holding.status === "closed" ? "Closed" : "Active"}</td>
+                <th scope="row">{fund.name}<span class="fund-isin">{holding.status === "closed" ? "Closed" : "Active"}</span></th>
                 <td><Amount cents={holding.value} /></td>
                 <td><Amount cents={holding.netInvested} /></td>
               </tr>
@@ -373,7 +369,7 @@ export function ImportView(props: {
           type="file"
           multiple
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          aria-describedby="file-entry-help"
+          aria-describedby="file-entry-help file-entry-privacy"
           onChange={(event) => {
             const input = event.currentTarget;
             const files = Array.from(input.files ?? []);
@@ -381,21 +377,19 @@ export function ImportView(props: {
             input.value = "";
           }}
         />
-        <p class="hint" id="file-entry-help">
-          One export or a whole history. Choose one or more Excel files exported by your bank, or one workbook containing a statement on each sheet.
+        <p class="hint" id="file-entry-help">Choose one or more Excel files exported by your bank, or one workbook with a statement on each sheet.</p>
+        <p class="footnote" id="file-entry-privacy">
           Supported Fideuram holdings sheets are checked in this browser. The original Excel files are not uploaded;
-          confirming an import saves the reviewed sheet contents and your decisions to your private Google spreadsheet. Review the details, then save with confidence.
+          confirming an import saves the reviewed sheet contents and your decisions to your private Google spreadsheet.
         </p>
       </div>
 
       <div aria-live="polite" data-busy={phase.name === "reading"} class="status">
-        {phase.name === "reading" && <p>Reading and checking the file…</p>}
+        {phase.name === "reading" && <p class="notice" data-busy="true">Reading and checking the file…</p>}
         {phase.name === "reviewed" && (
-          <p>
-            {phase.review.status === "reviewed" && phase.review.sheets.some((entry) => entry.outcome.ok)
-              ? "Review ready."
-              : "The file was checked. It has problems, described below."}
-          </p>
+          phase.review.status === "reviewed" && phase.review.sheets.some((entry) => entry.outcome.ok)
+            ? <p class="notice notice-success">Review ready. Check the details below, then confirm.</p>
+            : <p class="notice notice-warning">The file was checked. It has problems, described below.</p>
         )}
       </div>
 

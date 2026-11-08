@@ -13,9 +13,6 @@
   --color-on-hero: #f5f8ff;
   --color-hero-muted: #becce2;
   --color-hero-gain: #8ce0ba;
-  --text-small: 0.8125rem;
-  --text-body: 0.9375rem;
-  --text-heading: 1.25rem;
   --card-padding: clamp(1rem, 1.7vw, 1.5rem);
   --shadow-card: 0 4px 24px rgba(16, 19, 28, 0.025);
   --color-surface: #ffffff;
@@ -89,11 +86,36 @@
   --duration-medium: 380ms;
 
   --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto, sans-serif;
+
+  /* Type: one size per role, never a raw rem in a component. Seven steps and three weights.
+   *   caption  axis labels, ISINs, chips
+   *   small    labels, hints, captions, secondary rows
+   *   body     reading text, field values, list rows
+   *   lead     card and section titles, emphasised rows
+   *   title    the page title and secondary figures
+   *   figure   a key figure inside a card
+   *   display  the one headline figure of a screen
+   */
+  --text-caption: 0.75rem;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-lead: 1.125rem;
+  --text-title: 1.375rem;
+  --text-figure: 1.75rem;
+  --text-display: clamp(2rem, 9vw, 3rem);
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --leading-tight: 1.2;
+  --leading-body: 1.5;
+
+  /* Space: a 4 point scale. Inside a group use 1 and 2; between groups of one section 3; between sections 4 and 5. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2.5rem;
+  --section-gap: var(--space-5);
   --page-inset: clamp(1rem, 2.4vw, 2rem);
   --gap: clamp(0.875rem, 1.3vw, 1.25rem);
   --touch-target: 3rem;
