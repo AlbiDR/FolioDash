@@ -1,3 +1,4 @@
+import { Presence } from "../../shared/ui/Presence";
 import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../../../applications/SessionModel";
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
@@ -20,12 +21,11 @@ export interface AccountActions {
 }
 
 function Result(props: { readonly message: Message | null }): JSX.Element | null {
-  if (props.message === null) return null;
   return (
-    <div class={props.message.good ? "review-adjustments notice-success" : "review-problem"} role={props.message.good ? "status" : "alert"}>
+    <Presence show={props.message !== null}>{props.message !== null && <div class={props.message.good ? "review-adjustments notice-success" : "review-problem"} role={props.message.good ? "status" : "alert"}>
       <h3>{props.message.title}</h3>
       <p>{props.message.body}</p>
-    </div>
+    </div>}</Presence>
   );
 }
 

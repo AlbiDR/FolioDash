@@ -1,3 +1,4 @@
+import { Presence } from "../../shared/ui/Presence";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
@@ -352,7 +353,7 @@ export function ImportView(props: {
     <section aria-labelledby="import-heading" class="import">
       <h2 id="import-heading" class="import-heading">{props.historyMode ? "Choose your history files" : method === "manual" ? "Enter a statement" : "Choose bank statements"}</h2>
       <ol class="journey-steps" aria-label="Import process"><li aria-current={phase.name === "idle" && method === "file" ? "step" : undefined}><span>01</span> Choose statements</li><li aria-current={!saveLocked && (method === "manual" || phase.name === "reviewed" || phase.name === "batch") ? "step" : undefined}><span>02</span> Review dates &amp; movements</li><li aria-current={saveLocked ? "step" : undefined}><span>03</span> Save &amp; check</li></ol>
-      {recorded !== null && <p ref={recordedMessage} class="notice notice-success" role="status" tabIndex={-1}>Statement for {formatDateLong(recorded)} {props.save === undefined ? "recorded in this browser tab" : "saved to your spreadsheet and checked"}. You can choose another statement below.</p>}
+      <Presence show={recorded !== null}>{recorded !== null && <p ref={recordedMessage} class="notice notice-success" role="status" tabIndex={-1}>Statement for {formatDateLong(recorded)} {props.save === undefined ? "recorded in this browser tab" : "saved to your spreadsheet and checked"}. You can choose another statement below.</p>}</Presence>
       {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="file-entry-panel" aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="manual-entry-panel" aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>

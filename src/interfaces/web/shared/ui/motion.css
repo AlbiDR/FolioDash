@@ -386,3 +386,31 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
   .page-nav-item, .expense-date-controls button { translate: none !important; }
   .expense-note-actions button > svg { scale: none !important; }
 }
+
+/* Symmetric page choreography is owned by usePageMotion. The outgoing landmark is inert,
+ * and only the latest requested destination mounts. Its own animation replaces child arrivals. */
+#main-content { transform-origin: top center; }
+#main-content[data-page-exiting="true"] { pointer-events: none; }
+#main-content > :is(.dash, .screen, .account, .import) { animation: none; }
+
+/* Retained notices collapse both their box and the parent row gap. CSS reverses an interrupted
+ * dismissal from its current position. Content remains context-aware, including privacy masking. */
+.presence {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-block-end: 0;
+  transition: grid-template-rows var(--duration-medium) var(--ease-standard), opacity var(--duration-short) var(--ease-standard), margin-block-end var(--duration-medium) var(--ease-standard);
+}
+.presence-content { min-height: 0; display: flow-root; }
+.presence[data-present="false"] { grid-template-rows: 0fr; opacity: 0; margin-block-end: calc(-1 * var(--presence-gap, 0px)); pointer-events: none; }
+.presence[data-present="false"] > .presence-content, .presence[data-settled="false"] > .presence-content { overflow: hidden; }
+/* The wrapper supplies entry opacity; suppress competing one-shot child fades on reversal. */
+.presence-content > :is(.notice, .review-problem, .review-adjustments, .expense-note) { animation: none; }
+@starting-style {
+  .presence[data-present="true"] {
+    grid-template-rows: 0fr;
+    opacity: var(--motion-reveal-opacity);
+    margin-block-end: calc(-1 * var(--presence-gap, 0px));
+  }
+}

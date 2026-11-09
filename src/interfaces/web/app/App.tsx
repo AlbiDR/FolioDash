@@ -8,6 +8,8 @@ import { MonthsView } from "../features/overview/MonthsView";
 import type { OverviewModel } from "../features/overview/OverviewModel";
 import { OverviewView } from "../features/overview/OverviewView";
 import { PrivacyProvider, PrivacyToggle, usePrivacyChoice } from "../presentation/privacy/privacy";
+import { Presence } from "../shared/ui/Presence";
+import { usePageMotion } from "../shared/ui/usePageMotion";
 import { DeferredView } from "../shared/ui/DeferredView";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sidebarChoice";
 import { useMediaQuery } from "../shared/ui/useMediaQuery";
@@ -65,6 +67,8 @@ const NAV: readonly { readonly id: ReturnType<typeof navEntryOf>; readonly href:
 ];
 
 export function App(): JSX.Element {
+  const page = useRef<HTMLElement>(null);
+  const pageMotion = usePageMotion(page);
   const header = useRef<HTMLElement>(null);
   const navigation = useRef<HTMLElement>(null);
   useFocusVisibility(header, navigation);
@@ -145,15 +149,22 @@ export function App(): JSX.Element {
         return;
       }
       setImportNavigationMessage("");
-      setRoute(routeFrom(window.location.hash));
-      window.scrollTo(0, 0);
-      requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
+      const destination = routeFrom(window.location.hash);
+      if (JSON.stringify(destination) === JSON.stringify(route)) {
+        pageMotion.cancel();
+        return;
+      }
+      pageMotion.change(() => {
+        setRoute(destination);
+        window.scrollTo(0, 0);
+        requestAnimationFrame(() => page.current?.focus({ preventScroll: true }));
+      });
     };
     window.addEventListener("hashchange", update);
     return () => {
       window.removeEventListener("hashchange", update);
     };
-  }, [importLocked, expenseLocked, route.name]);
+  }, [importLocked, expenseLocked, route, pageMotion]);
 
   // A newer version of the app, kept waiting until the person chooses to switch.
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
@@ -268,10 +279,10 @@ export function App(): JSX.Element {
                 </a>
               )}
               <div class="topbar-controls">
-                <PrivacyToggle hidden={hidden} onChange={setHidden} />
+                <PrivacyToggle hidden={hidden} onChange={(value) => { pageMotion.finish(); setHidden(value); }} />
               </div>
             </header>
-            {applyUpdate !== null && (
+            <Presence show={applyUpdate !== null}>{applyUpdate !== null && (
               <div class="notice app-update" role="status">
                 <p>
                   A new version of FolioDash is ready.
@@ -282,18 +293,18 @@ export function App(): JSX.Element {
                   Reload to update
                 </button>
               </div>
-            )}
-            {portfolioScreen && route.name !== "overview" && data.mode === "signed-out" && (
+            )}</Presence>
+            <Presence show={portfolioScreen && route.name !== "overview" && data.mode === "signed-out"}>
               <p class="notice" role="status">
                 Demonstration with invented data. Nothing here is yours until you continue with Google.
               </p>
-            )}
-            {portfolioScreen && needsAttention && (
+            </Presence>
+            <Presence show={portfolioScreen && needsAttention}>
               <p class="notice notice-warning" role="status">
                 Your Google Sheet needs attention. <a href="#connection">See what to do</a>
               </p>
-            )}
-            {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
+            </Presence>
+            <Presence show={(route.name === "import" || route.name === "history") && data.mode === "signed-out"}>{(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
               <div class="notice" role="status">
                 <p>
                   Continue with Google to save your statements. You can review the files first.
@@ -302,14 +313,14 @@ export function App(): JSX.Element {
                 </p>
                 <button type="button" disabled={importConnecting || !clientConfigured} onClick={() => { void connectForImport(); }}>{importConnecting ? "Connecting to Google…" : "Continue with Google"}</button>
               </div>
-            )}
-            {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
+            )}</Presence>
+            <Presence show={(route.name === "import" || route.name === "history") && data.mode === "device-copy"}>{(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
               <p class="notice" role="status">
                 Your saved copy is available. Google access is renewed quietly on your next tap, and checked before saving.
               </p>
-            )}
-            <main id="main-content" aria-labelledby="page-title" tabIndex={-1}>
-              {(importLocked || expenseLocked) && importNavigationMessage !== "" && <p class="notice notice-warning" role="status">{importNavigationMessage}</p>}
+            )}</Presence>
+            <main ref={page} id="main-content" aria-labelledby="page-title" tabIndex={-1}>
+              <Presence show={(importLocked || expenseLocked) && importNavigationMessage !== ""}><p class="notice notice-warning" role="status">{importNavigationMessage}</p></Presence>
               <DeferredView key={route.name === "fund" ? `fund-${route.isin}` : route.name}>
               {route.name === "overview" && data.mode === "signed-out" && (
                 <GetStarted

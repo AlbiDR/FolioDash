@@ -1,3 +1,4 @@
+import { Presence } from "../../shared/ui/Presence";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { planExcelHistory, type ExcelHistoryEntry, type ExcelHistoryReview } from "../../../../applications/ExcelHistory";
@@ -155,7 +156,7 @@ export function ExcelHistoryView(props: {
       <h3 id="excel-history-heading" ref={heading} tabIndex={-1}>
         {stage === "dates" ? "Check your statements" : stage === "questions" ? `Review statement ${String(reviewIndex + 1)} of ${String(ordered.length)}` : stage === "done" ? "Your history is ready" : "Review and save your history"}
       </h3>
-      {message !== "" && <p class="notice" role="status">{message}</p>}
+      <Presence show={message !== ""}>{message !== "" && <p class="notice" role="status">{message}</p>}</Presence>
       <div class="status" data-busy={checking} aria-live="polite">{checking && <p>Checking the interrupted save. Nothing more is being written.</p>}</div>
       {stage === "dates" && <>
         <p>All files were checked locally. Select the statements to include and check every date. They will be reviewed oldest first. This selection step does not save anything.</p>

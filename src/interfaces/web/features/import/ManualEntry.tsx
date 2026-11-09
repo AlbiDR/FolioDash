@@ -1,3 +1,4 @@
+import { Presence } from "../../shared/ui/Presence";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
@@ -70,7 +71,7 @@ export function ManualEntry(props: {
       <p>Enter every fund held on the same date. Money movements are reviewed separately before saving.</p>
       <p class="hint">{editing ? "Step 1 of 3: values and date" : "Step 2 of 3: movements and review. Confirm save when ready."}</p>
     </header>
-    {savedDate && <p id="manual-recorded" class="notice notice-success" role="status" tabIndex={-1}>Update for {savedDate} recorded. You can start another update below.</p>}
+    <Presence show={Boolean(savedDate)}>{savedDate && <p id="manual-recorded" class="notice notice-success" role="status" tabIndex={-1}>Update for {savedDate} recorded. You can start another update below.</p>}</Presence>
     <form hidden={!editing} onSubmit={continueReview}>
       <div class="field"><label for="manual-date">Valuation date</label>
         <input id="manual-date" type="date" required aria-describedby="manual-date-hint" value={date} onInput={event => { setDate(event.currentTarget.value); }} />
@@ -93,9 +94,9 @@ export function ManualEntry(props: {
           <button type="button" onClick={() => { pendingFocus.current = "undo-removed-fund"; setRemoved({ row, index }); setRows(current => current.filter(item => item.id !== row.id)); setEmptyConfirmed(false); }}>Not held on this date</button>
         </fieldset>;
       })}</div>
-      {removed !== null && <div class="notice" role="status">{removed.row.name || "Fund"} removed from this entry only. History is unchanged; sales are reviewed next.
+      <Presence show={removed !== null}>{removed !== null && <div class="notice" role="status">{removed.row.name || "Fund"} removed from this entry only. History is unchanged; sales are reviewed next.
         <button id="undo-removed-fund" type="button" onClick={() => { pendingFocus.current = `${removed.row.id}-${removed.row.known ? "value" : "name"}`; setRestoredId(removed.row.id); setRows(current => [...current.slice(0, removed.index), removed.row, ...current.slice(removed.index)]); setRemoved(null); }}>Undo removal</button>
-      </div>}
+      </div>}</Presence>
       <button type="button" onClick={() => { const row = blank(); pendingFocus.current = `${row.id}-name`; setRows(current => [...current, row]); }}>Add another fund</button>
       {rows.length === 0 && <label><input type="checkbox" checked={emptyConfirmed} onChange={event => { setEmptyConfirmed(event.currentTarget.checked); }} /> I hold no funds on this date. Review closures and full proceeds next.</label>}
       {attempted && !result.ok && <div class="review-problem" role="alert"><h4>Check your entries</h4><ul>{result.errors.map(error => <li key={error}>{error}</li>)}</ul></div>}
