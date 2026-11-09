@@ -20,7 +20,7 @@ import {
 const COLUMN = { B: 1, C: 2, D: 3, E: 4, F: 5, G: 6, H: 7, I: 8, J: 9, K: 10, L: 11, M: 12 } as const;
 const LAST_COLUMN = COLUMN.M;
 
-const HEADERS: readonly (readonly [number, string])[] = [
+export const FIDEURAM_HEADERS: readonly (readonly [number, string])[] = [
   [COLUMN.B, "Categoria / Nome prodotto"],
   [COLUMN.D, "Numero contratto / conto"],
   [COLUMN.E, "Intestatari / ISIN"],
@@ -127,7 +127,7 @@ function present(sheet: RawSheet, row: number, column: number): boolean {
 export function findHeader(sheet: RawSheet): number | null {
   for (let row = 0; row < sheet.rows.length; row++) {
     if (
-      HEADERS.every(([column, label]) => textOf(sheet, row, column) === label) &&
+      FIDEURAM_HEADERS.every(([column, label]) => textOf(sheet, row, column) === label) &&
       !present(sheet, row, COLUMN.C)
     ) {
       return row;

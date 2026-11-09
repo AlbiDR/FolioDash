@@ -63,4 +63,19 @@ describe("presentStatement", () => {
     const odd = at(withCell(syntheticSheet(), ROW.productA, COL.M, text("n/d soon")), ROW.productA, COL.M);
     expect(odd).toMatchObject({ value: "n/d soon", format: null });
   });
+  it("normalizes display whitespace and uses semantic alignment without mutating source evidence", () => {
+    const original = syntheticSheet();
+    const padded = withCell(withCell(withCell(original, ROW.productA, COL.B, text("  Example Fund A Acc EUR  ")), ROW.fundsCategory, COL.C, text("\u00a0 Fondi \u00a0")), ROW.productA, COL.M, text("1.250,00 € "));
+    const sourceBefore = JSON.stringify(padded);
+    const baseline = presentStatement(original);
+    const actual = presentStatement(padded);
+    expect(actual).toEqual(baseline);
+    expect(actual.cells[ROW.productA]?.[COL.M]?.alignment).toBe("RIGHT");
+    expect(actual.cells[ROW.contractA]?.[COL.F]?.alignment).toBe("CENTER");
+    expect(actual.cells[ROW.productA]?.[COL.B]?.alignment).toBe("LEFT");
+    expect(actual.cells[ROW.header]?.[COL.I]?.value).toBe("Cambio");
+    expect(actual.cells.flat().filter((cell) => typeof cell.value === "string").every((cell) => cell.value === String(cell.value).trim())).toBe(true);
+    expect(JSON.stringify(padded)).toBe(sourceBefore);
+  });
+
 });

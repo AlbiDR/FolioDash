@@ -2,7 +2,7 @@ import { type Grid, type GridCell, bufferedGrid, plainCell, rawCell } from "../.
 import { type Decimal, decimalToNumber } from "../../core/Decimal";
 import { toSpreadsheetSerial } from "../../core/IsoDate";
 import type { RawCell, RawSheet } from "../../core/RawSheet";
-import { type FundPosition, findHeader, interpretFideuramSheet } from "./FideuramLayout";
+import { FIDEURAM_HEADERS, type FundPosition, findHeader, interpretFideuramSheet } from "./FideuramLayout";
 import { type Currency, type ReadResult, readDate, readMoney, readPrice, readQuantity, readRate, readRisk } from "./FideuramValues";
 
 const DATE = "dd/mm/yyyy";
@@ -23,9 +23,9 @@ function only<T>(result: ReadResult<T>): T | null {
   return result.candidates[0]?.value ?? null;
 }
 
-function priceCell(value: Decimal, currency: Currency | null): GridCell {
+function priceCell(value: Decimal, currency: Currency | null, precision = 3): GridCell {
   const symbol = currency === "EUR" ? ' "€"' : currency === "USD" ? ' "$"' : "";
-  return { value: decimalToNumber(value), format: `#,##0.000${symbol}`, emphasis: null };
+  return { value: decimalToNumber(value), format: `#,##0.${"0".repeat(precision)}${symbol}`, emphasis: null };
 }
 
 /**
@@ -53,7 +53,7 @@ function typed(cell: RawCell | undefined, column: number, date1904: boolean, pos
     case COLUMN.J: {
       const price = only(readPrice(cell));
       // An average cost written without a symbol takes the currency of the fund's price.
-      return price === null ? null : priceCell(price.value, price.currency ?? position?.priceCurrency ?? null);
+      return price === null ? null : priceCell(price.value, price.currency ?? position?.priceCurrency ?? null, column === COLUMN.J ? 4 : 3);
     }
     case COLUMN.I:
     case COLUMN.K: {
@@ -91,17 +91,20 @@ export function presentStatement(sheet: RawSheet): Grid {
   const header = findHeader(sheet);
   const read = interpretFideuramSheet(sheet);
   const positions = new Map((read.ok ? read.statement.funds : []).map((fund) => [fund.isin, fund] as const));
+  const labels = new Map(FIDEURAM_HEADERS);
   const rows = sheet.rows.map((row, rowIndex) => {
     const strong = header !== null && rowIndex > header && isStrongRow(row);
-    return row.map((cell, column): GridCell => {
-      const plain = rawCell(cell);
-      if (plain.value === "") return plain;
+    return Array.from({ length: Math.max(row.length, COLUMN.M + 1) }, (_, column): GridCell => {
+      const raw = rawCell(row[column]);
+      const value = typeof raw.value === "string" ? raw.value.replaceAll("\u00a0", " ").trim() : raw.value;
+      const alignment = column === COLUMN.F ? "CENTER" : column >= COLUMN.G && column <= COLUMN.M ? "RIGHT" : "LEFT";
       const emphasis = header !== null && rowIndex === header ? "header" : strong ? "strong" : null;
+      if (rowIndex === header) return { ...plainCell(labels.get(column) ?? value, "header"), alignment };
       const isin = rawCell(row[COLUMN.E]).value;
       const position = typeof isin === "string" ? positions.get(isin.trim()) : undefined;
-      const reading = header !== null && rowIndex > header ? typed(cell, column, sheet.date1904, position) : null;
-      if (reading !== null) return { ...reading, emphasis };
-      return emphasis === null ? plain : plainCell(plain.value, emphasis);
+      const reading = header !== null && rowIndex > header ? typed(row[column], column, sheet.date1904, position) : null;
+      const display = column < COLUMN.F && typeof value === "number" ? String(value) : value;
+      return { ...(reading ?? plainCell(display)), emphasis: value === "" ? null : emphasis, alignment };
     });
   });
   return bufferedGrid(rows, WIDTHS);

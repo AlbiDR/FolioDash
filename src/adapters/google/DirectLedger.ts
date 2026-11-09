@@ -1,6 +1,7 @@
 import type { SourceRecord } from "../../applications/StatementSource";
 import type { CallFailure, Workbook } from "../../applications/SessionModel";
 import { type AttachRequest, type CommitRequest, type ServiceEnvironment, attachStatements, commitStatement } from "../../applications/LedgerService";
+import { rawGrid } from "../../applications/SheetGrid";
 import { readableView } from "../../applications/ReadableView";
 import type { Grid } from "../../applications/SheetGrid";
 import { canonicalJson } from "../../core/CanonicalJson";
@@ -264,7 +265,7 @@ export async function mirrorStatements(
   months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[],
   present: PresentStatement,
 ): Promise<boolean> {
-  const written = await writeGridTabs(rest, accessToken, workbookId, months.map((month) => ({ title: statementTabTitle(month.date), grid: present(month.sheet) })));
+  const written = await writeGridTabs(rest, accessToken, workbookId, months.map((month) => ({ title: statementTabTitle(month.date), grid: present(month.sheet), legacyGrids: [rawGrid(month.sheet)] })));
   return written.ok;
 }
 

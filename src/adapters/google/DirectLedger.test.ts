@@ -209,6 +209,26 @@ describe("generated tab ownership", () => {
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(records);
   });
 
+  it("recognizes sheet zero when Google omits default-valued scalar IDs", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const rest: DirectDeps["rest"] = async (request) => {
+      const answer = await google.client(request);
+      if (request.method !== "GET" || request.url.includes("/values")) return answer;
+      const body = await answer.json() as { sheets?: { properties: Record<string, unknown>; developerMetadata?: (Record<string, unknown> & { location: Record<string, unknown> })[] }[] };
+      for (const sheet of body.sheets ?? []) {
+        if (sheet.properties["sheetId"] === 0) delete sheet.properties["sheetId"];
+        for (const marker of sheet.developerMetadata ?? []) {
+          if (marker.location["sheetId"] === 0) { delete marker.location["sheetId"]; marker.location["locationType"] = "SHEET"; }
+        }
+      }
+      return { ...answer, json: () => Promise.resolve(body) };
+    };
+    expect(await refreshView(rest, google.token, workbook.id, EMPTY_LEDGER)).toBe(true);
+    expect(google.tab(workbook.id, VIEW_TAB)?.rows[1]?.[1]).toBe(VIEW_TAB);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
+  });
+
   it("orders and colours views consistently even when older months are written later", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
@@ -257,6 +277,63 @@ describe("generated tab ownership", () => {
     expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: LEDGER_TAB, grid: grid() }])).ok).toBe(false);
     expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }, { title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
+  });
+
+  it("consolidates a source-backed original and numbered generated views atomically, then stays stable", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const title = "Bank 2026-05-03";
+    const view = { title, grid: grid(), legacyGrids: [grid()] };
+    await writeGridTabs(google.client, google.token, workbook.id, [view]);
+    const original = google.tab(workbook.id, title);
+    const tabs = google.workbooks.get(workbook.id);
+    if (original === undefined || tabs === undefined) throw new Error("setup failed");
+    const duplicate = { ...original, id: 2000, rows: original.rows.map((row) => [...row]), developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })) };
+    original.developerMetadata = [];
+    tabs.set(`${title} (2)`, duplicate);
+    google.faults.push({ match: /:batchUpdate$/u, status: 400 });
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [view])).ok).toBe(false);
+    expect(tabs.has(`${title} (2)`)).toBe(true);
+    google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [view])).ok).toBe(false);
+    expect(tabs.has(`${title} (2)`)).toBe(false);
+    expect(google.tab(workbook.id, title)?.id).toBe(original.id);
+    expect((await writeGridTabs(google.client, google.token, workbook.id, [view])).ok).toBe(true);
+    expect([...tabs.keys()].filter((name) => name.startsWith(title))).toEqual([title]);
+    expect(google.tab(workbook.id, title)?.developerMetadata).toHaveLength(1);
+  });
+
+  it("renames a lone numbered owned Bank view and preserves an unverified numbered tab", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const title = "Bank 2026-04-02";
+    const view = { title, grid: grid(), legacyGrids: [grid()] };
+    await writeGridTabs(google.client, google.token, workbook.id, [view]);
+    const tab = google.tab(workbook.id, title);
+    const tabs = google.workbooks.get(workbook.id);
+    if (tab === undefined || tabs === undefined) throw new Error("setup failed");
+    tabs.delete(title);
+    tabs.set(`${title} (2)`, tab);
+    tabs.set(`${title} (3)`, { ...tab, id: 3000, developerMetadata: [], rows: [["personal note"]] });
+    const written = await writeGridTabs(google.client, google.token, workbook.id, [view]);
+    expect(written).toMatchObject({ ok: true, preservedTabs: 1 });
+    expect(tabs.has(`${title} (2)`)).toBe(false);
+    expect(google.tab(workbook.id, title)?.id).toBe(tab.id);
+    expect(google.tab(workbook.id, `${title} (3)`)?.rows).toEqual([["personal note"]]);
+  });
+
+  it("never consolidates a formula or changed value merely because the tab looks like a duplicate", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const title = "Bank 2026-04-02";
+    const view = { title, grid: grid(), legacyGrids: [grid()] };
+    await writeGridTabs(google.client, google.token, workbook.id, [view]);
+    const tab = google.tab(workbook.id, title);
+    const tabs = google.workbooks.get(workbook.id);
+    if (tab === undefined || tabs === undefined) throw new Error("setup failed");
+    tabs.set(`${title} (2)`, { ...tab, id: 4000, developerMetadata: [], rows: [["=1+1"]] });
+    expect(await writeGridTabs(google.client, google.token, workbook.id, [view])).toMatchObject({ ok: true, consolidatedTabs: 0, preservedTabs: 1 });
+    expect(google.tab(workbook.id, `${title} (2)`)?.rows).toEqual([["=1+1"]]);
   });
 
   it("resolves a lost view-write response by finding the marker, without making duplicate tabs", async () => {

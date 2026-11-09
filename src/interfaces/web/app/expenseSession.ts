@@ -29,7 +29,7 @@ export class ExpenseSession {
   private busy = false;
   private sequence = 0;
   private refreshing: Promise<void> | null = null;
-  constructor(private readonly deps: { readonly rest: RestClient; readonly cache?: ExpenseCache; readonly newId: () => string; readonly access: (purpose: "read" | "write") => Promise<Access>; readonly workbookId?: string | null; readonly today?: () => IsoDate }) {
+  constructor(private readonly deps: { readonly rest: RestClient; readonly cache?: ExpenseCache; readonly newId: () => string; readonly access: (purpose: "read" | "write") => Promise<Access>; readonly workbookId?: string | null; readonly today?: () => IsoDate; readonly onViewResult?: (updated: boolean) => void }) {
     const copy = deps.cache?.load();
     if (copy !== null && copy !== undefined && (deps.workbookId === undefined || deps.workbookId === copy.workbookId)) {
       const history = parseExpenseHistory(copy.commands);
@@ -144,6 +144,7 @@ export class ExpenseSession {
       this.set({ ...this.current, ...(history ?? { days: result.days }), initialized: true, ready: true, cached: false, pending: false, message: result.status === "conflict" ? result.message : "" });
     } else this.set({ ...this.current, pending: this.pendingCommand !== null, message: result.message });
     this.keep();
+    if (result.status === "saved") this.deps.onViewResult?.(result.viewUpdated);
     return result;
   }
   exportBackup(): string { return encodeExpenseBackup(this.current.commands); }

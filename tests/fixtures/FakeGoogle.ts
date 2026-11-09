@@ -4,6 +4,7 @@ import type { RestClient, RestRequest, RestResponse } from "../../src/adapters/g
 interface ParsedUrl {
   readonly pathname: string;
   query(name: string): string | null;
+  queryAll(name: string): string[];
 }
 
 function parseUrl(text: string): ParsedUrl {
@@ -18,7 +19,10 @@ function parseUrl(text: string): ParsedUrl {
         return [decodeURIComponent(key), decodeURIComponent(value)] as const;
       }),
   );
-  return { pathname, query: (name) => pairs.get(name) ?? null };
+  return { pathname, query: (name) => pairs.get(name) ?? null, queryAll: (name) => search.split("&").flatMap((pair) => {
+    const [key = "", value = ""] = pair.split("=");
+    return decodeURIComponent(key) === name ? [decodeURIComponent(value)] : [];
+  }) };
 }
 
 /** The tab named by a range such as 'Bank 2026-01-31'!A1 or _FolioDash ledger!A1:D, with its quotes removed. */
@@ -83,6 +87,7 @@ export class FakeGoogle {
   /** Google does not always honour "hidden" when a tab is created; this reproduces that. */
   ignoreHiddenOnCreate = false;
   private nextTabId = 100;
+  readonly spreadsheetMetadata = new Map<string, Record<string, unknown>[]>();
   readonly namedRanges = new Map<string, Set<string>>();
   /** Every structural request seen, so a test can check what was asked of Google. */
   requests: Record<string, unknown>[] = [];
@@ -154,8 +159,17 @@ export class FakeGoogle {
       const tabs = this.workbooks.get(info[1] ?? "");
       if (tabs === undefined) return this.respond(404, {});
       return this.respond(200, {
+        developerMetadata: this.spreadsheetMetadata.get(info[1] ?? "") ?? [],
         sheets: [...tabs.entries()].map(([title, tab]) => ({ properties: { sheetId: tab.id, title, hidden: tab.hidden, gridProperties: { rowCount: tab.rowCount, columnCount: tab.columnCount } }, developerMetadata: tab.developerMetadata })),
       });
+    }
+    const readBatch = /^\/v4\/spreadsheets\/([^/]+)\/values:batchGet$/u.exec(path);
+    if (request.method === "GET" && readBatch !== null) {
+      const tabs = this.workbooks.get(readBatch[1] ?? "");
+      if (tabs === undefined) return this.respond(404, {});
+      const ranges = url.queryAll("ranges");
+      if (ranges.some((range) => !tabs.has(tabNameOf(range)))) return this.respond(400, {});
+      return this.respond(200, { valueRanges: ranges.map((range) => ({ range, values: tabs.get(tabNameOf(range))?.rows })) });
     }
     const bulk = /^\/v4\/spreadsheets\/([^/]+)\/values:(batchClear|batchUpdate)$/u.exec(path);
     if (request.method === "POST" && bulk !== null) return this.bulkValues(bulk[1] ?? "", bulk[2] ?? "", body);
@@ -193,12 +207,15 @@ export class FakeGoogle {
     const tabs = this.workbooks.get(id);
     if (tabs === undefined) return this.respond(404, {});
     const markers = new Set(this.namedRanges.get(id) ?? []);
+    const metadataBefore = [...(this.spreadsheetMetadata.get(id) ?? [])];
+    const metadata = [...metadataBefore];
     const requests = (body?.["requests"] as Record<string, unknown>[] | undefined) ?? [];
     this.batches.push(requests);
     // Google applies a batch whole or not at all, so work on copies and keep them only if every step succeeds.
     const copy = (tab: FakeTab): FakeTab => ({ ...tab, rows: tab.rows.map((row) => [...row]), formats: tab.formats.map((row) => [...row]), widths: new Map(tab.widths), developerMetadata: [...tab.developerMetadata] });
     const backup = new Map([...tabs.entries()].map(([title, tab]) => [title, copy(tab)] as const));
     const restore = (): void => {
+      this.spreadsheetMetadata.set(id, metadataBefore);
       tabs.clear();
       for (const [title, tab] of backup) tabs.set(title, tab);
     };
@@ -209,12 +226,19 @@ export class FakeGoogle {
         if (markers.has(named.namedRange.namedRangeId)) { restore(); return this.respond(400, { error: "Named range ID already exists" }); }
         markers.add(named.namedRange.namedRangeId);
       }
+      const addMetadata = request["createDeveloperMetadata"] as { developerMetadata: Record<string, unknown> & { location?: { spreadsheet?: boolean } } } | undefined;
+      const removeMetadata = request["deleteDeveloperMetadata"] as { dataFilter: { developerMetadataLookup: { metadataKey: string } } } | undefined;
+      if (removeMetadata !== undefined) {
+        for (let index = metadata.length - 1; index >= 0; index--) if (metadata[index]?.["metadataKey"] === removeMetadata.dataFilter.developerMetadataLookup.metadataKey) metadata.splice(index, 1);
+      }
+      if (addMetadata?.developerMetadata.location?.spreadsheet === true) { metadata.push(addMetadata.developerMetadata); continue; }
       const problem = this.applyRequest(tabs, request);
       if (problem !== null) {
         restore();
         return this.respond(400, { error: problem });
       }
     }
+    this.spreadsheetMetadata.set(id, metadata);
     this.namedRanges.set(id, markers);
     return this.respond(200, {});
   }
@@ -238,16 +262,29 @@ export class FakeGoogle {
       this.nextTabId = Math.max(this.nextTabId, sheetId + 1);
       tabs.set(add.properties.title, newTab(sheetId, false, add.properties.gridProperties));
     }
+    const deletion = request["deleteSheet"] as { sheetId: number } | undefined;
+    if (deletion !== undefined) {
+      const entry = [...tabs.entries()].find(([, tab]) => tab.id === deletion.sheetId);
+      if (entry === undefined) return "No such sheet";
+      tabs.delete(entry[0]);
+    }
     const metadata = request["createDeveloperMetadata"] as { developerMetadata: Record<string, unknown> & { location: { sheetId: number } } } | undefined;
     if (metadata !== undefined) {
       const tab = byId(metadata.developerMetadata.location.sheetId);
       if (tab === undefined) return "No such sheet";
       tab.developerMetadata.push(metadata.developerMetadata);
     }
-    const update = request["updateSheetProperties"] as { properties: { sheetId: number; hidden?: boolean; index?: number; tabColorStyle?: unknown; gridProperties?: GridSize & { frozenRowCount?: number; hideGridlines?: boolean } }; fields: string } | undefined;
+    const update = request["updateSheetProperties"] as { properties: { sheetId: number; title?: string; hidden?: boolean; index?: number; tabColorStyle?: unknown; gridProperties?: GridSize & { frozenRowCount?: number; hideGridlines?: boolean } }; fields: string } | undefined;
     if (update !== undefined) {
       const tab = byId(update.properties.sheetId);
       if (tab === undefined) return "No such sheet";
+      if (update.properties.title !== undefined) {
+        const old = [...tabs.entries()].find(([, candidate]) => candidate.id === tab.id)?.[0];
+        if (tabs.has(update.properties.title) && old !== update.properties.title) return "A sheet with the name already exists";
+        const entries = [...tabs.entries()].map(([title, value]) => [title === old ? update.properties.title ?? title : title, value] as const);
+        tabs.clear();
+        for (const [title, value] of entries) tabs.set(title, value);
+      }
       if (update.fields.includes("hidden")) tab.hidden = update.properties.hidden === true;
       if (update.fields.includes("tabColorStyle")) tab.tabColorStyle = update.properties.tabColorStyle;
       if (update.fields === "index") {
@@ -289,7 +326,7 @@ export class FakeGoogle {
       const tab = byId(reset.range.sheetId);
       if (tab === undefined) return "No such sheet";
       if (reset.fields.includes("userEnteredValue")) tab.rows = [];
-      if (reset.fields.includes("userEnteredFormat")) tab.formats = [];
+      if (reset.fields === "userEnteredValue,userEnteredFormat" || reset.fields === "userEnteredFormat") tab.formats = [];
     }
     const width = request["updateDimensionProperties"] as { range: { sheetId: number; dimension: string; startIndex: number; endIndex: number }; properties: { pixelSize: number } } | undefined;
     if (width !== undefined) {

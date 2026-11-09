@@ -92,6 +92,7 @@ export interface SessionState {
   /** When the ledger was last confirmed against the spreadsheet, in milliseconds since 1970. */
   readonly syncedAt: number | null;
   readonly sheet: SheetStatus;
+  readonly organization?: { readonly status: "pending" | "organizing" | "current" | "needs-attention"; readonly message: string };
   /** Rows after the last commit: an interrupted write, ignored and harmless. */
   readonly trailingRows: number;
 }
@@ -119,7 +120,7 @@ export type VerifyOutcome =
   | { readonly status: "failed"; readonly message: string };
 
 export type TidyOutcome =
-  | { readonly status: "tidied"; readonly months: number; readonly withoutStatement: number }
+  | { readonly status: "tidied"; readonly months: number; readonly withoutStatement: number; readonly consolidatedTabs?: number; readonly preservedTabs?: number }
   | { readonly status: "sign-in-failed"; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }
   | { readonly status: "needs-attention"; readonly message: string }
   | { readonly status: "failed"; readonly message: string };

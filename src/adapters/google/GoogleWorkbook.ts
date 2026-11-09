@@ -10,6 +10,8 @@ import {
   EXPENSE_VIEW_TITLE,
   EXPENSE_METADATA_KEY,
   EXPENSE_RECORD_ROLE,
+  ORGANIZATION_METADATA_KEY,
+  ORGANIZATION_VERSION,
   LEDGER_COLUMNS,
   LEDGER_HEADER,
   LEDGER_TAB,
@@ -165,6 +167,12 @@ function viewMetadata(sheetId: number, role: string): Record<string, unknown> {
   return { metadataKey: VIEW_METADATA_KEY, metadataValue: role, location: { sheetId }, visibility: "DOCUMENT" };
 }
 
+function sheetLocation(value: unknown, sheetId: number): boolean {
+  const location = record(value);
+  return location !== null && location["dimensionRange"] === undefined && location["spreadsheet"] !== true &&
+    (location["sheetId"] === sheetId || (sheetId === 0 && location["sheetId"] === undefined && location["locationType"] === "SHEET"));
+}
+
 async function listTabs(rest: RestClient, accessToken: string, workbookId: string): Promise<RestResult<readonly TabInfo[]>> {
   const answer = await callRest(rest, accessToken, {
     method: "GET",
@@ -174,25 +182,27 @@ async function listTabs(rest: RestClient, accessToken: string, workbookId: strin
   const sheets = record(answer.value)?.["sheets"];
   const tabs = (Array.isArray(sheets) ? (sheets as unknown[]) : []).flatMap((entry): TabInfo[] => {
     const properties = record(record(entry)?.["properties"]);
+    // Google can omit a scalar's default value (sheet ID zero) in responses.
+    const sheetId = properties?.["sheetId"] ?? 0;
     const columns = record(properties?.["gridProperties"])?.["columnCount"];
     const metadata = record(entry)?.["developerMetadata"];
     const financialRecords = (Array.isArray(metadata) ? metadata : []).some((item: unknown) => {
       const value = record(item);
       const location = record(value?.["location"]);
-      return value?.["metadataKey"] === EXPENSE_METADATA_KEY && location?.["sheetId"] === properties?.["sheetId"];
+      return value?.["metadataKey"] === EXPENSE_METADATA_KEY && sheetLocation(location, typeof sheetId === "number" ? sheetId : -1);
     });
     const expenseRecords = (Array.isArray(metadata) ? metadata : []).some((item: unknown) => {
       const value = record(item);
-      return value?.["metadataKey"] === EXPENSE_METADATA_KEY && value["metadataValue"] === EXPENSE_RECORD_ROLE && record(value["location"])?.["sheetId"] === properties?.["sheetId"];
+      return value?.["metadataKey"] === EXPENSE_METADATA_KEY && value["metadataValue"] === EXPENSE_RECORD_ROLE && sheetLocation(value["location"], typeof sheetId === "number" ? sheetId : -1);
     });
     const viewRoles = (Array.isArray(metadata) ? metadata : []).flatMap((item: unknown): string[] => {
       const value = record(item);
       const location = record(value?.["location"]);
-      return value?.["metadataKey"] === VIEW_METADATA_KEY && typeof value["metadataValue"] === "string" && location?.["sheetId"] === properties?.["sheetId"] && location?.["dimensionRange"] === undefined
+      return value?.["metadataKey"] === VIEW_METADATA_KEY && typeof value["metadataValue"] === "string" && sheetLocation(location, typeof sheetId === "number" ? sheetId : -1) && location?.["dimensionRange"] === undefined
         ? [value["metadataValue"]] : [];
     });
-    return typeof properties?.["sheetId"] === "number" && typeof properties["title"] === "string"
-      ? [{ id: properties["sheetId"], title: properties["title"], hidden: properties["hidden"] === true, columns: typeof columns === "number" ? columns : 0, viewRoles, financialRecords, expenseRecords }]
+    return typeof sheetId === "number" && typeof properties?.["title"] === "string"
+      ? [{ id: sheetId, title: properties["title"], hidden: properties["hidden"] === true, columns: typeof columns === "number" ? columns : 0, viewRoles, financialRecords, expenseRecords }]
       : [];
   });
   return { ok: true, value: tabs };
@@ -223,6 +233,8 @@ export async function tidyLedgerTab(rest: RestClient, accessToken: string, workb
 export interface GridTab {
   readonly title: string;
   readonly grid: Grid;
+  /** Retained source representations allow safe consolidation of older renderings. */
+  readonly legacyGrids?: readonly Grid[];
 }
 
 const NAVY = { red: 0.12, green: 0.20, blue: 0.34 };
@@ -279,7 +291,7 @@ function cellData(cell: GridCell, row: number): Record<string, unknown> {
     textFormat: { fontFamily: "Arial", fontSize: row === 1 && cell.emphasis === "strong" ? 18 : 10, foregroundColor: NAVY, bold: cell.emphasis !== null },
     verticalAlignment: "MIDDLE", wrapStrategy: "WRAP",
     backgroundColor: row % 2 === 0 ? PALE : WHITE,
-    horizontalAlignment: typeof cell.value === "number" ? "RIGHT" : "LEFT",
+    horizontalAlignment: cell.alignment ?? (typeof cell.value === "number" ? "RIGHT" : "LEFT"),
   };
   if (cell.format !== null) format["numberFormat"] = numberFormatOf(cell.format);
   if (cell.emphasis === "header") {
@@ -304,6 +316,39 @@ function widthRequests(sheetId: number, widths: readonly number[]): unknown[] {
   return requests;
 }
 
+/** A cheap connection-time check; this never writes or requests new access. */
+export async function needsOrganization(rest: RestClient, token: string, workbookId: string): Promise<RestResult<boolean>> {
+  const answer = await callRest(rest, token, { method: "GET", url: `${SHEETS}/${encodeURIComponent(workbookId)}?fields=developerMetadata` });
+  if (!answer.ok) return answer;
+  if (record(answer.value) === null) return fail("unexpected");
+  const metadata = record(answer.value)?.["developerMetadata"];
+  const versions = (Array.isArray(metadata) ? metadata as unknown[] : []).filter((item) => record(item)?.["metadataKey"] === ORGANIZATION_METADATA_KEY && record(record(item)?.["location"])?.["spreadsheet"] === true);
+  return { ok: true, value: versions.length !== 1 || record(versions[0])?.["metadataValue"] !== ORGANIZATION_VERSION };
+}
+
+/** Ignore display whitespace and unused trailing cells, never values or formulas. */
+function viewValues(value: unknown): string {
+  if (!Array.isArray(value)) return "invalid";
+  const rows = (value as unknown[]).map((row): unknown[] => {
+    if (!Array.isArray(row)) return ["invalid"];
+    const cells = (row as unknown[]).map((cell) => typeof cell === "string" ? cell.replaceAll("\u00a0", " ").trim() : cell ?? "");
+    while (cells.at(-1) === "") cells.pop();
+    return cells;
+  });
+  while (rows.length > 0 && rows.at(-1)?.length === 0) rows.pop();
+  return canonicalJson(rows);
+}
+
+function numberedView(title: string, role: string): boolean {
+  return title.startsWith(`${role} (`) && /^\([1-9]\d*\)$/u.test(title.slice(role.length + 1)) && Number(title.slice(role.length + 2, -1)) >= 2;
+}
+
+function candidatesFor(existing: readonly TabInfo[], tab: GridTab): readonly TabInfo[] {
+  return existing.filter((candidate) => candidate.viewRoles.includes(tab.title) || candidate.title === tab.title || (tab.legacyGrids !== undefined && numberedView(candidate.title, tab.title)));
+}
+
+export type GridWriteResult = RestResult<true> & { readonly message?: string; readonly consolidatedTabs?: number; readonly preservedTabs?: number };
+
 /**
  * Writes tabs from finished grids, any number of them: list the
  * tabs, then one batch that adds the missing owned views, fits every grid to exactly its
@@ -314,47 +359,66 @@ function widthRequests(sheetId: number, widths: readonly number[]): unknown[] {
  * These tabs are views of the ledger that can be rewritten at any time, so
  * a failure here never affects the saved records.
  */
-export async function writeGridTabs(rest: RestClient, accessToken: string, workbookId: string, tabs: readonly GridTab[]): Promise<RestResult<true> & { readonly message?: string }> {
+export async function writeGridTabs(rest: RestClient, accessToken: string, workbookId: string, tabs: readonly GridTab[], options: { readonly completeOrganization?: boolean } = {}): Promise<GridWriteResult> {
   if (tabs.length === 0) return { ok: true, value: true };
   // Never let a view operation target the financial log or repeat a role in one batch.
   if (tabs.some((tab) => tab.title === LEDGER_TAB) || new Set(tabs.map((tab) => tab.title)).size !== tabs.length) return fail("unexpected");
   const existing = await listTabs(rest, accessToken, workbookId);
   if (!existing.ok) return existing;
-  const organized = [...existing.value];
+  let organized = [...existing.value];
+  // One read for all legacy/duplicate candidates, however many months there are.
+  const checking = [...new Map(tabs.flatMap((tab) => {
+    const candidates = candidatesFor(existing.value, tab);
+    return candidates.filter((candidate) => candidate.viewRoles.length === 0 || candidates.length > 1 || numberedView(candidate.title, tab.title));
+  }).map((candidate) => [candidate.id, candidate] as const)).values()];
+  const values = new Map<number, unknown>();
+  if (checking.length > 0) {
+    const ranges = checking.map((candidate) => `ranges=${encodeURIComponent(`'${candidate.title.replaceAll("'", "''")}'`)}`).join("&");
+    const read = await callRest(rest, accessToken, { method: "GET", url: `${SHEETS}/${encodeURIComponent(workbookId)}/values:batchGet?${ranges}&valueRenderOption=FORMULA` });
+    if (!read.ok) return read;
+    const valueRanges = record(read.value)?.["valueRanges"];
+    if (!Array.isArray(valueRanges) || valueRanges.length !== checking.length) return fail("unexpected");
+    checking.forEach((candidate, index) => values.set(candidate.id, record(valueRanges[index])?.["values"] ?? []));
+  }
+  let consolidatedTabs = 0;
+  let preservedTabs = 0;
   let nextId = existing.value.reduce((highest, tab) => Math.max(highest, tab.id), 0) + 1;
 
   const requests: unknown[] = [];
   for (const tab of tabs) {
     const rows = tab.grid.cells.length;
     const columns = tab.grid.widths.length;
-    const owned = existing.value.filter((candidate) => candidate.viewRoles.includes(tab.title));
-    // Ambiguous markers must not decide which tab to erase. The ledger is never a view.
-    if (owned.length > 1 || owned.some((candidate) => candidate.title === LEDGER_TAB || candidate.financialRecords || candidate.viewRoles.length !== 1)) return { ok: false, failure: "unexpected", message: `The ownership of “${tab.title}” is ambiguous. No organization batch was submitted. Preserve these tabs and review their ownership before continuing.` };
-    let knownId = owned[0]?.id;
-    // Older versions did not mark generated tabs. Only adopt an exact value
-    // match; a familiar title alone is never authority to erase someone's work.
-    if (knownId === undefined) {
-      const legacy = existing.value.find((candidate) => candidate.title === tab.title);
-      if (legacy !== undefined) {
-        if (legacy.financialRecords || legacy.viewRoles.length > 0) return fail("unexpected");
-        const answer = await callRest(rest, accessToken, { method: "GET", url: `${SHEETS}/${encodeURIComponent(workbookId)}/values/${encodeURIComponent(`'${legacy.title.replaceAll("'", "''")}'`)}?valueRenderOption=FORMULA` });
-        if (!answer.ok) return answer;
-        const trim = (value: unknown): string => {
-          if (!Array.isArray(value)) return "invalid";
-          const rows = value.map((row: unknown) => {
-            if (!Array.isArray(row)) return ["invalid"];
-            const cells: unknown[] = [...(row as unknown[])];
-            while (cells.length > 0 && (cells.at(-1) === "" || cells.at(-1) === null)) cells.pop();
-            return cells;
-          });
-          while (rows.length > 0 && rows.at(-1)?.length === 0) rows.pop();
-          return canonicalJson(rows);
-        };
-        if (trim(record(answer.value)?.["values"] ?? []) !== trim(tab.grid.cells.map((row) => row.map((cell) => cell.value)))) return { ok: false, failure: "unexpected", message: `“${legacy.title}” is unmarked and differs from the saved view. No organization batch was submitted. Rename that tab in Google Sheets to keep it, then organize again; FolioDash will create its own view without overwriting it.` };
-        knownId = legacy.id;
-        organized[organized.findIndex((candidate) => candidate.id === legacy.id)] = { ...legacy, viewRoles: [tab.title] };
-        requests.push({ createDeveloperMetadata: { developerMetadata: viewMetadata(legacy.id, tab.title) } });
-      }
+    const candidates = candidatesFor(existing.value, tab);
+    const owned = candidates.filter((candidate) => candidate.viewRoles.includes(tab.title));
+    const error = (message: string): GridWriteResult => ({ ok: false, failure: "unexpected", message: `${message} No organization batch was submitted. Saved records are preserved.` });
+    if (owned.some((candidate) => candidate.title === LEDGER_TAB || candidate.financialRecords || candidate.viewRoles.length !== 1)) return error(`The ownership of “${tab.title}” is ambiguous.`);
+    const expected = [tab.grid, ...(tab.legacyGrids ?? [])].map((grid) => viewValues(grid.cells.map((row) => row.map((cell) => cell.value))));
+    const matches = (candidate: TabInfo): boolean => values.has(candidate.id) && expected.includes(viewValues(values.get(candidate.id)));
+    const eligible = candidates.filter((candidate) => !candidate.financialRecords && candidate.title !== LEDGER_TAB && (candidate.viewRoles.length === 0 || (candidate.viewRoles.length === 1 && candidate.viewRoles[0] === tab.title)));
+    // Multiple ownership markers may be consolidated only for source-backed Bank
+    // views whose actual contents have all been independently verified.
+    if (owned.length > 1 && (tab.legacyGrids === undefined || owned.some((candidate) => !matches(candidate)))) return error(`The ownership of “${tab.title}” is ambiguous.`);
+    const canonical = candidates.find((candidate) => candidate.title === tab.title);
+    if (canonical !== undefined && !owned.includes(canonical) && (!eligible.includes(canonical) || !matches(canonical))) return error(`“${canonical.title}” differs from its retained statement or saved view. Preserve and rename that tab before organizing again.`);
+    const chosen = (tab.legacyGrids === undefined ? owned[0] ?? canonical : canonical ?? owned[0]) ?? eligible.find(matches);
+    const knownId = chosen?.id;
+    if (chosen !== undefined && !owned.includes(chosen)) {
+      requests.push({ createDeveloperMetadata: { developerMetadata: viewMetadata(chosen.id, tab.title) } });
+    }
+    for (const candidate of candidates) {
+      if (candidate.id === knownId) continue;
+      if (tab.legacyGrids !== undefined && eligible.includes(candidate) && (matches(candidate) || (owned.length === 1 && owned.includes(candidate)))) {
+        // The authoritative SOURCE record retains the complete source, so these
+        // derived copies can be rebuilt after consolidation without financial recovery.
+        requests.push({ deleteSheet: { sheetId: candidate.id } });
+        organized = organized.filter((item) => item.id !== candidate.id);
+        consolidatedTabs++;
+      } else preservedTabs++;
+    }
+    if (chosen !== undefined) {
+      const title = numberedView(chosen.title, tab.title) && canonical === undefined ? tab.title : chosen.title;
+      if (title !== chosen.title) requests.push({ updateSheetProperties: { properties: { sheetId: chosen.id, title }, fields: "title" } });
+      organized = organized.map((candidate) => candidate.id === chosen.id ? { ...candidate, title, viewRoles: [tab.title] } : candidate);
     }
     const sheetId = knownId ?? nextId++;
     if (knownId === undefined) {
@@ -381,6 +445,11 @@ export async function writeGridTabs(rest: RestClient, accessToken: string, workb
         fields: "userEnteredValue,userEnteredFormat",
       },
     });
+    if (header >= 0) requests.push({ repeatCell: {
+      range: { sheetId, startRowIndex: header, endRowIndex: header + 1, startColumnIndex: 1, endColumnIndex: columns - 1 },
+      cell: { userEnteredFormat: { backgroundColor: NAVY, textFormat: { fontFamily: "Arial", fontSize: 10, bold: true, foregroundColor: WHITE } } },
+      fields: "userEnteredFormat.backgroundColor,userEnteredFormat.textFormat",
+    } });
     requests.push({ autoResizeDimensions: { dimensions: { sheetId, dimension: "ROWS", startIndex: 0, endIndex: rows } } });
     // Holdings and daily expenses are contiguous, filterable tables. Bank tabs
     // retain their source sections rather than filtering category subtotals.
@@ -401,6 +470,10 @@ export async function writeGridTabs(rest: RestClient, accessToken: string, workb
     }
   }
   requests.push(...technicalRequests(organized), ...organizationRequests(organized));
+  if (options.completeOrganization) requests.push(
+    { deleteDeveloperMetadata: { dataFilter: { developerMetadataLookup: { metadataKey: ORGANIZATION_METADATA_KEY, locationType: "SPREADSHEET" } } } },
+    { createDeveloperMetadata: { developerMetadata: { metadataKey: ORGANIZATION_METADATA_KEY, metadataValue: ORGANIZATION_VERSION, location: { spreadsheet: true }, visibility: "DOCUMENT" } } },
+  );
   const written = await callRest(rest, accessToken, { method: "POST", url: `${SHEETS}/${encodeURIComponent(workbookId)}:batchUpdate`, body: { requests } });
-  return written.ok ? { ok: true, value: true } : written;
+  return written.ok ? { ok: true, value: true, consolidatedTabs, preservedTabs } : written;
 }

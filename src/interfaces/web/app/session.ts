@@ -6,7 +6,6 @@ import {
   attachDirect,
   commitDirect,
   ensureWorkbook,
-  mirrorStatements,
   type PresentStatement,
   outcomeDirect,
   readAllDirect,
@@ -17,8 +16,9 @@ import {
   statementTabTitle,
 } from "../../../adapters/google/DirectLedger";
 import type { RestClient } from "../../../adapters/google/Rest";
-import { type WorkbookIdentity, writeGridTabs } from "../../../adapters/google/GoogleWorkbook";
-import { expenseView, EXPENSE_VIEW_TITLE, readExpenses } from "../../../adapters/google/DirectExpenses";
+import { type WorkbookIdentity, needsOrganization, writeGridTabs } from "../../../adapters/google/GoogleWorkbook";
+import { containsExpenseCommands, expenseView, EXPENSE_VIEW_TITLE, readExpenses } from "../../../adapters/google/DirectExpenses";
+import { rawGrid } from "../../../applications/SheetGrid";
 import { readableView } from "../../../applications/ReadableView";
 import { VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { AttachItem } from "../../../applications/LedgerService";
@@ -94,6 +94,11 @@ export class Session {
   private pendingView: { readonly workbook: Workbook; readonly state: LedgerState } | null = null;
   private quietTimer: ReturnType<typeof setTimeout> | null = null;
   private tidied: string | null = null;
+  private organizationChecked: string | null = null;
+  private organizationCheck: Promise<void> | null = null;
+  private organizationPending = false;
+  private flushing: Promise<void> | null = null;
+  private organizing: Promise<TidyOutcome> | null = null;
   private generation = 0;
   private syncSequence = 0;
   private freshness: Promise<void> | null = null;
@@ -124,7 +129,12 @@ export class Session {
       // Remembered, but not yet confirmed this visit: the next click renews access if it is missing.
       if (this.token === null) this.current = { ...this.current, connection: "waiting" };
     }
-    this.expenses = new ExpenseSession({ rest: this.deps.rest, newId: deps.newId, workbookId: this.current.workbook?.id ?? null, today: () => {
+    this.expenses = new ExpenseSession({ rest: this.deps.rest, newId: deps.newId, workbookId: this.current.workbook?.id ?? null, onViewResult: (updated) => {
+      if (!updated) {
+        this.organizationPending = true;
+        this.set({ ...this.current, organization: { status: "pending", message: "Your expense entry is saved. Its readable spreadsheet view will be refreshed on the next connection or save." } });
+      } else if (this.organizationPending && this.current.workbook !== null) this.queueViews(this.current.workbook, this.current.ledger, [], true);
+    }, today: () => {
       const now = new Date(deps.now());
       const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
       if (today === null) throw new Error("The device date is outside the supported range.");
@@ -146,6 +156,7 @@ export class Session {
 
   /** Resolves when the readable tabs written after a save have finished. They never delay a save and never affect it. */
   async idle(): Promise<void> {
+    while (this.background.size > 0) await Promise.allSettled([...this.background]);
     if (this.quietTimer !== null) {
       clearTimeout(this.quietTimer);
       this.quietTimer = null;
@@ -154,16 +165,15 @@ export class Session {
     while (this.background.size > 0) await Promise.allSettled([...this.background]);
   }
 
-  private hasPendingView(): boolean {
-    return this.pendingView !== null;
-  }
+  private hasPendingView(): boolean { return this.pendingView !== null; }
 
   /** The token, only if it is still valid. Used for background work, which never asks the person to sign in. */
   private validToken(): string | null {
     return this.token !== null && this.deps.now() < this.token.validUntil ? this.token.accessToken : null;
   }
 
-  private queueViews(workbook: Workbook, state: LedgerState, months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[]): void {
+  private queueViews(workbook: Workbook, state: LedgerState, months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[], organize = false): void {
+    this.organizationPending ||= organize;
     this.pendingView = { workbook, state };
     for (const month of months) this.pendingTabs.set(month.date, month.sheet);
     if (this.quietTimer !== null) clearTimeout(this.quietTimer);
@@ -173,20 +183,58 @@ export class Session {
     }, this.deps.quietMilliseconds ?? 1500);
   }
 
-  /** Writes the summary and the monthly tabs that are waiting. If Google refuses, they wait for the next chance. */
-  private async flushViews(): Promise<void> {
+  private async scheduleOrganization(workbook: Workbook, token: string, state: LedgerState, generation: number): Promise<void> {
+    if (this.organizationPending) { this.queueViews(workbook, state, [], true); return; }
+    if (this.organizationChecked === workbook.id || this.organizationCheck !== null) return;
+    const work = (async () => {
+      const needed = await needsOrganization(this.deps.rest, token, workbook.id);
+      if (generation !== this.generation || this.current.workbook?.id !== workbook.id) return;
+      if (!needed.ok) {
+        this.set({ ...this.current, organization: { status: "pending", message: "Spreadsheet organization could not be checked. It will be checked again when Google is available." } });
+        return;
+      }
+      this.organizationChecked = workbook.id;
+      if (needed.value) {
+        this.set({ ...this.current, organization: { status: "pending", message: "Your spreadsheet needs the current layout. Organization will run after activity settles." } });
+        this.queueViews(workbook, state, [], true);
+      } else this.set({ ...this.current, organization: { status: "current", message: "The spreadsheet uses the current layout. Saved views are maintained automatically." } });
+    })();
+    this.organizationCheck = work;
+    try { await work; } finally { if (this.organizationCheck === work) this.organizationCheck = null; }
+  }
+
+  /** Serialize maintenance and view writes; refused derived views wait for a later connection/save. */
+  private flushViews(): Promise<void> {
+    if (this.flushing !== null) return this.flushing;
+    const work = this.writePendingViews();
+    this.flushing = work;
+    void work.finally(() => { if (this.flushing === work) this.flushing = null; });
+    return work;
+  }
+
+  private async writePendingViews(): Promise<void> {
     const view = this.pendingView;
     const token = this.validToken();
-    if (view === null || token === null) return;
+    if (view === null || token === null || this.current.sheet !== "ok") return;
+    const generation = this.generation;
     const tabs = [...this.pendingTabs.entries()].map(([date, sheet]) => ({ date, sheet }));
+    const full = this.organizationPending;
     this.pendingView = null;
     this.pendingTabs = new Map();
-    // One after the other, so two batches never race to add the same tab.
-    const summary = await refreshView(this.deps.rest, token, view.workbook.id, view.state);
-    const monthly = await mirrorStatements(this.deps.rest, token, view.workbook.id, tabs, this.deps.present);
-    // Whatever Google refused waits for the next chance, together with the summary, which is rewritten with it.
-    if ((!summary || !monthly) && !this.hasPendingView()) this.pendingView = view;
-    if (!monthly) for (const tab of tabs) if (!this.pendingTabs.has(tab.date)) this.pendingTabs.set(tab.date, tab.sheet);
+    const result = full ? await this.organizeWorkbook(view.workbook, token) : await writeGridTabs(this.deps.rest, token, view.workbook.id, [
+      { title: VIEW_TAB, grid: readableView(view.state) },
+      ...tabs.map((tab) => ({ title: statementTabTitle(tab.date), grid: this.deps.present(tab.sheet), legacyGrids: [rawGrid(tab.sheet)] })),
+    ]);
+    if (generation !== this.generation || this.current.workbook?.id !== view.workbook.id) return;
+    const success = "status" in result ? result.status === "tidied" : result.ok;
+    if (success) {
+      if (!full) this.set({ ...this.current, organization: { status: "preservedTabs" in result && result.preservedTabs ? "needs-attention" : "current", message: "preservedTabs" in result && result.preservedTabs ? "Saved views were refreshed. Unrecognised duplicate candidates were preserved for review." : "Saved spreadsheet views were refreshed and organized." } });
+    } else {
+      if (!this.hasPendingView()) this.pendingView = view;
+      for (const tab of tabs) if (!this.pendingTabs.has(tab.date)) this.pendingTabs.set(tab.date, tab.sheet);
+      const message = "message" in result && typeof result.message === "string" ? result.message : "The readable spreadsheet views could not be refreshed. Saved records are preserved; maintenance will retry on a later connection or save.";
+      this.set({ ...this.current, organization: { status: "needs-attention", message } });
+    }
   }
 
   private later(work: Promise<unknown>): void {
@@ -208,7 +256,8 @@ export class Session {
   }
 
   private set(next: SessionState): void {
-    this.current = next;
+    this.current = next.organization === undefined && next.workbook?.id === this.current.workbook?.id && this.current.organization !== undefined
+      ? { ...next, organization: this.current.organization } : next;
     for (const listener of this.listeners) listener();
   }
 
@@ -391,6 +440,7 @@ export class Session {
    * or when the person wants another account, it lets them choose.
    */
   reconnect(options?: { readonly differentAccount?: boolean }): Promise<ConnectOutcome> {
+    this.organizationChecked = null;
     this.token = null;
     this.deps.googleSession?.clear();
     this.chooserOnNextSignIn = options?.differentAccount === true && this.signingIn === null;
@@ -448,6 +498,8 @@ export class Session {
       this.tidied = workbook.id;
       this.later(tidyLedgerTab(this.deps.rest, accessToken, workbook.id));
     }
+    this.later(this.scheduleOrganization(workbook, accessToken, read.state, generation));
+    if (this.pendingView !== null && !this.organizationPending) this.queueViews(workbook, read.state, []);
     return { status: "connected", created, statements: read.state.snapshots.length, changed };
   }
 
@@ -550,7 +602,38 @@ export class Session {
     if (workbook === null) return { status: "failed", message: "There is no Google Sheet to tidy yet." };
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
-    const all = await readAllDirect(this.deps.rest, signed.token, workbook.id);
+    if (this.flushing !== null) await this.flushing;
+    const pending = this.pendingView;
+    const outcome = await this.organizeWorkbook(workbook, signed.token);
+    if (outcome.status === "tidied" && this.pendingView === pending) {
+      this.pendingView = null;
+      this.pendingTabs = new Map();
+      if (this.quietTimer !== null) clearTimeout(this.quietTimer);
+      this.quietTimer = null;
+    }
+    return outcome;
+  }
+
+  private organizeWorkbook(workbook: Workbook, token: string): Promise<TidyOutcome> {
+    if (this.organizing !== null) return this.organizing;
+    const generation = this.generation;
+    const work = this.performOrganization(workbook, token).then((outcome) => {
+      if (generation === this.generation && outcome.status !== "tidied") {
+        this.organizationPending = true;
+        this.set({ ...this.current, organization: { status: "needs-attention", message: "message" in outcome ? outcome.message : "Spreadsheet organization needs a Google connection." } });
+      }
+      return outcome;
+    });
+    this.organizing = work;
+    void work.finally(() => { if (this.organizing === work) this.organizing = null; });
+    return work;
+  }
+
+  private async performOrganization(workbook: Workbook, token: string): Promise<TidyOutcome> {
+    const generation = this.generation;
+    const localRevision = this.current.ledger.revision;
+    this.set({ ...this.current, organization: { status: "organizing", message: "Organizing your spreadsheet from checked records…" } });
+    const all = await readAllDirect(this.deps.rest, token, workbook.id);
     if (all.status === "damaged") return { status: "needs-attention", message: `${all.message} Nothing was changed.` };
     if (all.status === "unavailable") {
       return all.failure === "missing" || all.failure === "not-a-ledger"
@@ -561,18 +644,29 @@ export class Session {
       const sheet = parseStoredSheet(source.sheet);
       return sheet === null ? [] : [{ date: source.date, sheet }];
     });
-    const expenses = await readExpenses(this.deps.rest, signed.token, workbook.id, this.expenses.state.initialized);
+    const expenses = await readExpenses(this.deps.rest, token, workbook.id, this.expenses.state.initialized);
     if (expenses.status === "damaged" || expenses.status === "unavailable") return { status: "needs-attention", message: `${expenses.message} Organization was not started.` };
+    if (expenses.status === "ok" && !containsExpenseCommands(expenses.commands, this.expenses.state.commands)) return { status: "needs-attention", message: "Google is missing expense corrections known on this device. Organization was not started; preserve the device copy and review the workbook." };
     const now = new Date(this.deps.now());
     const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
     if (today === null) return { status: "failed", message: "The device date is outside the supported range. Organization was not started." };
-    const written = await writeGridTabs(this.deps.rest, signed.token, workbook.id, [
+    if (generation !== this.generation || this.current.workbook?.id !== workbook.id) return { status: "failed", message: "The connected account changed before organization. No layout batch was submitted." };
+    const written = await writeGridTabs(this.deps.rest, token, workbook.id, [
       { title: VIEW_TAB, grid: readableView(all.state) },
       ...(expenses.status === "ok" ? [{ title: EXPENSE_VIEW_TITLE, grid: expenseView(expenses.days, expenses.conflicts, today) }] : []),
-      ...months.map((month) => ({ title: statementTabTitle(month.date), grid: this.deps.present(month.sheet) })),
-    ]);
+      ...months.map((month) => ({ title: statementTabTitle(month.date), grid: this.deps.present(month.sheet), legacyGrids: [rawGrid(month.sheet)] })),
+    ], { completeOrganization: true });
     if (!written.ok) return { status: "failed", message: written.message ?? "Organization could not be confirmed. Google may have applied the layout if its response was lost. If a tab has an unrecognised or duplicate ownership marker, or an unmarked tab differs from the saved view, it is preserved and organization stops. Check your connection and workbook before trying again. Saved financial records are never rewritten by this action." };
-    return { status: "tidied", months: months.length, withoutStatement: all.state.snapshots.length - months.length };
+    if (generation === this.generation) {
+      this.organizationPending = false;
+      this.organizationChecked = workbook.id;
+      this.set({ ...this.current, organization: { status: written.preservedTabs ? "needs-attention" : "current", message: written.preservedTabs ? `${String(written.preservedTabs)} unrecognised duplicate candidate(s) were preserved for review. Verified generated views were organized.` : `Spreadsheet organized. ${String(written.consolidatedTabs ?? 0)} verified duplicate tab(s) consolidated.` } });
+    }
+    if (generation === this.generation && (this.current.ledger.revision !== localRevision || !containsExpenseCommands(expenses.status === "ok" ? expenses.commands : [], this.expenses.state.commands))) {
+      this.set({ ...this.current, organization: { status: "pending", message: "A save completed during organization. The newest readable views will be refreshed after activity settles." } });
+      this.queueViews(workbook, this.current.ledger, [], true);
+    }
+    return { status: "tidied", months: months.length, withoutStatement: all.state.snapshots.length - months.length, ...(written.consolidatedTabs ? { consolidatedTabs: written.consolidatedTabs } : {}), ...(written.preservedTabs ? { preservedTabs: written.preservedTabs } : {}) };
   }
 
   /** Wipes everything this device holds and signs out. The spreadsheet in Google is not touched. */
@@ -607,6 +701,10 @@ export class Session {
     this.pendingView = null;
     this.pendingTabs = new Map();
     this.tidied = null;
+    this.organizationPending = false;
+    this.organizationChecked = null;
+    this.organizationCheck = null;
+    this.organizing = null;
     this.set({ mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 });
   }
 

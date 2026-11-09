@@ -191,8 +191,9 @@ export function AccountView(props: {
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-maintenance" aria-labelledby="account-maintenance-heading">
           <h2 id="account-maintenance-heading" class="card-title" tabIndex={-1}>Organize your spreadsheet</h2>
-          <p class="card-subtitle">Rebuilds the portfolio summary, kept bank statements and work expenses from checked Google records. Applies consistent fonts, colours, number formats and column widths.</p>
-          <p class="hint">Tabs are ordered: portfolio, work expenses, newest bank statement first, then your other tabs and hidden records. Unrecognised tabs are preserved. Matching older views can be adopted; conflicting tabs stop organization.</p>
+          <p class="card-subtitle">Your spreadsheet is maintained automatically after saves and checked for layout upgrades when you connect. Use this action to rebuild all views now.</p>
+          {state.organization !== undefined && <p role="status" class="hint">{state.organization.message}</p>}
+          <p class="hint">Tabs are ordered: portfolio, work expenses, newest bank statement first, then your other tabs and hidden records. Matching duplicate bank tabs are consolidated from retained statements. Unrecognised or edited tabs are preserved for review. Financial records and exact imported sources are kept.</p>
           <button type="button" disabled={busy} onClick={() => void tidy()}>
             {pending === "tidy" ? "Organizing your spreadsheet…" : "Organize spreadsheet"}
           </button>

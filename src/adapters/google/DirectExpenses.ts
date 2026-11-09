@@ -114,7 +114,8 @@ async function inspect(rest: RestClient, token: string, id: string): Promise<{ r
   const tabs: Tab[] = [];
   for (const raw of sheets as unknown[]) {
     const item = object(raw);
-    const props = object(item?.["properties"]);
+    const rawProps = object(item?.["properties"]);
+    const props: Record<string, unknown> | null = rawProps === null ? null : { ...rawProps, sheetId: rawProps["sheetId"] ?? 0 };
     if (typeof props?.["sheetId"] !== "number" || typeof props["title"] !== "string") return { status: "unavailable", message: "Google returned an unrecognised sheet description." };
     const metadata = item?.["developerMetadata"];
     const markers = (Array.isArray(metadata) ? metadata as unknown[] : []).flatMap((entry): string[] => {

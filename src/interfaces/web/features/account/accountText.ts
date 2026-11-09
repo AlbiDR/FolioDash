@@ -107,7 +107,7 @@ export function describeTidy(outcome: TidyOutcome): Message {
       return { good: false, title: "Organization not confirmed", body: outcome.message };
     case "tidied": {
       const rest = outcome.withoutStatement > 0 ? ` ${plural(outcome.withoutStatement, "month has", "months have")} no kept statement, so there is no tab for ${outcome.withoutStatement === 1 ? "it" : "them"}.` : "";
-      return { good: true, title: "Spreadsheet organized", body: `The portfolio summary, ${plural(outcome.months, "bank tab", "bank tabs")} and any enabled work expenses view were rebuilt, formatted and ordered. Saved records were preserved.${rest}` };
+      return { good: (outcome.preservedTabs ?? 0) === 0, title: outcome.preservedTabs ? "Organized; some tabs need review" : "Spreadsheet organized", body: `The portfolio summary, ${plural(outcome.months, "bank tab", "bank tabs")} and any enabled work expenses view were rebuilt, formatted and ordered. Saved records were preserved.${outcome.consolidatedTabs ? ` ${plural(outcome.consolidatedTabs, "verified duplicate tab was", "verified duplicate tabs were")} consolidated.` : ""}${outcome.preservedTabs ? ` ${plural(outcome.preservedTabs, "unrecognised tab was", "unrecognised tabs were")} preserved for review.` : ""}${rest}` };
     }
   }
 }

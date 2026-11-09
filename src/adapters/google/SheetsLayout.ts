@@ -16,3 +16,7 @@ export const APP_PROPERTY_VALUE = "ledger-v1";
 export const EXPENSE_VIEW_TITLE = "Work expenses";
 export const EXPENSE_METADATA_KEY = "foliodash.expenses";
 export const EXPENSE_RECORD_ROLE = "records-v1";
+
+/** Rebuild old readable views once when their presentation contract changes. */
+export const ORGANIZATION_METADATA_KEY = "foliodash.organization";
+export const ORGANIZATION_VERSION = "3";

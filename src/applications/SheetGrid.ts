@@ -8,6 +8,8 @@ export interface GridCell {
   /** A spreadsheet number format such as `dd/mm/yyyy`, or null for the default. */
   readonly format: string | null;
   readonly emphasis: Emphasis;
+  /** Semantic alignment overrides the source cell's incidental storage type. */
+  readonly alignment?: "LEFT" | "CENTER" | "RIGHT";
 }
 
 /** A finished tab: every row the same length, with the one-cell margin already around the data. */
