@@ -11,6 +11,8 @@ import { LEDGER_TAB, VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { FundCommand, StatementInput } from "../../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../../core/IsoDate";
 import { parseIsin } from "../../../core/Isin";
+import { parseExpenseAmounts } from "../../../core/WorkExpenses";
+import { saveExpense, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE } from "../../../adapters/google/DirectExpenses";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/Money";
 import type { RecordRequest } from "../../../applications/ImportModel";
 import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
@@ -487,7 +489,50 @@ describe("tidying the sheet", () => {
     expect(JSON.stringify(google.tab(id, "_FolioDash ledger")?.rows)).toBe(ledgerBefore);
   });
 
-  it("changes nothing and says so when Google refuses", async () => {
+  it("organizes both record stores together, preserves their values and makes repeated runs stable", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    const amounts = parseExpenseAmounts([100, 500, 100, null, null]);
+    if (amounts === null) throw new Error("setup failed");
+    expect((await saveExpense(google.client, google.token, id, { id: "expense", date: date("2023-11-13"), expectedRevision: null, amounts })).status).toBe("saved");
+    const before = [LEDGER_TAB, EXPENSE_LOG_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows));
+    const count = google.workbooks.get(id)?.size;
+    const batches = google.batches.length;
+    for (let run = 0; run < 3; run++) expect((await session.tidySheet()).status).toBe("tidied");
+    expect(google.batches.length - batches).toBe(3);
+    expect(google.workbooks.get(id)?.size).toBe(count);
+    expect([LEDGER_TAB, EXPENSE_LOG_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows))).toEqual(before);
+    expect(google.tab(id, EXPENSE_VIEW_TITLE)?.rows.flat()).toContain("Work expenses");
+    expect(google.tab(id, EXPENSE_LOG_TITLE)?.hidden).toBe(true);
+    expect([...google.workbooks.get(id)?.keys() ?? []]).toEqual([VIEW_TAB, EXPENSE_VIEW_TITLE, LEDGER_TAB, EXPENSE_LOG_TITLE]);
+    const views = [VIEW_TAB, EXPENSE_VIEW_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows));
+    google.faults.push({ match: /:batchUpdate$/u, status: 400 });
+    expect((await session.tidySheet()).status).toBe("failed");
+    expect([VIEW_TAB, EXPENSE_VIEW_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows))).toEqual(views);
+  });
+
+  it("checks expense integrity before submitting any organization batch", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    const amounts = parseExpenseAmounts([100, 500, 100, null, null]);
+    if (amounts === null) throw new Error("setup failed");
+    await saveExpense(google.client, google.token, id, { id: "expense", date: date("2023-11-13"), expectedRevision: null, amounts });
+    const records = google.tab(id, EXPENSE_LOG_TITLE);
+    if (records?.rows[1] === undefined) throw new Error("setup failed");
+    records.rows[1][2] = "damaged";
+    const batches = google.batches.length;
+    expect((await session.tidySheet()).status).toBe("needs-attention");
+    expect(google.batches.length).toBe(batches);
+  });
+
+  it("reports an unconfirmed organization when Google refuses", async () => {
     const { google, make } = world();
     const session = make();
     await session.connect();

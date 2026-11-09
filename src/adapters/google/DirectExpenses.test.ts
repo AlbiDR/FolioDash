@@ -179,11 +179,13 @@ describe("direct work expense records", () => {
     record.developerMetadata = [];
     view.developerMetadata = [];
     const before = record.rows.map((row) => [...row]);
-    expect((await saveExpense(google.client, google.token, id, command("one"))).status).toBe("saved");
+    const outcome = await saveExpense(google.client, google.token, id, command("one"));
+    expect(outcome.status).toBe("saved");
     expect(record.rows).toEqual(before);
     expect(view.rows).toEqual(before);
     expect(google.tab(id, `${EXPENSE_LOG_TITLE} (2)`)).toBeDefined();
-    expect(google.tab(id, `${EXPENSE_VIEW_TITLE} (2)`)).toBeDefined();
+    expect(google.tab(id, `${EXPENSE_VIEW_TITLE} (2)`)).toBeUndefined();
+    expect(outcome.status === "saved" && outcome.viewUpdated).toBe(false);
   });
 
   it("rejects corruption and unsupported schema without repairing it", async () => {

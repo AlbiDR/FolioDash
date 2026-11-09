@@ -9,7 +9,7 @@ import { EMPTY_LEDGER } from "../../core/Ledger";
 import type { RawSheet } from "../../core/RawSheet";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
 import { type DirectDeps, attachDirect, commitDirect, ensureWorkbook, mirrorStatements, outcomeDirect, readAllDirect, readDirect, refreshView, restoreDirect, statementTabTitle, tidyLedgerTab } from "./DirectLedger";
-import { LEDGER_TAB, VIEW_TAB, VIEW_METADATA_KEY } from "./SheetsLayout";
+import { LEDGER_TAB, VIEW_TAB } from "./SheetsLayout";
 import { writeGridTabs } from "./GoogleWorkbook";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;
@@ -178,20 +178,49 @@ describe("ensureWorkbook: starting from scratch", () => {
 describe("generated tab ownership", () => {
   const grid = () => rawGrid({ date1904: false, rows: [[{ kind: "text", text: "Synthetic view" }]] });
 
-  it("preserves unmarked tabs and reuses the separately marked view on subsequent writes", async () => {
+  it("preserves conflicting unmarked tabs and refuses to create numbered copies", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
     const old = google.tab(workbook.id, VIEW_TAB);
     if (old === undefined) throw new Error("setup failed");
     old.developerMetadata = [];
     old.rows = [["personal notes"]];
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
-    const generated = google.tab(workbook.id, `${VIEW_TAB} (2)`);
-    expect(generated?.developerMetadata).toContainEqual(expect.objectContaining({ metadataKey: VIEW_METADATA_KEY, metadataValue: VIEW_TAB }));
+    for (let run = 0; run < 3; run++) {
+      expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
+    }
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
     expect(old.rows).toEqual([["personal notes"]]);
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
-    expect(google.workbooks.get(workbook.id)?.size).toBe(3);
-    expect(old.rows).toEqual([["personal notes"]]);
+  });
+
+  it("adopts an identical legacy view once, without duplicating tabs or touching records", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }]);
+    const view = google.tab(workbook.id, VIEW_TAB);
+    if (view === undefined) throw new Error("setup failed");
+    view.developerMetadata = [];
+    const records = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
+    for (let run = 0; run < 3; run++) {
+      expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
+    }
+    expect(view.developerMetadata).toHaveLength(1);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
+    expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(records);
+  });
+
+  it("orders and colours views consistently even when older months are written later", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    await writeGridTabs(google.client, google.token, workbook.id, [
+      { title: "Bank 2026-03-31", grid: grid() }, { title: "Work expenses", grid: grid() },
+    ]);
+    await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Bank 2026-01-31", grid: grid() }]);
+    expect([...google.workbooks.get(workbook.id)?.keys() ?? []]).toEqual([VIEW_TAB, "Work expenses", "Bank 2026-03-31", "Bank 2026-01-31", LEDGER_TAB]);
+    expect(google.tab(workbook.id, "Bank 2026-03-31")?.tabColorStyle).toEqual(google.tab(workbook.id, "Bank 2026-01-31")?.tabColorStyle);
+    expect(google.tab(workbook.id, "Work expenses")?.tabColorStyle).not.toEqual(google.tab(workbook.id, VIEW_TAB)?.tabColorStyle);
+    expect(google.tab(workbook.id, "Bank 2026-01-31")?.hideGridlines).toBe(true);
+    expect(google.tab(workbook.id, LEDGER_TAB)?.frozenRowCount).toBe(1);
   });
 
   it("recognises a generated tab after the person renames it", async () => {

@@ -38,6 +38,9 @@ interface FakeFile {
 interface FakeTab {
   readonly id: number;
   hidden: boolean;
+  tabColorStyle?: unknown;
+  frozenRowCount?: number;
+  hideGridlines?: boolean;
   rows: unknown[][];
   /** Grid size, as Google tracks it: values may only be written inside it. */
   rowCount: number;
@@ -241,12 +244,26 @@ export class FakeGoogle {
       if (tab === undefined) return "No such sheet";
       tab.developerMetadata.push(metadata.developerMetadata);
     }
-    const update = request["updateSheetProperties"] as { properties: { sheetId: number; hidden?: boolean; gridProperties?: GridSize & { frozenRowCount?: number } }; fields: string } | undefined;
+    const update = request["updateSheetProperties"] as { properties: { sheetId: number; hidden?: boolean; index?: number; tabColorStyle?: unknown; gridProperties?: GridSize & { frozenRowCount?: number; hideGridlines?: boolean } }; fields: string } | undefined;
     if (update !== undefined) {
       const tab = byId(update.properties.sheetId);
       if (tab === undefined) return "No such sheet";
       if (update.fields.includes("hidden")) tab.hidden = update.properties.hidden === true;
+      if (update.fields.includes("tabColorStyle")) tab.tabColorStyle = update.properties.tabColorStyle;
+      if (update.fields === "index") {
+        const entries = [...tabs.entries()];
+        const current = entries.findIndex(([, candidate]) => candidate.id === tab.id);
+        const target = update.properties.index ?? current;
+        if (target !== current && target !== current + 1) {
+          const entry = entries.splice(current, 1)[0];
+          if (entry !== undefined) entries.splice(target > current ? target - 1 : target, 0, entry);
+          tabs.clear();
+          for (const [title, value] of entries) tabs.set(title, value);
+        }
+      }
       const grid = update.properties.gridProperties;
+      if (grid?.frozenRowCount !== undefined) tab.frozenRowCount = grid.frozenRowCount;
+      if (grid?.hideGridlines !== undefined) tab.hideGridlines = grid.hideGridlines;
       if (grid?.rowCount !== undefined) this.resize(tab, grid.rowCount, tab.columnCount);
       if (grid?.columnCount !== undefined) this.resize(tab, tab.rowCount, grid.columnCount);
     }
@@ -267,17 +284,18 @@ export class FakeGoogle {
         tab.rowCount -= endIndex - startIndex;
       }
     }
-    const reset = request["repeatCell"] as { range: { sheetId: number } } | undefined;
+    const reset = request["repeatCell"] as { range: { sheetId: number }; fields: string } | undefined;
     if (reset !== undefined) {
       const tab = byId(reset.range.sheetId);
       if (tab === undefined) return "No such sheet";
-      tab.rows = [];
-      tab.formats = [];
+      if (reset.fields.includes("userEnteredValue")) tab.rows = [];
+      if (reset.fields.includes("userEnteredFormat")) tab.formats = [];
     }
-    const width = request["updateDimensionProperties"] as { range: { sheetId: number; startIndex: number; endIndex: number }; properties: { pixelSize: number } } | undefined;
+    const width = request["updateDimensionProperties"] as { range: { sheetId: number; dimension: string; startIndex: number; endIndex: number }; properties: { pixelSize: number } } | undefined;
     if (width !== undefined) {
       const tab = byId(width.range.sheetId);
       if (tab === undefined) return "No such sheet";
+      if (width.range.dimension === "ROWS") return null;
       if (width.range.endIndex > tab.columnCount) return "Range exceeds grid limits";
       for (let column = width.range.startIndex; column < width.range.endIndex; column++) tab.widths.set(column, width.properties.pixelSize);
     }

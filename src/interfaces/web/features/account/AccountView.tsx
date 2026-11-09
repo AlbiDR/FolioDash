@@ -61,7 +61,7 @@ export function AccountView(props: {
       const outcome = await action();
       setMessage(outcome.status === "superseded" ? null : describeConnect(outcome));
     } catch {
-      setMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
+      setMessage({ good: false, title: "Something went wrong", body: "The result could not be confirmed. Check your spreadsheet and connection before trying again." });
     } finally {
       setPending(null);
     }
@@ -88,7 +88,7 @@ export function AccountView(props: {
     try {
       setCheckMessage(describeVerify(await actions.verify()));
     } catch {
-      setCheckMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
+      setCheckMessage({ good: false, title: "Something went wrong", body: "The result could not be confirmed. Check your spreadsheet and connection before trying again." });
     } finally {
       setPending(null);
     }
@@ -101,7 +101,7 @@ export function AccountView(props: {
     try {
       setTidyMessage(describeTidy(await actions.tidy()));
     } catch {
-      setTidyMessage({ good: false, title: "Something went wrong", body: "Nothing was changed. Try again." });
+      setTidyMessage({ good: false, title: "Something went wrong", body: "The result could not be confirmed. Check your spreadsheet and connection before trying again." });
     } finally {
       setPending(null);
     }
@@ -114,7 +114,7 @@ export function AccountView(props: {
   return (
     <section class="account screen" aria-labelledby="account-connection-heading">
       <p class="account-lead">Check synchronization, verify your saved history and manage the copy on this device.</p>
-      <div class="status" data-busy={busy} aria-live="polite">{pending !== null && <p>{pending === "connect" ? "Waiting for Google…" : pending === "sync" ? "Checking your latest saved history…" : pending === "restore" ? "Restoring your spreadsheet and checking the result…" : pending === "verify" ? "Reading and checking your saved statements…" : "Tidying the generated views in your spreadsheet…"}</p>}</div>
+      <div class="status" data-busy={busy} aria-live="polite">{pending !== null && <p>{pending === "connect" ? "Waiting for Google…" : pending === "sync" ? "Checking your latest saved history…" : pending === "restore" ? "Restoring your spreadsheet and checking the result…" : pending === "verify" ? "Reading and checking your saved statements…" : "Checking and organizing your spreadsheet…"}</p>}</div>
 
       <div class="card account-summary">
         <h2 id="account-connection-heading" ref={connectionHeading} class="card-title" tabIndex={-1}>Your connection</h2>
@@ -175,7 +175,7 @@ export function AccountView(props: {
         {!signedOut && <button type="button" class="link-button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect({ differentAccount: true }), "connect")}>Use a different Google account</button>}
       </div>
 
-      {!signedOut && state.workbook !== null && <PageNav items={[{ id: "account-health-heading", label: "Verify" }, { id: "account-maintenance-heading", label: "Tidy" }, { id: "account-device-heading", label: "Storage" }]} />}
+      {!signedOut && state.workbook !== null && <PageNav items={[{ id: "account-health-heading", label: "Verify" }, { id: "account-maintenance-heading", label: "Organize" }, { id: "account-device-heading", label: "Storage" }]} />}
 
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-health" aria-labelledby="account-health-heading">
@@ -190,11 +190,11 @@ export function AccountView(props: {
 
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-maintenance" aria-labelledby="account-maintenance-heading">
-          <h2 id="account-maintenance-heading" class="card-title" tabIndex={-1}>Keep your sheet tidy</h2>
-          <p class="card-subtitle">Rewrites the summary and every month's tab so they look alike and stay lean. Your saved records are not touched.</p>
-          <p class="hint">Dates, amounts and prices are shown the same way in every month, with one empty row and column around the data and nothing beyond it.</p>
+          <h2 id="account-maintenance-heading" class="card-title" tabIndex={-1}>Organize your spreadsheet</h2>
+          <p class="card-subtitle">Rebuilds the portfolio summary, kept bank statements and work expenses from checked Google records. Applies consistent fonts, colours, number formats and column widths.</p>
+          <p class="hint">Tabs are ordered: portfolio, work expenses, newest bank statement first, then your other tabs and hidden records. Unrecognised tabs are preserved. Matching older views can be adopted; conflicting tabs stop organization.</p>
           <button type="button" disabled={busy} onClick={() => void tidy()}>
-            {pending === "tidy" ? "Tidying your sheet…" : "Tidy my sheet"}
+            {pending === "tidy" ? "Organizing your spreadsheet…" : "Organize spreadsheet"}
           </button>
           <Result message={tidyMessage} />
         </section>

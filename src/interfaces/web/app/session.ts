@@ -14,9 +14,13 @@ import {
   refreshView,
   restoreDirect,
   tidyLedgerTab,
+  statementTabTitle,
 } from "../../../adapters/google/DirectLedger";
 import type { RestClient } from "../../../adapters/google/Rest";
-import type { WorkbookIdentity } from "../../../adapters/google/GoogleWorkbook";
+import { type WorkbookIdentity, writeGridTabs } from "../../../adapters/google/GoogleWorkbook";
+import { expenseView, EXPENSE_VIEW_TITLE, readExpenses } from "../../../adapters/google/DirectExpenses";
+import { readableView } from "../../../applications/ReadableView";
+import { VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { AttachItem } from "../../../applications/LedgerService";
 import { type InterpretStatement, verifyRebuild } from "../../../applications/Rebuild";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
@@ -538,9 +542,8 @@ export class Session {
   }
 
   /**
-   * Rewrites the summary and every month's tab from the saved records, in the current
-   * layout: typed alike, formatted, and cut to the data plus one empty row and column.
-   * Only the views are rewritten; the records are read, never changed.
+   * Checks both record stores, then rebuilds and organizes their readable views in
+   * one atomic batch. Record values and concurrent-write markers are never changed.
    */
   async tidySheet(): Promise<TidyOutcome> {
     const { workbook } = this.current;
@@ -558,10 +561,17 @@ export class Session {
       const sheet = parseStoredSheet(source.sheet);
       return sheet === null ? [] : [{ date: source.date, sheet }];
     });
-    const summary = await refreshView(this.deps.rest, signed.token, workbook.id, all.state);
-    const monthly = await mirrorStatements(this.deps.rest, signed.token, workbook.id, months, this.deps.present);
-    await tidyLedgerTab(this.deps.rest, signed.token, workbook.id);
-    if (!summary || !monthly) return { status: "failed", message: "Google did not accept the change, so your sheet was left as it was. Try again shortly." };
+    const expenses = await readExpenses(this.deps.rest, signed.token, workbook.id, this.expenses.state.initialized);
+    if (expenses.status === "damaged" || expenses.status === "unavailable") return { status: "needs-attention", message: `${expenses.message} Organization was not started.` };
+    const now = new Date(this.deps.now());
+    const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    if (today === null) return { status: "failed", message: "The device date is outside the supported range. Organization was not started." };
+    const written = await writeGridTabs(this.deps.rest, signed.token, workbook.id, [
+      { title: VIEW_TAB, grid: readableView(all.state) },
+      ...(expenses.status === "ok" ? [{ title: EXPENSE_VIEW_TITLE, grid: expenseView(expenses.days, expenses.conflicts, today) }] : []),
+      ...months.map((month) => ({ title: statementTabTitle(month.date), grid: this.deps.present(month.sheet) })),
+    ]);
+    if (!written.ok) return { status: "failed", message: written.message ?? "Organization could not be confirmed. Google may have applied the layout if its response was lost. If a tab has an unrecognised or duplicate ownership marker, or an unmarked tab differs from the saved view, it is preserved and organization stops. Check your connection and workbook before trying again. Saved financial records are never rewritten by this action." };
     return { status: "tidied", months: months.length, withoutStatement: all.state.snapshots.length - months.length };
   }
 

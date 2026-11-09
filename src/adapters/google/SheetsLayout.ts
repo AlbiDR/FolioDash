@@ -11,3 +11,8 @@ export const VIEW_METADATA_KEY = "foliodash.view";
 /** Tags the spreadsheet in Drive so it can be found again on any device without remembering its id. */
 export const APP_PROPERTY_KEY = "foliodash";
 export const APP_PROPERTY_VALUE = "ledger-v1";
+
+/** Expense view and ownership roles shared by storage and workbook presentation. */
+export const EXPENSE_VIEW_TITLE = "Work expenses";
+export const EXPENSE_METADATA_KEY = "foliodash.expenses";
+export const EXPENSE_RECORD_ROLE = "records-v1";

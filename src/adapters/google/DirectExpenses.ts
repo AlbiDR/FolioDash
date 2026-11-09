@@ -1,19 +1,19 @@
 import type { ExpenseConflict, ExpenseSaveOutcome } from "../../applications/ExpenseModel";
-import { bufferedGrid, plainCell, type GridCell } from "../../applications/SheetGrid";
+import { bufferedGrid, plainCell, type Grid, type GridCell } from "../../applications/SheetGrid";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { toSpreadsheetSerial, type IsoDate } from "../../core/IsoDate";
 import { sha256Hex } from "../../core/Sha256";
 import { EXPENSE_LABELS, EXPENSE_OPTIONAL_INDICES, EXPENSE_REPORTING_POLICY, expenseDayKind, expenseReport, expenseWeek, filledExpenseFields, parseExpenseCommand, sumExpenseAmounts, weekDates, type ExpenseCommand, type ExpenseDay } from "../../core/WorkExpenses";
 import type { EuroCents } from "../../core/Money";
 import { writeGridTabs } from "./GoogleWorkbook";
-import { LEDGER_TAB } from "./SheetsLayout";
+import { EXPENSE_METADATA_KEY, EXPENSE_RECORD_ROLE, EXPENSE_VIEW_TITLE, LEDGER_TAB } from "./SheetsLayout";
 import { callRest, wroteNothing, type RestClient } from "./Rest";
 
 const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 export const EXPENSE_LOG_TITLE = "_FolioDash expenses";
-export const EXPENSE_VIEW_TITLE = "Work expenses";
-const KEY = "foliodash.expenses";
-const ROLE = "records-v1";
+export { EXPENSE_VIEW_TITLE } from "./SheetsLayout";
+const KEY = EXPENSE_METADATA_KEY;
+const ROLE = EXPENSE_RECORD_ROLE;
 const ANCHOR = "enabled-v1";
 const HEADER = ["schema", "payload", "checksum"];
 const MAX_COMMANDS = 100_000;
@@ -222,6 +222,11 @@ export async function saveExpense(rest: RestClient, token: string, id: string, c
 
 /** Exact values, typed dates and explicit partial/conflict states; no spreadsheet calculation alternatives. */
 export async function refreshExpenseView(rest: RestClient, token: string, id: string, days: readonly ExpenseDay[], conflicts: readonly ExpenseConflict[] = [], today?: IsoDate): Promise<boolean> {
+  return (await writeGridTabs(rest, token, id, [{ title: EXPENSE_VIEW_TITLE, grid: expenseView(days, conflicts, today) }])).ok;
+}
+
+/** The same checked expense projection is used after saves and workbook organization. */
+export function expenseView(days: readonly ExpenseDay[], conflicts: readonly ExpenseConflict[] = [], today?: IsoDate): Grid {
   const money = (amount: EuroCents | null): GridCell => amount === null ? plainCell("") : { value: amount / 100, format: '#,##0.00" €"', emphasis: null };
   const startDate = [...days].sort((left, right) => left.date.localeCompare(right.date))[0]?.date ?? null;
   const descriptions = { complete: "Recorded workday", partial: "Needs review; amount recorded so far", "no-work": "No onsite work", "not-entered": "Not entered yet", future: "Future date", "outside-history": "Outside tracked history", weekend: "Weekend" };
@@ -253,7 +258,7 @@ export async function refreshExpenseView(rest: RestClient, token: string, id: st
       for (const [label, amount] of metrics) rows.push([plainCell(label), money(unresolved ? null : amount), plainCell(unresolved ? "Resolve conflicting versions first" : amount === null ? "Not enough eligible history" : "See FolioDash for period counts and definitions")]);
     }
   }
-  return (await writeGridTabs(rest, token, id, [{ title: EXPENSE_VIEW_TITLE, grid: bufferedGrid(rows, [140, 160, 130, 160, 130, 160, 150, 260]) }])).ok;
+  return bufferedGrid(rows, [140, 160, 130, 160, 130, 160, 150, 260]);
 }
 
 /** Explicit recovery into an absent or verified empty store. Existing history is never cleared or replaced. */

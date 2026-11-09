@@ -104,10 +104,10 @@ export function describeTidy(outcome: TidyOutcome): Message {
     case "needs-attention":
       return { good: false, title: "Your Google Sheet needs attention", body: outcome.message };
     case "failed":
-      return { good: false, title: "Could not tidy", body: outcome.message };
+      return { good: false, title: "Organization not confirmed", body: outcome.message };
     case "tidied": {
       const rest = outcome.withoutStatement > 0 ? ` ${plural(outcome.withoutStatement, "month has", "months have")} no kept statement, so there is no tab for ${outcome.withoutStatement === 1 ? "it" : "them"}.` : "";
-      return { good: true, title: "Your sheet is tidy", body: `The summary and ${plural(outcome.months, "monthly tab", "monthly tabs")} were rewritten.${rest}` };
+      return { good: true, title: "Spreadsheet organized", body: `The portfolio summary, ${plural(outcome.months, "bank tab", "bank tabs")} and any enabled work expenses view were rebuilt, formatted and ordered. Saved records were preserved.${rest}` };
     }
   }
 }

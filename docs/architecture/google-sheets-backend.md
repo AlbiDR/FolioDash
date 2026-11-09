@@ -76,9 +76,9 @@ Choose one before implementing connection/setup screens. Do not create both serv
 
 If the selected route fails its live proof, report the exact limitation and revisit FD-014. Do not introduce an unapproved proxy provider or weaken the privacy boundary to make it work.
 
-## 4. Workbook is storage, not the interface
+## 4. Workbook storage and readable views
 
-The workbook should remain simple for a person to recognise, but **imports alone cannot recover contributions, withdrawals, opening net invested or corrections**. Those facts are not contained in valuation numbers.
+The owner requires the workbook to be readable and consistently organized as well as serving as storage. The [spreadsheet organization contract](../operations/spreadsheet-organization.md) defines the implemented reports, tab order, formatting and safe maintenance. This presentation amendment does not change financial authority: **imports alone cannot recover contributions, withdrawals, opening net invested or corrections**. Those facts are not contained in valuation numbers.
 
 Proposed minimum roles, not final tab names or a migration to run now:
 
