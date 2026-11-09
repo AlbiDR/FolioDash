@@ -19,7 +19,7 @@ import type { RestClient } from "../../../adapters/google/Rest";
 import { type WorkbookIdentity, needsOrganization, writeGridTabs } from "../../../adapters/google/GoogleWorkbook";
 import { containsExpenseCommands, expenseView, EXPENSE_VIEW_TITLE, readExpenses } from "../../../adapters/google/DirectExpenses";
 import { rawGrid } from "../../../applications/SheetGrid";
-import { readableView } from "../../../applications/ReadableView";
+import { readableView, previousReadableViews } from "../../../applications/ReadableView";
 import { VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { AttachItem } from "../../../applications/LedgerService";
 import { type InterpretStatement, verifyRebuild } from "../../../applications/Rebuild";
@@ -222,7 +222,7 @@ export class Session {
     this.pendingView = null;
     this.pendingTabs = new Map();
     const result = full ? await this.organizeWorkbook(view.workbook, token) : await writeGridTabs(this.deps.rest, token, view.workbook.id, [
-      { title: VIEW_TAB, grid: readableView(view.state) },
+      { title: VIEW_TAB, grid: readableView(view.state), legacyGrids: () => previousReadableViews(view.state) },
       ...tabs.map((tab) => ({ title: statementTabTitle(tab.date), grid: this.deps.present(tab.sheet), legacyGrids: [rawGrid(tab.sheet)] })),
     ]);
     if (generation !== this.generation || this.current.workbook?.id !== view.workbook.id) return;
@@ -652,7 +652,7 @@ export class Session {
     if (today === null) return { status: "failed", message: "The device date is outside the supported range. Organization was not started." };
     if (generation !== this.generation || this.current.workbook?.id !== workbook.id) return { status: "failed", message: "The connected account changed before organization. No layout batch was submitted." };
     const written = await writeGridTabs(this.deps.rest, token, workbook.id, [
-      { title: VIEW_TAB, grid: readableView(all.state) },
+      { title: VIEW_TAB, grid: readableView(all.state), legacyGrids: () => previousReadableViews(all.state) },
       ...(expenses.status === "ok" ? [{ title: EXPENSE_VIEW_TITLE, grid: expenseView(expenses.days, expenses.conflicts, today) }] : []),
       ...months.map((month) => ({ title: statementTabTitle(month.date), grid: this.deps.present(month.sheet), legacyGrids: [rawGrid(month.sheet)] })),
     ], { completeOrganization: true });

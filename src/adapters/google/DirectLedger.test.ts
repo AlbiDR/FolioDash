@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { legacyJanuarySummary, LEGACY_SUMMARY_NOTICE } from "../../../tests/fixtures/LegacySummary";
 import { FakeGoogle } from "../../../tests/fixtures/FakeGoogle";
 import type { CommitRequest } from "../../applications/LedgerService";
+import { readableView } from "../../applications/ReadableView";
 import { rawGrid } from "../../applications/SheetGrid";
 import type { FundCommand, StatementInput } from "../../core/ImportPlan";
 import { type IsoDate, parseIsoDate, toSpreadsheetSerial } from "../../core/IsoDate";
@@ -207,6 +209,84 @@ describe("generated tab ownership", () => {
     expect(view.developerMetadata).toHaveLength(1);
     expect(google.workbooks.get(workbook.id)?.size).toBe(2);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(records);
+  });
+
+  it("upgrades an unmarked summary from the old layout, even when it shows an earlier saved date", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    const january = await readDirect(google.client, google.token, workbook.id);
+    if (january.status !== "ok") throw new Error("setup failed");
+    await commitDirect(deps, google.token, workbook.id, second(january.state.revision));
+    const latest = await readDirect(google.client, google.token, workbook.id);
+    const original = google.tab(workbook.id, VIEW_TAB);
+    if (latest.status !== "ok" || original === undefined) throw new Error("setup failed");
+    original.developerMetadata = [];
+    original.rows = legacyJanuarySummary(ISIN);
+    const records = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
+    const guards = [...google.namedRanges.get(workbook.id) ?? []];
+    expect(await refreshView(google.client, google.token, workbook.id, latest.state)).toBe(true);
+    expect(google.tab(workbook.id, VIEW_TAB)?.id).toBe(original.id);
+    expect(original.rows.flat()).toContain("Statement date");
+    expect(original.rows.flat()).toContain(1100);
+    expect(original.rows.flat()).not.toContain(LEGACY_SUMMARY_NOTICE);
+    expect(original.developerMetadata).toHaveLength(1);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
+    expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(records);
+    expect([...google.namedRanges.get(workbook.id) ?? []]).toEqual(guards);
+  });
+
+  it("also recognises an unmarked current-layout summary from an earlier saved date", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    const january = await readDirect(google.client, google.token, workbook.id);
+    if (january.status !== "ok") throw new Error("setup failed");
+    const original = google.tab(workbook.id, VIEW_TAB);
+    if (original === undefined) throw new Error("setup failed");
+    original.developerMetadata = [];
+    original.rows = readableView(january.state).cells.map((row) => row.map((cell) => cell.value));
+    await commitDirect(deps, google.token, workbook.id, second(january.state.revision));
+    const latest = await readDirect(google.client, google.token, workbook.id);
+    if (latest.status !== "ok") throw new Error("setup failed");
+    expect(await refreshView(google.client, google.token, workbook.id, latest.state)).toBe(true);
+    expect(original.rows.flat()).toContain(1100);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
+  });
+
+  it("upgrades a recognised old empty summary without requiring a rename", async () => {
+    const { google } = setup();
+    const workbook = await readyWorkbook(google);
+    const original = google.tab(workbook.id, VIEW_TAB);
+    if (original === undefined) throw new Error("setup failed");
+    original.developerMetadata = [];
+    original.rows = [[], ["", VIEW_TAB], ["", LEGACY_SUMMARY_NOTICE], [], ["", "No statements recorded yet."]];
+    expect(await refreshView(google.client, google.token, workbook.id, EMPTY_LEDGER)).toBe(true);
+    expect(original.developerMetadata).toHaveLength(1);
+    expect(google.workbooks.get(workbook.id)?.size).toBe(2);
+  });
+
+  it.each(["changed value", "extra note", "formula"])("preserves an old-looking summary with %s", async (change) => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    await commitDirect(deps, google.token, workbook.id, first());
+    const latest = await readDirect(google.client, google.token, workbook.id);
+    const original = google.tab(workbook.id, VIEW_TAB);
+    if (latest.status !== "ok" || original === undefined) throw new Error("setup failed");
+    const rows = legacyJanuarySummary(ISIN);
+    if (change === "extra note") rows.push(["personal note"]);
+    else {
+      const fund = rows.at(-1);
+      if (fund === undefined) throw new Error("setup failed");
+      fund[4] = change === "formula" ? "=1000" : 999;
+    }
+    original.developerMetadata = [];
+    original.rows = rows;
+    const before = JSON.stringify(rows);
+    const batches = google.batches.length;
+    expect(await refreshView(google.client, google.token, workbook.id, latest.state)).toBe(false);
+    expect(JSON.stringify(original.rows)).toBe(before);
+    expect(google.batches.length).toBe(batches);
   });
 
   it("recognizes sheet zero when Google omits default-valued scalar IDs", async () => {

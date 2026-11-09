@@ -2,6 +2,7 @@ import { createGoogleSessionStore } from "../../../adapters/browser/GoogleSessio
 import type { RenewalCoordination, SignInOptions, SignInResult } from "../../../applications/SessionModel";
 import { createAccountHintStore } from "../../../adapters/browser/ConnectionMemory";
 import { describe, expect, it } from "vitest";
+import { legacyJanuarySummary } from "../../../../tests/fixtures/LegacySummary";
 import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
 import { rawGrid } from "../../../applications/SheetGrid";
 import { OPENING, februarySheet, januarySheet } from "../../../../tests/fixtures/SavedMonths";
@@ -569,6 +570,37 @@ describe("automatic spreadsheet organization", () => {
     await returning.refreshIfNeeded();
     await returning.idle();
     expect(log.signIns).toBe(signIns);
+  });
+
+  it("automatically upgrades an old FolioDash summary and consolidates its marked numbered copy", async () => {
+    const { google, make } = world();
+    const session = make();
+    await session.connect();
+    await saved(session, january);
+    await saved(session, february);
+    await session.idle();
+    const id = session.state.workbook?.id ?? "";
+    const original = google.tab(id, VIEW_TAB);
+    const tabs = google.workbooks.get(id);
+    if (original === undefined || tabs === undefined) throw new Error("setup failed");
+    tabs.set(`${VIEW_TAB} (2)`, { ...original, id: 2000, developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })) });
+    original.developerMetadata = [];
+    original.rows = legacyJanuarySummary(ISIN);
+    google.spreadsheetMetadata.set(id, [{ metadataKey: ORGANIZATION_METADATA_KEY, metadataValue: "3", location: { spreadsheet: true } }]);
+    const records = JSON.stringify(google.tab(id, LEDGER_TAB)?.rows);
+    const returning = make();
+    await returning.connect();
+    await returning.idle();
+    expect(returning.state.organization?.status).toBe("current");
+    expect(google.tab(id, VIEW_TAB)?.id).toBe(original.id);
+    expect(tabs.has(`${VIEW_TAB} (2)`)).toBe(false);
+    expect(google.tab(id, VIEW_TAB)?.rows.flat()).toContain("Statement date");
+    expect(google.tab(id, VIEW_TAB)?.rows.flat()).toContain(1100);
+    expect(JSON.stringify(google.tab(id, LEDGER_TAB)?.rows)).toBe(records);
+    const batches = google.batches.length;
+    await returning.tidySheet();
+    expect(google.batches.length).toBe(batches + 1);
+    expect(tabs.size).toBe(2);
   });
 
   it("automatically consolidates existing Bank copies from retained sources during a layout upgrade", async () => {

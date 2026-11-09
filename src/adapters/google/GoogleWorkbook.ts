@@ -233,8 +233,8 @@ export async function tidyLedgerTab(rest: RestClient, accessToken: string, workb
 export interface GridTab {
   readonly title: string;
   readonly grid: Grid;
-  /** Retained source representations allow safe consolidation of older renderings. */
-  readonly legacyGrids?: readonly Grid[];
+  /** Ledger/source-backed compatibility views; generated lazily for migrations. */
+  readonly legacyGrids?: readonly Grid[] | (() => readonly Grid[]);
 }
 
 const NAVY = { red: 0.12, green: 0.20, blue: 0.34 };
@@ -392,11 +392,18 @@ export async function writeGridTabs(rest: RestClient, accessToken: string, workb
     const owned = candidates.filter((candidate) => candidate.viewRoles.includes(tab.title));
     const error = (message: string): GridWriteResult => ({ ok: false, failure: "unexpected", message: `${message} No organization batch was submitted. Saved records are preserved.` });
     if (owned.some((candidate) => candidate.title === LEDGER_TAB || candidate.financialRecords || candidate.viewRoles.length !== 1)) return error(`The ownership of “${tab.title}” is ambiguous.`);
-    const expected = [tab.grid, ...(tab.legacyGrids ?? [])].map((grid) => viewValues(grid.cells.map((row) => row.map((cell) => cell.value))));
-    const matches = (candidate: TabInfo): boolean => values.has(candidate.id) && expected.includes(viewValues(values.get(candidate.id)));
+    // Compatibility renderings are generated only for an actual migration;
+    // normal writes to a marked view never render every historical summary.
+    let expected: readonly string[] | null = null;
+    const matches = (candidate: TabInfo): boolean => {
+      if (!values.has(candidate.id)) return false;
+      const older = (): readonly Grid[] => typeof tab.legacyGrids === "function" ? tab.legacyGrids() : tab.legacyGrids ?? [];
+      expected ??= [tab.grid, ...older()].map((grid) => viewValues(grid.cells.map((row) => row.map((cell) => cell.value))));
+      return expected.includes(viewValues(values.get(candidate.id)));
+    };
     const eligible = candidates.filter((candidate) => !candidate.financialRecords && candidate.title !== LEDGER_TAB && (candidate.viewRoles.length === 0 || (candidate.viewRoles.length === 1 && candidate.viewRoles[0] === tab.title)));
-    // Multiple ownership markers may be consolidated only for source-backed Bank
-    // views whose actual contents have all been independently verified.
+    // Multiple ownership markers require ledger-backed compatibility renderings
+    // and independently verified contents before consolidation.
     if (owned.length > 1 && (tab.legacyGrids === undefined || owned.some((candidate) => !matches(candidate)))) return error(`The ownership of “${tab.title}” is ambiguous.`);
     const canonical = candidates.find((candidate) => candidate.title === tab.title);
     if (canonical !== undefined && !owned.includes(canonical) && (!eligible.includes(canonical) || !matches(canonical))) return error(`“${canonical.title}” differs from its retained statement or saved view. Preserve and rename that tab before organizing again.`);
@@ -408,8 +415,8 @@ export async function writeGridTabs(rest: RestClient, accessToken: string, workb
     for (const candidate of candidates) {
       if (candidate.id === knownId) continue;
       if (tab.legacyGrids !== undefined && eligible.includes(candidate) && (matches(candidate) || (owned.length === 1 && owned.includes(candidate)))) {
-        // The authoritative SOURCE record retains the complete source, so these
-        // derived copies can be rebuilt after consolidation without financial recovery.
+        // Checked financial/source records retain the facts behind these views,
+        // so the current presentation can be rebuilt after consolidation.
         requests.push({ deleteSheet: { sheetId: candidate.id } });
         organized = organized.filter((item) => item.id !== candidate.id);
         consolidatedTabs++;

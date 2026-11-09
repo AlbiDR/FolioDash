@@ -2,7 +2,7 @@ import type { SourceRecord } from "../../applications/StatementSource";
 import type { CallFailure, Workbook } from "../../applications/SessionModel";
 import { type AttachRequest, type CommitRequest, type ServiceEnvironment, attachStatements, commitStatement } from "../../applications/LedgerService";
 import { rawGrid } from "../../applications/SheetGrid";
-import { readableView } from "../../applications/ReadableView";
+import { readableView, previousReadableViews } from "../../applications/ReadableView";
 import type { Grid } from "../../applications/SheetGrid";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { type LedgerState, parseLedgerState } from "../../core/Ledger";
@@ -245,7 +245,7 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
 
 /** Refreshes the readable tab. Best effort: a failure here never affects the saved records. */
 export async function refreshView(rest: RestClient, accessToken: string, workbookId: string, state: LedgerState): Promise<boolean> {
-  const written = await writeGridTabs(rest, accessToken, workbookId, [{ title: VIEW_TAB, grid: readableView(state) }]);
+  const written = await writeGridTabs(rest, accessToken, workbookId, [{ title: VIEW_TAB, grid: readableView(state), legacyGrids: () => previousReadableViews(state) }]);
   return written.ok;
 }
 

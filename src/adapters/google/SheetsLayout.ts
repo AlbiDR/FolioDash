@@ -19,4 +19,4 @@ export const EXPENSE_RECORD_ROLE = "records-v1";
 
 /** Rebuild old readable views once when their presentation contract changes. */
 export const ORGANIZATION_METADATA_KEY = "foliodash.organization";
-export const ORGANIZATION_VERSION = "3";
+export const ORGANIZATION_VERSION = "4";
