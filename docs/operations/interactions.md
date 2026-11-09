@@ -199,3 +199,22 @@ Local production build, headless desktop Chrome and touch emulation, synthetic p
 - Reduced motion has zero running document animations, zero panel/segment transition durations and no stat-card translation, while focus/selection remain functional.
 
 These checks exercise the actual local production renderer, with service workers blocked to ensure the tested build is current. They do not establish physical Android feel, other browser-engine support, screen-reader announcements or live Google integration.
+
+## Motion refinement, 2026-11-10
+
+The owner's request adds 42 touchpoints to the existing system in `src/interfaces/web/shared/ui/motion.css`. These use the existing duration, distance and easing tokens. State transitions reverse from their current rendered position when interrupted. There are no delayed controls, staggered financial rows or interpolated amounts. Privacy values still disappear immediately. Hover feedback is restricted to fine pointers; focus outlines remain immediate.
+
+| Group | Count | Implemented touchpoints, in source order |
+|---|---|---|
+| Animations A1-A5 | 5 | Main screen arrival; toolbar arrival; expense review/conflict arrival; expense state settling; jump navigation arrival |
+| Transitions T1-T17 | 17 | Shell theme; toolbar surface; main navigation surface; card surface; chart surface; hero surface; segmented surface; jump buttons; expense inputs/selects; expense state; week buttons; record buttons; recovery buttons; notice tone; error tone; review tone; native disclosure opening and closing |
+| Microtransitions M1-M15 | 15 | Navigation label; navigation icon; collapsed sidebar icon opacity; allocation name; allocation dot; chart swatch; chart legend control; expense field label; expense input suffix; optional expense label; jump button lift; date control press translation; recovery icon press; workbook link underline offset; skip link reveal/release |
+| Microinteractions I1-I5 | 5 | Expense field focus coordinates label/suffix; jump control hover/focus lift; date control press/release nudge; recovery icon press/release compression; week/record row hover and keyboard inspection |
+
+The five animations run once per mount, for 220-380ms, starting at 85% opacity or 98% scale with at most 2px travel. Containers receive arrival/theme treatment only, without pointer feedback. Existing controls retain their 48px hit areas.
+
+Disclosure height and opacity animate together through `::details-content` with `interpolate-size` and discrete `content-visibility` transitions. The feature is guarded by `@supports`; unsupported browsers retain native disclosure behavior. The existing child arrival is suppressed in supporting engines to avoid competing reveals. Closed content retains native focus/accessibility semantics. Reduced motion disables the new animations and transitions, including the native disclosure pseudo-element, and removes the added press/lift translations.
+
+Validation: `npm run verify` passed locally on 2026-11-10 (repository, contributors, punctuation, TypeScript, ESLint, tests, Pages composition, production build, PWA and Apps Script bundle checks). Production synthetic-demo browser capture uses `npm run capture:readme` with a fresh headless Chrome profile and local-only requests. This checks light/dark portfolio and expense screens plus a phone-size portfolio, overflow, runtime errors and settled animations; it does not prove motion quality or physical-device behavior. Physical Android/iOS, screen-reader, deployed-origin and other-engine motion checks remain NOT RUN.
+
+Targeted local Chrome CDP check on the same production artifact: with `prefers-reduced-motion: no-preference`, opening the setup disclosure, waiting 450ms, closing it and sampling after 80ms retained a 165.25px content box at opacity 0.308, confirming an intermediate exit state. Reopening during the exit completed successfully. Switching to reduced motion produced a 0s disclosure transition and no running document animations. The five standard captures use reduced motion for stable screenshots; they are layout evidence, not animated recordings. The phone capture was visually inspected. This one disclosure sample does not establish smoothness for every workflow or browser.

@@ -297,3 +297,92 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
   .chart-date-control input::-webkit-slider-thumb { transition: none !important; transform: none !important; }
   .chart-date-control input::-moz-range-thumb { transition: none !important; transform: none !important; }
 }
+
+/* Motion refinement: 5 arrivals, 17 transitions, 15 microtransitions and 5 interactions.
+ * Inventory and verification: docs/operations/interactions.md. No delayed actions or data tweening.
+ */
+
+/* A1-A5: brief, single-pass arrivals. No stagger leaves controls waiting to become usable. */
+@keyframes surface-arrive { from { opacity: var(--motion-reveal-opacity); translate: 0 var(--motion-nudge); } to { opacity: 1; translate: 0 0; } }
+@keyframes toolbar-arrive { from { opacity: var(--motion-reveal-opacity); translate: 0 var(--motion-lift); } to { opacity: 1; translate: 0 0; } }
+@keyframes workflow-arrive { from { opacity: var(--motion-reveal-opacity); } to { opacity: 1; } }
+@keyframes state-arrive { from { scale: var(--motion-press); } to { scale: 1; } }
+@keyframes navigation-arrive { from { opacity: var(--motion-reveal-opacity); translate: 0 var(--motion-nudge); } to { opacity: 1; translate: 0 0; } }
+#main-content > :is(.dash, .screen, .account, .import) { animation: surface-arrive var(--duration-medium) var(--ease-standard); }
+.topbar { animation: toolbar-arrive var(--duration-medium) var(--ease-standard); }
+.expense-review, .expense-conflict { animation: workflow-arrive var(--duration-feedback) var(--ease-standard); }
+.expense-state { animation: state-arrive var(--duration-feedback) var(--ease-standard); }
+.page-nav { animation: navigation-arrive var(--duration-feedback) var(--ease-standard); }
+
+/* T1-T17: explicit properties preserve immediate focus outlines and stable geometry. */
+.shell { transition: background-color var(--duration-medium) var(--ease-standard); }
+.topbar { transition: background-color var(--duration-medium) var(--ease-standard), box-shadow var(--duration-feedback) var(--ease-standard); }
+.main-nav { transition: background-color var(--duration-medium) var(--ease-standard), box-shadow var(--duration-feedback) var(--ease-standard); }
+.card { transition: background-color var(--duration-medium) var(--ease-standard), border-color var(--duration-feedback) var(--ease-standard); }
+.chart { transition: background-color var(--duration-medium) var(--ease-standard), border-color var(--duration-feedback) var(--ease-standard); }
+.hero { transition: background-color var(--duration-medium) var(--ease-standard); }
+.segmented { transition: background-color var(--duration-medium) var(--ease-standard); }
+.page-nav button.page-nav-item { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
+.expenses-dashboard :is(input, select) { transition: background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
+.expense-state { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard); }
+.expense-week-list button { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
+.expense-record-list button { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
+.expense-note-actions button { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
+.notice { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
+.review-problem { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
+.review-adjustments { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
+/* Native disclosure content remains inert when closed; supporting engines animate both directions. */
+@supports (interpolate-size: allow-keywords) and (transition-behavior: allow-discrete) {
+  details { interpolate-size: allow-keywords; }
+  details::details-content {
+    block-size: 0;
+    opacity: 0;
+    overflow: clip;
+    transition: block-size var(--duration-medium) var(--ease-standard), opacity var(--duration-feedback) var(--ease-standard), content-visibility var(--duration-medium) allow-discrete;
+  }
+  details[open]::details-content { block-size: auto; opacity: 1; }
+  /* The content box owns the reveal; avoid a second animation on every child. */
+  details[open] > :not(summary) { animation: none; }
+}
+
+/* M1-M15: small reversible details, with the same curve on entry and release. */
+.nav-link { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard); }
+.nav-link > svg { transition: transform var(--duration-feedback) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
+.sidebar-toggle > svg { transition: transform var(--duration-feedback) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
+.sidebar-toggle[aria-expanded="false"] > svg { opacity: 0.75; }
+.legend-name { transition: color var(--duration-short) var(--ease-standard); }
+.legend .dot { transition: transform var(--duration-feedback) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
+.chart-swatch { transition: translate var(--duration-short) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
+.chart-legend-button { transition: background-color var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
+.expense-field > label { transition: color var(--duration-short) var(--ease-standard); }
+.expense-input { transition: color var(--duration-short) var(--ease-standard); }
+.expense-optional-label { transition: color var(--duration-short) var(--ease-standard); }
+.page-nav button.page-nav-item { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard), translate var(--duration-short) var(--ease-standard); }
+.expense-date-controls button { transition: background-color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard), opacity var(--duration-short) var(--ease-standard), translate var(--duration-short) var(--ease-standard); }
+.expense-note-actions button > svg { transition: scale var(--duration-feedback) var(--ease-standard); }
+.account .facts a { transition: background-size var(--duration-short) var(--ease-standard), text-underline-offset var(--duration-short) var(--ease-standard); }
+.account .facts a:focus-visible { text-underline-offset: 0.3em; }
+.skip-link { transition: transform var(--duration-short) var(--ease-standard); }
+
+/* I1-I5: meaningful user-triggered feedback; static cards never imitate controls. */
+.expense-field:focus-within > label,
+.expense-field:focus-within .expense-optional-label { color: var(--color-accent); }
+.expense-field:focus-within .expense-input { color: var(--color-accent); }
+.page-nav-item:focus-visible { translate: 0 var(--motion-lift); }
+.expense-date-controls button:not(:disabled):active { translate: 0 var(--motion-nudge); }
+.expense-note-actions button:not(:disabled):active > svg { scale: var(--motion-press); }
+@media (hover: hover) and (pointer: fine) {
+  .page-nav-item:hover { translate: 0 var(--motion-lift); }
+  .expense-week-list button:not(:disabled):hover,
+  .expense-record-list button:not(:disabled):hover { background-color: var(--color-accent-soft); }
+}
+.expense-week-list button:focus-visible,
+.expense-record-list button:focus-visible { background-color: var(--color-accent-soft); }
+
+/* Explicitly cover the native disclosure pseudo-element as well as inherited size interpolation. */
+@media (prefers-reduced-motion: reduce) {
+  details { interpolate-size: numeric-only; }
+  details::details-content { transition: none !important; }
+  .page-nav-item, .expense-date-controls button { translate: none !important; }
+  .expense-note-actions button > svg { scale: none !important; }
+}
