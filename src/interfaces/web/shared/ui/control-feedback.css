@@ -68,7 +68,7 @@
 }
 
 /* Keep selection separate from hover/focus. The moving pill remains visible throughout. */
-.shell .range-selector button { --interaction-family: period-option; }
+.shell .segmented.range-selector button { --interaction-family: period-option; }
 .shell .range-selector button[aria-pressed="true"] { background: transparent; }
 .shell .range-selector button:not(:disabled):active { scale: var(--motion-control-press); }
 

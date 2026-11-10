@@ -45,6 +45,10 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   })()`) as RenderedControl[];
   const survey = async (state: string): Promise<void> => {
     const previousProblems = problems.length;
+    // Owner journeys intentionally focus the active period and Undo. CSS state sampling must
+    // start unfocused; otherwise applying focus again tests an already-active state.
+    await evaluate("document.activeElement?.blur();getComputedStyle(document.documentElement).opacity");
+    await waitFor(async () => await evaluate("document.getAnimations().every(a=>a.playState!=='running'||a.effect?.getComputedTiming().iterations===Infinity)") === true, `${state}: neutral animation settlement`);
     const rest = await snapshot(true);
     report.push({ state, controls: rest });
     const document = await call("DOM.getDocument");
@@ -55,13 +59,15 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
       await Promise.all(ids.map(nodeId => call("CSS.forcePseudoState", { nodeId, forcedPseudoClasses: pseudoClasses })));
       await delay(60);
     };
-    const hover = await evaluate("matchMedia('(hover:hover) and (pointer:fine)').matches") === true;
+    const hover = !process.argv.includes("--focus-only") && await evaluate("matchMedia('(hover:hover) and (pointer:fine)').matches") === true;
     await force(hover ? ["hover"] : ["focus", "focus-visible"]);
     const inspection = await snapshot();
+    await force(["focus", "focus-visible"]);
+    const focused = await snapshot();
     await force(["active"]);
     const pressed = await snapshot();
     await force([]);
-    await delay(240);
+    await waitFor(async () => await evaluate("document.getAnimations().every(a=>a.playState!=='running'||a.effect?.getComputedTiming().iterations===Infinity)") === true, `${state}: release animation settlement`);
     const released = await snapshot();
     const animates = (before: RenderedControl, after: RenderedControl | undefined): boolean => {
       if (after === undefined) return false;
@@ -75,6 +81,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
       if (released.find(entry => entry.id === control.id)?.signature !== control.signature) problems.push(`${state}: ${control.family} ${control.label}: release did not settle back to its original state`);
       const seen = inspection.find(entry => entry.id === control.id);
       if (!animates(control, control.family === "chart-inspection" && !hover ? pressed.find(entry => entry.id === control.id) : seen)) problems.push(`${state}: ${control.family} ${control.label}: missing animated ${hover ? "hover" : "focus"} feedback`);
+      if (control.family !== "chart-inspection" && !animates(control, focused.find(entry => entry.id === control.id))) problems.push(`${state}: ${control.family} ${control.label}: missing animated keyboard focus feedback`);
       if (["action", "period-option", "choice", "chart-mark"].includes(control.family) && !animates(control, pressed.find(entry => entry.id === control.id))) problems.push(`${state}: ${control.family} ${control.label}: missing press feedback`);
     }
     if (problems.length > previousProblems) console.log(problems.slice(previousProblems).join("\n"));
@@ -85,6 +92,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   // Portfolio: inspect the complete range-to-chart journey, not only selector declarations.
   await visit("overview");
   await survey("Portfolio / desktop / initial");
+  await check("[...document.querySelectorAll('.range-selector button')].every(n=>getComputedStyle(n).getPropertyValue('--interaction-family').trim()==='period-option')", "period options retain their specific contract classification");
   await evaluate("window.auditSelector=document.querySelector('.range-selector');window.auditOption=window.auditSelector.querySelector('button');window.auditChart=document.querySelector('#total-chart-title').closest('figure');window.auditPaths=[...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d'));window.auditOption.focus();window.auditOption.click()");
   await delay(70);
   await check("document.querySelector('.range-selector')===window.auditSelector && document.querySelector('.range-selector button')===window.auditOption && document.activeElement===window.auditOption", "range change retains DOM and keyboard focus");
