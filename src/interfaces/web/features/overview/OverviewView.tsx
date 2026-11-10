@@ -183,7 +183,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       <div class="cell-8 portfolio-trend">
         <LineChart
           id="total-chart"
-          key={props.range}
+          updateKey={props.range}
           title="Performance"
           note="Fund value against net invested. The chart period applies to this chart and to the small trends under Changes."
           controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}
@@ -311,7 +311,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       <div class="cell-8">
         <LineChart
           id="funds-chart"
-          key={`funds-${props.range}`}
+          updateKey={props.range}
           title="Value of each fund"
           subtitle="Solid line: a fund's value. Dotted line, same colour: what you have put into it. A gap means it was not held that month."
           description="One solid line per fund showing its value over time, and a faint dotted line in the same colour for the money invested in it. A fund that was not held leaves a gap."

@@ -5,6 +5,7 @@ import "./app.css";
 import "../features/overview/portfolio.css";
 import "../shared/ui/interactions.css";
 import "../shared/ui/motion.css";
+import "../shared/ui/control-feedback.css";
 import { App } from "./App";
 import { watchSystemTheme } from "./systemTheme";
 

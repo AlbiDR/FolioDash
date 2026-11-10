@@ -81,6 +81,17 @@ jobs:
       - name: Audit dependencies
         run: npm run audit:dependencies
 
+      - name: Audit rendered interactions
+        if: matrix.node == 22
+        timeout-minutes: 3
+        run: |
+          if ! CHROME_PATH=$(command -v google-chrome); then
+            echo "::error::Google Chrome is required for the synthetic interaction audit."
+            exit 1
+          fi
+          export CHROME_PATH
+          npm run audit:interactions
+
       - name: Capture current README views
         if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         timeout-minutes: 3

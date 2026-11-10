@@ -82,7 +82,13 @@
   --motion-nudge: 2px;
   --motion-lift: -2px;
   --motion-press: 0.98;
+  --motion-control-press: 0.97;
+  --motion-control-brightness: 0.94;
+  --motion-choice-hover: 1.08;
+  --motion-mark-brightness: 1.18;
+  --motion-mark-press-opacity: 0.65;
   --motion-reveal-opacity: 0.85;
+  --motion-update-opacity: 0.65;
   --duration-medium: 380ms;
 
   --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto, sans-serif;
@@ -203,5 +209,16 @@
     --series-5: CanvasText;
     --series-6: CanvasText;
     --series-7: CanvasText;
+  }
+}
+
+/* Preference overrides the shared movement distances, including more specific control states. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-control-press: 1;
+    --motion-choice-hover: 1;
+    --motion-press: 1;
+    --motion-nudge: 0px;
+    --motion-lift: 0px;
   }
 }

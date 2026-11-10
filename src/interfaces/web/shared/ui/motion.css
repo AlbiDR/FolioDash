@@ -108,7 +108,7 @@
 
 /* 57: Native checkbox check confirmation; its enclosing target retains its size. */
 input[type="checkbox"]:checked { animation: motion-choice var(--duration-cue) var(--ease-standard); }
-@keyframes motion-choice { from { transform: scale(0.92); } to { transform: scale(1); } }
+@keyframes motion-choice { from { scale: var(--motion-control-press); } to { transform: scale(1); } }
 
 /* 58: Native radio selection confirmation. */
 input[type="radio"]:checked { animation: motion-choice var(--duration-cue) var(--ease-standard); }
@@ -280,7 +280,7 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .row-link, .demo-nav a, .link-button {
   transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard);
 }
-.link-button:active { transform: scale(var(--motion-press)); }
+.link-button:active { scale: var(--motion-control-press); }
 .perf-row:active, .row-link:active, .demo-nav a:active { background-color: var(--color-accent-soft); }
 
 @media (hover: hover) and (pointer: fine) {

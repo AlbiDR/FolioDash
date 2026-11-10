@@ -65,7 +65,7 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
       <div class="cell-8">
         <LineChart
           id="fund-chart"
-          key={props.range}
+          updateKey={props.range}
           title="Performance"
           note="Value and net invested for this fund. The chart period changes the chart, not your latest figures."
           controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}

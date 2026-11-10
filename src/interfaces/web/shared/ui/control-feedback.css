@@ -1,0 +1,85 @@
+/* The interaction contract covers every semantic control, including future controls.
+ * Audit ownership: docs/design/interaction-coverage.md. Data marks never move or resize.
+ */
+.shell :is(button, a[href], summary, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="option"]):not(svg *) {
+  --interaction-family: action;
+  transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), opacity var(--duration-short) var(--ease-standard), filter var(--duration-short) var(--ease-standard), scale var(--duration-press) var(--ease-standard), translate var(--duration-feedback) var(--ease-standard), transform var(--duration-short) var(--ease-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+.shell :is(button, a[href], summary, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="option"]):not(svg *):not(:disabled, [aria-disabled="true"]):focus-visible {
+  translate: 0 var(--motion-lift);
+  box-shadow: inset 0 0 0 1px currentColor, 0 0 0 4px var(--color-accent-soft);
+}
+.shell :is(button, a[href], summary, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="option"]):not(svg *):not(:disabled, [aria-disabled="true"]):active {
+  scale: var(--motion-control-press);
+  translate: 0 0;
+  filter: brightness(var(--motion-control-brightness));
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+@media (hover: hover) and (pointer: fine) {
+  .shell :is(button, a[href], summary, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="option"]):not(svg *):not(:disabled, [aria-disabled="true"]):hover {
+    translate: 0 var(--motion-lift);
+    box-shadow: inset 0 0 0 1px currentColor, 0 3px 10px var(--color-accent-soft);
+  }
+  /* Inline links cannot translate: their animated underline provides the same visible response. */
+  .shell a[href]:not(svg *):hover { text-decoration-color: currentColor; }
+}
+
+.shell :is(input, select, textarea) {
+  --interaction-family: field;
+  transition: border-color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), opacity var(--duration-short) var(--ease-standard), scale var(--duration-press) var(--ease-standard);
+}
+.shell :is(input, select, textarea):not(:disabled):focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+.shell input[aria-invalid="true"] { border-color: var(--color-error); }
+.shell input:is([type="checkbox"], [type="radio"]) { --interaction-family: choice; }
+.shell input:is([type="checkbox"], [type="radio"]):not(:disabled):active { scale: var(--motion-control-press); }
+.shell input[type="range"] { --interaction-family: slider; }
+@media (hover: hover) and (pointer: fine) {
+  .shell :is(input, select, textarea):not(:disabled):hover { box-shadow: 0 0 0 2px var(--color-accent-soft); }
+  .shell input:is([type="checkbox"], [type="radio"]):not(:disabled):hover { scale: var(--motion-choice-hover); }
+}
+.shell input[type="file"]::file-selector-button {
+  transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), scale var(--duration-press) var(--ease-standard);
+}
+.shell input[type="file"]:not(:disabled):active::file-selector-button { scale: var(--motion-control-press); }
+.shell :is(button, input, select, textarea):disabled { opacity: 0.5; }
+
+/* Continuous inspection uses emphasis, never a transform of financial coordinates. */
+.shell svg :is(a[href], [role="button"]) {
+  --interaction-family: chart-mark;
+  transition: opacity var(--duration-short) var(--ease-standard), filter var(--duration-short) var(--ease-standard);
+}
+.shell svg :is(a[href], [role="button"]):focus-visible { filter: brightness(var(--motion-mark-brightness)); }
+.shell svg :is(a[href], [role="button"]):active { opacity: var(--motion-mark-press-opacity); }
+@media (hover: hover) and (pointer: fine) {
+  .shell svg :is(a[href], [role="button"]):hover { filter: brightness(var(--motion-mark-brightness)); }
+}
+.shell .chart-svg { --interaction-family: chart-inspection; transition: box-shadow var(--duration-short) var(--ease-standard); }
+.shell :is(.chart-values-scroll, .table-scroll, .matrix-scroll) {
+  --interaction-family: scroll-region;
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.shell :is(.chart-values-scroll, .table-scroll, .matrix-scroll):focus-visible { box-shadow: inset 0 0 0 2px var(--color-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .shell :is(.chart-svg, .chart-values-scroll, .table-scroll, .matrix-scroll):hover { box-shadow: inset 0 0 0 1px var(--color-accent); }
+}
+
+/* Keep selection separate from hover/focus. The moving pill remains visible throughout. */
+.shell .range-selector button { --interaction-family: period-option; }
+.shell .range-selector button[aria-pressed="true"] { background: transparent; }
+.shell .range-selector button:not(:disabled):active { scale: var(--motion-control-press); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .shell :is(button, a[href], summary, input, select, textarea, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="option"]):not(svg *) { scale: none; translate: none; }
+  .shell input[type="file"]::file-selector-button { transition: none !important; scale: none; }
+}
+/* Even an unavailable month's transparent inspection target responds; no financial bar is fabricated. */
+.shell .bars-item:active .bars-hit { fill: var(--color-accent-soft); }
+@media (hover: hover) and (pointer: fine) {
+  .shell .bars-item:hover .bars-hit { fill: var(--color-accent-soft); }
+}
+.shell .chart-svg:active { box-shadow: inset 0 0 0 2px var(--color-accent); }

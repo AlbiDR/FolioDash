@@ -51,6 +51,10 @@ Weights are 400, 600 and 700 (`--weight-regular`, `--weight-semibold`, `--weight
 - **Tables**: a name on the left, figures on the right, a hairline between rows. A fund's ISIN sits under its name, so a statement table is two columns and never scrolls sideways on a phone. A result that needs four figures per fund is a list of `.facts`, not a five-column table.
 - **Banner**: the sample banner (`.get-started`) is the same part on Portfolio and Expenses: a heading, one sentence, one button. On a wide screen the button shares the row.
 
+### Interaction coverage amendment, 2026-11-10
+
+Every interactive control inherits the [interaction coverage contract](interaction-coverage.md), including general tonal buttons, inline links, native fields, chart targets and scrollable regions. Hover/focus, press and release must be perceptible in normal motion; reduced motion keeps immediate state feedback. The source inventory and rendered audit identify missing control/state coverage. Animation counts do not satisfy this requirement. Static reading containers remain outside pointer feedback.
+
 ### Containers
 
 A card is allowed for the one primary group of a screen, a chart, a list scanned row by row, and an outcome panel. Rows, hairlines and spacing do everything else. Cards, charts and stat blocks have no hover, focus or press feedback of their own; the links and buttons inside carry it. Hover applies only to things that can be pressed, and only under `(hover: hover) and (pointer: fine)`.

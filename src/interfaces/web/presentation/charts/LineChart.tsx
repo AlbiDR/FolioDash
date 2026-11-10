@@ -1,6 +1,7 @@
+import { motionMilliseconds } from "../../shared/ui/motionTiming";
 import { useAxisLabels } from "./useAxisLabels";
 import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacyChoice";
 import { type ChartSeries, computeLineChart } from "./lineChartGeometry";
@@ -8,6 +9,8 @@ import { type ChartSeries, computeLineChart } from "./lineChartGeometry";
 export interface LineChartProps {
   readonly id: string;
   readonly title: string;
+  /** Presentation cue for a changed period; plotted observations update immediately. */
+  readonly updateKey?: string;
   /** One sentence for assistive technology describing what the chart shows. */
   readonly description: string;
   /** One plain sentence under the title telling anyone what the lines mean. Use it when the lines need explaining up front. */
@@ -50,6 +53,29 @@ function styleClass(index: number, slot: number | null): string {
  */
 export function LineChart(props: LineChartProps): JSX.Element {
   const hidden = usePrivacy();
+  const plot = useRef<SVGSVGElement>(null);
+  const previousUpdate = useRef(props.updateKey);
+  const updateAnimation = useRef<Animation | null>(null);
+  const interruptedOpacity = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const changed = previousUpdate.current !== props.updateKey;
+    previousUpdate.current = props.updateKey;
+    updateAnimation.current?.cancel();
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const settle = (): void => { if (preference.matches) updateAnimation.current?.cancel(); };
+    const node = plot.current;
+    if (changed && !preference.matches && node !== null && typeof node.animate === "function") {
+      const style = getComputedStyle(node);
+      updateAnimation.current = node.animate([{ opacity: interruptedOpacity.current ?? Number.parseFloat(style.getPropertyValue("--motion-update-opacity")) }, { opacity: 1 }], { duration: motionMilliseconds(style.getPropertyValue("--duration-feedback")), easing: style.getPropertyValue("--ease-standard").trim() });
+    }
+    interruptedOpacity.current = null;
+    preference.addEventListener("change", settle);
+    return () => {
+      preference.removeEventListener("change", settle);
+      interruptedOpacity.current = updateAnimation.current?.playState === "running" && node !== null ? Number.parseFloat(getComputedStyle(node).opacity) : null;
+      updateAnimation.current?.cancel();
+    };
+  }, [props.updateKey, hidden]);
   const [scrubbed, setScrubbed] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [highlighted, setHighlighted] = useState<string | null>(null);
@@ -194,6 +220,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
         })}
       </div>
       <svg
+        ref={plot}
         class="chart-svg"
         viewBox={`0 0 ${String(layout.width)} ${String(layout.height)}`}
         role="img"

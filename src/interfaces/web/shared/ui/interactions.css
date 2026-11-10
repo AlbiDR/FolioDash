@@ -26,12 +26,12 @@ button:not(:disabled) {
   transition: transform var(--duration-press) var(--ease-standard), background var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), opacity var(--duration-short) var(--ease-standard);
   -webkit-tap-highlight-color: transparent;
 }
-button:not(:disabled):active { transform: scale(var(--motion-press)); }
+button:not(:disabled):active { scale: var(--motion-control-press); }
 
 /* 02: Primary action lift, only on devices with a real hover pointer. */
 @media (hover: hover) and (pointer: fine) {
-  .primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--color-accent-soft); }
-  .primary:not(:disabled):hover:active { transform: scale(var(--motion-press)); }
+  .primary:not(:disabled):hover { box-shadow: 0 4px 12px var(--color-accent-soft); }
+  .primary:not(:disabled):hover:active { scale: var(--motion-control-press); }
 }
 
 /* 03: Keyboard button focus halo; the existing outline is retained. */
@@ -53,7 +53,7 @@ button:focus-visible { box-shadow: 0 0 0 5px var(--color-accent-soft); }
   z-index: -1;
   top: 3px;
   bottom: 3px;
-  left: 3px;
+  inset-inline-start: 3px;
   width: calc((100% - 6px - (var(--segment-count) - 1) * 2px) / var(--segment-count));
   border-radius: inherit;
   background: var(--color-surface);
@@ -61,6 +61,7 @@ button:focus-visible { box-shadow: 0 0 0 5px var(--color-accent-soft); }
   transform: translateX(calc(var(--segment-index) * (100% + 2px)));
   transition: transform var(--duration-feedback) var(--ease-standard), width var(--duration-short) var(--ease-standard);
 }
+.range-selector[dir="rtl"]::before, [dir="rtl"] .range-selector:not([dir="ltr"])::before { transform: translateX(calc(-1 * var(--segment-index) * (100% + 2px))); }
 .range-selector button[aria-pressed="true"] { background: transparent; box-shadow: none; }
 .range-selector button { position: relative; }
 

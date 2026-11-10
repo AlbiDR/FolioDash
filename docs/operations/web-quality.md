@@ -65,6 +65,7 @@ Normal success does not require opening an editor, calling AI, running a repair 
 - All core workflows are keyboard-complete, with labelled controls, visible focus and predictable focus restoration.
 - Touch targets use a consistent minimum 48 by 48 CSS-pixel hit area. Dense visual glyphs may be smaller inside that area.
 - At a 320 CSS-pixel viewport and 200% text resizing, no required control, metric or error is clipped. A genuinely wide table may scroll inside an explicitly labelled region; the whole page must not require horizontal scrolling.
+- Interactive feedback and source/state coverage follow the [interaction coverage contract](../design/interaction-coverage.md), enforced by source discovery and production-browser checks.
 - Respect reduced motion and forced-colours preferences. Hover-only hints cannot be the sole path to information.
 - Accessible numerical tables/text alternatives accompany charts; tooltips work for touch/keyboard where applicable.
 - Apply WCAG AA contrast and readable focus treatment. Automated accessibility tests do not replace screen-reader, touch and wording review.
