@@ -31,7 +31,6 @@
     <img src="https://albidr.github.io/FolioDash/readme/hero-light.png" width="1040" alt="FolioDash portfolio overview with total value, invested capital, gain and a dated history chart">
   </picture>
   <br>
-  <sub>The current application, with invented demo data. Screenshots refresh with each successful site release.</sub>
 </p>
 
 <br>
