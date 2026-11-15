@@ -435,15 +435,21 @@ export class Session {
   }
 
   /**
-   * Explicit recovery: replace access only, retaining the workbook, history and unresolved writes.
-   * It asks for the remembered account first, so it rarely shows a chooser. After a failed attempt,
-   * or when the person wants another account, it lets them choose.
+   * Reconnection renews the current workbook. An explicit account switch first drops the old
+   * device context and discovers the selected account’s workbook through a new connection.
    */
   reconnect(options?: { readonly differentAccount?: boolean }): Promise<ConnectOutcome> {
+    if (options?.differentAccount === true) {
+      // A chooser is a new account connection, never a renewal of the previous workbook.
+      // Hide and invalidate the former account before OAuth; cancellation must not expose it.
+      this.forgetDevice(true, false);
+      this.chooserOnNextSignIn = true;
+      return this.connect();
+    }
     this.organizationChecked = null;
     this.token = null;
     this.deps.googleSession?.clear();
-    this.chooserOnNextSignIn = options?.differentAccount === true && this.signingIn === null;
+    this.chooserOnNextSignIn = false;
     this.syncSequence++;
     this.set({ ...this.current, connection: "renewing" });
     return this.refresh();
@@ -681,7 +687,7 @@ export class Session {
     this.forgetDevice(false);
   }
 
-  private forgetDevice(announce: boolean): void {
+  private forgetDevice(announce: boolean, revoke = true): void {
     this.generation++;
     this.syncSequence++;
     this.lastAutoCheck = -Infinity;
@@ -696,7 +702,7 @@ export class Session {
     this.connecting = null;
     this.expenses.forget();
     this.deps.cache.clear();
-    if (this.token !== null && announce) this.deps.revoke?.(this.token.accessToken);
+    if (this.token !== null && announce && revoke) this.deps.revoke?.(this.token.accessToken);
     this.token = null;
     if (this.quietTimer !== null) clearTimeout(this.quietTimer);
     this.quietTimer = null;
@@ -720,6 +726,7 @@ export class Session {
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
       const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
+      if (generation !== this.generation) return { status: "not-saved", message: "The account changed before saving. Nothing was submitted. Review the selected account before continuing." };
       const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
       const commit = await commitDirect(deps, signed.token, workbook.id, {
         commandId,
@@ -758,6 +765,7 @@ export class Session {
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
       const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
+      if (generation !== this.generation) return { status: "not-saved", message: "The account changed before saving. Nothing was submitted. Review the selected account before continuing." };
       const deps: DirectDeps = { rest: this.deps.rest, newRevision: this.deps.newId };
       const commit = await attachDirect(deps, signed.token, workbook.id, { commandId, expectedRevision, items });
       if (generation !== this.generation) return { status: "unknown", message: "The account changed during this save. Check its outcome in the original workbook before another attempt." };

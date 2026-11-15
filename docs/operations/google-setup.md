@@ -204,3 +204,10 @@ The three IDs can be remembered in this browser if you tick the box. A sign-in t
 ## Undoing it
 
 Remove FolioDash's access at your Google account's third-party access page, delete the OAuth client, undeploy the API executable, and delete the synthetic spreadsheet. The Cloud project can be deleted from its settings.
+
+
+## Explicit account switching correction, 2026-11-15
+
+Use a different Google account is a new account connection. It clears the old local portfolio/expense context and remembered access before opening Google's chooser, then discovers or creates a workbook using the selected token. It never treats a new token as permission to refresh the old workbook. Cancellation keeps the old financial data hidden. Other windows receive the device reset; existing Google workbooks and grants are preserved. Ordinary reconnection continues to renew/check the current workbook.
+
+The owner's deployed fresh-account check exposed the former behavior: the chooser reopened the previous spreadsheet/cached statements. Regression tests now use separately routed synthetic accounts, including an old spreadsheet that is shared with the new account, instead of merely asking the same fake account for another token. See the [fresh-account evidence ledger](onboarding-acceptance.md#account-switch-defect-found-during-the-fresh-account-check). Live confirmation of the corrected flow remains pending.

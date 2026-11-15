@@ -154,7 +154,11 @@ export function prepareGoogleIdentity(clientId: string, scope: string): void {
 
 /** Asks Google for a short-lived token with the given scope. Concurrent requests share one window. */
 export function signIn(clientId: string, scope: string, options?: SignInOptions): Promise<SignInResult> {
-  if (inFlight !== null) return inFlight;
+  if (inFlight !== null) {
+    // A chooser must never inherit a quiet sign-in already underway for another account.
+    if (options?.prompt === "select_account") return Promise.resolve({ ok: false, reason: "unavailable" });
+    return inFlight;
+  }
   const identity = window.google;
   const work = identity === undefined
     ? loadIdentityScript().then((loaded): Promise<SignInResult> | SignInResult => (loaded && window.google !== undefined ? request(window.google, clientId, scope, options) : { ok: false, reason: "unavailable" }))
