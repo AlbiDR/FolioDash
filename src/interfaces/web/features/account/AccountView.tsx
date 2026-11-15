@@ -180,7 +180,7 @@ export function AccountView(props: {
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-health" aria-labelledby="account-health-heading">
           <h2 id="account-health-heading" class="card-title" tabIndex={-1}>Verify your history</h2>
-          <p class="card-subtitle">Every month keeps its exact bank statement. This replays each one and compares it with your saved figures. It only reads: nothing in your Google Sheet or on this device is changed.</p>
+          <p class="card-subtitle">Checks your saved records and replays attached bank statements against your figures. Manually entered statements have no bank document to replay. This check does not change your Google Sheet or device copy.</p>
           <button type="button" disabled={busy} onClick={() => void verify()}>
             {pending === "verify" ? "Checking your history…" : "Check my history"}
           </button>

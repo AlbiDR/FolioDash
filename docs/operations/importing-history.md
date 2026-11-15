@@ -41,3 +41,15 @@ Local browser evidence used the actual ImportView, CashQuestions and ExcelHistor
 - Preflight and cash-review layout at 320, 390 and 1440 CSS pixels, and completed-history layout at 320, 390, 430, 844 and 1440 pixels, with no page-level horizontal overflow.
 
 This is simulated browser/save evidence. It does not prove live Google authorization, concurrent real-device writes, quotas, Android file selection/WebAPK behavior, iOS behavior, or support for other banks' layouts. Before release, repeat the flow with synthetic files through the real Google connection on supported Mac and Android devices, including denied/expired consent, offline interruption and recovery.
+
+## Money-movement review refinement, 2026-11-15
+
+The shared manual/Excel review now distinguishes starting balances from later money movements. Its first statement asks for net invested on the valuation date: total paid in minus all money already received. Later statements show the actual review period and explain that price changes are already reflected in fund values. The global movement question is scoped to existing funds; new funds and full sales are reviewed separately.
+
+The amount fields use Money added to this fund and Money received from this fund, with EUR units and help linked to each input. Help covers contributions, partial sales, cash distributions and switches, and explicitly asks for the whole amount received rather than just the profit. Full-sale fields use Total money received from the sale. The two directions remain separate; the interface does not net them or infer them from valuation changes.
+
+When some funds had movements, No money moved for this fund explicitly fills both fields with zero for an unaffected fund. Blanks still block a complete preview. Changing the global choice retains entered draft amounts, but a No money moved preview ignores them under the existing canonical command rules. The confirmation summary uses plain-language states such as Starting balance, Still held and Fully sold instead of internal action names.
+
+The movement pair reflows into two columns when there is room, stacks on a phone, and uses shared Presence reveal/collapse, field/button feedback and summary arrival motion. Reduced motion retains the same fields and immediate financial values. No financial calculations, command schemas, storage format, save confirmation or unknown-outcome reconciliation changed.
+
+Synthetic browser coverage uses generated three-month history in a signed-out local production build, stops before any save, and exercises first-month opening amounts followed by second-month movements. Checks cover blank-answer refusal, separate 200-in/50-out with canonical net invested of 1.150,00 EUR, explicit zeroes for the other fund, toggling and retained drafts, hidden amounts excluded from a No-movement preview, control feedback on desktop/phone, 200% text overflow and reduced motion. New-fund/closure/reopening provider journeys, physical devices and screen readers remain separate acceptance work.

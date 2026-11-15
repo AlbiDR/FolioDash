@@ -36,7 +36,6 @@ jobs:
 
   verify:
     name: Verify (Node ${{ matrix.node }})
-    needs: workflows
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Supersede checks for this event/ref without cancelling an active deployment.

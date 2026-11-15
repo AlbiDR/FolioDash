@@ -1291,6 +1291,13 @@ fieldset label {
   margin-top: var(--space-2);
 }
 
+.cash-currency { color: var(--color-muted); font-weight: var(--weight-regular); }
+.cash-field-help { margin-top: var(--space-1); }
+.cash-movement-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: var(--space-3); align-items: start; }
+.cash-movements > button { margin-top: var(--space-2); }
+.cash-movements { animation: motion-label var(--duration-short) var(--ease-standard); }
+.questions > .summary { animation: motion-label var(--duration-feedback) var(--ease-standard); }
+
 .fund-question .tag { display: block; width: fit-content; margin: var(--space-1) 0 0; padding: var(--space-1) var(--space-2); }
 
 .field-error {

@@ -13,7 +13,7 @@ export interface RebuildReport {
   readonly months: number;
   /** Months whose stored bank statement replayed to exactly the saved figures. */
   readonly matching: number;
-  /** Months saved before statements were kept, so they cannot be re-derived. */
+  /** Months with no bank source (manual entry, older records or device-copy restoration); these cannot be replayed from a bank document. */
   readonly withoutStatement: number;
   /** Months whose stored statement replays to different figures than the ledger holds. */
   readonly differing: readonly IsoDate[];

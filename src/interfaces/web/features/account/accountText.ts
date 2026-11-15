@@ -84,14 +84,15 @@ export function describeVerify(outcome: VerifyOutcome): Message {
       if (report.differing.length > 0) lines.push(`These months do not match what their saved statement produces: ${report.differing.map((date) => formatMonthYear(date)).join(", ")}.`);
       if (report.unreadable.length > 0) lines.push(`These months have a saved statement that could not be read: ${report.unreadable.map((date) => formatMonthYear(date)).join(", ")}.`);
       if (report.withoutStatement > 0) {
-        lines.push(`${plural(report.withoutStatement, "month was", "months were")} saved without its bank statement (before statements were kept, or restored from a device copy), so ${report.withoutStatement === 1 ? "it" : "they"} cannot be rebuilt.`);
+        lines.push(`${plural(report.withoutStatement, "month has", "months have")} no attached bank statement. This can happen with manual entry, older entries or a device-copy restoration. ${report.withoutStatement === 1 ? "That month cannot" : "Those months cannot"} be replayed from a bank document; the saved records still pass validation.`);
       }
       const clean = report.differing.length === 0 && report.unreadable.length === 0;
       const everything = clean && report.withoutStatement === 0;
+      const noSources = report.withoutStatement === report.months;
       return {
         good: clean,
-        title: everything ? "Your whole history can be rebuilt" : clean ? "What can be checked, matches" : "Something does not match",
-        body: [`${String(report.matching)} of ${plural(report.months, "month", "months")} rebuild exactly from the saved bank statements.`, ...lines].join(" "),
+        title: everything ? "Your whole history can be rebuilt" : clean ? noSources ? "Saved records are valid" : "What can be checked, matches" : "Something does not match",
+        body: [...(noSources ? [] : [`Replayed ${String(report.matching)} of ${plural(report.months, "month", "months")} exactly from attached bank statements.`]), ...lines].join(" "),
       };
     }
   }
