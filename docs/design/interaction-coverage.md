@@ -195,7 +195,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 5dbd3fbc50da-1 | [OverviewView.tsx:230](../../src/interfaces/web/features/overview/OverviewView.tsx#L230) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
 | ad056c5c8f28-1 | [OverviewView.tsx:251](../../src/interfaces/web/features/overview/OverviewView.tsx#L251) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
 | 8d0da27501ab-1 | [OverviewView.tsx:266](../../src/interfaces/web/features/overview/OverviewView.tsx#L266) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| cb0af91564d2-1 | [OverviewView.tsx:281](../../src/interfaces/web/features/overview/OverviewView.tsx#L281) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f64086d86778-1 | [OverviewView.tsx:281](../../src/interfaces/web/features/overview/OverviewView.tsx#L281) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 89e47524b078-1 | [OverviewView.tsx:284](../../src/interfaces/web/features/overview/OverviewView.tsx#L284) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
 | 78da3e9f8679-1 | [OverviewView.tsx:294](../../src/interfaces/web/features/overview/OverviewView.tsx#L294) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 66067b67828f-1 | [OverviewView.tsx:303](../../src/interfaces/web/features/overview/OverviewView.tsx#L303) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
