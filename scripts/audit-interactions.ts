@@ -92,6 +92,14 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   // Portfolio: inspect the complete range-to-chart journey, not only selector declarations.
   await visit("overview");
   await survey("Portfolio / desktop / initial");
+  await evaluate("[...document.querySelectorAll('.portfolio-explore .page-nav button')].find(button=>button.textContent==='Holdings').click()");
+  await check("document.activeElement?.id==='holdings-heading' && location.hash==='#overview'", "portfolio orientation moves focus to holdings without changing route");
+  await evaluate("[...document.querySelectorAll('.portfolio-explore .page-nav button')].find(button=>button.textContent==='Trends and comparisons').click()");
+  await check("document.querySelector('#portfolio-analysis').open && document.activeElement===document.querySelector('#portfolio-analysis summary')", "portfolio orientation opens and focuses trends");
+  await evaluate("document.querySelector('.portfolio-history-link').click()");
+  await waitFor(async () => await evaluate("location.hash==='#months' && !!document.querySelector('.mobile-months select')") === true, "direct month-by-month navigation");
+  await check("getComputedStyle(document.querySelector('.mobile-months')).display!=='none'", "statement selector is visible on desktop");
+  await visit("overview");
   await check("[...document.querySelectorAll('.range-selector button')].every(n=>getComputedStyle(n).getPropertyValue('--interaction-family').trim()==='period-option')", "period options retain their specific contract classification");
   await evaluate("window.auditSelector=document.querySelector('.range-selector');window.auditOption=window.auditSelector.querySelector('button');window.auditChart=document.querySelector('#total-chart-title').closest('figure');window.auditPaths=[...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d'));window.auditOption.focus();window.auditOption.click()");
   await delay(70);
@@ -281,6 +289,10 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     }
     await check("document.documentElement.scrollWidth<=innerWidth", `${route}: phone reflow`);
   }
+  await visit("overview", 320);
+  await evaluate("document.documentElement.style.fontSize='200%'");
+  await check("document.documentElement.scrollWidth<=innerWidth", "Portfolio: 320px layout has no horizontal overflow at 200% text");
+  await evaluate("document.documentElement.style.fontSize=''");
   await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
   await call("Emulation.setTouchEmulationEnabled", { enabled: false });
   await call("Page.navigate", { url: `${origin}/privacy/` });

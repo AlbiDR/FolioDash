@@ -86,6 +86,7 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
           <div><dt>Month on month %</dt><dd><Percent ratio={latest?.monthlyGainPercent ?? null} signed /></dd></div>
         </dl>
         <p class="footnote">Net invested is cash in minus cash out. Gain % is measured against it.</p>
+        <a class="row-link plain" href="#months"><span>Compare statements month by month</span></a>
       </div>
     </div>
   );

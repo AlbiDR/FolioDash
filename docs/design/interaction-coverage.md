@@ -28,9 +28,11 @@ Each interaction must be inspected through rest, hover where supported, keyboard
 
 ## Browser evidence and remaining work
 
-Source discovery classifies all 169 templates in 22 files. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
+Source discovery classifies all 171 templates in 22 files. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
 
 2026-11-16: the Astryx-inspired recent fund history disclosure was included in desktop and phone synthetic-demo rendered discovery, including the twelve-fund case. The audit checked three dated rows, the full-comparison link and immediate amount masking. The complete audit passed 58 journey assertions and 631 control samples across 20 states on local Chrome. Individual new control states remain OPEN in the source inventory; physical devices, other engines, screen readers and real Google remain unverified. The expense audit now finds a recorded sample day in the previous week when the current week has none, such as on Monday.
+
+2026-11-16, portfolio orientation: local Chrome synthetic-demo audit passed 64 journey assertions and 655 control samples across 20 states. It checked holdings focus, opening and focusing trends, direct navigation to Month by month, desktop statement-picker visibility and 320px reflow at 200% text. A phone capture of an earlier ordering exposed that navigation displaced the portfolio headline; the final ordering puts the existing summary before navigation. The source inventory records new controls as STATES OPEN; screen-reader, physical-device, other-engine and live Google checks remain separate.
 
 | Evidence | Scope checked | Remaining opportunities / proof |
 |---|---|---|
@@ -179,6 +181,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 63e49c40fe24-1 | [ManualEntry.tsx:107](../../src/interfaces/web/features/import/ManualEntry.tsx#L107) | button / action | Continue to movements and review | SOURCE CLASSIFIED; STATES OPEN |
 | 7aa13e49b859-1 | [ManualEntry.tsx:112](../../src/interfaces/web/features/import/ManualEntry.tsx#L112) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
 | cbc079dfb4c6-1 | [FundView.tsx:55](../../src/interfaces/web/features/overview/FundView.tsx#L55) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
+| 6cfdf75175ef-1 | [FundView.tsx:89](../../src/interfaces/web/features/overview/FundView.tsx#L89) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4880f829e8f5-1 | [MonthsView.tsx:26](../../src/interfaces/web/features/overview/MonthsView.tsx#L26) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | e44a2558bb28-1 | [MonthsView.tsx:31](../../src/interfaces/web/features/overview/MonthsView.tsx#L31) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
 | d09ffa79803b-1 | [MonthsView.tsx:32](../../src/interfaces/web/features/overview/MonthsView.tsx#L32) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
@@ -187,20 +190,21 @@ One row is a source template; a fund-link template can render many controls. All
 | 380401f314fb-1 | [MonthsView.tsx:59](../../src/interfaces/web/features/overview/MonthsView.tsx#L59) | summary / action | Compare all months in tables | SOURCE CLASSIFIED; STATES OPEN |
 | 4c3e5c77b65b-1 | [MonthsView.tsx:60](../../src/interfaces/web/features/overview/MonthsView.tsx#L60) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
 | f73a11b9e69e-1 | [MonthsView.tsx:91](../../src/interfaces/web/features/overview/MonthsView.tsx#L91) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
-| 51654294e7ec-1 | [OverviewView.tsx:100](../../src/interfaces/web/features/overview/OverviewView.tsx#L100) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3a42ecb00d5f-1 | [OverviewView.tsx:142](../../src/interfaces/web/features/overview/OverviewView.tsx#L142) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
-| 76c9a563859d-1 | [OverviewView.tsx:161](../../src/interfaces/web/features/overview/OverviewView.tsx#L161) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| a3b42fb80947-1 | [OverviewView.tsx:215](../../src/interfaces/web/features/overview/OverviewView.tsx#L215) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| 8ab71703e9f5-1 | [OverviewView.tsx:222](../../src/interfaces/web/features/overview/OverviewView.tsx#L222) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| 5dbd3fbc50da-1 | [OverviewView.tsx:230](../../src/interfaces/web/features/overview/OverviewView.tsx#L230) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
-| ad056c5c8f28-1 | [OverviewView.tsx:251](../../src/interfaces/web/features/overview/OverviewView.tsx#L251) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 8d0da27501ab-1 | [OverviewView.tsx:266](../../src/interfaces/web/features/overview/OverviewView.tsx#L266) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| f64086d86778-1 | [OverviewView.tsx:281](../../src/interfaces/web/features/overview/OverviewView.tsx#L281) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 89e47524b078-1 | [OverviewView.tsx:284](../../src/interfaces/web/features/overview/OverviewView.tsx#L284) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| 78da3e9f8679-1 | [OverviewView.tsx:294](../../src/interfaces/web/features/overview/OverviewView.tsx#L294) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 66067b67828f-1 | [OverviewView.tsx:303](../../src/interfaces/web/features/overview/OverviewView.tsx#L303) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f4734e648b87-1 | [OverviewView.tsx:364](../../src/interfaces/web/features/overview/OverviewView.tsx#L364) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 47bc7d2ce3b3-1 | [OverviewView.tsx:374](../../src/interfaces/web/features/overview/OverviewView.tsx#L374) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| 51654294e7ec-1 | [OverviewView.tsx:101](../../src/interfaces/web/features/overview/OverviewView.tsx#L101) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3a42ecb00d5f-1 | [OverviewView.tsx:143](../../src/interfaces/web/features/overview/OverviewView.tsx#L143) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
+| 76c9a563859d-1 | [OverviewView.tsx:162](../../src/interfaces/web/features/overview/OverviewView.tsx#L162) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
+| 4417eda446f6-1 | [OverviewView.tsx:213](../../src/interfaces/web/features/overview/OverviewView.tsx#L213) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| a3b42fb80947-1 | [OverviewView.tsx:223](../../src/interfaces/web/features/overview/OverviewView.tsx#L223) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 8ab71703e9f5-1 | [OverviewView.tsx:230](../../src/interfaces/web/features/overview/OverviewView.tsx#L230) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| 5dbd3fbc50da-1 | [OverviewView.tsx:238](../../src/interfaces/web/features/overview/OverviewView.tsx#L238) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
+| ad056c5c8f28-1 | [OverviewView.tsx:259](../../src/interfaces/web/features/overview/OverviewView.tsx#L259) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 8d0da27501ab-1 | [OverviewView.tsx:274](../../src/interfaces/web/features/overview/OverviewView.tsx#L274) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| f64086d86778-1 | [OverviewView.tsx:289](../../src/interfaces/web/features/overview/OverviewView.tsx#L289) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 89e47524b078-1 | [OverviewView.tsx:292](../../src/interfaces/web/features/overview/OverviewView.tsx#L292) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 78da3e9f8679-1 | [OverviewView.tsx:302](../../src/interfaces/web/features/overview/OverviewView.tsx#L302) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 66067b67828f-1 | [OverviewView.tsx:311](../../src/interfaces/web/features/overview/OverviewView.tsx#L311) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f4734e648b87-1 | [OverviewView.tsx:372](../../src/interfaces/web/features/overview/OverviewView.tsx#L372) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 47bc7d2ce3b3-1 | [OverviewView.tsx:382](../../src/interfaces/web/features/overview/OverviewView.tsx#L382) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | ba730a52b26d-1 | [Donut.tsx:45](../../src/interfaces/web/presentation/charts/Donut.tsx#L45) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | e3ffcd3f4bfd-1 | [LineChart.tsx:163](../../src/interfaces/web/presentation/charts/LineChart.tsx#L163) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 2a0fe4571f5f-1 | [LineChart.tsx:222](../../src/interfaces/web/presentation/charts/LineChart.tsx#L222) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
