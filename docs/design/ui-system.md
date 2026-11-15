@@ -6,6 +6,8 @@ Owner request: "The UI is currently very messy ... confusion, crammed sections, 
 
 This is the design system the screens are now built from. It follows the [structural redesign](structural-ui-redesign.md), which fixed the order of each screen and the container policy. That pass moved blocks around; this one made the pieces they are made of consistent, so that a screen is assembled from a few parts instead of styled one block at a time. It is a presentation change. Financial calculations, parsers, persistence, Google access, save and recovery semantics, consent flows, routes and destinations are untouched. Every figure still comes from the canonical models, and every screenshot and measurement uses invented data.
 
+Astryx is a recurring reference for structure and interactions; the [reference and pattern register](astryx-reference.md) records adaptations. FolioDash tokens own the Apple-inspired translucent navigation and floating controls, with solid, readable financial surfaces.
+
 ## What was wrong
 
 Measured on the build that already contained the structural redesign, with the scratch harness described below:

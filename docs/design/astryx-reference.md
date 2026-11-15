@@ -1,0 +1,16 @@
+# Astryx design reference
+
+Owner direction, 2026-11-16: use [Astryx](https://astryx.atmeta.com/) as a recurring reference for interface structure and interaction. Preserve FolioDash's Preact stack, Apple-inspired translucent navigation and floating controls, and readable solid financial surfaces. Astryx is an external reference, not an authority over FolioDash's product or financial rules.
+
+## Working practice
+
+For substantial UI additions or redesigns, consult the relevant [component catalogue](https://astryx.atmeta.com/components) and [templates](https://astryx.atmeta.com/templates). Record below the reference, the revision reviewed, what was adopted or adapted, the reason for any departure, and implementation and verification status. Use existing FolioDash primitives and semantic tokens, or extend their single authoritative home when a real need exists. If upstream is unavailable, use the recorded reference and FolioDash's existing contracts; do not block unrelated work on a network request.
+
+FolioDash's [UI system](ui-system.md), [interaction coverage](interaction-coverage.md), [web quality contract](../operations/web-quality.md), accessibility, privacy and financial rules take precedence. Review copied source and its licence separately before reuse; inspiration does not settle FD-011. Do not automatically import upstream code, themes, icons, calculations or dependencies. Astryx core declares React 19 peers; Preact compatibility is not established. Any dependency adoption requires a separate evaluation under FD-008.
+
+## Pattern register
+
+| Reference and revision reviewed | FolioDash adaptation and rationale | Status and evidence |
+|---|---|---|
+| [Collapsible table](https://github.com/meta/astryx/blob/dc58f19792b2ad26091d2f1914b8a4c54f6a9445/packages/cli/assets/templates/pages/table-collapsible/template.doc.mjs), upstream main reviewed 2026-11-16 | Offer a clearly named recent-history disclosure beside holdings, with dated values and net invested. Keep the existing holding link for the complete fund view and the full month comparison separate; do not nest actions within disclosure triggers. Use canonical model values, privacy presentation and existing tokens. | Implemented locally; see interaction coverage for source and rendered evidence. Live Google, physical-device and screen-reader proof are separate. |
+| [Portfolio dashboard](https://github.com/meta/astryx/blob/dc58f19792b2ad26091d2f1914b8a4c54f6a9445/packages/cli/assets/templates/pages/dashboard-composition/template.doc.mjs), upstream main reviewed 2026-11-16 | Consider its hierarchy of overview, chart and holdings; retain FolioDash's larger chart, inspection controls and calculation policy. | Reference considered; no wholesale dashboard replacement. |
