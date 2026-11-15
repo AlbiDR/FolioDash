@@ -91,10 +91,11 @@ export function ManualEntry(props: {
             <p id={`${row.id}-help`} class="hint">Comma for decimals. Enter 0 explicitly for a zero value.</p>
           </div>
           {errors.length > 0 && <ul class="field-error">{errors.map(error => <li key={error}>{error.replace("Fund 1: ", "")}</li>)}</ul>}
-          <button type="button" onClick={() => { pendingFocus.current = "undo-removed-fund"; setRemoved({ row, index }); setRows(current => current.filter(item => item.id !== row.id)); setEmptyConfirmed(false); }}>Not held on this date</button>
+          {row.known && <p id={`${row.id}-removal-help`} class="hint">If you sold all of this fund, mark it as no longer held. You will review the sale and proceeds before saving. If you still hold it, enter its current value above.</p>}
+          <button type="button" class="link-button" aria-label={row.known ? `Mark ${row.name} as no longer held` : `Remove ${row.name.trim() || `new fund ${String(index + 1)}`} from this entry`} aria-describedby={row.known ? `${row.id}-removal-help` : undefined} onClick={() => { pendingFocus.current = "undo-removed-fund"; setRemoved({ row, index }); setRows(current => current.filter(item => item.id !== row.id)); setEmptyConfirmed(false); }}>{row.known ? "Mark as no longer held" : "Remove fund"}</button>
         </fieldset>;
       })}</div>
-      <Presence show={removed !== null}>{removed !== null && <div class="notice" role="status">{removed.row.name || "Fund"} removed from this entry only. History is unchanged; sales are reviewed next.
+      <Presence show={removed !== null}>{removed !== null && <div class="notice" role="status">{removed.row.name || "Fund"}{removed.row.known ? " marked as no longer held in this draft. You will review the sale and proceeds before saving. Saved history is unchanged." : " removed from this draft. Nothing has been saved."}
         <button id="undo-removed-fund" type="button" onClick={() => { pendingFocus.current = `${removed.row.id}-${removed.row.known ? "value" : "name"}`; setRestoredId(removed.row.id); setRows(current => [...current.slice(0, removed.index), removed.row, ...current.slice(removed.index)]); setRemoved(null); }}>Undo removal</button>
       </div>}</Presence>
       <button type="button" onClick={() => { const row = blank(); pendingFocus.current = `${row.id}-name`; setRows(current => [...current, row]); }}>Add another fund</button>
@@ -102,7 +103,7 @@ export function ManualEntry(props: {
       {attempted && !result.ok && <div class="review-problem" role="alert"><h4>Check your entries</h4><ul>{result.errors.map(error => <li key={error}>{error}</li>)}</ul></div>}
       {attempted && rows.length === 0 && !emptyConfirmed && <p role="alert">Confirm that no funds are held, or add a fund.</p>}
       <div class="manual-total" data-complete={result.ok} aria-live="polite"><span>{rows.length} {rows.length === 1 ? "fund" : "funds"}</span><strong>{result.ok ? <Amount cents={result.statement.fundsSubtotal} /> : "Complete the values to see the total"}</strong></div>
-      <p class="hint">No bank document is attached. Nothing is saved until final confirmation. Switching entry methods preserves this page's draft; leaving or reloading can discard it.</p>
+      <p class="hint">Removing a new fund only removes its draft row. Nothing is saved until final confirmation. No bank document is attached. Switching entry methods preserves this page's draft; leaving or reloading can discard it.</p>
       <button class="primary" type="submit">Continue to movements and review</button>
     </form>
     {review !== null && <div hidden={editing} class="review">

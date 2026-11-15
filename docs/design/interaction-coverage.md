@@ -167,12 +167,12 @@ One row is a source template; a fund-link template can render many controls. All
 | 01bdb3165526-1 | [ManualEntry.tsx:86](../../src/interfaces/web/features/import/ManualEntry.tsx#L86) | input / field | {'${row.id}-name'} | SOURCE CLASSIFIED; STATES OPEN |
 | ef899d0d6276-1 | [ManualEntry.tsx:87](../../src/interfaces/web/features/import/ManualEntry.tsx#L87) | input / field | {'${row.id}-isin'} | SOURCE CLASSIFIED; STATES OPEN |
 | 1728f5b7ae61-1 | [ManualEntry.tsx:90](../../src/interfaces/web/features/import/ManualEntry.tsx#L90) | input / field | {'${row.id}-value'} | SOURCE CLASSIFIED; STATES OPEN |
-| cd97f3e376ce-1 | [ManualEntry.tsx:94](../../src/interfaces/web/features/import/ManualEntry.tsx#L94) | button / action | Not held on this date | SOURCE CLASSIFIED; STATES OPEN |
-| 69f8cac586d2-1 | [ManualEntry.tsx:98](../../src/interfaces/web/features/import/ManualEntry.tsx#L98) | button / action | Undo removal | SOURCE CLASSIFIED; STATES OPEN |
-| 2d2d6df863fd-1 | [ManualEntry.tsx:100](../../src/interfaces/web/features/import/ManualEntry.tsx#L100) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
-| d332a8c35403-1 | [ManualEntry.tsx:101](../../src/interfaces/web/features/import/ManualEntry.tsx#L101) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 63e49c40fe24-1 | [ManualEntry.tsx:106](../../src/interfaces/web/features/import/ManualEntry.tsx#L106) | button / action | Continue to movements and review | SOURCE CLASSIFIED; STATES OPEN |
-| 7aa13e49b859-1 | [ManualEntry.tsx:111](../../src/interfaces/web/features/import/ManualEntry.tsx#L111) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
+| cf6ae05a80d5-1 | [ManualEntry.tsx:95](../../src/interfaces/web/features/import/ManualEntry.tsx#L95) | button / action | {row.known ? 'Mark ${row.name} as no longer held' : 'Remove ${row.name.trim() &#124;&#124; 'new | SOURCE CLASSIFIED; STATES OPEN |
+| 69f8cac586d2-1 | [ManualEntry.tsx:99](../../src/interfaces/web/features/import/ManualEntry.tsx#L99) | button / action | Undo removal | SOURCE CLASSIFIED; STATES OPEN |
+| 2d2d6df863fd-1 | [ManualEntry.tsx:101](../../src/interfaces/web/features/import/ManualEntry.tsx#L101) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
+| d332a8c35403-1 | [ManualEntry.tsx:102](../../src/interfaces/web/features/import/ManualEntry.tsx#L102) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 63e49c40fe24-1 | [ManualEntry.tsx:107](../../src/interfaces/web/features/import/ManualEntry.tsx#L107) | button / action | Continue to movements and review | SOURCE CLASSIFIED; STATES OPEN |
+| 7aa13e49b859-1 | [ManualEntry.tsx:112](../../src/interfaces/web/features/import/ManualEntry.tsx#L112) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
 | cbc079dfb4c6-1 | [FundView.tsx:55](../../src/interfaces/web/features/overview/FundView.tsx#L55) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
 | 4880f829e8f5-1 | [MonthsView.tsx:26](../../src/interfaces/web/features/overview/MonthsView.tsx#L26) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | e44a2558bb28-1 | [MonthsView.tsx:31](../../src/interfaces/web/features/overview/MonthsView.tsx#L31) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
