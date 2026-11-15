@@ -36,6 +36,21 @@ describe("Google sign-in recovery", () => {
     expect(request).toHaveBeenCalledWith({ prompt: "select_account" });
   });
 
+  it("never substitutes an in-flight quiet token for an explicit account chooser", async () => {
+    let callback: Config["callback"] | undefined;
+    const { signIn, request } = await setup(config => { callback = config.callback; });
+    const quiet = signIn("synthetic-client", SCOPE, { prompt: "", loginHint: "first@example.test" });
+    expect(await signIn("synthetic-client", SCOPE, { prompt: "select_account" })).toEqual({ ok: false, reason: "unavailable" });
+    expect(request).toHaveBeenCalledOnce();
+    if (callback === undefined) throw new Error("Missing synthetic callback");
+    callback({ access_token: "first-account-token", expires_in: "3600", scope: SCOPE });
+    expect(await quiet).toMatchObject({ ok: true, accessToken: "first-account-token" });
+    const selected = signIn("synthetic-client", SCOPE, { prompt: "select_account" });
+    expect(request).toHaveBeenLastCalledWith({ prompt: "select_account" });
+    callback({ access_token: "second-account-token", expires_in: "3600", scope: SCOPE });
+    expect(await selected).toMatchObject({ ok: true, accessToken: "second-account-token" });
+  });
+
   it("names the remembered account so Google can skip its chooser", async () => {
     const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
     await signIn("synthetic-client", SCOPE, { prompt: "", loginHint: "person@example.test" });

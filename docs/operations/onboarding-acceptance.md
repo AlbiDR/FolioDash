@@ -99,3 +99,16 @@ Live acceptance for the exact scenario:
 7. Review denial, closed sign-in and lost-acknowledgement handling without blindly repeating an uncertain financial save. Preserve the entered review and use the original-command outcome check.
 
 Current evidence: the manual November session regression passed locally with the existing 69 session tests. The earlier Android-emulator live Excel proof remains evidence only for its named local-origin/account/Excel route. Fresh-account consent and this exact manual journey from the deployed origin remain pending until observed. The browser plugin connection was unavailable in this session, so owner-observed steps must be distinguished from direct automated browser evidence. Do not record account details, tokens or workbook IDs in this document.
+
+
+### Account-switch defect found during the fresh-account check
+
+On 2026-11-15 the owner reported that Use a different Google account still displayed the original statements after sign-in. Source inspection confirmed that this action opened the chooser but then called refresh against the former workbook, retaining the former device copy on failure. This observation blocks acceptance of the fresh-account manual journey; the previous passing synthetic first-save test did not exercise account switching.
+
+The explicit switch now clears the prior portfolio/expense copies, remembered access and account hint, invalidates older reads/sign-ins, cancels queued derived views and announces the reset to other windows before opening the chooser. It then discovers or creates the selected account's workbook. Cancelling the chooser leaves the old data hidden. This clears device state without deleting either workbook or revoking the old account's Google grant. Ordinary Reconnect with Google retains the existing workbook/copy on cancellation as before.
+
+An explicit chooser cannot reuse an already-running quiet sign-in token. If that request is still active, the chooser fails without accepting its result; the person can retry when it finishes. A financial operation suspended before submission checks the account generation again and submits nothing if the account changed. Already-submitted writes retain their unknown-outcome handling.
+
+Synthetic regressions cover two separately routed Google accounts, an old workbook shared with the new account, no requests to the old workbook under the new token, cleared portfolio and expense caches before sign-in, cancellation, delayed old-account refresh, prevention of a suspended old-account save and refusal to reuse a quiet sign-in for the chooser. These tests replace an earlier misleading account-switch test that used the same account/token/workbook throughout. The fresh-account live check must be repeated on the deployed fix; the owner's report is direct live evidence of the defect, not yet of its resolution.
+
+Local verification of the account-switch correction: `npm run verify` passed all 903 tests in 72 files, all TypeScript targets, strict lint, policy checks and web/PWA/Apps Script builds. The production-renderer audit passed 43 journey assertions and 553 control samples; it does not exercise real signed-in account switching. Dependency audit reported zero vulnerabilities. The corrected live fresh-account/manual journey remains pending owner confirmation.
