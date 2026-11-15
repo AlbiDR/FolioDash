@@ -25,6 +25,7 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
   let previewReady = false;
   let previewOutput = "";
   let chrome: ChildProcess | undefined;
+  let chromeDiagnostics = "";
   let socket: WebSocket | undefined;
   let sequence = 0;
 
@@ -81,8 +82,9 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
     }
   }
 
-  async function waitFor(check: () => Promise<boolean>, description: string): Promise<void> {
-    for (let attempt = 0; attempt < 100; attempt++) {
+  async function waitFor(check: () => Promise<boolean>, description: string, timeoutMilliseconds = 10_000): Promise<void> {
+    const deadline = Date.now() + timeoutMilliseconds;
+    while (Date.now() < deadline) {
       if (await check()) return;
       await delay(100);
     }
@@ -98,6 +100,7 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
   async function connectBrowser(): Promise<void> {
     let address: string | undefined;
     await waitFor(async () => {
+      if (chrome?.exitCode !== null && chrome?.exitCode !== undefined) throw new Error(`Chrome exited during startup (${String(chrome.exitCode)}). ${chromeDiagnostics}`);
       try {
         const debugPort = Number(readFileSync(join(profile, "DevToolsActivePort"), "utf8").split("\n")[0]);
         if (!Number.isInteger(debugPort) || debugPort <= 0) return false;
@@ -109,7 +112,7 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
         }
         return address !== undefined;
       } catch { return false; }
-    }, "Chrome");
+    }, "Chrome", 30_000);
     if (address === undefined) throw new Error("Chrome did not expose a page.");
     socket = new WebSocket(address);
     socket.addEventListener("message", message);
@@ -136,9 +139,12 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
     });
     preview.on("error", () => { browserErrors.push("Could not start the local preview."); });
     await waitFor(localReady, "the local production preview");
-    chrome = spawn(chromePath, ["--headless", "--disable-gpu", "--disable-background-networking", "--disable-component-update", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "about:blank"], { stdio: "ignore" });
+    chrome = spawn(chromePath, ["--headless", "--disable-gpu", "--disable-background-networking", "--disable-component-update", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
+    chrome.stderr?.on("data", (chunk: Buffer) => { chromeDiagnostics = (chromeDiagnostics + stripVTControlCharacters(chunk.toString())).slice(-8000); });
     chrome.on("error", () => { browserErrors.push("Could not start Chrome. Check CHROME_PATH."); });
-    await connectBrowser();
+    try { await connectBrowser(); } catch (error) {
+      throw new Error(`Could not connect to the fresh synthetic Chrome profile. ${chromeDiagnostics}`, { cause: error });
+    }
     await call("Runtime.enable");
     await call("Page.enable");
     await call("Network.enable");
