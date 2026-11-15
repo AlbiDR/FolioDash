@@ -548,6 +548,7 @@ export class Session {
       const ensured = sheet === "missing" ? await ensureWorkbook(this.deps.rest, signed.token, this.deps.workbookIdentity) : workbook === null ? null : { status: "ready" as const, workbook, created: false };
       if (generation !== this.generation) return { status: "failed", message: "The account changed during recovery. Check the original workbook before another attempt." };
       if (ensured === null || ensured.status !== "ready") return { status: "failed", message: "A recovery workbook could not be confirmed. Preserve your expense backup and reconnect before retrying." };
+      if (!this.expenses.prepareWorkbookRecovery(ensured.workbook.id)) return { status: "failed", message: "An expense operation is still running. Preserve your backup and check its outcome before continuing recovery." };
       this.keep(ensured.workbook, ledger);
       this.set({ ...this.current, mode: "online", workbook: ensured.workbook, sheet: "ok", syncedAt: this.deps.now() });
       const restored = await this.expenses.restoreBackup(expenseBackup);
@@ -559,6 +560,7 @@ export class Session {
     if (result.status !== "restored") {
       return { status: "failed", message: result.status === "not-empty" ? "The spreadsheet already holds statements, so nothing was written." : "The spreadsheet could not be restored. Nothing on this device was changed." };
     }
+    if (sheet === "missing" && hasExpenses && !this.expenses.prepareWorkbookRecovery(result.workbook.id)) return { status: "failed", message: "Portfolio figures were restored, but an expense operation is still running. Preserve your backup and check its outcome before continuing expense recovery." };
     this.keep(result.workbook, result.ledger);
     this.set({ mode: "online", ledger: result.ledger, workbook: result.workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: 0 });
     // The device copy holds figures only, so a restored sheet has no stored bank statements; the health check says so.

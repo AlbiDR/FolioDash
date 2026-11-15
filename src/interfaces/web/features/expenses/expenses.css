@@ -233,3 +233,40 @@ label.expense-review-filter { display: flex; align-items: center; gap: var(--spa
   .expense-week-list button:hover:not(:disabled, [aria-pressed="true"]), .expense-record-list button:hover:not(:disabled) { background: var(--color-accent-soft); }
   .expense-note button:hover:not(:disabled), .expense-review button:not(.primary):hover:not(:disabled), .expense-conflict button:hover:not(:disabled) { background: var(--color-accent-soft); }
 }
+
+/* Incremental entry keeps the running total and commit action together and within reach. */
+.expense-save-dock {
+  position: relative;
+  z-index: 2;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--shape-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.expense-save-dock .expense-day-total { margin-top: 0; padding-top: 0; border-top: 0; }
+.expense-save-dock .expense-entry-actions { margin-top: var(--space-2); }
+.expense-save-dock .expense-total { font-size: var(--text-lead); }
+.expense-entry .expense-group-title { margin-top: var(--space-3); }
+.expense-entry .expense-form > .hint { margin-top: var(--space-2); font-size: var(--text-caption); }
+.expense-entry .expense-optional-fields > .hint { font-size: var(--text-caption); }
+.expense-field {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--shape-md);
+  transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard);
+}
+.expense-field[data-filled="true"] { background: color-mix(in srgb, var(--color-accent-soft) 45%, transparent); }
+.expense-field:focus-within { background: var(--color-accent-soft); box-shadow: inset 3px 0 var(--color-accent); }
+.expense-entry .expense-state { transition: background-color var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard); }
+.expense-entry .expense-form { animation: expense-date-cue var(--duration-medium) var(--ease-standard); }
+.expense-save-feedback > p:not(:empty) { animation: expense-date-cue var(--duration-feedback) var(--ease-standard); }
+@media (prefers-reduced-motion: reduce) {
+  .expense-field, .expense-entry .expense-state { transition-duration: 0s; }
+  .expense-entry .expense-form, .expense-save-feedback > p:not(:empty) { animation: none; }
+}
+
+.expense-entry[data-dirty="true"] .expense-save-dock { position: sticky; bottom: var(--space-2); }
+@media (max-width: 47.999rem) {
+  .expense-entry[data-dirty="true"] .expense-save-dock { bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--space-2)); }
+}

@@ -13,7 +13,7 @@ import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedg
 import { appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs, type WorkbookIdentity } from "./GoogleWorkbook";
 import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
 import { VIEW_TAB } from "./SheetsLayout";
-import { type RestClient, type RestFailure, wroteNothing } from "./Rest";
+import { type RestClient, type RestFailure } from "./Rest";
 
 /**
  * A sheet held in memory: the rows already stored, plus whatever the ledger rules
@@ -187,7 +187,7 @@ export function attachDirect(deps: DirectDeps, accessToken: string, workbookId: 
 
 function notWritten(failure: RestFailure): RemoteCommit {
   if (failure === "unauthorised" || failure === "forbidden" || failure === "not-found") return { status: "not-sent", failure };
-  return { status: "not-committed", message: wroteNothing(failure) ? "Google could not be reached, so nothing was saved. It is safe to try again." : "Nothing was saved. It is safe to try again." };
+  return { status: "not-committed", message: failure === "network" || failure === "unavailable" ? "Google could not be reached, so nothing was saved. It is safe to try again." : "Nothing was saved. It is safe to try again." };
 }
 
 /** Resolves a lost answer by reading the sheet. It writes nothing. */
@@ -217,21 +217,24 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
   if (valid === null || valid.snapshots.length === 0) return { status: "invalid" };
 
   let workbook = into;
+  // Rows already in the tab stay in place (for example an interrupted write), so the new references must point past them.
+  let stored: readonly LedgerRow[] = [];
   if (workbook === null) {
     const created = await createWorkbook(deps.rest, accessToken, deps.workbookIdentity);
     if (!created.ok) return { status: "failed", failure: created.failure, workbook: null };
     workbook = { id: created.value.id, url: created.value.url };
   } else {
-    const existing = await readDirect(deps.rest, accessToken, workbook.id);
+    const tab = await readLedgerRows(deps.rest, accessToken, workbook.id);
+    if (!tab.ok) return { status: "failed", failure: tab.failure, workbook };
+    if ("notALedger" in tab.value) return { status: "failed", failure: "unexpected", workbook };
+    stored = tab.value.rows;
+    const existing = storeOf(stored).store.load();
     if (existing.status === "ok" && existing.state.snapshots.length > 0) return { status: "not-empty" };
-    if (existing.status !== "ok" && existing.status !== "damaged") {
-      return { status: "failed", failure: existing.status === "call-failed" ? existing.failure : "unexpected", workbook };
-    }
     if (existing.status === "damaged") return { status: "failed", failure: "unexpected", workbook };
   }
 
   const revision = deps.newRevision();
-  const { sheet, store } = storeOf([]);
+  const { sheet, store } = storeOf(stored);
   store.publish({ ...valid, revision }, { commandId: `restore-${revision}`, revision, requestHash: sha256Hex(canonicalJson(valid)) });
   const sent = await appendLedgerRows(deps.rest, accessToken, workbook.id, sheet.pending);
   if (!sent.ok) return { status: "failed", failure: sent.failure, workbook };

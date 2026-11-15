@@ -65,6 +65,36 @@ function parseJson(text: string): unknown {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** The commit payload is not covered by a checksum, so its shape is checked before anything relies on it. */
+function commitOf(text: string): CommitPayload {
+  const value = parseJson(text);
+  if (!isRecord(value)) return damaged("A commit record is not in the expected form.");
+  const { count, commandId, requestHash } = value;
+  if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0 || typeof commandId !== "string" || typeof requestHash !== "string") {
+    return damaged("A commit record is not in the expected form.");
+  }
+  return { count, commandId, requestHash };
+}
+
+function metaOf(text: string): Meta {
+  const value = parseJson(text);
+  if (!isRecord(value) || typeof value["schema"] !== "number" || !Array.isArray(value["funds"])) {
+    return damaged("The ledger header is not in the expected form.");
+  }
+  return { schema: value["schema"], funds: value["funds"] as Fund[] };
+}
+
+function referencesOf(text: string): Reference[] {
+  const value = parseJson(text);
+  const valid = Array.isArray(value) && value.every((entry) => Array.isArray(entry) && entry.length === 2 && typeof entry[1] === "string");
+  if (!valid) return damaged("The ledger timeline is not in the expected form.");
+  return value as Reference[];
+}
+
 function recordsChecksum(rows: readonly { readonly type: string; readonly payload: string }[]): string {
   return sha256Hex(canonicalJson(rows.map((row) => [row.type, row.payload])));
 }
@@ -72,7 +102,9 @@ function recordsChecksum(rows: readonly { readonly type: string; readonly payloa
 function decodeRows(rows: readonly LedgerRow[]): Decoded {
   let commitIndex = -1;
   rows.forEach((row, index) => {
-    if (row.type === "COMMIT") commitIndex = index;
+    if (row.type !== "COMMIT") return;
+    commitOf(row.payload);
+    commitIndex = index;
   });
   if (commitIndex < 0) return { state: EMPTY_LEDGER, references: [], trailing: rows.length };
 
@@ -90,16 +122,16 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
   if (!payload.slice(1).every((row) => row.type === "SNAPSHOT" || row.type === "TIMELINE" || row.type === "SOURCE") || !payload.some((row) => row.type === "TIMELINE")) {
     return damaged("The committed revision has an invalid structure.");
   }
-  const commitPayload = parseJson(commit.payload) as CommitPayload;
+  const commitPayload = commitOf(commit.payload);
   if (commitPayload.count !== payload.length || commit.checksum !== recordsChecksum(payload)) {
     return damaged("The commit record does not match the revision it closes.");
   }
 
-  const meta = parseJson(first.payload) as Meta;
+  const meta = metaOf(first.payload);
   if (meta.schema !== SCHEMA) return damaged("The ledger uses an unsupported format version.");
   const references = payload
     .filter((row) => row.type === "TIMELINE")
-    .flatMap((row) => parseJson(row.payload) as Reference[]);
+    .flatMap((row) => referencesOf(row.payload));
   const snapshots: Snapshot[] = references.map(([index, checksum]) => {
     const row = rows[index];
     // References point only at earlier snapshot records that were committed.
@@ -129,7 +161,7 @@ function decodeSources(rows: readonly LedgerRow[]): SourceRecord[] {
     for (const row of block) {
       if (row.checksum !== sha256Hex(row.payload)) return damaged("A stored statement failed its checksum.");
     }
-    const commitPayload = parseJson(commit.payload) as CommitPayload;
+    const commitPayload = commitOf(commit.payload);
     if (commitPayload.count !== block.length || commit.checksum !== recordsChecksum(block)) {
       return damaged("A stored statement belongs to a revision that does not match its commit record.");
     }
@@ -191,10 +223,11 @@ export class RowLedgerStore implements LedgerStore {
     }
   }
 
+  /** Callers must call load() first: it validates every commit record, so this cannot meet a malformed one. */
   findCommand(commandId: string): CommandReceipt | null {
     for (const row of this.sheet.readRows()) {
       if (row.type !== "COMMIT") continue;
-      const payload = parseJson(row.payload) as CommitPayload;
+      const payload = commitOf(row.payload);
       if (payload.commandId === commandId) return { commandId, revision: row.revision, requestHash: payload.requestHash };
     }
     return null;

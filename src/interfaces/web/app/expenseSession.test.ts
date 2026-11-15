@@ -191,6 +191,33 @@ describe("expense session integrity and recovery", () => {
     expect(google.callsMatching(/POST .*:append/u)).toHaveLength(appends);
   });
 
+  it("preserves a confirmed replacement-workbook copy through refresh, reload and a retry", async () => {
+    const { google, session, setWorkbook, boundCache, make } = await world();
+    await session.save(request);
+    const backup = session.exportBackup();
+    const other = await createWorkbook(google.client, google.token, { title: "Synthetic recovery", propertyKey: "recovery", propertyValue: "v1" });
+    if (!other.ok) throw new Error("Synthetic recovery workbook failed");
+    expect(session.prepareWorkbookRecovery(other.value.id)).toBe(true);
+    setWorkbook(other.value);
+    await session.refresh();
+    expect(session.state.ready).toBe(false);
+    expect(session.state.commands).toHaveLength(1);
+    expect(boundCache.load()?.workbookId).toBe(other.value.id);
+    expect(boundCache.load()?.commands).toHaveLength(1);
+    const reloaded = make();
+    await reloaded.refresh();
+    expect(reloaded.state.commands).toHaveLength(1);
+    expect((await reloaded.save(request)).status).toBe("not-saved");
+    expect(google.tab(other.value.id, EXPENSE_LOG_TITLE)).toBeUndefined();
+    expect((await reloaded.restoreBackup(backup)).status).toBe("saved");
+    await reloaded.refresh();
+    expect(reloaded.state.ready).toBe(true);
+    expect(reloaded.state.commands).toHaveLength(1);
+    reloaded.forget();
+    expect(reloaded.state.commands).toEqual([]);
+    expect(boundCache.load()).toBeNull();
+  });
+
   it("drops the old workbook copy before exposing a different connected workbook", async () => {
     const { google, session, setWorkbook, boundCache } = await world();
     await session.save(request);

@@ -14,8 +14,13 @@ export interface RawSheet {
   readonly date1904: boolean;
 }
 
+/** Spreadsheet column letters: 0 is A, 25 is Z, 26 is AA. */
 export function columnLetter(column: number): string {
-  return String.fromCharCode(65 + column);
+  let letters = "";
+  for (let remaining = column + 1; remaining > 0; remaining = Math.floor((remaining - 1) / 26)) {
+    letters = String.fromCharCode(65 + ((remaining - 1) % 26)) + letters;
+  }
+  return letters;
 }
 
 /** A1-style reference for a zero-based row and column. */

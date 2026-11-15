@@ -176,3 +176,33 @@ describe("stored bank statements", () => {
     expect(commitStatement(environment, january({ sheetName: "S", sheet: sheetOf("Different") })).status).toBe("rejected");
   });
 });
+
+describe("commit records that cannot be trusted", () => {
+  const corruptCommit = (sheet: MemorySheet, payload: string): void => {
+    const commit = sheet.rows.findIndex((row) => row.type === "COMMIT");
+    sheet.rows[commit] = { ...(sheet.rows[commit] as LedgerRow), payload };
+  };
+
+  it.each([
+    ["null", "null"],
+    ["a number", "5"],
+    ["a count that is not a number", '{"count":"3","commandId":"command-january","requestHash":"h"}'],
+  ])("reports a commit record holding %s as damaged, not as a crash", (_label, payload) => {
+    const { sheet, store, environment, january } = setup();
+    commitStatement(environment, january());
+    corruptCommit(sheet, payload);
+    expect(store.load().status).toBe("damaged");
+    expect(store.loadSources().status).toBe("ok");
+  });
+
+  it("reports an unreadable older commit as damaged by every read and every write", () => {
+    const { sheet, store, environment, january, february } = setup();
+    commitStatement(environment, january());
+    const revision = store.load().status === "ok" ? (store.load() as { state: { revision: string } }).state.revision : "";
+    commitStatement(environment, february(revision));
+    const firstCommit = sheet.rows.findIndex((row) => row.type === "COMMIT");
+    sheet.rows[firstCommit] = { ...(sheet.rows[firstCommit] as LedgerRow), payload: "not json" };
+    expect(store.load().status).toBe("damaged");
+    expect(commitStatement(environment, january()).status).toBe("damaged");
+  });
+});

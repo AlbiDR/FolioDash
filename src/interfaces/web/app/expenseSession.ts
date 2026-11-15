@@ -57,6 +57,16 @@ export class ExpenseSession {
     this.deps.cache?.clear();
     this.set({ days: [], commands: [], conflicts: [], ready: false, initialized: false, message: "", pending: false, cached: false });
   }
+  /** Only the confirmed workbook-recovery journey may carry the device history to a replacement. */
+  prepareWorkbookRecovery(workbookId: string): boolean {
+    if (this.busy || this.pendingCommand !== null || this.pendingRestore !== null) return false;
+    this.sequence++;
+    this.refreshing = null;
+    this.workbookId = workbookId;
+    this.set({ ...this.current, ready: false, cached: true, message: "Your expense copy is preserved. Restore it into the replacement workbook before recording new expenses." });
+    this.keep();
+    return true;
+  }
   refresh(): Promise<void> {
     if (this.refreshing !== null) return this.refreshing;
     const epoch = this.epoch;
@@ -178,6 +188,8 @@ export class ExpenseSession {
       const before = await readExpenses(this.deps.rest, access.token, access.workbook.id);
       if (epoch !== this.epoch) return { status: "unknown", message: "The account changed during recovery. Check the original workbook." };
       if (this.pendingRestore !== null && !(before.status === "ok" && containsExpenseCommands(before.commands, history.commands))) return { status: "unknown", message: "The original recovery is not confirmed yet. Keep the backup and check again; no recovery was resubmitted." };
+      // A failed preflight read has not submitted a recovery write.
+      if (before.status !== "ok" && before.status !== "absent") return { status: "not-saved", message: before.message };
       this.workbookId = access.workbook.id;
       this.pendingRestore = text;
       this.keep();

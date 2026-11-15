@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "types": [],
@@ -16,6 +18,11 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["../src/**/*.ts", "../tests/**/*.ts"],
-  "exclude": ["../src/interfaces/web", "../src/adapters/browser"]
+  "include": [
+    "../src/**/*.ts"
+  ],
+  "exclude": [
+    "../src/interfaces/web",
+    "../src/adapters/browser"
+  ]
 }

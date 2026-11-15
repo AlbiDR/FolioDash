@@ -646,6 +646,22 @@ describe("restoreDirect: the loop closes both ways", () => {
     expect((await restoreDirect(deps, google.token, copy, empty)).status).toBe("not-empty");
   });
 
+  it("restores past interrupted rows without moving or overwriting their evidence", async () => {
+    const copy = await savedCopy();
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const tab = google.tab(workbook.id, LEDGER_TAB);
+    if (tab === undefined) throw new Error("Synthetic ledger tab missing");
+    const interrupted = ["interrupted", "META", "{}", "incomplete"];
+    tab.rows.push(interrupted);
+    const restored = await restoreDirect(deps, google.token, copy, workbook);
+    expect(restored.status).toBe("restored");
+    expect(tab.rows[1]).toEqual(interrupted);
+    const read = await readDirect(google.client, google.token, workbook.id);
+    expect(read.status).toBe("ok");
+    if (read.status === "ok") expect(read.state.snapshots).toEqual(copy.snapshots);
+  });
+
   it("refuses a copy that fails the ledger rules or holds no statements", async () => {
     const { google, deps } = setup();
     expect((await restoreDirect(deps, google.token, EMPTY_LEDGER, null)).status).toBe("invalid");
