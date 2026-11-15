@@ -162,6 +162,10 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await check("window.auditChart.querySelector('.chart-svg').getAnimations().every(a=>a.playState!=='running')", "privacy changes immediately cancel a running plot cue");
   await openDetails();
   await survey("Portfolio / desktop / disclosures open");
+  await check("(()=>{const groups=[...document.querySelectorAll('.recent-fund-history-group')];return groups.length>0&&groups.every(group=>group.querySelectorAll('tbody tr').length===3)&&document.querySelector('.recent-fund-history a[href=\"#months\"]')!==null})()", "recent fund history shows three dated statements and the full comparison link");
+  await evaluate("document.querySelector('.privacy-toggle').click()");
+  await check("[...document.querySelectorAll('.recent-fund-history .amount')].every(amount=>amount.classList.contains('masked')||amount.textContent.trim()==='-')", "recent fund history hides amounts immediately");
+  await evaluate("document.querySelector('.privacy-toggle').click()");
   const fund = await evaluate("document.querySelector('.holdings-table a')?.getAttribute('href')") as string;
   await visit(fund.slice(1));
   await openDetails();
@@ -178,6 +182,10 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await visit("expenses");
   await openDetails();
   await survey("Expenses / desktop / initial and disclosures");
+  if (await evaluate("![...document.querySelectorAll('.expense-week-list button')].some(b=>b.querySelector('.expense-week-state').textContent==='Recorded')") === true) {
+    await evaluate("document.querySelector('.expense-week-controls button[aria-label=\"Previous week\"]').click()");
+    await waitFor(async () => await evaluate("[...document.querySelectorAll('.expense-week-list button')].some(b=>b.querySelector('.expense-week-state').textContent==='Recorded')") === true, "a recorded synthetic workday in the previous week");
+  }
   await evaluate("[...document.querySelectorAll('.expense-week-list button')].find(b=>b.querySelector('.expense-week-state').textContent==='Recorded').click()");
   await delay(100);
   await evaluate("const addedCost=document.querySelector('#expense-4');addedCost.value='4,50';addedCost.dispatchEvent(new Event('input',{bubbles:true}))");

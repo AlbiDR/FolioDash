@@ -276,6 +276,24 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             </table>
           </div>
         )}
+        {listedFunds.length > 0 && <div class="more recent-fund-history">
+          <details>
+            <summary><span>Recent fund history<span class="disclosure-description">Value and net invested for the latest three statements.</span></span></summary>
+            {listedFunds.map((fund) => <section key={fund.isin} class="recent-fund-history-group" aria-label={`${fund.name} recent history`}>
+              <h4>{fund.name}</h4>
+              <div class="table-scroll flat" role="region" aria-label={`${fund.name} recent statement values`} tabIndex={0}>
+                <table>
+                  <thead><tr><th scope="col">Statement</th><th scope="col">Value</th><th scope="col">Net invested</th></tr></thead>
+                  <tbody>{dates.slice(-3).map((date, offset) => {
+                    const index = Math.max(0, dates.length - 3) + offset;
+                    return <tr key={date}><th scope="row">{formatDateLong(date)}</th><td><Amount cents={fund.values[index] ?? null} /></td><td><Amount cents={fund.netInvested[index] ?? null} /></td></tr>;
+                  })}</tbody>
+                </table>
+              </div>
+            </section>)}
+            <a class="row-link plain" href="#months"><span>Compare all statements</span><Icon name="chevron" size={18} /></a>
+          </details>
+        </div>}
       </div>
 
       <AllocationCard slices={slices} />

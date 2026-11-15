@@ -28,7 +28,9 @@ Each interaction must be inspected through rest, hover where supported, keyboard
 
 ## Browser evidence and remaining work
 
-Source discovery classifies all 166 templates in 22 files. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
+Source discovery classifies all 169 templates in 22 files. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
+
+2026-11-16: the Astryx-inspired recent fund history disclosure was included in desktop and phone synthetic-demo rendered discovery, including the twelve-fund case. The audit checked three dated rows, the full-comparison link and immediate amount masking. The complete audit passed 58 journey assertions and 631 control samples across 20 states on local Chrome. Individual new control states remain OPEN in the source inventory; physical devices, other engines, screen readers and real Google remain unverified. The expense audit now finds a recorded sample day in the previous week when the current week has none, such as on Monday.
 
 | Evidence | Scope checked | Remaining opportunities / proof |
 |---|---|---|
@@ -193,9 +195,12 @@ One row is a source template; a fund-link template can render many controls. All
 | 5dbd3fbc50da-1 | [OverviewView.tsx:230](../../src/interfaces/web/features/overview/OverviewView.tsx#L230) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
 | ad056c5c8f28-1 | [OverviewView.tsx:251](../../src/interfaces/web/features/overview/OverviewView.tsx#L251) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
 | 8d0da27501ab-1 | [OverviewView.tsx:266](../../src/interfaces/web/features/overview/OverviewView.tsx#L266) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| 66067b67828f-1 | [OverviewView.tsx:285](../../src/interfaces/web/features/overview/OverviewView.tsx#L285) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f4734e648b87-1 | [OverviewView.tsx:346](../../src/interfaces/web/features/overview/OverviewView.tsx#L346) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 47bc7d2ce3b3-1 | [OverviewView.tsx:356](../../src/interfaces/web/features/overview/OverviewView.tsx#L356) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| cb0af91564d2-1 | [OverviewView.tsx:281](../../src/interfaces/web/features/overview/OverviewView.tsx#L281) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 89e47524b078-1 | [OverviewView.tsx:284](../../src/interfaces/web/features/overview/OverviewView.tsx#L284) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 78da3e9f8679-1 | [OverviewView.tsx:294](../../src/interfaces/web/features/overview/OverviewView.tsx#L294) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 66067b67828f-1 | [OverviewView.tsx:303](../../src/interfaces/web/features/overview/OverviewView.tsx#L303) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f4734e648b87-1 | [OverviewView.tsx:364](../../src/interfaces/web/features/overview/OverviewView.tsx#L364) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 47bc7d2ce3b3-1 | [OverviewView.tsx:374](../../src/interfaces/web/features/overview/OverviewView.tsx#L374) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | ba730a52b26d-1 | [Donut.tsx:45](../../src/interfaces/web/presentation/charts/Donut.tsx#L45) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | e3ffcd3f4bfd-1 | [LineChart.tsx:163](../../src/interfaces/web/presentation/charts/LineChart.tsx#L163) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 2a0fe4571f5f-1 | [LineChart.tsx:222](../../src/interfaces/web/presentation/charts/LineChart.tsx#L222) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
