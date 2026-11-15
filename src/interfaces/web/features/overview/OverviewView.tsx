@@ -214,6 +214,78 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         </div>
         <PageNav items={[{ id: "holdings-heading", label: "Holdings" }, { id: "allocation-heading", label: "Allocation" }, { id: "portfolio-analysis", label: "Trends and comparisons" }]} />
       </section>
+      <section class="cell-12 dashboard-analysis" aria-labelledby="portfolio-analysis">
+        <h2 id="portfolio-analysis" class="card-title" tabIndex={-1}>Trends and comparisons</h2>
+        <p class="card-subtitle">Monthly movement, fund performance and the data behind your portfolio.</p>
+        <div class="dash analysis-grid">
+      <div class="card cell-6">
+        <h3 class="card-title">Monthly change in gain</h3>
+        <p class="card-subtitle">How much your gain changed each month. Hover or tap a bar to read it.</p>
+        <MonthlyBars
+          id="monthly-bars"
+          title="Change in gain"
+          description="Bars for the change in gain each month: above the line is a gain, below is a loss."
+          bars={bars}
+          formatValue={euroLabel}
+        />
+        <p class="footnote">A month has no bar when there is no statement from the month before it.</p>
+      </div>
+
+      <div class="card cell-6">
+        <h3 class="card-title">Gain by fund</h3>
+        <p class="card-subtitle">Gain as a percentage of what you put in. Not a yearly rate.</p>
+        {ranking.length === 0 ? (
+          <p class="empty-note">No fund has a percentage to rank yet.</p>
+        ) : (
+          <PerformanceBars rows={ranking.map((fund) => ({ key: fund.isin, href: `#fund/${fund.isin}`, label: fund.name, ratio: fund.percent, dim: fund.closed }))} />
+        )}
+        <p class="footnote">Funds you have sold are dimmed.</p>
+      </div>
+
+      <div class="cell-8">
+        <LineChart
+          id="funds-chart"
+          updateKey={props.range}
+          title="Value of each fund"
+          subtitle="Solid line: a fund's value. Dotted line, same colour: what you have put into it. A gap means it was not held that month."
+          description="One solid line per fund showing its value over time, and a faint dotted line in the same colour for the money invested in it. A fund that was not held leaves a gap."
+          series={d.fundSeries}
+          formatTime={monthLabel}
+          formatValue={euroLabel}
+          emptyMessage="No fund has a value to plot yet."
+        />
+      </div>
+
+      <div class="card cell-4">
+        <h3 class="card-title">About this data</h3>
+        <p class="card-subtitle">Where these figures come from.</p>
+        <dl class="facts stacked">
+          <div>
+            <dt>Statements recorded</dt>
+            <dd>{dates.length}</dd>
+          </div>
+          <div>
+            <dt>First statement</dt>
+            <dd>{dates[0] === undefined ? "-" : formatDateLong(dates[0])}</dd>
+          </div>
+          <div>
+            <dt>Funds ever held</dt>
+            <dd>{funds.length}</dd>
+          </div>
+          <div>
+            <dt>Calculation method</dt>
+            <dd>{REPORTING_POLICY}</dd>
+          </div>
+        </dl>
+        <a class="row-link plain" href="#months">
+          <span>Month by month</span>
+          <Icon name="chevron" size={18} />
+        </a>
+      </div>
+
+      </div>
+      </section>
+
       <div class="card cell-8 portfolio-holdings">
         <h3 id="holdings-heading" class="card-title" tabIndex={-1}>Holdings</h3>
         <p class="card-subtitle">Latest statement. Select a fund to see its performance and history.</p>
@@ -307,77 +379,6 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       <AllocationCard slices={slices} />
 
       <div class="more cell-12">
-      <details id="portfolio-analysis" class="dashboard-analysis" tabIndex={-1}>
-        <summary><span>Explore trends and comparisons<span class="disclosure-description">Monthly movement, fund performance and the data behind your portfolio.</span></span></summary>
-        <div class="dash analysis-grid">
-      <div class="card cell-6">
-        <h3 class="card-title">Monthly change in gain</h3>
-        <p class="card-subtitle">How much your gain changed each month. Hover or tap a bar to read it.</p>
-        <MonthlyBars
-          id="monthly-bars"
-          title="Change in gain"
-          description="Bars for the change in gain each month: above the line is a gain, below is a loss."
-          bars={bars}
-          formatValue={euroLabel}
-        />
-        <p class="footnote">A month has no bar when there is no statement from the month before it.</p>
-      </div>
-
-      <div class="card cell-6">
-        <h3 class="card-title">Gain by fund</h3>
-        <p class="card-subtitle">Gain as a percentage of what you put in. Not a yearly rate.</p>
-        {ranking.length === 0 ? (
-          <p class="empty-note">No fund has a percentage to rank yet.</p>
-        ) : (
-          <PerformanceBars rows={ranking.map((fund) => ({ key: fund.isin, href: `#fund/${fund.isin}`, label: fund.name, ratio: fund.percent, dim: fund.closed }))} />
-        )}
-        <p class="footnote">Funds you have sold are dimmed.</p>
-      </div>
-
-      <div class="cell-8">
-        <LineChart
-          id="funds-chart"
-          updateKey={props.range}
-          title="Value of each fund"
-          subtitle="Solid line: a fund's value. Dotted line, same colour: what you have put into it. A gap means it was not held that month."
-          description="One solid line per fund showing its value over time, and a faint dotted line in the same colour for the money invested in it. A fund that was not held leaves a gap."
-          series={d.fundSeries}
-          formatTime={monthLabel}
-          formatValue={euroLabel}
-          emptyMessage="No fund has a value to plot yet."
-        />
-      </div>
-
-      <div class="card cell-4">
-        <h3 class="card-title">About this data</h3>
-        <p class="card-subtitle">Where these figures come from.</p>
-        <dl class="facts stacked">
-          <div>
-            <dt>Statements recorded</dt>
-            <dd>{dates.length}</dd>
-          </div>
-          <div>
-            <dt>First statement</dt>
-            <dd>{dates[0] === undefined ? "-" : formatDateLong(dates[0])}</dd>
-          </div>
-          <div>
-            <dt>Funds ever held</dt>
-            <dd>{funds.length}</dd>
-          </div>
-          <div>
-            <dt>Calculation method</dt>
-            <dd>{REPORTING_POLICY}</dd>
-          </div>
-        </dl>
-        <a class="row-link plain" href="#months">
-          <span>Month by month</span>
-          <Icon name="chevron" size={18} />
-        </a>
-      </div>
-
-      </div>
-      </details>
-
       <details class="dashboard-glossary">
         <summary>What the numbers mean</summary>
         <dl class="glossary">

@@ -1097,6 +1097,17 @@ table {
   font-weight: var(--weight-semibold);
 }
 
+/* Keep portfolio row names visible while the statement columns scroll. */
+.matrix.totals .matrix-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 9rem;
+  max-width: 12rem;
+  white-space: normal;
+  background: var(--color-surface);
+}
+
 .matrix tbody th[scope="row"]:not([rowspan]) {
   font-weight: var(--weight-regular);
   color: var(--color-muted);
