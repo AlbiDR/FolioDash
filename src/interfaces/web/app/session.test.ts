@@ -1,3 +1,4 @@
+import { prepareManualStatement } from "../features/import/ManualStatement";
 import { createGoogleSessionStore } from "../../../adapters/browser/GoogleSession";
 import type { RenewalCoordination, SignInOptions, SignInResult } from "../../../applications/SessionModel";
 import { createAccountHintStore } from "../../../adapters/browser/ConnectionMemory";
@@ -135,6 +136,38 @@ describe("starting from scratch", () => {
     expect(otherDevice.state.mode).toBe("signed-out");
     expect(await otherDevice.connect()).toMatchObject({ status: "connected", created: false, statements: 1 });
     expect(google.files.size).toBe(1);
+  });
+
+  it("starts a November portfolio manually and reads it on a device with no saved copy", async () => {
+    const { google, make } = world();
+    const session = make();
+    expect(google.files.size).toBe(0);
+    expect(session.state.ledger.snapshots).toEqual([]);
+    expect(await session.connect()).toMatchObject({ status: "connected", created: true, statements: 0 });
+    const prepared = prepareManualStatement([
+      { name: "Synthetic November A", isin: ISIN_A, amount: "1.300,00" },
+      { name: "Synthetic November B", isin: ISIN_B, amount: "900,00" },
+    ]);
+    if (!prepared.ok) throw new Error("Synthetic manual statement failed");
+    const request: RecordRequest = {
+      date: date("2026-11-15"), statement: prepared.statement,
+      commands: [ISIN_A, ISIN_B].map(isin => ({ isin: parseIsin(isin) as NonNullable<ReturnType<typeof parseIsin>>, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" })),
+    };
+    expect((await saved(session, request)).status).toBe("recorded");
+    await session.idle();
+    const workbook = session.state.workbook;
+    if (workbook === null) throw new Error("Synthetic workbook missing");
+    expect(google.files.size).toBe(1);
+    expect(google.tab(workbook.id, LEDGER_TAB)?.hidden).toBe(true);
+    expect(google.tab(workbook.id, VIEW_TAB)?.hidden).toBe(false);
+    expect(session.state.ledger.snapshots[0]?.fundsSubtotal).toBe(cents(2200));
+    expect(Object.values(session.state.ledger.snapshots[0]?.holdings ?? {}).map(h => h.netInvested)).toEqual([cents(1000), cents(1000)]);
+    const secondDevice = world({ google }).make();
+    expect(secondDevice.state.mode).toBe("signed-out");
+    expect(await secondDevice.connect()).toMatchObject({ status: "connected", created: false, statements: 1 });
+    expect(secondDevice.state.ledger).toEqual(session.state.ledger);
+    expect(google.files.size).toBe(1);
+    await secondDevice.idle();
   });
 
   it("a refused sign-in changes nothing and touches no network", async () => {
