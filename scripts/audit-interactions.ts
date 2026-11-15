@@ -140,7 +140,8 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await call("Input.dispatchKeyEvent", { type: "keyUp", key: "ArrowRight", code: "ArrowRight" });
   await delay(50);
   await check("document.activeElement.textContent==='All'", "RTL arrow navigation reverses correctly");
-  await delay(240);
+  // Renderer scheduling on CI can outlast a fixed delay; inspect final geometry only after actual settlement.
+  await waitFor(async () => await evaluate("(()=>{getComputedStyle(window.auditSelector,'::before').transform;return window.auditSelector.getAnimations({subtree:true}).every(a=>a.playState!=='running')})()") === true, "RTL selection pill animation settlement");
   await check("(()=>{const r=window.auditSelector.getBoundingClientRect(),s=getComputedStyle(window.auditSelector,'::before'),x=new DOMMatrixReadOnly(s.transform).m41,w=parseFloat(s.width),b=document.activeElement.getBoundingClientRect();return Math.abs((r.right-3-w/2+x)-(b.left+b.width/2))<2})()", "RTL selection pill aligns with the selected option");
   await evaluate("window.auditSelector.dir='ltr';window.auditOption.focus()");
   await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
