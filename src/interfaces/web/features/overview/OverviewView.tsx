@@ -5,6 +5,7 @@ import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
 import { CHART_RANGES, type ChartRange } from "./chartRange";
 import { RangeSelector } from "../../shared/ui/RangeSelector";
+import { PageNav } from "../../shared/ui/PageNav";
 import { type AllocationSlice, type MonthMetric, dashboardFor } from "./dashboardData";
 import { Donut } from "../../presentation/charts/Donut";
 import { LineChart } from "../../presentation/charts/LineChart";
@@ -206,9 +207,16 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       })}
       {props.model.estimated && <p class="footnote">Cash timing affects percentage estimates.</p>}
       </section>
+      <section class="portfolio-explore cell-12" aria-labelledby="portfolio-explore-heading">
+        <div class="portfolio-explore-heading">
+          <div><h2 id="portfolio-explore-heading" class="card-title">Explore your portfolio</h2><p class="card-subtitle">Find a fund, compare your statements or explore trends.</p></div>
+          <a class="portfolio-history-link" href="#months"><span>Month by month</span><Icon name="chevron" size={18} /></a>
+        </div>
+        <PageNav items={[{ id: "holdings-heading", label: "Holdings" }, { id: "allocation-heading", label: "Allocation" }, { id: "portfolio-analysis", label: "Trends and comparisons" }]} />
+      </section>
       <div class="card cell-8 portfolio-holdings">
         <h3 id="holdings-heading" class="card-title" tabIndex={-1}>Holdings</h3>
-        <p class="card-subtitle">Figures from the latest statement. Select a fund to see its history.</p>
+        <p class="card-subtitle">Latest statement. Select a fund to see its performance and history.</p>
         {funds.length >= SEARCH_FROM && <div class="field fund-search">
           <label for="fund-search">Find a fund</label>
           <div class="fund-search-controls">
