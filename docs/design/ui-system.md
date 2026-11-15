@@ -8,6 +8,8 @@ This is the design system the screens are now built from. It follows the [struct
 
 Astryx is a recurring reference for structure and interactions; the [reference and pattern register](astryx-reference.md) records adaptations. FolioDash tokens own the Apple-inspired translucent navigation and floating controls, with solid, readable financial surfaces.
 
+2026-11-16 owner hierarchy amendment: portfolio trends and comparisons are visible without expanding a disclosure. Month by month leads with the portfolio and fund comparison tables at every width, followed by the single-statement inspector. This supersedes earlier references below to hiding those sections; financial definitions and local table scrolling remain unchanged.
+
 ## What was wrong
 
 Measured on the build that already contained the structural redesign, with the scratch harness described below:

@@ -95,10 +95,11 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await evaluate("[...document.querySelectorAll('.portfolio-explore .page-nav button')].find(button=>button.textContent==='Holdings').click()");
   await check("document.activeElement?.id==='holdings-heading' && location.hash==='#overview'", "portfolio orientation moves focus to holdings without changing route");
   await evaluate("[...document.querySelectorAll('.portfolio-explore .page-nav button')].find(button=>button.textContent==='Trends and comparisons').click()");
-  await check("document.querySelector('#portfolio-analysis').open && document.activeElement===document.querySelector('#portfolio-analysis summary')", "portfolio orientation opens and focuses trends");
+  await check("document.activeElement?.id==='portfolio-analysis' && !!document.querySelector('.dashboard-analysis .analysis-grid') && !document.querySelector('#portfolio-analysis')?.closest('details:not([open])')", "portfolio orientation focuses visible trends");
   await evaluate("document.querySelector('.portfolio-history-link').click()");
   await waitFor(async () => await evaluate("location.hash==='#months' && !!document.querySelector('.mobile-months select')") === true, "direct month-by-month navigation");
   await check("getComputedStyle(document.querySelector('.mobile-months')).display!=='none'", "statement selector is visible on desktop");
+  await check("(()=>{const sections=[...document.querySelector('.months').children];return sections.findIndex(n=>n.classList.contains('month-matrices'))<sections.findIndex(n=>n.classList.contains('mobile-months')) && !!document.querySelector('.month-matrices .totals') && !document.querySelector('.month-matrices')?.closest('details:not([open])')})()", "month comparison is visible before the statement inspector");
   await visit("overview");
   await check("[...document.querySelectorAll('.range-selector button')].every(n=>getComputedStyle(n).getPropertyValue('--interaction-family').trim()==='period-option')", "period options retain their specific contract classification");
   await evaluate("window.auditSelector=document.querySelector('.range-selector');window.auditOption=window.auditSelector.querySelector('button');window.auditChart=document.querySelector('#total-chart-title').closest('figure');window.auditPaths=[...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d'));window.auditOption.focus();window.auditOption.click()");
@@ -278,6 +279,11 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await survey("Your data / signed out / advanced controls");
   for (const route of ["overview", "expenses", "months", "import", "connection"]) {
     await visit(route, 390);
+    if (route === "months") {
+      await check("!!document.querySelector('.month-matrices .totals') && !document.querySelector('.month-matrices')?.closest('details:not([open])')", "month comparison is visible without expansion on phone");
+      await evaluate("window.auditTotalsScroll=document.querySelector('[aria-label=\"Portfolio totals by month\"].table-scroll');window.auditLabels=[...window.auditTotalsScroll.querySelectorAll('.matrix-label')];window.auditLefts=window.auditLabels.map(label=>label.getBoundingClientRect().left);window.auditFirstValue=window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left;window.auditTotalsScroll.scrollLeft=200");
+      await check("window.auditTotalsScroll.scrollLeft>0 && window.auditLabels.length===6 && window.auditLabels.every((label,index)=>Math.abs(label.getBoundingClientRect().left-window.auditLefts[index])<2) && window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left<window.auditFirstValue-10", "portfolio row labels stay pinned while statement values scroll");
+    }
     await openDetails();
     await survey(`${route} / phone / disclosures open`);
     if (route === "overview") {
