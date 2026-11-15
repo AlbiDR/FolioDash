@@ -221,7 +221,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             }} aria-describedby="fund-search-help" />
             <button class="quiet-action" type="button" disabled={fundQuery === ""} onClick={clearSearch}>Clear search</button>
           </div>
-          <p id="fund-search-help" class="hint" role="status" aria-atomic="true"><span key={listedFunds.length} class="filter-count">{listedFunds.length} of {funds.length} funds.</span> Filters this list only.</p>
+          <p id="fund-search-help" class="hint" role="status" aria-atomic="true"><span key={listedFunds.length} class="filter-count">{listedFunds.length} of {funds.length} funds.</span> Filters holdings and recent fund history.</p>
         </div>}
         {funds.length > 0 && listedFunds.length === 0 && <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>}
         <ul class="mobile-holdings" data-filtered={query.length > 0}>
@@ -278,7 +278,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         )}
         {listedFunds.length > 0 && <div class="more recent-fund-history">
           <details>
-            <summary><span>Recent fund history<span class="disclosure-description">Value and net invested for the latest three statements.</span></span></summary>
+            <summary><span>Recent fund history<span class="disclosure-description">Value and net invested for up to three recent statements.</span></span></summary>
             {listedFunds.map((fund) => <section key={fund.isin} class="recent-fund-history-group" aria-label={`${fund.name} recent history`}>
               <h4>{fund.name}</h4>
               <div class="table-scroll flat" role="region" aria-label={`${fund.name} recent statement values`} tabIndex={0}>
