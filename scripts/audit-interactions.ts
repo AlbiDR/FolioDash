@@ -201,9 +201,14 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await evaluate("document.querySelector('[aria-controls=manual-entry-panel]').click()");
   await delay(250);
   await survey("Import / manual fields");
+  await check("document.querySelector('.manual-fund button').textContent==='Remove fund'", "Manual entry: a new row has a draft-removal action");
   await evaluate("document.querySelector('.manual-fund button').click()");
   await delay(450);
+  await check("document.querySelector('.manual-entry .notice').textContent.includes('Nothing has been saved.') && !document.querySelector('.manual-entry .notice').textContent.includes('sale')", "Manual entry: new-row removal has no sale implication");
   await survey("Import / removal and undo notice");
+  await evaluate("document.querySelector('#undo-removed-fund').click()");
+  await delay(450);
+  await check("!!document.querySelector('.manual-fund') && document.activeElement?.id.endsWith('-name')", "Manual entry: undo restores the row and field focus");
   await visit("history");
   await openDetails();
   const document = await call("DOM.getDocument");
