@@ -427,6 +427,72 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     expect(store.data.get("foliodash.ledger.v1")).toBe(before);
   });
 
+  it("joins concurrent history checks into one read and fetches again for a later check", async () => {
+    const { make, google } = world();
+    let hold = false;
+    let reads = 0;
+    let release: (() => void) | undefined;
+    let entered: (() => void) | undefined;
+    const barrier = new Promise<void>(resolve => { release = resolve; });
+    const started = new Promise<void>(resolve => { entered = resolve; });
+    const session = make({ rest: async request => {
+      if (hold && request.method === "GET" && request.url.includes("/values/")) { reads++; entered?.(); await barrier; }
+      return google.client(request);
+    } });
+    await session.connect(); await saved(session, january); await session.idle();
+    hold = true;
+    const first = session.verifyHistory();
+    const second = session.verifyHistory();
+    expect(second).toBe(first);
+    await started;
+    expect(reads).toBe(1);
+    release?.();
+    expect(await first).toMatchObject({ status: "checked", report: { months: 1, withoutStatement: 1 } });
+    await second;
+    expect(await session.verifyHistory()).toMatchObject({ status: "checked" });
+    expect(reads).toBe(2);
+  });
+
+  it("releases a failed history check so a later explicit check can recover", async () => {
+    const { make, google, store } = world();
+    let fail = false;
+    const session = make({ rest: request => fail && request.method === "GET" && request.url.includes("/values/")
+      ? Promise.resolve({ status: 503, json: () => Promise.resolve({}) }) : google.client(request) });
+    await session.connect(); await saved(session, january); await session.idle();
+    const copy = store.data.get("foliodash.ledger.v1");
+    fail = true;
+    expect(await session.verifyHistory()).toMatchObject({ status: "failed" });
+    expect(store.data.get("foliodash.ledger.v1")).toBe(copy);
+    fail = false;
+    expect(await session.verifyHistory()).toMatchObject({ status: "checked", report: { months: 1 } });
+  });
+
+  it("discards an old account's pending history report and lets the new context check independently", async () => {
+    const { make, google } = world();
+    let hold = false;
+    let release: (() => void) | undefined;
+    let entered: (() => void) | undefined;
+    const barrier = new Promise<void>(resolve => { release = resolve; });
+    const started = new Promise<void>(resolve => { entered = resolve; });
+    const session = make({ rest: async request => {
+      if (hold && request.method === "GET" && request.url.includes("/values/")) { entered?.(); await barrier; }
+      return google.client(request);
+    } });
+    await session.connect(); await saved(session, january); await session.idle();
+    hold = true;
+    const checking = session.verifyHistory();
+    await started;
+    session.forget();
+    const next = session.verifyHistory();
+    expect(next).not.toBe(checking);
+    expect(await next).toMatchObject({ status: "failed" });
+    release?.();
+    const result = await checking;
+    expect(result.status).toBe("failed");
+    if (result.status === "failed") expect(result.message).toContain("account changed");
+    expect(session.state.ledger.snapshots).toEqual([]);
+  });
+
   it("needs a sheet before it can check anything", async () => {
     const { make } = world();
     expect(await make().verifyHistory()).toMatchObject({ status: "failed" });

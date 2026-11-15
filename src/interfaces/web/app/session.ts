@@ -102,6 +102,7 @@ export class Session {
   private generation = 0;
   private syncSequence = 0;
   private freshness: Promise<void> | null = null;
+  private verifying: Promise<VerifyOutcome> | null = null;
   private lastAutoCheck = -Infinity;
   private signingIn: Promise<Awaited<ReturnType<Session["accessToken"]>>> | null = null;
   private connecting: Promise<ConnectOutcome> | null = null;
@@ -471,6 +472,7 @@ export class Session {
     if (generation !== this.generation || sequence !== this.syncSequence) return { status: "superseded" };
     if (this.current.workbook !== null && this.current.workbook.id !== workbook.id) {
       // A newly selected account/workbook cannot inherit the previous feature's private cache.
+      this.verifying = null;
       this.deps.cache.clear();
       this.expenses.forget();
       this.set({ mode: "online", ledger: EMPTY_LEDGER, workbook, syncedAt: null, sheet: "unchecked", trailingRows: 0 });
@@ -583,12 +585,25 @@ export class Session {
    * statement is replayed with today's rules and compared with the saved figures.
    * It reads only; it never changes the sheet or the saved copy.
    */
-  async verifyHistory(): Promise<VerifyOutcome> {
+  verifyHistory(): Promise<VerifyOutcome> {
+    if (this.verifying !== null) return this.verifying;
+    const work = this.verifyHistoryOnce();
+    this.verifying = work;
+    const clear = (): void => { if (this.verifying === work) this.verifying = null; };
+    void work.then(clear, clear);
+    return work;
+  }
+
+  private async verifyHistoryOnce(): Promise<VerifyOutcome> {
+    const generation = this.generation;
     const { workbook } = this.current;
     if (workbook === null) return { status: "failed", message: "There is no Google Sheet to check yet." };
+    const currentContext = (): boolean => generation === this.generation && this.current.workbook?.id === workbook.id;
     const signed = await this.accessToken();
     if (!signed.ok) return { status: "sign-in-failed", reason: signed.reason };
+    if (!currentContext()) return { status: "failed", message: "The account changed before this check. Check the current account's history instead. Nothing was changed." };
     const all = await readAllDirect(this.deps.rest, signed.token, workbook.id);
+    if (!currentContext()) return { status: "failed", message: "The account changed during this check. Its result was discarded. Check the current account's history instead. Nothing was changed." };
     switch (all.status) {
       case "damaged":
         return { status: "needs-attention", message: `${all.message} Nothing was changed.` };
@@ -692,6 +707,7 @@ export class Session {
     this.syncSequence++;
     this.lastAutoCheck = -Infinity;
     this.freshness = null;
+    this.verifying = null;
     this.deps.googleSession?.clear();
     this.deps.accountHint?.clear();
     this.hint = null;

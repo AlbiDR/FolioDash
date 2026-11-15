@@ -8,11 +8,12 @@ Implemented 2026-11-05 under the owner's Actions architecture request. This docu
 flowchart LR
     manual[Manual Deploy site on main] --> events[Verify: main push / PR / weekly / manual / reusable call]
     events --> workflows[Validate all workflows]
-    workflows --> node22[Verify + audit: Node 22]
-    workflows --> node24[Verify + audit: Node 24]
+    events --> node22[Verify + audit: Node 22]
+    events --> node24[Verify + audit: Node 24]
     node22 --> capture[Main push / manual: capture synthetic README views]
     capture --> artifact[Assemble dist/pages: checked app + README images]
-    node22 --> gate{Both Node versions pass}
+    workflows --> gate{Workflow lint and both Node versions pass}
+    node22 --> gate
     node24 --> gate
     gate --> eligible{Main push or manual?}
     eligible --> current{Still current main?}
@@ -23,7 +24,7 @@ flowchart LR
     owner[Owner manual dispatch on main] --> script[Verify + audit + guarded Apps Script deploy]
 ```
 
-`verify.yml` is the sole quality orchestrator. The dependency-free workflow validation job runs actionlint before the project installs dependencies. The Node 22 and 24 jobs each run `npm ci --ignore-scripts`, the complete `npm run verify` and `npm run audit:dependencies`. Complete Git history is available to contributor attribution. Attribution, punctuation and repository policy stay in the canonical verify command; separate workflow copies of those checks were removed.
+`verify.yml` is the sole quality orchestrator. The dependency-free workflow validation job runs actionlint concurrently with the independent Node 22/24 verification jobs. Publication still requires workflow validation and the entire Node matrix to succeed. The Node 22 and 24 jobs each run `npm ci --ignore-scripts`, the complete `npm run verify` and `npm run audit:dependencies`. Complete Git history is available to contributor attribution. Attribution, punctuation and repository policy stay in the canonical verify command; separate workflow copies of those checks were removed.
 
 The Node 22 job also runs `npm run audit:interactions` against the unchanged production build on every event, including pull requests. The audit generates synthetic onboarding fixtures, uses a fresh local-only headless Chrome profile, verifies rendered control feedback and exercises the period-to-chart journey. Missing Chrome or a failed interaction assertion fails the job and blocks release assembly. The source inventory staleness check runs in `npm run verify` on both Node versions. README capture and the audit share `scripts/localBrowser.ts`; neither attaches to a signed-in browser or allows provider requests. Audit reports stay under ignored `dist/interaction-audit/` and are not part of the Pages artifact.
 
@@ -119,3 +120,8 @@ Validation for this amendment: `npm run verify:workflows` passed with actionlint
 Runs for `a130127` and `569cdbd` passed project verification but the Node 22 interaction job timed out discovering Chrome before loading the application. The local synthetic-browser harness now retains a bounded 8 KB tail of Chrome startup stderr, reports an exited process and allows 30 seconds for browser discovery. The ordinary UI-state wait remains 10 seconds. All rendered assertions, local-only request interception, fresh-profile isolation and the required audit/deployment gates remain enabled; Chrome sandbox flags are unchanged. Local full verification and the 43-assertion/553-control rendered audit passed with this harness. Remote startup/deployment must be observed separately.
 
 The `7f447b7` run started Chrome and passed project verification but sampled the RTL period-selection pill before its final geometry, failing its unchanged alignment assertion. The RTL probe now waits for the selector's actual running animations to settle instead of assuming a 240 ms sleep is sufficient. Alignment tolerance and all behavior assertions are unchanged. Scripts type/lint checks and the full local rendered audit passed (46 journey assertions, 553 control samples). The remote run remains the release gate.
+
+
+## Independent verification jobs, 2026-11-15
+
+The Node matrix no longer waits for workflow lint to finish before starting dependency installation and project checks. Workflow lint and the matrix have no data/artifact dependency. Publish verified site retains `needs: [workflows, verify]`, so no failed, cancelled or unfinished check can release the artifact. This removes a serial scheduling dependency without removing checks, changing permissions, adding jobs or changing the one checked artifact. The tradeoff is that Node jobs can consume runner time even if workflow lint fails. Timing savings depend on actual queue and job durations and are not claimed as a measured speedup.

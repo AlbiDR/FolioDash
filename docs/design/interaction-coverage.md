@@ -28,7 +28,7 @@ Each interaction must be inspected through rest, hover where supported, keyboard
 
 ## Browser evidence and remaining work
 
-Source discovery classifies all 165 templates in 22 files. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
+Source discovery classifies all 166 templates in 22 files. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
 
 | Evidence | Scope checked | Remaining opportunities / proof |
 |---|---|---|
@@ -44,6 +44,8 @@ The audit is available as `npm run audit:interactions` after a production build,
 Local evidence, 2026-11-10: Chrome production renderer, signed-out synthetic data, 1440px desktop and 390px phone, normal/reduced motion. `npm run audit:interactions` passed 40 journey assertions and 563 rendered-control samples across 18 visited states, with no unclassified rendered controls, missing property transitions or stuck release states. These are repeated control samples across screens, not 563 unique controls. All eight families are represented: action, period-option, field, choice, slider, chart-mark, chart-inspection and scroll-region. Physical-device, other-engine, screen-reader and provider acceptance remain separate.
 
 Incremental expense follow-up, 2026-11-15: the local production Chrome audit passed 43 journey assertions and 553 control samples across 18 states. A synthetic addition to a saved blank category saved directly; an existing-value correction displayed only its changed row. The shared control survey includes the revised editor and correction controls. Separate local checks covered 320/390/1440px, 100%/200% root text, privacy geometry and reduced-motion form arrival. Pending saves, failed writes, conflict resolution, physical-device, screen-reader and live-provider acceptance remain OPEN; these counts do not close unvisited states.
+
+Money-movement review follow-up, 2026-11-15: source inventory includes the explicit per-fund No money moved action. The synthetic three-month preview exercises opening balances, money-added/received fields, blank-answer refusal, explicit zeroes, canonical preview totals, retained drafts and global No/Yes transitions. Shared control sampling covers the revealed group on desktop and phone; separate assertions cover 200% text and reduced motion. Full sale, zero-value closure and reopening conditional branches remain OPEN for their own rendered evidence. Financial submission, provider failure/recovery, physical-device and screen-reader acceptance are not closed by this preview-only check.
 
 ## Source inventory
 
@@ -135,18 +137,19 @@ One row is a source template; a fund-link template can render many controls. All
 | 499b0198d43e-1 | [HistoryView.tsx:238](../../src/interfaces/web/features/history/HistoryView.tsx#L238) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | a5a93b862651-1 | [HistoryView.tsx:274](../../src/interfaces/web/features/history/HistoryView.tsx#L274) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | ceab431b5293-1 | [HistoryView.tsx:289](../../src/interfaces/web/features/history/HistoryView.tsx#L289) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3dfd94c94301-1 | [CashQuestions.tsx:110](../../src/interfaces/web/features/import/CashQuestions.tsx#L110) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
-| 162651b70a59-1 | [CashQuestions.tsx:287](../../src/interfaces/web/features/import/CashQuestions.tsx#L287) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c978e4f9d3fb-1 | [CashQuestions.tsx:290](../../src/interfaces/web/features/import/CashQuestions.tsx#L290) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c32117f4d096-1 | [CashQuestions.tsx:330](../../src/interfaces/web/features/import/CashQuestions.tsx#L330) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
-| 035afa5903bf-1 | [CashQuestions.tsx:338](../../src/interfaces/web/features/import/CashQuestions.tsx#L338) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| a6b6e9bd19f5-1 | [CashQuestions.tsx:341](../../src/interfaces/web/features/import/CashQuestions.tsx#L341) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 928e212328d9-1 | [CashQuestions.tsx:352](../../src/interfaces/web/features/import/CashQuestions.tsx#L352) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 581103870bcd-1 | [CashQuestions.tsx:355](../../src/interfaces/web/features/import/CashQuestions.tsx#L355) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| fc5aa7fbc428-1 | [CashQuestions.tsx:364](../../src/interfaces/web/features/import/CashQuestions.tsx#L364) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| b95e2f3c4474-1 | [CashQuestions.tsx:422](../../src/interfaces/web/features/import/CashQuestions.tsx#L422) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 9309626b5533-1 | [CashQuestions.tsx:454](../../src/interfaces/web/features/import/CashQuestions.tsx#L454) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
-| f648a1ac4d45-1 | [CashQuestions.tsx:462](../../src/interfaces/web/features/import/CashQuestions.tsx#L462) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| 6b04415cce22-1 | [CashQuestions.tsx:112](../../src/interfaces/web/features/import/CashQuestions.tsx#L112) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
+| 162651b70a59-1 | [CashQuestions.tsx:292](../../src/interfaces/web/features/import/CashQuestions.tsx#L292) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| c978e4f9d3fb-1 | [CashQuestions.tsx:295](../../src/interfaces/web/features/import/CashQuestions.tsx#L295) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| c32117f4d096-1 | [CashQuestions.tsx:335](../../src/interfaces/web/features/import/CashQuestions.tsx#L335) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
+| 035afa5903bf-1 | [CashQuestions.tsx:343](../../src/interfaces/web/features/import/CashQuestions.tsx#L343) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| a6b6e9bd19f5-1 | [CashQuestions.tsx:346](../../src/interfaces/web/features/import/CashQuestions.tsx#L346) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 928e212328d9-1 | [CashQuestions.tsx:357](../../src/interfaces/web/features/import/CashQuestions.tsx#L357) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 581103870bcd-1 | [CashQuestions.tsx:360](../../src/interfaces/web/features/import/CashQuestions.tsx#L360) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| fc5aa7fbc428-1 | [CashQuestions.tsx:369](../../src/interfaces/web/features/import/CashQuestions.tsx#L369) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 70f9f18c0c64-1 | [CashQuestions.tsx:378](../../src/interfaces/web/features/import/CashQuestions.tsx#L378) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
+| b95e2f3c4474-1 | [CashQuestions.tsx:430](../../src/interfaces/web/features/import/CashQuestions.tsx#L430) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 9309626b5533-1 | [CashQuestions.tsx:462](../../src/interfaces/web/features/import/CashQuestions.tsx#L462) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| f648a1ac4d45-1 | [CashQuestions.tsx:470](../../src/interfaces/web/features/import/CashQuestions.tsx#L470) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
 | f20fb9349b3d-1 | [ExcelHistoryView.tsx:167](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L167) | button / action | Exclude statements from months already recorded or earlier | SOURCE CLASSIFIED; STATES OPEN |
 | a7985c3279f3-1 | [ExcelHistoryView.tsx:176](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L176) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | c175e768fc98-1 | [ExcelHistoryView.tsx:177](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L177) | input / field | {'batch-date-${entry.id}'} | SOURCE CLASSIFIED; STATES OPEN |

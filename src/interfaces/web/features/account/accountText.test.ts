@@ -60,7 +60,18 @@ describe("describeVerify", () => {
     expect(message.good).toBe(true);
     expect(message.title).toBe("What can be checked, matches");
     expect(message.body).toContain("12 of 17 months");
-    expect(message.body).toContain("5 months were saved without");
+    expect(message.body).toContain("5 months have no attached bank statement");
+  });
+
+  it("explains a manual-only baseline without suggesting it is damaged or rebuilt", async () => {
+    const { describeVerify } = await import("./accountText");
+    const message = describeVerify(report({ months: 1, matching: 0, withoutStatement: 1 }));
+    expect(message).toMatchObject({ good: true, title: "Saved records are valid" });
+    expect(message.body).toContain("1 month has no attached bank statement");
+    expect(message.body).toContain("manual entry");
+    expect(message.body).toContain("cannot be replayed");
+    expect(message.body).toContain("saved records still pass validation");
+    expect(message.body).not.toContain("0 of 1");
   });
 
   it("names the months that do not match and never reports success for them", async () => {
