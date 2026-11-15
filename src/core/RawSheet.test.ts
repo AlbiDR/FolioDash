@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canonicalJson } from "./CanonicalJson";
-import { type RawSheet, parseStoredSheet, toStoredSheet } from "./RawSheet";
+import { type RawSheet, columnLetter, parseStoredSheet, toStoredSheet } from "./RawSheet";
 
 const sheet: RawSheet = {
   date1904: false,
@@ -33,5 +33,20 @@ describe("stored sheets", () => {
     ["text that is far too long", { rows: [[{ kind: "text", text: "x".repeat(5001) }]], date1904: false }],
   ])("refuses a stored sheet with %s", (_name, value) => {
     expect(parseStoredSheet(value)).toBeNull();
+  });
+});
+
+describe("column letters", () => {
+  it.each([
+    [0, "A"],
+    [25, "Z"],
+    [26, "AA"],
+    [27, "AB"],
+    [51, "AZ"],
+    [52, "BA"],
+    [701, "ZZ"],
+    [702, "AAA"],
+  ])("names zero-based column %i as %s", (column, letters) => {
+    expect(columnLetter(column)).toBe(letters);
   });
 });

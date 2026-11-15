@@ -28,3 +28,8 @@ export function expenseDraftChanged(draft: ExpenseDraft, original: ExpenseAmount
   const parsed = parseExpenseDraft(draft);
   return parsed.invalid.length > 0 || parsed.amounts.some((value, index) => value !== original[index]);
 }
+
+/** Filling an empty category is an addition. Replacing or clearing a saved value needs review. */
+export function expenseCorrectionIndices(amounts: ExpenseAmounts, original: ExpenseAmounts): readonly number[] {
+  return original.flatMap((value, index) => value !== null && amounts[index] !== value ? [index] : []);
+}

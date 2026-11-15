@@ -43,6 +43,8 @@ The audit is available as `npm run audit:interactions` after a production build,
 
 Local evidence, 2026-11-10: Chrome production renderer, signed-out synthetic data, 1440px desktop and 390px phone, normal/reduced motion. `npm run audit:interactions` passed 40 journey assertions and 563 rendered-control samples across 18 visited states, with no unclassified rendered controls, missing property transitions or stuck release states. These are repeated control samples across screens, not 563 unique controls. All eight families are represented: action, period-option, field, choice, slider, chart-mark, chart-inspection and scroll-region. Physical-device, other-engine, screen-reader and provider acceptance remain separate.
 
+Incremental expense follow-up, 2026-11-15: the local production Chrome audit passed 43 journey assertions and 553 control samples across 18 states. A synthetic addition to a saved blank category saved directly; an existing-value correction displayed only its changed row. The shared control survey includes the revised editor and correction controls. Separate local checks covered 320/390/1440px, 100%/200% root text, privacy geometry and reduced-motion form arrival. Pending saves, failed writes, conflict resolution, physical-device, screen-reader and live-provider acceptance remain OPEN; these counts do not close unvisited states.
+
 ## Source inventory
 
 One row is a source template; a fund-link template can render many controls. All rows must receive the relevant shared contract. Each row's pending, selected, error and dismissal states remain part of its owner journey even when not present in the initial DOM.
@@ -91,44 +93,44 @@ One row is a source template; a fund-link template can render many controls. All
 | 551f27ed6d52-1 | [ExpenseDataTools.tsx:91](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L91) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 79cd0ba18dc5-1 | [ExpenseDataTools.tsx:94](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L94) | button / action | Restore expense history | SOURCE CLASSIFIED; STATES OPEN |
 | 3e71dbdd97e2-1 | [ExpenseDataTools.tsx:96](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L96) | button / action | Check original recovery or save | SOURCE CLASSIFIED; STATES OPEN |
-| 343bb5eff8dc-1 | [ExpensesView.tsx:244](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L244) | input / field | {'expense-${String(index)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| e7cc62953d01-1 | [ExpensesView.tsx:263](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L263) | button / action | Continue with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 5de2e65388d7-1 | [ExpensesView.tsx:264](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L264) | button / action | Check records | SOURCE CLASSIFIED; STATES OPEN |
-| b7732dcd0e6a-1 | [ExpensesView.tsx:264](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L264) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
-| d4e0ebe403ac-1 | [ExpensesView.tsx:265](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L265) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
-| b16e9fb038d2-1 | [ExpensesView.tsx:271](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L271) | button / action | {stepName("Previous", previousDay)} | SOURCE CLASSIFIED; STATES OPEN |
-| 3cd593088545-1 | [ExpensesView.tsx:272](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L272) | button / action | Today | SOURCE CLASSIFIED; STATES OPEN |
-| f0e7212a91d3-1 | [ExpensesView.tsx:273](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L273) | button / action | {stepName("Next", nextDay)} | SOURCE CLASSIFIED; STATES OPEN |
-| 2da83eaad072-1 | [ExpensesView.tsx:274](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L274) | input / field | Jump to date | SOURCE CLASSIFIED; STATES OPEN |
-| b8a5a80f74b5-1 | [ExpensesView.tsx:276](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L276) | button / action | {'Previous workday, ${workdayLabel(previousWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 01fe7eb447cc-1 | [ExpensesView.tsx:276](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L276) | button / action | {'Next workday, ${workdayLabel(nextWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 3c0c445d1658-1 | [ExpensesView.tsx:288](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L288) | button / action | primary expense-save-button | SOURCE CLASSIFIED; STATES OPEN |
-| 2542739d993c-1 | [ExpensesView.tsx:288](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L288) | button / action | Show amounts to edit | SOURCE CLASSIFIED; STATES OPEN |
-| ffc8cca69bee-1 | [ExpensesView.tsx:288](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L288) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 1bbe7a2f4dbb-1 | [ExpensesView.tsx:288](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L288) | button / action | Discard draft | SOURCE CLASSIFIED; STATES OPEN |
-| 854dce7db306-1 | [ExpensesView.tsx:289](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L289) | button / action | Confirm correction | SOURCE CLASSIFIED; STATES OPEN |
-| e8e7319ba47e-1 | [ExpensesView.tsx:289](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L289) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
-| 86611794a4c4-1 | [ExpensesView.tsx:290](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L290) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
-| 1dbfb1fe79af-1 | [ExpensesView.tsx:290](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L290) | button / action | Save this day | SOURCE CLASSIFIED; STATES OPEN |
-| 93458b64c576-1 | [ExpensesView.tsx:290](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L290) | button / action | Discard and open day | SOURCE CLASSIFIED; STATES OPEN |
-| f6daa9cf291f-1 | [ExpensesView.tsx:291](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L291) | button / action | Check save outcome | SOURCE CLASSIFIED; STATES OPEN |
-| 0bf508803f1d-1 | [ExpensesView.tsx:292](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L292) | summary / action | Previous saved versions | SOURCE CLASSIFIED; STATES OPEN |
-| 6e0b766cbc3d-1 | [ExpensesView.tsx:292](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L292) | summary / action | Earlier version | SOURCE CLASSIFIED; STATES OPEN |
-| af19dc5408ed-1 | [ExpensesView.tsx:292](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L292) | button / action | Use these amounts | SOURCE CLASSIFIED; STATES OPEN |
-| d7389867d9f5-1 | [ExpensesView.tsx:295](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L295) | button / action | Previous week | SOURCE CLASSIFIED; STATES OPEN |
-| 734a41752601-1 | [ExpensesView.tsx:295](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L295) | button / action | Next week | SOURCE CLASSIFIED; STATES OPEN |
-| a437b72a73b3-1 | [ExpensesView.tsx:296](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L296) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 165de371be4d-1 | [ExpensesView.tsx:298](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L298) | a / action | Review incomplete or conflicting days | SOURCE CLASSIFIED; STATES OPEN |
-| bb71a8efe800-1 | [ExpensesView.tsx:304](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L304) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 68aee71952ec-1 | [ExpensesView.tsx:318](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L318) | summary / action | Where it goes | SOURCE CLASSIFIED; STATES OPEN |
-| fdfd9d3224ae-1 | [ExpensesView.tsx:319](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L319) | summary / action | How these summaries work | SOURCE CLASSIFIED; STATES OPEN |
-| 302b84d1de9a-1 | [ExpensesView.tsx:319](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L319) | select / field | expense-policy | SOURCE CLASSIFIED; STATES OPEN |
-| a364d2a84f80-1 | [ExpensesView.tsx:322](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L322) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f63df59a2251-1 | [ExpensesView.tsx:322](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L322) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 685250da7bf6-1 | [ExpensesView.tsx:322](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L322) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0bafa83c7063-1 | [ExpensesView.tsx:323](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L323) | summary / action | Version | SOURCE CLASSIFIED; STATES OPEN |
-| d66912dcba75-1 | [ExpensesView.tsx:323](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L323) | button / action | Review this version | SOURCE CLASSIFIED; STATES OPEN |
-| b3a5a41c37f1-1 | [ExpensesView.tsx:325](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L325) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 343bb5eff8dc-1 | [ExpensesView.tsx:251](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L251) | input / field | {'expense-${String(index)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| e7cc62953d01-1 | [ExpensesView.tsx:270](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L270) | button / action | Continue with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 5de2e65388d7-1 | [ExpensesView.tsx:271](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L271) | button / action | Check records | SOURCE CLASSIFIED; STATES OPEN |
+| b7732dcd0e6a-1 | [ExpensesView.tsx:271](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L271) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
+| d4e0ebe403ac-1 | [ExpensesView.tsx:272](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L272) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
+| b16e9fb038d2-1 | [ExpensesView.tsx:278](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L278) | button / action | {stepName("Previous", previousDay)} | SOURCE CLASSIFIED; STATES OPEN |
+| 3cd593088545-1 | [ExpensesView.tsx:279](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L279) | button / action | Today | SOURCE CLASSIFIED; STATES OPEN |
+| f0e7212a91d3-1 | [ExpensesView.tsx:280](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L280) | button / action | {stepName("Next", nextDay)} | SOURCE CLASSIFIED; STATES OPEN |
+| 2da83eaad072-1 | [ExpensesView.tsx:281](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L281) | input / field | Jump to date | SOURCE CLASSIFIED; STATES OPEN |
+| b8a5a80f74b5-1 | [ExpensesView.tsx:283](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L283) | button / action | {'Previous workday, ${workdayLabel(previousWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 01fe7eb447cc-1 | [ExpensesView.tsx:283](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L283) | button / action | {'Next workday, ${workdayLabel(nextWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 73c58df645c1-1 | [ExpensesView.tsx:295](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L295) | button / action | primary expense-save-button | SOURCE CLASSIFIED; STATES OPEN |
+| 2542739d993c-1 | [ExpensesView.tsx:295](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L295) | button / action | Show amounts to edit | SOURCE CLASSIFIED; STATES OPEN |
+| 83b2971a0fdb-1 | [ExpensesView.tsx:296](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L296) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 1bbe7a2f4dbb-1 | [ExpensesView.tsx:296](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L296) | button / action | Discard draft | SOURCE CLASSIFIED; STATES OPEN |
+| 854dce7db306-1 | [ExpensesView.tsx:297](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L297) | button / action | Confirm correction | SOURCE CLASSIFIED; STATES OPEN |
+| 34540a3b4187-1 | [ExpensesView.tsx:297](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L297) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
+| 86611794a4c4-1 | [ExpensesView.tsx:298](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L298) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
+| 1dbfb1fe79af-1 | [ExpensesView.tsx:298](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L298) | button / action | Save this day | SOURCE CLASSIFIED; STATES OPEN |
+| 93458b64c576-1 | [ExpensesView.tsx:298](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L298) | button / action | Discard and open day | SOURCE CLASSIFIED; STATES OPEN |
+| f6daa9cf291f-1 | [ExpensesView.tsx:299](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L299) | button / action | Check save outcome | SOURCE CLASSIFIED; STATES OPEN |
+| 0bf508803f1d-1 | [ExpensesView.tsx:300](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L300) | summary / action | Previous saved versions | SOURCE CLASSIFIED; STATES OPEN |
+| 6e0b766cbc3d-1 | [ExpensesView.tsx:300](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L300) | summary / action | Earlier version | SOURCE CLASSIFIED; STATES OPEN |
+| af19dc5408ed-1 | [ExpensesView.tsx:300](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L300) | button / action | Use these amounts | SOURCE CLASSIFIED; STATES OPEN |
+| d7389867d9f5-1 | [ExpensesView.tsx:303](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L303) | button / action | Previous week | SOURCE CLASSIFIED; STATES OPEN |
+| 734a41752601-1 | [ExpensesView.tsx:303](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L303) | button / action | Next week | SOURCE CLASSIFIED; STATES OPEN |
+| a437b72a73b3-1 | [ExpensesView.tsx:304](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L304) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 165de371be4d-1 | [ExpensesView.tsx:306](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L306) | a / action | Review incomplete or conflicting days | SOURCE CLASSIFIED; STATES OPEN |
+| bb71a8efe800-1 | [ExpensesView.tsx:312](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L312) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 68aee71952ec-1 | [ExpensesView.tsx:326](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L326) | summary / action | Where it goes | SOURCE CLASSIFIED; STATES OPEN |
+| fdfd9d3224ae-1 | [ExpensesView.tsx:327](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L327) | summary / action | How these summaries work | SOURCE CLASSIFIED; STATES OPEN |
+| 302b84d1de9a-1 | [ExpensesView.tsx:327](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L327) | select / field | expense-policy | SOURCE CLASSIFIED; STATES OPEN |
+| a364d2a84f80-1 | [ExpensesView.tsx:330](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L330) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f63df59a2251-1 | [ExpensesView.tsx:330](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L330) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 685250da7bf6-1 | [ExpensesView.tsx:330](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L330) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0bafa83c7063-1 | [ExpensesView.tsx:331](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L331) | summary / action | Version | SOURCE CLASSIFIED; STATES OPEN |
+| d66912dcba75-1 | [ExpensesView.tsx:331](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L331) | button / action | Review this version | SOURCE CLASSIFIED; STATES OPEN |
+| b3a5a41c37f1-1 | [ExpensesView.tsx:333](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L333) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 69c450a03734-1 | [HistoryView.tsx:200](../../src/interfaces/web/features/history/HistoryView.tsx#L200) | input / field | history-file | SOURCE CLASSIFIED; STATES OPEN |
 | 499b0198d43e-1 | [HistoryView.tsx:238](../../src/interfaces/web/features/history/HistoryView.tsx#L238) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | a5a93b862651-1 | [HistoryView.tsx:274](../../src/interfaces/web/features/history/HistoryView.tsx#L274) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |

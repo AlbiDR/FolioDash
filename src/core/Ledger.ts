@@ -92,7 +92,7 @@ export function validateLedger(state: LedgerState): LedgerIssue[] {
       add("invalid-fund", fund.isin, "A fund has an invalid or repeated ISIN.");
     }
     known.add(fund.isin);
-    if (parseIsoDate(fund.firstDate) === null) add("invalid-fund", fund.isin, "A fund has an invalid first date.");
+    if (parseIsoDate(fund.firstDate) !== fund.firstDate) add("invalid-fund", fund.isin, "A fund has an invalid first date.");
     if (!isSafeFundName(fund.name) || !isSafeFundName(fund.fullName)) {
       add("invalid-fund", fund.isin, "A fund has an unsafe or empty name.");
     }
@@ -100,7 +100,7 @@ export function validateLedger(state: LedgerState): LedgerIssue[] {
 
   let previous: Snapshot | null = null;
   for (const snapshot of state.snapshots) {
-    if (parseIsoDate(snapshot.date) === null || (previous !== null && monthSerial(snapshot.date) <= monthSerial(previous.date))) {
+    if (parseIsoDate(snapshot.date) !== snapshot.date || (previous !== null && monthSerial(snapshot.date) <= monthSerial(previous.date))) {
       add("invalid-history", null, `${snapshot.date}: statements must be in later calendar months, one per month.`);
     }
     const expected = state.funds.filter((fund) => fund.firstDate <= snapshot.date).map((fund) => fund.isin);
@@ -182,15 +182,44 @@ function checkLifecycle(
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isWellFormedFund(value: unknown): boolean {
+  return isRecord(value) && ["isin", "name", "fullName", "firstDate"].every((key) => typeof value[key] === "string");
+}
+
+function isWellFormedHolding(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    ["value", "netInvested", "moneyIn", "moneyOut"].every((key) => typeof value[key] === "number") &&
+    ["status", "action", "comment"].every((key) => typeof value[key] === "string") &&
+    typeof value["cashVerified"] === "boolean"
+  );
+}
+
+function isWellFormedSnapshot(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value["date"] === "string" &&
+    typeof value["fundsSubtotal"] === "number" &&
+    isRecord(value["holdings"]) &&
+    Object.values(value["holdings"]).every(isWellFormedHolding)
+  );
+}
+
 /**
  * A ledger that arrived from outside (the network, the device) is untrusted
  * input. It must have the expected shape and pass the same validation that
  * guards every write; anything else is refused, never shown.
  */
 export function parseLedgerState(value: unknown): LedgerState | null {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
-  const state = value as Record<string, unknown>;
+  if (!isRecord(value)) return null;
+  const state = value;
   if (typeof state["revision"] !== "string" || !Array.isArray(state["funds"]) || !Array.isArray(state["snapshots"])) return null;
+  // Every nested field the validator reads must have its type, or validation would throw instead of refusing.
+  if (!state["funds"].every(isWellFormedFund) || !state["snapshots"].every(isWellFormedSnapshot)) return null;
   const candidate = state as unknown as LedgerState;
   return validateLedger(candidate).length === 0 ? candidate : null;
 }

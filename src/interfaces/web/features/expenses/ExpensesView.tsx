@@ -11,7 +11,7 @@ import {
 import { Amount, usePrivacy } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { PageNav } from "../../shared/ui/PageNav";
-import { EMPTY_EXPENSE_DRAFT, expenseDraftChanged, expenseDraftFor, parseExpenseDraft, type ExpenseDraft } from "./expenseDraft";
+import { EMPTY_EXPENSE_DRAFT, expenseDraftChanged, expenseDraftFor, expenseCorrectionIndices, parseExpenseDraft, type ExpenseDraft } from "./expenseDraft";
 import "./expenses.css";
 
 type SaveRequest = Pick<ExpenseCommand, "date" | "amounts" | "expectedRevision">;
@@ -106,7 +106,10 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
   const [reviewOnly, setReviewOnly] = useState(false);
   const [month, setMonth] = useState("");
   const editorElement = useRef<HTMLElement>(null);
+  const reviewHeading = useRef<HTMLHeadingElement>(null);
   const parsed = parseExpenseDraft(editor.draft);
+  const correctionIndices = expenseCorrectionIndices(parsed.amounts, editor.original);
+  const needsCorrection = editor.resolving || correctionIndices.length > 0;
   const entryStatus = expenseEntryStatus(parsed.amounts);
   const filled = entryStatus.filled;
   const missingRequired = entryStatus.missingRequired.length;
@@ -151,6 +154,10 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
     return () => { window.removeEventListener("beforeunload", guard); };
   }, [locked]);
 
+  useEffect(() => {
+    if (reviewing) reviewHeading.current?.focus();
+  }, [reviewing]);
+
   function openDay(date: IsoDate): void {
     if (busy || waiting) return;
     if (date === editor.date) return;
@@ -181,7 +188,7 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
 
   async function save(confirmed = false): Promise<void> {
     if (pending === null && cannotSave) return;
-    if (pending === null && editor.revision !== null && !confirmed) { setReviewing(true); return; }
+    if (pending === null && needsCorrection && !confirmed) { setReviewing(true); return; }
     const request = pending ?? { date: editor.date, amounts: parsed.amounts, expectedRevision: editor.revision };
     setBusy(true);
     setFeedback(pending === null ? "Saving your entry…" : "Checking the original save…");
@@ -239,7 +246,7 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
 
   function renderField(index: 0 | 1 | 2 | 3 | 4): JSX.Element {
     const optional = EXPENSE_OPTIONAL_INDICES.some(field => field === index);
-    return <div class={`field expense-field ${parsed.invalid.includes(index) ? "expense-invalid" : ""}`} key={EXPENSE_LABELS[index]}>
+    return <div data-filled={parsed.amounts[index] !== null} class={`field expense-field ${parsed.invalid.includes(index) ? "expense-invalid" : ""}`} key={EXPENSE_LABELS[index]}>
       <label for={`expense-${String(index)}`}><span class="expense-field-name">{EXPENSE_LABELS[index]}{optional && <span class="expense-optional-label">Optional</span>}</span></label>
       <span class="expense-input"><input id={`expense-${String(index)}`} type="text" inputMode="decimal" autoComplete="off" value={hidden ? "••••" : editor.draft[index]} readOnly={hidden} aria-readonly={hidden} onClick={() => { if (hidden) props.onRevealAmounts?.(); }} disabled={busy || waiting || !isWorkday(editor.date) || editor.date > props.today || !props.ready || selectedConflict !== undefined && !editor.resolving} aria-invalid={parsed.invalid.includes(index)} aria-describedby={parsed.invalid.includes(index) ? `expense-error-${String(index)}` : "expense-entry-help"} onInput={event => { updateField(index, event.currentTarget.value); }} onKeyDown={event => { if (hidden && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onRevealAmounts?.(); } else if (event.key === "Enter") event.preventDefault(); }} /><span class="expense-unit" aria-hidden="true">€</span></span>
       {parsed.invalid.includes(index) && <p class="expense-error" id={`expense-error-${String(index)}`}>Use a non-negative amount, for example 12,50.</p>}
@@ -279,16 +286,17 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
         <h3 class="expense-group-title">Daily essentials</h3><div class="expense-fields expense-required-fields">{EXPENSE_REQUIRED_INDICES.map(renderField)}</div>
         <section class="expense-optional-fields" aria-labelledby="expense-optional-heading">
           <h3 id="expense-optional-heading" class="expense-group-title">Optional work costs</h3>
-          <p class="hint">Leave blank unless they apply. Either one can complete a day on its own, even as 0.</p>
+          <p class="hint">Only when needed. Either cost completes a day, including 0.</p>
           <div class="expense-fields">{EXPENSE_OPTIONAL_INDICES.map(renderField)}</div>
         </section>
         <p id="expense-entry-help" class="hint">Amounts are in euros, with a comma for decimals. Enter 0 when nothing was paid; blanks stay blank.</p>
       </div>}
-      {showForm && <div class="expense-day-total"><div><span class="card-label">{entryStatus.complete ? "Day total" : "Recorded so far"}</span><p class="expense-total"><ExpenseAmount cents={filled === 0 ? null : total} /></p></div><div class="expense-entry-completeness"><span>{entryStatus.complete && requiredEntered < EXPENSE_REQUIRED_INDICES.length ? "Work costs recorded; day complete" : `${String(requiredEntered)} of ${String(EXPENSE_REQUIRED_INDICES.length)} daily costs entered`}</span>{entryStatus.partial && <span class="expense-state needs-review">{missingRequired} {missingRequired === 1 ? "daily cost needs" : "daily costs need"} review</span>}<span class="expense-state expense-zero-slot" aria-hidden={hidden || !entryStatus.complete || total !== 0}>Zero-cost workday</span></div></div>}
-      {showForm && <div class="expense-entry-actions"><div class="expense-save-slot" data-private={hidden}><button type="button" class="primary expense-save-button" aria-hidden={hidden} tabIndex={hidden ? -1 : 0} disabled={cannotSave} onClick={() => void save()}>{busy ? "Saving…" : editor.resolving ? "Save resolution" : editor.revision !== null ? "Review correction" : entryStatus.complete ? "Save day" : "Save partial day"}</button><button type="button" class="primary expense-reveal" aria-hidden={!hidden} tabIndex={hidden ? 0 : -1} disabled={!hidden || busy || waiting} onClick={() => { props.onRevealAmounts?.(); requestAnimationFrame(() => { document.getElementById("expense-0")?.focus({ preventScroll: true }); }); }}>Show amounts to edit</button></div><button type="button" disabled={hidden || entryDisabled} onClick={() => { if (filled === 0) setEditor(current => ({ ...current, draft: EMPTY_EXPENSE_DRAFT.map((_, index) => EXPENSE_REQUIRED_INDICES.some(field => field === index) ? "0" : "") as unknown as ExpenseDraft })); else setFeedback("Clear or review the existing amounts before marking a zero-cost day."); }}>{editor.date === props.today ? "No costs today" : "No costs this day"}</button>{dirty && <button type="button" disabled={busy || waiting} onClick={discard}>Discard draft</button>}</div>}
-      {reviewing && <div class="expense-review" role="region" aria-label="Review correction"><h3>{filled === 0 ? "Change this day to no onsite work?" : editor.resolving ? "Resolve these conflicting versions?" : "Review your correction"}</h3><p>{filled === 0 ? "All five fields will be blank. This past weekday will no longer count as a recorded onsite workday. The earlier entry remains in history." : "Confirm the amounts below. This saves a new revision and keeps the earlier entry recoverable in history."}</p><dl>{EXPENSE_LABELS.map((label, index) => <div key={label}><dt>{label}</dt><dd><ExpenseAmount cents={editor.original[index] ?? null} empty="Blank" /><span aria-hidden="true"> → </span><span class="visually-hidden"> changes to </span><ExpenseAmount cents={parsed.amounts[index] ?? null} empty="Blank" /></dd></div>)}</dl><div class="expense-entry-actions"><button class="primary" type="button" disabled={hidden || busy} onClick={() => void save(true)}>Confirm correction</button><button type="button" disabled={busy} onClick={() => { setReviewing(false); }}>Keep editing</button></div></div>}
+      {showForm && <div class="expense-save-dock"><div class="expense-day-total"><div><span class="card-label">{entryStatus.complete ? "Day total" : "Recorded so far"}</span><p class="expense-total"><ExpenseAmount cents={filled === 0 ? null : total} /></p></div><div class="expense-entry-completeness"><span>{entryStatus.complete && requiredEntered < EXPENSE_REQUIRED_INDICES.length ? "Work costs recorded; day complete" : `${String(requiredEntered)} of ${String(EXPENSE_REQUIRED_INDICES.length)} daily costs entered`}</span>{entryStatus.partial && <span class="expense-state needs-review">{missingRequired} {missingRequired === 1 ? "daily cost needs" : "daily costs need"} review</span>}<span class="expense-state expense-zero-slot" aria-hidden={hidden || !entryStatus.complete || total !== 0}>Zero-cost workday</span></div></div>
+      <div class="expense-entry-actions"><div class="expense-save-slot" data-private={hidden}><button type="button" class="primary expense-save-button" aria-hidden={hidden} tabIndex={hidden ? -1 : 0} disabled={cannotSave} onClick={() => void save()}>{busy ? "Saving…" : editor.resolving ? "Save resolution" : needsCorrection ? "Review correction" : editor.revision !== null ? "Save added expenses" : entryStatus.complete ? "Save day" : "Save partial day"}</button><button type="button" class="primary expense-reveal" aria-hidden={!hidden} tabIndex={hidden ? 0 : -1} disabled={!hidden || busy || waiting} onClick={() => { props.onRevealAmounts?.(); requestAnimationFrame(() => { document.getElementById("expense-0")?.focus({ preventScroll: true }); }); }}>Show amounts to edit</button></div></div></div>}
+      {showForm && <div class="expense-entry-actions expense-secondary-actions">{filled === 0 && <button type="button" disabled={hidden || entryDisabled} onClick={() => { setEditor(current => ({ ...current, draft: EMPTY_EXPENSE_DRAFT.map((_, index) => EXPENSE_REQUIRED_INDICES.some(field => field === index) ? "0" : "") as unknown as ExpenseDraft })); }}>{editor.date === props.today ? "No costs today" : "No costs this day"}</button>}{dirty && <button type="button" disabled={busy || waiting} onClick={discard}>Discard draft</button>}</div>}
+      <Presence show={reviewing}>{reviewing && <div class="expense-review" role="region" aria-label="Review correction"><h3 ref={reviewHeading} tabIndex={-1}>{filled === 0 ? "Change this day to no onsite work?" : editor.resolving ? "Resolve these conflicting versions?" : "Review your correction"}</h3><p>{filled === 0 ? "All five fields will be blank. This past weekday will no longer count as a recorded onsite workday. The earlier entry remains in history." : "Confirm the amounts below. This saves a new revision and keeps the earlier entry recoverable in history."}</p><dl>{EXPENSE_LABELS.map((label, index) => (editor.resolving || parsed.amounts[index] !== editor.original[index]) && <div key={label}><dt>{label}</dt><dd><ExpenseAmount cents={editor.original[index] ?? null} empty="Blank" /><span aria-hidden="true"> → </span><span class="visually-hidden"> changes to </span><ExpenseAmount cents={parsed.amounts[index] ?? null} empty="Blank" /></dd></div>)}</dl><div class="expense-entry-actions"><button class="primary" type="button" disabled={hidden || busy} onClick={() => void save(true)}>Confirm correction</button><button type="button" disabled={busy} onClick={() => { setReviewing(false); editorElement.current?.querySelector<HTMLButtonElement>(".expense-save-button")?.focus({ preventScroll: true }); }}>Keep editing</button></div></div>}</Presence>
       {destination !== null && <div class="expense-review" role="region" aria-label="Unsaved day"><h3>Your changes are still here</h3><p>Save this day or discard its draft before opening {formatDateLong(destination)}.</p><div class="expense-entry-actions"><button type="button" onClick={() => { setDestination(null); }}>Keep editing</button><button type="button" disabled={cannotSave} onClick={() => void save()}>Save this day</button><button type="button" onClick={discard}>Discard and open day</button></div></div>}
-      <div class="expense-save-feedback" role="status" aria-live="polite"><p>{feedback || (!showForm ? "" : dirty ? "Your changes are not saved yet." : editor.revision !== null ? demo ? "Demo entry. Changes affect this preview only." : "This entry is saved." : "Nothing is saved until you choose Save.")}</p>{pending !== null && <button type="button" disabled={busy} onClick={() => void save(true)}>Check save outcome</button>}</div>
+      <div class="expense-save-feedback" role="status" aria-live="polite"><p key={feedback || String(dirty)}>{feedback || (!showForm ? "" : dirty ? "Your changes are not saved yet." : editor.revision !== null ? demo ? "Demo entry. Changes affect this preview only." : "This entry is saved." : "Nothing is saved until you choose Save.")}</p>{pending !== null && <button type="button" disabled={busy} onClick={() => void save(true)}>Check save outcome</button>}</div>
       {earlierVersions.length > 0 && <details class="expense-previous"><summary>Previous saved versions <span class="expense-version-count">{earlierVersions.length}</span></summary><p class="hint">Earlier entries stay in history. Use their amounts as a draft, then review and confirm a new correction.</p>{earlierVersions.map((command, index) => <details class="expense-old-version" key={command.id}><summary>Earlier version {earlierVersions.length - index}</summary><dl>{EXPENSE_LABELS.map((label, field) => <div key={label}><dt>{label}</dt><dd><ExpenseAmount cents={command.amounts[field] ?? null} empty="Blank" /></dd></div>)}</dl><button type="button" disabled={hidden || locked || !props.ready || !writable || selectedConflict !== undefined} onClick={() => { recoverVersion(command); }}>Use these amounts</button></details>)}</details>}
     </article>
 

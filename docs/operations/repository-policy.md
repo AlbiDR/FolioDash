@@ -48,3 +48,9 @@ This audit changes ownership and imports while preserving calculation and write 
 ## Local verification record, 2026-11-04
 
 Revision: the commit containing this record. Environment: local macOS, Node 26.13.0, synthetic fixtures. `npm run verify`: PASS, including 579 tests in 45 files, type checking, lint, production web build, PWA manifest/cache checks and Apps Script bundle verification. `npm run audit:dependencies`: PASS, zero reported vulnerabilities. `git diff --cached --check`: PASS after staging. CI on the declared Node 22/24 matrix and automatic deployment are separate runs whose results must be inspected after push. No live Google or physical-device acceptance was performed for this organization change.
+
+## Verification environment correction, 2026-11-15
+
+Cross-layer tests now compile under the tooling configuration, which supplies Node and DOM types for synthetic file fixtures and browser session composition. The production core/application configuration still compiles without Node or DOM globals. No test files are excluded from verification; the same tests also remain in Vitest and ESLint. Exploratory files in the workspace were made type/lint clean and the restoration reproductions now assert retained cache contents without printing financial payloads.
+
+The contributor allowlist records ADR as an exact alternate name for the already-approved AlbiDR GitHub no-reply address. Upstream commit `b3ed60e` used that identity. All author/co-author/automation checks remain enabled; no history was rewritten.

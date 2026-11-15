@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { toEuroCents } from "../../../../core/Money";
-import { expenseDraftChanged, expenseDraftFor, parseExpenseDraft } from "./expenseDraft";
+import { expenseCorrectionIndices, expenseDraftChanged, expenseDraftFor, parseExpenseDraft } from "./expenseDraft";
 
 describe("expense entry boundary", () => {
   it("preserves missing versus an explicit zero", () => {
@@ -16,5 +16,18 @@ describe("expense entry boundary", () => {
     expect(expenseDraftFor(original)).toEqual(["1.234,56", "0,00", "", "", ""]);
     expect(expenseDraftChanged(["1234,56", "0", "", "", ""], original)).toBe(false);
     expect(expenseDraftChanged(["1234,56", "", "", "", ""], original)).toBe(true);
+  });
+});
+
+describe("incremental expense review", () => {
+  const saved = [toEuroCents(750), toEuroCents(0), null, null, null] as const;
+  it("saves additions to blanks directly, including zero", () => {
+    expect(expenseCorrectionIndices([saved[0], saved[1], toEuroCents(1200), toEuroCents(0), null], saved)).toEqual([]);
+  });
+  it("reviews replacements and clearing, including saved zero", () => {
+    expect(expenseCorrectionIndices([toEuroCents(800), null, toEuroCents(1200), null, null], saved)).toEqual([0, 1]);
+  });
+  it("does not review formatting-only changes", () => {
+    expect(expenseCorrectionIndices(parseExpenseDraft(["7,5", "0", "", "", ""]).amounts, saved)).toEqual([]);
   });
 });
