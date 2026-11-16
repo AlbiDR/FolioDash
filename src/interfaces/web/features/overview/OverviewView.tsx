@@ -184,6 +184,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       <div class="cell-8 portfolio-trend">
         <LineChart
           id="total-chart"
+          fillHeight
           updateKey={props.range}
           title="Performance"
           note="Fund value against net invested. The chart period applies to this chart and to the small trends under Changes."
