@@ -5,19 +5,25 @@ import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { readFiles, treeDigest, writeCaptureReceipt } from "./prepare-pages.ts";
 import { type LocalBrowser, withLocalBrowser } from "./localBrowser.ts";
+import { CAPTURED, type CapturedView, type RouteName } from "./readmeViews.ts";
 
 const APP = resolve("dist/web");
 const OUTPUT = resolve("dist/readme");
 
-async function capture(browser: LocalBrowser, file: string, theme: "light" | "dark", route: "overview" | "expenses", mobile = false): Promise<void> {
+async function capture(browser: LocalBrowser, file: string, theme: "light" | "dark", route: RouteName, view: CapturedView, mobile = false): Promise<void> {
   const { call, evaluate, waitFor, origin: ORIGIN } = browser;
   const width = mobile ? 390 : 1440;
   let height = mobile ? 844 : 1120;
   await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
   await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: theme }, { name: "prefers-reduced-motion", value: "reduce" }] });
-  const url = `${ORIGIN}/?demo=typical&readme=${encodeURIComponent(file)}#${route}`;
+  const url = `${ORIGIN}/?demo=typical&readme=${encodeURIComponent(file)}${view.hash}`;
   await call("Page.navigate", { url });
-  await waitFor(async () => await evaluate(`location.href === ${JSON.stringify(url)} && document.readyState === "complete" && document.querySelector('.privacy-toggle') !== null && document.querySelector('h1')?.textContent === ${JSON.stringify(route === "overview" ? "Portfolio" : "Work expenses")}`) === true, "the synthetic demo");
+  await waitFor(async () => await evaluate(`location.href === ${JSON.stringify(url)} && document.readyState === "complete" && document.querySelector('.privacy-toggle') !== null && ${view.open === undefined ? `document.querySelector('h1')?.textContent === ${JSON.stringify(view.heading)}` : `document.querySelector(${JSON.stringify(view.open)}) !== null`}`) === true, `the ${route} view`);
+  if (view.open !== undefined) {
+    // A detail screen is reached the way a person reaches it: through the first link the demo offers.
+    await evaluate(`document.querySelector(${JSON.stringify(view.open)})?.click()`);
+    await waitFor(async () => await evaluate(`location.hash.startsWith('#fund/') && (document.querySelector('h1')?.textContent ?? '') !== '' && document.querySelector('h1')?.textContent !== 'Portfolio'`) === true, `the ${route} detail`);
+  }
   await evaluate("document.fonts.ready");
   // These are the app's ordinary controls; the captured DOM and financial values are unchanged.
   await evaluate("(()=>{const toggle=document.querySelector('.privacy-toggle');if(toggle?.getAttribute('aria-pressed')==='true')toggle.click()})()");
@@ -34,9 +40,10 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   await waitFor(async () => await evaluate("document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed') === 'false' && document.getAnimations().every(animation => animation.playState !== 'running')") === true, "visible demo values and idle rendering");
   await delay(300);
   if (!mobile) {
-    const rowBottom = await evaluate(`Math.ceil(Math.max(...[...document.querySelectorAll(${JSON.stringify(route === "overview" ? ".hero,.portfolio-trend" : ".expense-entry,.expense-week")})].map(element=>element.getBoundingClientRect().bottom))+Math.min(24,parseFloat(getComputedStyle(document.querySelector('.dash')).rowGap)*0.75))`);
-    if (typeof rowBottom !== "number" || !Number.isFinite(rowBottom) || rowBottom < 600 || rowBottom > 1600) throw new Error("Unexpected screenshot framing.");
-    height = rowBottom;
+    const rowBottom = await evaluate(`Math.ceil(Math.max(...[...document.querySelectorAll(${JSON.stringify(view.frame ?? "#main-content > *")})].map(element=>element.getBoundingClientRect().bottom))+24)`);
+    if (typeof rowBottom !== "number" || !Number.isFinite(rowBottom) || rowBottom < 600) throw new Error("Unexpected screenshot framing.");
+    // A long screen is cut at the first 1600 points; the file check bounds the finished image the same way.
+    height = Math.min(rowBottom, 1600);
     await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
     await delay(100);
   }
@@ -58,10 +65,10 @@ const revision = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", 
 rmSync(OUTPUT, { recursive: true, force: true });
 mkdirSync(OUTPUT, { recursive: true });
 await withLocalBrowser(async browser => {
-  await capture(browser, "hero-light.png", "light", "overview");
-  await capture(browser, "hero-dark.png", "dark", "overview");
-  await capture(browser, "expenses-light.png", "light", "expenses");
-  await capture(browser, "expenses-dark.png", "dark", "expenses");
-  await capture(browser, "portfolio-mobile.png", "dark", "overview", true);
+  for (const [route, view] of CAPTURED) {
+    await capture(browser, `${view.file}-light.png`, "light", route, view);
+    await capture(browser, `${view.file}-dark.png`, "dark", route, view);
+    if (view.mobile !== undefined) await capture(browser, view.mobile, "dark", route, view, true);
+  }
   writeCaptureReceipt(APP, OUTPUT, appDigest, revision);
 });

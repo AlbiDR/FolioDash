@@ -36,7 +36,7 @@ Before the 2026-11-05 pipeline consolidation, each main push ran the two-version
 
 ## Automatic README screenshots
 
-Every eligible main push or manual Verify release regenerates the five README screenshots before artifact upload. `npm run capture:readme` serves the already-verified production build locally and drives headless Chrome through the portfolio and expenses demo in light, dark and phone-sized views. It does not rebuild the app. The runner must expose `google-chrome`; the workflow resolves its executable into `CHROME_PATH` and fails clearly if it is unavailable. Local capture uses the installed browser or an explicit `CHROME_PATH` override.
+Every eligible main push or manual Verify release regenerates every README screenshot before artifact upload. `npm run capture:readme` serves the already-verified production build locally and drives headless Chrome through each view listed in `scripts/readmeViews.ts` (portfolio, expenses, month by month, checkpoints, a fund, import and Your data) in light and dark, plus a phone-sized portfolio. That manifest is keyed by every app route, so adding a route fails the TypeScript check until it is captured or skipped with a written reason. The README's "Every screen" gallery is generated from the same manifest by `npm run docs:readme`; `npm run verify` fails if it is out of date or if the README links an image that is not captured. It does not rebuild the app. The runner must expose `google-chrome`; the workflow resolves its executable into `CHROME_PATH` and fails clearly if it is unavailable. Local capture uses the installed browser or an explicit `CHROME_PATH` override.
 
 Capture closes Chrome through the browser protocol and waits for shutdown before removing its temporary profile; a failed browser connection retains the bounded process-termination fallback. This avoids profile-writer races observed on the Linux runner during the link-preview release.
 
@@ -47,8 +47,8 @@ The artifact boundary is explicit:
 | Path | Responsibility |
 |---|---|
 | `dist/web/` | Verified application, including its existing PWA manifest, asset fingerprint and precache list; unchanged by capture or assembly |
-| `dist/readme/` | Generated `hero-light.png`, `hero-dark.png`, `expenses-light.png`, `expenses-dark.png` and `portfolio-mobile.png`, plus `screenshots.json` with the revision, pre-capture app digest and image hashes/dimensions |
-| `dist/pages/` | Pages staging tree: byte-identical checked app at its root, the five screenshots and their receipt in `readme/` |
+| `dist/readme/` | Generated light and dark PNGs for each view in `scripts/readmeViews.ts` and `portfolio-mobile.png`, plus `screenshots.json` with the revision, pre-capture app digest and image hashes/dimensions |
+| `dist/pages/` | Pages staging tree: byte-identical checked app at its root, the screenshots and their receipt in `readme/` |
 
 `npm run prepare:pages` validates the screenshot set, PNG integrity and dimensions, rejects unexpected files and symlinks, and checks the app and image bytes against the capture receipt. It then verifies the staged app bytes and final file tree. Capture and assembly each reject changes to the original application after its pre-capture fingerprint. The added delivery images are outside the verified application build and its generated precache list; they do not alter its fingerprint or require changing the PWA integrity check. This does not change the worker's existing same-origin runtime cache behavior. See [PWA boundaries](pwa.md).
 
