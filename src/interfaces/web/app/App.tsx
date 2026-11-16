@@ -58,6 +58,7 @@ function titleOf(route: Route, model: OverviewModel): string {
 
 // The model is redone only when the ledger itself changes, not on a toggle, a range change or a resize.
 const overviewFor = memoizeLast(overviewFromLedger);
+const NO_CHECKPOINTS: readonly Checkpoint[] = [];
 const markersFor = memoizeLast((active: readonly Checkpoint[]) => chartMarkers(active));
 const demoCheckpointsFor = memoizeLast(demoCheckpoints);
 const demoFor = memoizeLast(demoPortfolio);
@@ -191,7 +192,8 @@ export function App(): JSX.Element {
   const variant = demoVariantFrom(window.location.search);
   const model = data.mode === "signed-out" ? demoFor(variant) : overviewFor(data.ledger, "recorded");
   const shownCheckpoints = data.mode === "signed-out" ? demoCheckpointsFor(model) : checkpointData.active;
-  const checkpointMarkers = markersFor(shownCheckpoints);
+  // Markers are observations to read, so none are drawn once the log failed its integrity check; the screen still lists the device copy.
+  const checkpointMarkers = markersFor(data.mode !== "signed-out" && checkpointData.suspect ? NO_CHECKPOINTS : shownCheckpoints);
   const current = navEntryOf(route);
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
@@ -346,14 +348,15 @@ export function App(): JSX.Element {
                   ready: data.mode === "signed-out" || checkpointData.ready,
                   active: shownCheckpoints,
                   pending: data.mode !== "signed-out" && checkpointData.pending.length > 0,
+                  unreadable: data.mode !== "signed-out" && checkpointData.receiptsUnreadable,
                   message: data.mode === "signed-out" ? "" : checkpointData.message,
-                  preserved: data.mode === "signed-out" ? [] : checkpointData.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending.length > 0 })),
+                  preserved: data.mode === "signed-out" ? [] : checkpointData.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending.length > 0, unreadable: entry.unreadable })),
                 }}
                 today={today}
                 onAdd={(request) => session.checkpoints.add(request)}
                 onVoid={(id) => session.checkpoints.void(id)}
                 onCheck={() => session.checkpoints.checkPending()}
-                preservedText={(id) => session.checkpoints.preservedText(id)}
+                preservedText={(id, masked) => session.checkpoints.preservedText(id, masked)}
               />}
               {route.name === "expenses" && <ExpensesView
                 days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
@@ -430,6 +433,7 @@ export function App(): JSX.Element {
                   clientConfigured={clientConfigured}
                   build={__APP_BUILD__}
                   expenseCommands={expenseData.commands.length}
+                  checkpointCount={checkpointData.active.length + checkpointData.preserved.reduce((total, entry) => total + entry.active.length, 0)}
                   revisionSave={session.save}
                   actions={{
                     connect: () => session.connect(),

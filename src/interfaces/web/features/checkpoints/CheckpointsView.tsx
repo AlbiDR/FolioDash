@@ -4,7 +4,7 @@ import type { Checkpoint } from "../../../../core/Checkpoints";
 import { MAX_NOTE_LENGTH, isSafeNote } from "../../../../core/Checkpoints";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import { type EuroCents, parseItalianAmount } from "../../../../core/Money";
-import { Amount } from "../../presentation/privacy/privacy";
+import { Amount, usePrivacy } from "../../presentation/privacy/privacy";
 import "./checkpoints.css";
 
 /** The slice of the checkpoint session this screen needs. The app supplies it; nothing here talks to Google. */
@@ -12,8 +12,10 @@ export interface CheckpointScreenState {
   readonly ready: boolean;
   readonly active: readonly Checkpoint[];
   readonly pending: boolean;
+  /** The device's record of an unsent save could not be read, so nothing can be saved. */
+  readonly unreadable: boolean;
   readonly message: string;
-  readonly preserved: readonly { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: boolean }[];
+  readonly preserved: readonly { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: boolean; readonly unreadable: boolean }[];
 }
 
 /** What a save, a withdrawal or a check came to. Only `saved` and `no-change` leave nothing to explain. */
@@ -24,23 +26,26 @@ function listed(active: readonly Checkpoint[]): readonly Checkpoint[] {
   return active.map((entry, index) => ({ entry, index })).sort((left, right) => (left.entry.date === right.entry.date ? right.index - left.index : left.entry.date < right.entry.date ? 1 : -1)).map(({ entry }) => entry);
 }
 
-function PreservedList(props: { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: boolean; readonly text: string }): JSX.Element {
+function PreservedList(props: { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: boolean; readonly unreadable: boolean; readonly text: (masked: boolean) => string }): JSX.Element {
   const [copied, setCopied] = useState("");
+  // The text view and the copy follow the privacy toggle: with amounts hidden they leave the amounts out.
+  const hidden = usePrivacy();
+  const text = props.text(hidden);
   return (
     <section class="card checkpoint-preserved" aria-labelledby={`preserved-${props.workbookId}`}>
       <h3 id={`preserved-${props.workbookId}`} class="card-title">Kept from another workbook</h3>
-      <p class="card-subtitle">These checkpoints belong to a workbook that is not the one connected now. They are kept on this device, read only. They are not restored into a new workbook.{props.pending ? " One save from that workbook was never confirmed." : ""}</p>
+      <p class="card-subtitle">These checkpoints belong to a workbook that is not the one connected now. They are kept on this device, read only. They are not restored into a new workbook.{props.pending ? " One save from that workbook was never confirmed." : ""}{props.unreadable ? " This device's record of an unsent save for it could not be read; it was left untouched." : ""}{hidden ? " Amounts are hidden, so the text below and the copy leave them out." : ""}</p>
       {props.active.length === 0 ? <p class="empty-note">No active checkpoints.</p> : <ul class="checkpoint-list">{listed(props.active).map((entry) => <li key={entry.id}><span class="checkpoint-date">{formatDateLong(entry.date)}</span><span class="checkpoint-value"><Amount cents={entry.cents} /></span>{entry.note !== "" && <span class="checkpoint-note">{entry.note}</span>}</li>)}</ul>}
       <div class="checkpoint-actions">
         <button type="button" disabled={props.active.length === 0} onClick={() => {
           const clipboard = (navigator as { readonly clipboard?: Clipboard }).clipboard;
           if (clipboard === undefined) { setCopied("Copying is not available here. Select the text below instead."); return; }
-          void clipboard.writeText(props.text).then(() => { setCopied("Copied."); }, () => { setCopied("Copying was not allowed. Select the text below instead."); });
+          void clipboard.writeText(text).then(() => { setCopied("Copied."); }, () => { setCopied("Copying was not allowed. Select the text below instead."); });
         }}>Copy as text</button>
         <span role="status" aria-live="polite">{copied}</span>
       </div>
       <label class="field">The same list as text
-        <textarea readOnly rows={Math.min(8, Math.max(2, props.active.length))} value={props.text} aria-label="Checkpoints kept from another workbook, as text" />
+        <textarea readOnly rows={Math.min(8, Math.max(2, props.active.length))} value={text} aria-label="Checkpoints kept from another workbook, as text" />
       </label>
     </section>
   );
@@ -57,7 +62,7 @@ export function CheckpointsView(props: {
   readonly onAdd: (request: { readonly date: IsoDate; readonly cents: EuroCents; readonly note: string }) => Promise<CheckpointAction>;
   readonly onVoid: (id: string) => Promise<CheckpointAction>;
   readonly onCheck: () => Promise<CheckpointAction>;
-  readonly preservedText: (workbookId: string) => string;
+  readonly preservedText: (workbookId: string, masked: boolean) => string;
 }): JSX.Element {
   const signedOut = props.signedOut;
   const [date, setDate] = useState<string>(props.today);
@@ -108,7 +113,7 @@ export function CheckpointsView(props: {
   }
 
   const { state } = props;
-  const blocked = signedOut || busy || !state.ready || state.pending;
+  const blocked = signedOut || busy || !state.ready || state.pending || state.unreadable;
   const entries = listed(state.active);
 
   return (
@@ -169,7 +174,7 @@ export function CheckpointsView(props: {
         <p class="footnote">If a workbook is ever recreated from this device, checkpoints are not restored into it. This list stays on this device until you choose Forget this device.</p>
       </div>
 
-      {state.preserved.map((entry) => <PreservedList key={entry.workbookId} workbookId={entry.workbookId} active={entry.active} pending={entry.pending} text={props.preservedText(entry.workbookId)} />)}
+      {state.preserved.map((entry) => <PreservedList key={entry.workbookId} workbookId={entry.workbookId} active={entry.active} pending={entry.pending} unreadable={entry.unreadable} text={(masked) => props.preservedText(entry.workbookId, masked)} />)}
     </section>
   );
 }

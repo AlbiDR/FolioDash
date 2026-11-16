@@ -39,6 +39,8 @@ export function AccountView(props: {
   /** Which build of the app this page is running, so a stale page is never mistaken for the new one. */
   readonly build: string;
   readonly expenseCommands?: number;
+  /** How many checkpoints this device holds (the connected workbook and any preserved copies). */
+  readonly checkpointCount?: number;
   readonly revisionSave?: RemoteSave;
 }): JSX.Element {
   const { state, actions } = props;
@@ -78,7 +80,10 @@ export function AccountView(props: {
     setPending("restore");
     setMessage(null);
     try {
-      setMessage(describeRestore(await actions.restore()));
+      const outcome = await actions.restore();
+      const described = describeRestore(outcome);
+      // A restore never carries checkpoints over, and it should not seem to: say where they stayed.
+      setMessage(outcome.status === "restored" && (props.checkpointCount ?? 0) > 0 ? { ...described, body: `${described.body} Your checkpoints were not restored. They stay on this device, read only, on the Checkpoints screen.` } : described);
       setConfirmRestore(false);
     } catch {
       setMessage({ good: false, title: "Something went wrong", body: "Nothing on this device was changed. Try again." });
@@ -252,7 +257,7 @@ export function AccountView(props: {
             {statements === 1 ? "statement" : "statements"}.
           </p>
           <p>
-            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it. The portfolio copy holds figures but not original bank statements, so those statements need to be imported again. {props.expenseCommands ? "The saved expense correction history on this device is also recovered into a replacement workbook; existing expense records are preserved." : "This device has no saved expense correction history to restore. Downloaded expense backups are restored separately below."}
+            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it. The portfolio copy holds figures but not original bank statements, so those statements need to be imported again. {props.expenseCommands ? "The saved expense correction history on this device is also recovered into a replacement workbook; existing expense records are preserved." : "This device has no saved expense correction history to restore. Downloaded expense backups are restored separately below."} Checkpoints are not restored into a replacement workbook: this device keeps them, read only, on the <a href="#checkpoints">Checkpoints screen</a>.
           </p>
           <label class="check">
             <input
@@ -273,6 +278,7 @@ export function AccountView(props: {
 
       <section class="account-section" aria-labelledby="account-device-heading">
         <h2 id="account-device-heading" class="card-title" tabIndex={-1}>Where your data lives</h2>
+        <a class="row-link plain" href="#checkpoints"><span>Checkpoints: value-only observations between statements</span><Icon name="chevron" size={18} /></a>
         <ul class="plain-list">
           <li>
             <strong>Your Google Sheet is the record.</strong> It lives in your Google Drive and you can open it any time. FolioDash can only see the one

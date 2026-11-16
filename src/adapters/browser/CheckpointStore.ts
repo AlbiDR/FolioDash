@@ -1,5 +1,5 @@
 import { canonicalJson } from "../../core/CanonicalJson";
-import { type CheckpointCommand, parseCheckpointHistory } from "../../core/Checkpoints";
+import { type CheckpointCommand, parseCheckpointCommand, parseCheckpointHistory } from "../../core/Checkpoints";
 import type { KeyValueStore } from "./LedgerCache";
 
 /**
@@ -21,14 +21,29 @@ export interface CheckpointCopy {
   readonly initialized: boolean;
 }
 
+/**
+ * The command a window is about to send. `sent` means it may have reached Google; `not-submitted` means
+ * it is known not to have, so cleaning up needs no trace of it in Google.
+ */
+export interface CheckpointReceipt {
+  readonly command: CheckpointCommand;
+  readonly phase: "sent" | "not-submitted";
+}
+
+/** What is stored for a workbook. Unreadable is not the same as absent: it must block every write. */
+export type ReceiptRead =
+  | { readonly status: "none" }
+  | { readonly status: "present"; readonly receipts: readonly CheckpointReceipt[] }
+  | { readonly status: "unreadable" };
+
 export interface CheckpointStore {
   workbooks(): readonly string[];
   loadCopy(workbookId: string): CheckpointCopy | null;
   /** True only when the copy was written and read back identically. */
   saveCopy(copy: CheckpointCopy): boolean;
-  loadReceipts(workbookId: string): readonly CheckpointCommand[];
+  loadReceipts(workbookId: string): ReceiptRead;
   /** True only when the receipts were written and read back identically. An empty list removes them. */
-  saveReceipts(workbookId: string, receipts: readonly CheckpointCommand[]): boolean;
+  saveReceipts(workbookId: string, receipts: readonly CheckpointReceipt[]): boolean;
   /** Only the explicit Forget this device or a sign-out removes anything. Removes this build's records only. */
   clearAll(): void;
 }
@@ -80,12 +95,24 @@ export function createCheckpointStore(open: () => KeyValueStore, prefix: string)
     },
     loadReceipts(workbookId) {
       try {
-        const text = store()?.getItem(receiptKey(workbookId)) ?? null;
-        if (text === null) return [];
+        const target = store();
+        if (target === null) return { status: "unreadable" };
+        const text = target.getItem(receiptKey(workbookId));
+        if (text === null) return { status: "none" };
         const value: unknown = JSON.parse(text);
-        const history = typeof value === "object" && value !== null && !Array.isArray(value) ? parseCheckpointHistory((value as Record<string, unknown>)["commands"]) : null;
-        return history === null ? [] : history.commands;
-      } catch { return []; }
+        if (typeof value !== "object" || value === null || Array.isArray(value)) return { status: "unreadable" };
+        const record = value as Record<string, unknown>;
+        if (record["version"] !== 1 || record["workbookId"] !== workbookId || !Array.isArray(record["receipts"]) || record["receipts"].length === 0) return { status: "unreadable" };
+        const receipts: CheckpointReceipt[] = [];
+        for (const raw of record["receipts"] as unknown[]) {
+          const entry = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw as Record<string, unknown> : null;
+          const command = entry === null ? null : parseCheckpointCommand(entry["command"]);
+          const phase = entry?.["phase"];
+          if (command === null || (phase !== "sent" && phase !== "not-submitted")) return { status: "unreadable" };
+          receipts.push({ command, phase });
+        }
+        return { status: "present", receipts };
+      } catch { return { status: "unreadable" }; }
     },
     saveReceipts(workbookId, receipts) {
       if (receipts.length === 0) {
@@ -97,7 +124,7 @@ export function createCheckpointStore(open: () => KeyValueStore, prefix: string)
         } catch { return false; }
       }
       if (!remember(workbookId)) return false;
-      return writeVerified(receiptKey(workbookId), canonicalJson({ version: 1, workbookId, commands: receipts }));
+      return writeVerified(receiptKey(workbookId), canonicalJson({ version: 1, workbookId, receipts }));
     },
     clearAll() {
       const target = store();

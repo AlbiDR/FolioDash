@@ -342,4 +342,109 @@ describe("checkpoint session", () => {
     await session.add(request());
     expect(canonicalJson(required(google.tab(workbook.id, "_FolioDash ledger")).rows)).toBe(before);
   });
+
+  it("CP-001 sends nothing when Google no longer holds a checkpoint the device knows, even without a refresh", async () => {
+    const { session, google, workbook, appends } = await ready();
+    await session.add(request("2026-11-10", 900));
+    const before = appends();
+    required(google.tab(workbook.id, CHECKPOINT_LOG_TITLE)).rows.splice(1);
+    const result = await session.add(request("2026-11-12", 950));
+    expect(result.status).toBe("not-saved");
+    expect(result.message).toMatch(/missing/u);
+    expect(appends()).toBe(before);
+    expect(session.state.pending).toEqual([]);
+  });
+
+  it("CP-002 a delayed refresh in one window cannot overwrite a newer copy another window saved", async () => {
+    const w = await world();
+    const a = w.make(); await a.refresh();
+    const b = w.make({ workbookId: w.workbook.id }); await b.refresh();
+    // A reads the old (empty) log but has not stored anything yet.
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let reads = 0;
+    const slow = w.make({ workbookId: w.workbook.id, rest: async (call) => { const answer = await w.google.client(call); if (call.url.includes("/values/") && ++reads === 1) await gate; return answer; } });
+    const delayed = slow.refresh();
+    await Promise.resolve();
+    expect((await b.add(request("2026-11-12", 950))).status).toBe("saved");
+    release();
+    await delayed;
+    const stored = createCheckpointStore(() => w.kv, "foliodash.").loadCopy(w.workbook.id);
+    expect(stored?.commands).toHaveLength(1);
+  });
+
+  it("CP-003 a receipt that cannot be read blocks every write and is left untouched", async () => {
+    const { session, kv, google, make, workbook, appends } = await ready();
+    google.faults.push({ match: /:append/u, network: true });
+    await session.add(request());
+    const key = [...kv.data.keys()].find((entry) => entry.includes("pending.v1")) ?? "";
+    const original = kv.data.get(key) ?? "";
+    kv.data.set(key, "damaged");
+    const reloaded = make({ workbookId: workbook.id });
+    expect(reloaded.state.receiptsUnreadable).toBe(true);
+    await reloaded.refresh();
+    const result = await reloaded.add(request("2026-11-15", 1100));
+    expect(result.status).toBe("unknown");
+    expect(appends()).toBe(1);
+    expect(kv.data.get(key)).toBe("damaged");
+    expect((await reloaded.checkPending()).status).toBe("unknown");
+    kv.data.set(key, original);
+    const healed = make({ workbookId: workbook.id });
+    expect(healed.state.receiptsUnreadable).toBe(false);
+    expect(healed.state.pending).toHaveLength(1);
+  });
+
+  it("CP-004 a refusal whose receipt removal fails is finished later without the command ever existing in Google", async () => {
+    const { session, kv, google, make, workbook } = await ready();
+    google.faults.push({ match: /:append/u, status: 403 });
+    kv.failRemovalsOf = /pending/u;
+    const first = await session.add(request());
+    expect(first.status).toBe("unknown");
+    expect(session.state.pending).toHaveLength(1);
+    kv.failRemovalsOf = null;
+    const restarted = make({ workbookId: workbook.id });
+    expect(restarted.state.pending).toHaveLength(1);
+    await restarted.refresh();
+    expect((await restarted.checkPending()).status).toBe("no-change");
+    expect(restarted.state.pending).toEqual([]);
+    expect((await restarted.add(request("2026-11-15", 1100))).status).toBe("saved");
+  });
+
+  it("CP-004 a no-op whose snapshot cannot be saved keeps a not-submitted receipt that a later check clears", async () => {
+    const { session, kv, google, workbook } = await ready();
+    await session.add(request());
+    const target = required(session.state.active[0]);
+    const reads = google.calls.filter((call) => call.startsWith("GET") && call.includes("/values/")).length;
+    google.afterRead = { count: reads + 1, run: () => { appendRaw(google, workbook.id, { id: "rival-void-1", kind: "void", target: target.id }); } };
+    kv.failWritesTo = /checkpoints\.copy/u;
+    const result = await session.void(target.id);
+    expect(result.status).toBe("unknown");
+    expect(session.state.pending).toHaveLength(1);
+    kv.failWritesTo = null;
+    expect((await session.checkPending()).status).toBe("no-change");
+    expect(session.state.pending).toEqual([]);
+    expect(session.state.active).toEqual([]);
+  });
+
+  it("CP-006 draws no markers after an integrity failure, but keeps the device copy for the screen", async () => {
+    const { session, google, workbook } = await ready();
+    await session.add(request());
+    expect(session.state.suspect).toBe(false);
+    google.workbooks.get(workbook.id)?.delete(CHECKPOINT_LOG_TITLE);
+    await session.refresh();
+    expect(session.state.suspect).toBe(true);
+    expect(session.state.active).toHaveLength(1);
+  });
+
+  it("CP-005 the preserved text can leave amounts out", async () => {
+    const original = await world();
+    const first = original.make();
+    await first.refresh();
+    await first.add(request("2026-11-10", 900));
+    const elsewhere = original.make({ workbookId: "some-other-workbook" });
+    const id = original.workbook.id;
+    expect(elsewhere.preservedText(id)).toContain("900.00");
+    expect(elsewhere.preservedText(id, true)).not.toContain("900");
+    expect(elsewhere.preservedText(id, true)).toContain("hidden");
+  });
 });

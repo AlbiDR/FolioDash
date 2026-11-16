@@ -44,6 +44,13 @@ export type CheckpointPreflight =
   | { readonly status: "refused"; readonly message: string; readonly commands?: readonly CheckpointCommand[] }
   | { readonly status: "unavailable"; readonly message: string };
 
+/** Every command the device already knows must still be in Google's log, with the same content. */
+export function includesKnown(remote: readonly CheckpointCommand[], known: readonly CheckpointCommand[]): boolean {
+  const byId = new Map(remote.map((command) => [command.id, canonicalJson(command)]));
+  return known.every((command) => byId.get(command.id) === canonicalJson(command));
+}
+const MISSING_KNOWN = "Google is missing checkpoints already saved on this device. Nothing was sent. Your copy was kept; review the workbook before saving another checkpoint.";
+
 function object(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
@@ -123,10 +130,11 @@ async function initialize(rest: RestClient, token: string, id: string): Promise<
  * Reads the authoritative log and decides, without writing anything, whether a command
  * would change it. A void of something already voided is a no-op and needs no receipt.
  */
-export async function preflightCheckpoint(rest: RestClient, token: string, id: string, command: CheckpointCommand, today: IsoDate, expectedInitialized = false): Promise<CheckpointPreflight> {
+export async function preflightCheckpoint(rest: RestClient, token: string, id: string, command: CheckpointCommand, today: IsoDate, expectedInitialized = false, known: readonly CheckpointCommand[] = []): Promise<CheckpointPreflight> {
   const read = await readCheckpoints(rest, token, id, expectedInitialized);
   if (read.status === "damaged" || read.status === "unavailable") return { status: "unavailable", message: read.message };
   const commands = read.status === "ok" ? read.commands : [];
+  if (!includesKnown(commands, known)) return { status: "unavailable", message: MISSING_KNOWN };
   const admission = admitCheckpoint(commands, command, today);
   if (admission.status === "refuse") return { status: "refused", message: admission.message, commands };
   if (admission.status === "no-op") return { status: "no-op", commands };
@@ -147,7 +155,7 @@ export async function checkCheckpoint(rest: RestClient, token: string, id: strin
  * Appends one command. The authoritative log is read and the command admitted again here, so a
  * change since the caller's preflight (a competing void, say) becomes a no-op instead of a write.
  */
-export async function appendCheckpoint(rest: RestClient, token: string, id: string, command: CheckpointCommand, today: IsoDate, expectedInitialized = false): Promise<CheckpointOutcome> {
+export async function appendCheckpoint(rest: RestClient, token: string, id: string, command: CheckpointCommand, today: IsoDate, expectedInitialized = false, known: readonly CheckpointCommand[] = []): Promise<CheckpointOutcome> {
   let read = await readCheckpoints(rest, token, id, expectedInitialized);
   if (read.status === "absent") {
     if (command.kind === "void") return { status: "refused", message: "That checkpoint is not in this log.", commands: [] };
@@ -157,6 +165,8 @@ export async function appendCheckpoint(rest: RestClient, token: string, id: stri
     if (read.status !== "ok") return { status: "not-submitted", message: "Checkpoint setup could not be confirmed. Nothing was submitted; check the Google connection before trying again." };
   }
   if (read.status !== "ok") return { status: "not-submitted", message: read.message };
+  // The log read immediately before the append must still hold everything this device knows.
+  if (!includesKnown(read.commands, known)) return { status: "not-submitted", message: MISSING_KNOWN };
   const admission = admitCheckpoint(read.commands, command, today);
   if (admission.status === "refuse") return { status: "refused", message: admission.message, commands: read.commands };
   if (admission.status === "no-op") {

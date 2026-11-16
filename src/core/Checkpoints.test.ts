@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ADD_ADMISSION_LIMIT, READ_SAFE_LIMIT, type CheckpointCommand, activeCheckpoints, admitCheckpoint, chartMarkers, isSafeNote, parseCheckpointCommand, parseCheckpointHistory,
+  ADD_ADMISSION_LIMIT, MAX_PHYSICAL_ROWS, READ_SAFE_LIMIT, type CheckpointCommand, activeCheckpoints, admitCheckpoint, chartMarkers, isSafeNote, parseCheckpointCommand, parseCheckpointHistory,
 } from "./Checkpoints";
 import { type IsoDate, parseIsoDate } from "./IsoDate";
 import { type EuroCents, toEuroCents } from "./Money";
@@ -69,6 +69,18 @@ describe("parseCheckpointHistory (P2)", () => {
     const many = (count: number): unknown[] => Array.from({ length: count }, (_, index) => ({ id: `cmd-${String(index).padStart(8, "0")}`, kind: "add", date: "2026-11-14", cents: 100, note: "" }));
     expect(parseCheckpointHistory(many(READ_SAFE_LIMIT))).not.toBeNull();
     expect(parseCheckpointHistory(many(READ_SAFE_LIMIT + 1))).toBeNull();
+  });
+});
+
+describe("read-safe limit counts distinct commands (CP-007, B5b)", () => {
+  it("is not damaged by many identical physical rows of one command", () => {
+    const one = { id: "dup-00000001", kind: "add", date: "2026-11-14", cents: 100, note: "" };
+    const history = parseCheckpointHistory(Array.from({ length: READ_SAFE_LIMIT + 1 }, () => one));
+    expect(history?.commands).toHaveLength(1);
+  });
+  it("still refuses an absurd number of physical rows", () => {
+    const one = { id: "dup-00000001", kind: "add", date: "2026-11-14", cents: 100, note: "" };
+    expect(parseCheckpointHistory(Array.from({ length: MAX_PHYSICAL_ROWS + 1 }, () => one))).toBeNull();
   });
 });
 
