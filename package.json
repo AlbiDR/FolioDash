@@ -31,7 +31,9 @@
     "verify:interactions": "node scripts/verify-interactions.ts",
     "audit:interactions": "node scripts/audit-interactions.ts",
     "audit:backfill-recovery": "node scripts/audit-backfill-recovery.ts",
-    "audit:expense-recovery": "node scripts/audit-expense-recovery.ts"
+    "audit:expense-recovery": "node scripts/audit-expense-recovery.ts",
+    "audit:expense-restore": "node scripts/audit-expense-restore.ts",
+    "audit:sale-closure": "node scripts/audit-sale-closure.ts"
   },
   "engines": {
     "node": ">=22.18.0"
