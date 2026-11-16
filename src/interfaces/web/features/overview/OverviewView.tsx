@@ -16,7 +16,8 @@ import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { euroLabel, monthLabel } from "./chartData";
 import type { OverviewKpi, OverviewModel } from "./OverviewModel";
-import { Pill, Signed, tone } from "./parts";
+import { Percent, Pill, Signed, tone } from "./parts";
+import { type HoldingsSort, type HoldingsSortKey, SORT_LABELS, describeSort, nextSort, sortHoldings } from "./holdingsSort";
 import "./portfolio-feedback.css";
 
 /** One headline figure of the earlier spreadsheet's recap, with its own trend underneath. */
@@ -46,6 +47,20 @@ function StatCard(props: {
     </div>
   );
 }
+
+/** Desktop columns in reading order: the fund, what it is worth, its weight, then how it has done. */
+const HOLDINGS_COLUMNS: readonly HoldingsSortKey[] = ["name", "value", "share", "gainPercent", "gain", "netInvested"];
+
+/** The phone's list offers the orders people ask for, one choice instead of six headers. */
+const PHONE_SORTS: readonly HoldingsSort[] = [
+  { key: "name", direction: "asc" },
+  { key: "value", direction: "desc" },
+  { key: "share", direction: "desc" },
+  { key: "gainPercent", direction: "desc" },
+  { key: "gainPercent", direction: "asc" },
+  { key: "gain", direction: "desc" },
+  { key: "netInvested", direction: "desc" },
+];
 
 /** A search box is only worth its space once a list is long enough to need one. */
 const SEARCH_FROM = 7;
@@ -125,6 +140,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
  */
 export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void }): JSX.Element {
   const [fundQuery, setFundQuery] = useState("");
+  const [holdingsSort, setHoldingsSort] = useState<HoldingsSort | null>(null);
   const searchInput = useRef<HTMLInputElement>(null);
   function clearSearch(): void {
     setFundQuery("");
@@ -152,7 +168,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   const d = dashboardFor(props.model, props.range);
   const { held, slices, ranking, bars } = d;
   const query = fundQuery.trim().toLocaleLowerCase("en");
-  const listedFunds = [...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query));
+  const listedFunds = sortHoldings([...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query)), holdingsSort);
+  const monthly = kpi("Month on month");
 
   return (
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
@@ -165,6 +182,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         <p class="hero-value">
           <Amount cents={latestTotal.value} />
         </p>
+        {monthly !== undefined && monthly.amount !== null && <p class="hero-delta"><Signed cents={monthly.amount} />{monthly.percent !== null && <Pill ratio={monthly.percent} signed />}<span class="hero-delta-label">since the previous month</span></p>}
         <p class="hero-caption">Your funds, excluding account cash.</p>
         <div class="hero-gain"><p class="hero-label">Total gain</p><p class="hero-sub">
           {gain !== undefined && <><Signed cents={gain.amount} /><Pill ratio={gain.percent} signed /></>}
@@ -232,6 +250,17 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           </div>
           <p id="fund-search-help" class="hint" role="status" aria-atomic="true"><span key={listedFunds.length} class="filter-count">{listedFunds.length} of {funds.length} funds.</span> Filters holdings and recent fund history.</p>
         </div>}
+        {funds.length > 1 && <div class="field holdings-sort-mobile">
+          <label for="holdings-sort">Sort holdings</label>
+          <select id="holdings-sort" value={holdingsSort === null ? "" : `${holdingsSort.key}:${holdingsSort.direction}`} onChange={(event) => {
+            const [key, direction] = event.currentTarget.value.split(":");
+            setHoldingsSort(key === undefined || key === "" ? null : { key: key as HoldingsSortKey, direction: direction === "asc" ? "asc" : "desc" });
+          }}>
+            <option value="">{describeSort(null)}</option>
+            {PHONE_SORTS.map((sort) => <option key={`${sort.key}:${sort.direction}`} value={`${sort.key}:${sort.direction}`}>{describeSort(sort)}</option>)}
+          </select>
+        </div>}
+        <p class="visually-hidden" role="status" aria-atomic="true">{holdingsSort === null ? "" : `Holdings sorted by ${describeSort(holdingsSort)}.`}</p>
         {funds.length > 0 && listedFunds.length === 0 && <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>}
         <ul class="mobile-holdings" data-filtered={query.length > 0}>
           {listedFunds.map((fund) => (
@@ -249,6 +278,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                 <span class="holding-detail">
                   <span class="holding-fact"><span class="holding-label">Gain</span><Signed cents={fund.latest?.gain ?? null} /></span>
                   <span class="holding-fact"><span class="holding-label">Net invested</span><Amount cents={fund.latest?.netInvested ?? null} /></span>
+                  <span class="holding-fact"><span class="holding-label">Share of portfolio</span>{fund.status === "closed" ? "-" : <Percent ratio={fund.latest?.share ?? null} />}</span>
                 </span>
               </a>
             </li>
@@ -261,11 +291,9 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             <table class="holdings-table" data-filtered={query.length > 0}>
               <thead>
                 <tr>
-                  <th scope="col">Fund</th>
-                  <th scope="col">Value</th>
-                  <th scope="col">Gain %</th>
-                  <th scope="col">Gain</th>
-                  <th scope="col">Net invested</th>
+                  {HOLDINGS_COLUMNS.map((key) => <th key={key} scope="col" aria-sort={holdingsSort?.key === key ? (holdingsSort.direction === "asc" ? "ascending" : "descending") : "none"}>
+                    <button type="button" class="sort-button" onClick={() => { setHoldingsSort(nextSort(holdingsSort, key)); }}>{SORT_LABELS[key]}</button>
+                  </th>)}
                 </tr>
               </thead>
               <tbody>
@@ -276,6 +304,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                       <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
                     </th>
                     <td><Amount cents={fund.latest?.value ?? null} /></td>
+                    <td>{fund.status === "closed" ? "-" : <Percent ratio={fund.latest?.share ?? null} />}</td>
                     <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
                     <td><Signed cents={fund.latest?.gain ?? null} /></td>
                     <td><Amount cents={fund.latest?.netInvested ?? null} /></td>
