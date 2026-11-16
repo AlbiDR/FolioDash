@@ -253,6 +253,15 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await evaluate("document.querySelector('#undo-removed-fund').click()");
   await delay(450);
   await check("!!document.querySelector('.manual-fund') && document.activeElement?.id.endsWith('-name')", "Manual entry: undo restores the row and field focus");
+  // One statement, start to review: the journey shows what is done, the categories are reference, and each explanation is said once.
+  await visit("import", 1440, "many");
+  const singleDocument = await call("DOM.getDocument");
+  const singleInput = await call("DOM.querySelector", { nodeId: (singleDocument["root"] as { nodeId: number }).nodeId, selector: "input[type=file]" });
+  await call("DOM.setFileInputFiles", { nodeId: singleInput["nodeId"], files: [resolve("dist/acceptance/onboarding/individual/synthetic-bank-2026-03-31.xlsx")] });
+  await waitFor(async () => await evaluate("document.body.innerText.includes('Review ready')") === true, "single statement review");
+  await check("(()=>{const steps=[...document.querySelectorAll('.journey-steps li')];return steps[0].dataset.done==='true'&&steps[1].getAttribute('aria-current')==='step'&&!steps[2].dataset.done&&steps[0].textContent.includes('completed')})()", "the import journey marks finished steps and the current one");
+  await check("(()=>{const details=[...document.querySelectorAll('.review .more details')].find(d=>d.querySelector('summary')?.textContent.includes('Categories in the file'));return !!details&&!details.open&&!!details.querySelector('table')})()", "the file's categories are reference material behind a closed disclosure");
+  await check("(()=>{const inputs=[...document.querySelectorAll('.fund-question input[type=text]')];return inputs.length>0&&inputs.every(input=>{const ids=(input.getAttribute('aria-describedby')??'').split(' ').filter(Boolean);return ids.length>0&&ids.every(id=>!!document.getElementById(id))})&&document.querySelectorAll('.fund-question .cash-field-help').length===0})()", "starting balance fields share one explanation and every field still points to real help text");
   await visit("history");
   await openDetails();
   const document = await call("DOM.getDocument");
@@ -274,6 +283,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await delay(100);
   await check("document.querySelector('#excel-history-heading').textContent==='Review statement 2 of 3' && !!document.querySelector('.fund-question .field-error')", "Cash review: continuing with blank amounts stays on the same review and explains the missing answer");
   await check("[...document.querySelectorAll('.cash-movements label')].every(n=>/Money (added to|received from) this fund/.test(n.textContent))", "Cash review: plain-language labels identify money direction");
+  await check("(()=>{const inputs=[...document.querySelectorAll('.cash-movements input')];return inputs.length>0&&document.querySelectorAll('.questions [id$=\"-movement-help\"]').length===1&&inputs.every(input=>{const help=document.getElementById(input.getAttribute('aria-describedby')??'');return !!help&&help.textContent.includes('Money received')})})()", "Cash review: money added and received are explained once and every amount field points to that explanation");
   await evaluate("(()=>{const fields=document.querySelectorAll('.cash-movements input');['200','50'].forEach((v,i)=>{fields[i].value=v;fields[i].dispatchEvent(new Event('input',{bubbles:true}))});document.querySelectorAll('.cash-movements button')[1].click()})()");
   await delay(100);
   await check("[...document.querySelectorAll('.cash-movements input')].map(n=>n.value).join('|')==='200|50|0|0'", "Cash review: the per-fund no-movement action explicitly fills both zeroes");

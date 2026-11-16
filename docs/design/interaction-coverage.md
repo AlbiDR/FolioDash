@@ -71,6 +71,8 @@ Incremental expense follow-up, 2026-11-15: the local production Chrome audit pas
 
 2026-11-16, Expenses record layout: the local Chrome synthetic-demo audit passed 95 journey assertions and 755 control samples across 24 states. New assertions check that a long record flows into two columns on a wide screen without overflow and stays one column on a phone. No control was added or changed; the list rows keep their existing button states. Physical devices, other engines and screen readers remain unverified.
 
+2026-11-16, Import journey: the local Chrome synthetic-demo audit passed 100 journey assertions and 755 control samples across 24 states. New assertions check that finished and current steps are marked, that the file's categories sit behind a closed disclosure, that starting-balance fields share one explanation and every amount field points to existing help text, and that money added and received are explained once. The categories disclosure is a new control classified STATES OPEN in the source inventory. Physical devices, other engines and screen readers remain unverified.
+
 Money-movement review follow-up, 2026-11-15: source inventory includes the explicit per-fund No money moved action. The synthetic three-month preview exercises opening balances, money-added/received fields, blank-answer refusal, explicit zeroes, canonical preview totals, retained drafts and global No/Yes transitions. Shared control sampling covers the revealed group on desktop and phone; separate assertions cover 200% text and reduced motion. Full sale, zero-value closure and reopening conditional branches remain OPEN for their own rendered evidence. Financial submission, provider failure/recovery, physical-device and screen-reader acceptance are not closed by this preview-only check.
 
 ## Source inventory
@@ -189,19 +191,19 @@ One row is a source template; a fund-link template can render many controls. All
 | 9f70160fd22f-1 | [BackfillEntry.tsx:174](../../src/interfaces/web/features/import/BackfillEntry.tsx#L174) | button / action | Start a new review | SOURCE CLASSIFIED; STATES OPEN |
 | 56423fc4f0ab-1 | [BackfillEntry.tsx:175](../../src/interfaces/web/features/import/BackfillEntry.tsx#L175) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | ef38b96cfb2d-1 | [BackfillEntry.tsx:175](../../src/interfaces/web/features/import/BackfillEntry.tsx#L175) | button / action | Restore the history from before this change | SOURCE CLASSIFIED; STATES OPEN |
-| 6b04415cce22-1 | [CashQuestions.tsx:112](../../src/interfaces/web/features/import/CashQuestions.tsx#L112) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
-| 162651b70a59-1 | [CashQuestions.tsx:292](../../src/interfaces/web/features/import/CashQuestions.tsx#L292) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c978e4f9d3fb-1 | [CashQuestions.tsx:295](../../src/interfaces/web/features/import/CashQuestions.tsx#L295) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c32117f4d096-1 | [CashQuestions.tsx:335](../../src/interfaces/web/features/import/CashQuestions.tsx#L335) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
-| 035afa5903bf-1 | [CashQuestions.tsx:343](../../src/interfaces/web/features/import/CashQuestions.tsx#L343) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| a6b6e9bd19f5-1 | [CashQuestions.tsx:346](../../src/interfaces/web/features/import/CashQuestions.tsx#L346) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 928e212328d9-1 | [CashQuestions.tsx:357](../../src/interfaces/web/features/import/CashQuestions.tsx#L357) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 581103870bcd-1 | [CashQuestions.tsx:360](../../src/interfaces/web/features/import/CashQuestions.tsx#L360) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| fc5aa7fbc428-1 | [CashQuestions.tsx:369](../../src/interfaces/web/features/import/CashQuestions.tsx#L369) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 70f9f18c0c64-1 | [CashQuestions.tsx:378](../../src/interfaces/web/features/import/CashQuestions.tsx#L378) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
-| b95e2f3c4474-1 | [CashQuestions.tsx:430](../../src/interfaces/web/features/import/CashQuestions.tsx#L430) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 9309626b5533-1 | [CashQuestions.tsx:462](../../src/interfaces/web/features/import/CashQuestions.tsx#L462) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
-| f648a1ac4d45-1 | [CashQuestions.tsx:470](../../src/interfaces/web/features/import/CashQuestions.tsx#L470) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| bca37bc30522-1 | [CashQuestions.tsx:114](../../src/interfaces/web/features/import/CashQuestions.tsx#L114) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
+| 162651b70a59-1 | [CashQuestions.tsx:294](../../src/interfaces/web/features/import/CashQuestions.tsx#L294) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| c978e4f9d3fb-1 | [CashQuestions.tsx:297](../../src/interfaces/web/features/import/CashQuestions.tsx#L297) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| c32117f4d096-1 | [CashQuestions.tsx:338](../../src/interfaces/web/features/import/CashQuestions.tsx#L338) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
+| 035afa5903bf-1 | [CashQuestions.tsx:346](../../src/interfaces/web/features/import/CashQuestions.tsx#L346) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| a6b6e9bd19f5-1 | [CashQuestions.tsx:349](../../src/interfaces/web/features/import/CashQuestions.tsx#L349) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 928e212328d9-1 | [CashQuestions.tsx:360](../../src/interfaces/web/features/import/CashQuestions.tsx#L360) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 581103870bcd-1 | [CashQuestions.tsx:363](../../src/interfaces/web/features/import/CashQuestions.tsx#L363) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| fc5aa7fbc428-1 | [CashQuestions.tsx:372](../../src/interfaces/web/features/import/CashQuestions.tsx#L372) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 70f9f18c0c64-1 | [CashQuestions.tsx:381](../../src/interfaces/web/features/import/CashQuestions.tsx#L381) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
+| b95e2f3c4474-1 | [CashQuestions.tsx:433](../../src/interfaces/web/features/import/CashQuestions.tsx#L433) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 9309626b5533-1 | [CashQuestions.tsx:465](../../src/interfaces/web/features/import/CashQuestions.tsx#L465) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| f648a1ac4d45-1 | [CashQuestions.tsx:473](../../src/interfaces/web/features/import/CashQuestions.tsx#L473) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
 | f20fb9349b3d-1 | [ExcelHistoryView.tsx:167](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L167) | button / action | Exclude statements from months already recorded or earlier | SOURCE CLASSIFIED; STATES OPEN |
 | a7985c3279f3-1 | [ExcelHistoryView.tsx:176](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L176) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | c175e768fc98-1 | [ExcelHistoryView.tsx:177](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L177) | input / field | {'batch-date-${entry.id}'} | SOURCE CLASSIFIED; STATES OPEN |
@@ -213,12 +215,13 @@ One row is a source template; a fund-link template can render many controls. All
 | 5f01b4cb9bd2-1 | [ExcelHistoryView.tsx:216](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L216) | a / action | View your portfolio | SOURCE CLASSIFIED; STATES OPEN |
 | 8409cc5c50b2-1 | [ExcelHistoryView.tsx:218](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L218) | button / action | Previous statement (keep answers) | SOURCE CLASSIFIED; STATES OPEN |
 | 1b70e1f77040-1 | [ExcelHistoryView.tsx:219](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L219) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 69152a5dd9c5-1 | [ImportView.tsx:179](../../src/interfaces/web/features/import/ImportView.tsx#L179) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
-| ae498c8dad4d-1 | [ImportView.tsx:205](../../src/interfaces/web/features/import/ImportView.tsx#L205) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
-| 2237d7e73393-1 | [ImportView.tsx:362](../../src/interfaces/web/features/import/ImportView.tsx#L362) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
-| 2f10630fb5c6-1 | [ImportView.tsx:363](../../src/interfaces/web/features/import/ImportView.tsx#L363) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
-| 039be431f469-1 | [ImportView.tsx:364](../../src/interfaces/web/features/import/ImportView.tsx#L364) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
-| 1672104f17d7-1 | [ImportView.tsx:375](../../src/interfaces/web/features/import/ImportView.tsx#L375) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
+| b658e081afae-1 | [ImportView.tsx:135](../../src/interfaces/web/features/import/ImportView.tsx#L135) | summary / action | Categories in the file | SOURCE CLASSIFIED; STATES OPEN |
+| 69152a5dd9c5-1 | [ImportView.tsx:185](../../src/interfaces/web/features/import/ImportView.tsx#L185) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
+| ae498c8dad4d-1 | [ImportView.tsx:211](../../src/interfaces/web/features/import/ImportView.tsx#L211) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
+| 2237d7e73393-1 | [ImportView.tsx:372](../../src/interfaces/web/features/import/ImportView.tsx#L372) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
+| 2f10630fb5c6-1 | [ImportView.tsx:373](../../src/interfaces/web/features/import/ImportView.tsx#L373) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
+| 039be431f469-1 | [ImportView.tsx:374](../../src/interfaces/web/features/import/ImportView.tsx#L374) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
+| 1672104f17d7-1 | [ImportView.tsx:385](../../src/interfaces/web/features/import/ImportView.tsx#L385) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
 | 0d2ce4a9518f-1 | [ManualEntry.tsx:77](../../src/interfaces/web/features/import/ManualEntry.tsx#L77) | input / field | manual-date | SOURCE CLASSIFIED; STATES OPEN |
 | 01bdb3165526-1 | [ManualEntry.tsx:86](../../src/interfaces/web/features/import/ManualEntry.tsx#L86) | input / field | {'${row.id}-name'} | SOURCE CLASSIFIED; STATES OPEN |
 | ef899d0d6276-1 | [ManualEntry.tsx:87](../../src/interfaces/web/features/import/ManualEntry.tsx#L87) | input / field | {'${row.id}-isin'} | SOURCE CLASSIFIED; STATES OPEN |
