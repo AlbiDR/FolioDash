@@ -16,7 +16,7 @@ Decision: FD-026 (the owner's private register).
 
 - A hidden tab `_FolioDash checkpoints` in the person's own spreadsheet, one command per row (`schema`, `payload`, `checksum`). Commands are `add` (id, date, cents, note) and `void` (id, target). The log is append-only.
 - Developer metadata under its own key `foliodash.checkpoints`: a `records-v1` marker on the tab and an `enabled-v1` anchor on the ledger tab. A missing records tab with its anchor is reported as damaged and is never recreated, so a deleted log cannot be silently replaced by an empty one. The ledger and the work expenses ignore this key, and this feature ignores theirs.
-- The same id with identical content counts once, so a retried save cannot duplicate it. The same id with different content makes the log damaged. A log is readable up to 20,000 commands; adding stops at 5,000 `add` commands; a withdrawal is accepted whenever its target is still active, and withdrawing something already withdrawn writes nothing.
+- The same id with identical content counts once, so a retried save cannot duplicate it. The same id with different content makes the log damaged. A log is readable up to 4,500 commands; adding stops at 1,500 `add` commands (sized so a whole log, with every note at its longest and fully escaped and every withdrawal, still fits the device copy); a withdrawal is accepted whenever its target is still active, and withdrawing something already withdrawn writes nothing.
 
 ## Safe saving
 
@@ -27,8 +27,9 @@ Decision: FD-026 (the owner's private register).
 5. A confirmed command is persisted in the history copy and read back before its receipt is removed. Any failure keeps the receipt. A device copy is never replaced by an older view of the log, so a window that read earlier cannot overwrite what another saved.
 6. An outcome known not to have appended anything (a withdrawal that turned into a no-op, or a refusal before any write) first records that on the receipt, then clears it through a saved copy; a later check finishes the cleanup without needing the command to exist in Google. A timeout or lost answer is never treated that way; it stays unknown.
 7. A receipt that cannot be read is treated as an unresolved save, never as an empty one: nothing can be saved and the record is left untouched.
-8. Before every append the log is read again and must still hold every checkpoint this device knows; otherwise nothing is sent.
-9. Forget this device, sign-out and an account change cancel in-flight work and attribute nothing to the new state.
+8. Before every append the log is read again and must still hold every checkpoint this device knows, including what another window stored in the shared device copy; otherwise nothing is sent. Forget or an account change during the reads or while waiting for the lock cancels the save before anything is sent or stored.
+9. A withdrawal of something another device already withdrew writes nothing, but this window's list and device copy catch up at once. An absent log stays uninitialised through a failed first save, so the workbook never becomes unwritable.
+10. Forget this device, sign-out and an account change cancel in-flight work and attribute nothing to the new state.
 
 ## Recovery and privacy
 

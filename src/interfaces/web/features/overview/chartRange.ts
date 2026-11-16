@@ -1,4 +1,4 @@
-import { type IsoDate, monthSerial } from "../../../../core/IsoDate";
+import { type IsoDate, monthSerial, toIsoDate } from "../../../../core/IsoDate";
 
 export type ChartRange = "3M" | "6M" | "YTD" | "1Y" | "3Y" | "All";
 
@@ -43,6 +43,17 @@ export function availableRanges(dates: readonly IsoDate[]): readonly { readonly 
 /** The chosen range if the history still supports it, otherwise All. */
 export function resolveRange(range: ChartRange, dates: readonly IsoDate[]): ChartRange {
   return availableRanges(dates).some((option) => option.id === range) ? range : "All";
+}
+
+/**
+ * The first calendar day the range covers, or null when it has no start (All). It follows the range itself, not
+ * the statements inside it, so an observation between the range's start and its first statement is still shown.
+ */
+export function rangeFromDate(dates: readonly IsoDate[], range: ChartRange): IsoDate | null {
+  const latest = dates[dates.length - 1];
+  if (latest === undefined || range === "All") return null;
+  const serial = range === "YTD" ? monthSerial(latest) - (monthSerial(latest) % 12) : monthSerial(latest) - (MONTHS[range] ?? 0);
+  return toIsoDate(Math.floor(serial / 12), (serial % 12) + 1, 1);
 }
 
 /**

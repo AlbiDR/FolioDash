@@ -447,4 +447,83 @@ describe("checkpoint session", () => {
     expect(elsewhere.preservedText(id, true)).not.toContain("900");
     expect(elsewhere.preservedText(id, true)).toContain("hidden");
   });
+
+  it("CR-001 Forget while the save waits for the lock or reads Google sends nothing and recreates nothing", async () => {
+    const w = await world();
+    let calls = -1_000;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    // The adapter's own read, after the preflight, is held back so Forget lands before the append.
+    const session = w.make({ rest: async (call) => {
+      const answer = await w.google.client(call);
+      if (call.url.includes("/values/") && ++calls === 2) await gate;
+      return answer;
+    } });
+    await session.refresh();
+    await session.add(request("2026-11-10", 900));
+    const before = w.appends();
+    calls = 0;
+    const pending = session.add(request("2026-11-12", 950));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    session.forget();
+    release();
+    expect((await pending).status).toBe("unknown");
+    expect(w.appends()).toBe(before);
+    expect(createCheckpointStore(() => w.kv, "foliodash.").workbooks()).toEqual([]);
+  });
+
+  it("CR-002 a log that lost a checkpoint another window saved is refused before anything is sent", async () => {
+    const w = await world();
+    const a = w.make(); await a.refresh();
+    const b = w.make({ workbookId: w.workbook.id }); await b.refresh();
+    expect((await b.add(request("2026-11-12", 950))).status).toBe("saved");
+    // Google loses B's row while window A still holds its earlier, empty view.
+    required(w.google.tab(w.workbook.id, CHECKPOINT_LOG_TITLE)).rows.splice(1);
+    const before = w.appends();
+    const result = await a.add(request("2026-11-13", 960));
+    expect(result.status).toBe("not-saved");
+    expect(w.appends()).toBe(before);
+  });
+
+  it("CR-002 a refresh that sees a log older than the shared copy is not treated as ready", async () => {
+    const w = await world();
+    const a = w.make(); await a.refresh();
+    const b = w.make({ workbookId: w.workbook.id }); await b.refresh();
+    await b.add(request("2026-11-12", 950));
+    required(w.google.tab(w.workbook.id, CHECKPOINT_LOG_TITLE)).rows.splice(1);
+    await a.refresh();
+    expect(a.state.ready).toBe(false);
+    expect(a.state.message).toMatch(/missing/u);
+  });
+
+  it("CR-005 withdrawing something another device already withdrew brings this window up to date without writing", async () => {
+    const { session, google, workbook, appends } = await ready();
+    await session.add(request());
+    const target = required(session.state.active[0]);
+    appendRaw(google, workbook.id, { id: "other-void-01", kind: "void", target: target.id });
+    const before = appends();
+    const result = await session.void(target.id);
+    expect(result.status).toBe("no-change");
+    expect(appends()).toBe(before);
+    expect(session.state.active).toEqual([]);
+    expect(session.state.pending).toEqual([]);
+  });
+
+  it("CR-006 a first save that fails before initialisation does not leave the workbook permanently unwritable", async () => {
+    const { session, kv, google, make, workbook } = await ready();
+    expect(session.state.initialized).toBe(false);
+    google.faults.push({ match: /:batchUpdate/u, status: 403 });
+    kv.failRemovalsOf = /pending/u;
+    const first = await session.add(request());
+    expect(first.status).toBe("unknown");
+    kv.failRemovalsOf = null;
+    const restarted = make({ workbookId: workbook.id });
+    await restarted.refresh();
+    expect((await restarted.checkPending()).status).toBe("no-change");
+    expect(restarted.state.initialized).toBe(false);
+    const again = make({ workbookId: workbook.id });
+    await again.refresh();
+    expect(again.state.ready).toBe(true);
+    expect((await again.add(request("2026-11-15", 1100))).status).toBe("saved");
+  });
 });

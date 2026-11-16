@@ -4,16 +4,17 @@ import { euros, utcTime } from "./chartData";
 import type { OverviewFund, OverviewModel, OverviewMonth } from "./OverviewModel";
 import type { Bar } from "../../presentation/charts/MonthlyBars";
 import type { ChartSeries } from "../../presentation/charts/lineChartGeometry";
-import { type ChartRange, rangeStart } from "./chartRange";
+import { type ChartRange, rangeFromDate, rangeStart } from "./chartRange";
 import { memoizeLast } from "../../shared/ui/memo";
 import type { CheckpointMarker } from "../../../../core/Checkpoints";
 
 export const NO_MARKERS: readonly CheckpointMarker[] = [];
 
 /** The value-only observations to draw within the shown period. They are never part of the statements' figures. */
-export function checkpointSeries(markers: readonly CheckpointMarker[], from: IsoDate | undefined): ChartSeries | null {
+export function checkpointSeries(markers: readonly CheckpointMarker[], from: IsoDate | null | undefined): ChartSeries | null {
+  // Undefined means there is nothing to compare with (no statement); null means the period has no start.
   if (from === undefined) return null;
-  const inside = markers.filter((marker) => marker.date >= from);
+  const inside = markers.filter((marker) => from === null || marker.date >= from);
   if (inside.length === 0) return null;
   return {
     id: "checkpoints",
@@ -107,7 +108,7 @@ export function computeDashboard(model: OverviewModel, range: ChartRange, marker
     totalSeries: [
       { id: "value", label: "Portfolio value", points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.value ?? null) })) },
       { id: "invested", label: "Net invested", dashed: true, points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.invested ?? null) })) },
-      ...(() => { const extra = checkpointSeries(markers, shown[0]); return extra === null ? [] : [extra]; })(),
+      ...(() => { const extra = checkpointSeries(markers, shown.length === 0 ? undefined : rangeFromDate(dates, range)); return extra === null ? [] : [extra]; })(),
     ],
     // Each fund's money invested is drawn beneath its value, in the same colour, dotted and faded.
     fundSeries: [

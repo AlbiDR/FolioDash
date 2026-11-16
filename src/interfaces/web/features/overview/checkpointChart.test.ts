@@ -7,6 +7,7 @@ import { demoPortfolio } from "../../app/demoPortfolio";
 import { demoCheckpoints } from "../../app/demoCheckpoints";
 import { computeLineChart } from "../../presentation/charts/lineChartGeometry";
 import { monthLabel, observationLabel, utcTime } from "./chartData";
+import { rangeFromDate } from "./chartRange";
 import { checkpointSeries, computeDashboard } from "./dashboardData";
 
 // Synthetic figures only.
@@ -80,5 +81,16 @@ describe("checkpoint markers on the chart", () => {
   it("only the demo has sample checkpoints", () => {
     expect(demoCheckpoints(demoPortfolio("typical"))).toHaveLength(2);
     expect(demoCheckpoints(demoPortfolio("empty"))).toEqual([]);
+  });
+
+  it("CR-004 keeps a checkpoint between a range's start and its first statement, and any checkpoint before the first statement for All", () => {
+    const dates = [date("2026-01-01"), date("2026-09-01"), date("2026-11-01")];
+    expect(rangeFromDate(dates, "3M")).toBe(date("2026-08-01"));
+    expect(rangeFromDate(dates, "All")).toBeNull();
+    expect(rangeFromDate(dates, "YTD")).toBe(date("2026-01-01"));
+    const markers = chartMarkers([checkpoint("c1", "2026-08-20", 1000), checkpoint("c2", "2025-12-20", 900), checkpoint("c3", "2026-07-30", 950)]);
+    expect(checkpointSeries(markers, rangeFromDate(dates, "3M"))?.points.map((point) => point.value)).toEqual([1000]);
+    expect(checkpointSeries(markers, rangeFromDate(dates, "All"))?.points).toHaveLength(3);
+    expect(checkpointSeries(markers, undefined)).toBeNull();
   });
 });
