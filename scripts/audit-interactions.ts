@@ -94,6 +94,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await survey("Portfolio / desktop / initial");
   // The wide Performance card spans the hero and Changes rows: its plot uses the spare height instead of leaving a void.
   await waitFor(async () => await evaluate("(()=>{const card=document.querySelector('.portfolio-trend .chart');const last=card.lastElementChild.getBoundingClientRect();return card.getBoundingClientRect().bottom-last.bottom<=40&&document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect().height>300})()") === true, "wide Performance plot filling its card");
+  console.log(`Performance plot geometry: ${String(await evaluate("(()=>{const b=document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect();const c=document.querySelector('.portfolio-trend .chart').getBoundingClientRect();return JSON.stringify({svgWidth:b.width,svgHeight:b.height,cardWidth:c.width,cardHeight:c.height,viewport:document.documentElement.clientWidth})})()"))}`);
   await check("(()=>{const svg=document.querySelector('.portfolio-trend .chart-svg');const box=svg.getBoundingClientRect();return box.height<=box.width*0.8+1&&box.height<=560})()", "filled Performance plot stays a wide, bounded shape");
   // The headline carries the change since last month beside the total.
   await check("!!document.querySelector('.hero .hero-delta .pill') && document.querySelector('.hero .hero-delta').getBoundingClientRect().top>document.querySelector('.hero .hero-value').getBoundingClientRect().top", "the hero shows the month's change beside the total");
@@ -305,7 +306,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     await visit(route, 390);
     if (route === "months") {
       await check("!!document.querySelector('.month-matrices .totals') && !document.querySelector('.month-matrices')?.closest('details:not([open])')", "month comparison is visible without expansion on phone");
-      await evaluate("window.auditTotalsScroll=document.querySelector('[aria-label=\"Portfolio totals by month\"].table-scroll');window.auditLabels=[...window.auditTotalsScroll.querySelectorAll('.matrix-label')];window.auditLefts=window.auditLabels.map(label=>label.getBoundingClientRect().left);window.auditFirstValue=window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left;window.auditTotalsScroll.scrollLeft=200");
+      await evaluate("window.auditTotalsScroll=document.querySelector('[aria-label=\"Portfolio totals by month\"].table-scroll');window.auditTotalsScroll.scrollLeft=0;window.auditLabels=[...window.auditTotalsScroll.querySelectorAll('.matrix-label')];window.auditLefts=window.auditLabels.map(label=>label.getBoundingClientRect().left);window.auditFirstValue=window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left;window.auditTotalsScroll.scrollLeft=200");
       await check("window.auditTotalsScroll.scrollLeft>0 && window.auditLabels.length===6 && window.auditLabels.every((label,index)=>Math.abs(label.getBoundingClientRect().left-window.auditLefts[index])<2) && window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left<window.auditFirstValue-10", "portfolio row labels stay pinned while statement values scroll");
     }
     await openDetails();
