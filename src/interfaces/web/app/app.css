@@ -980,9 +980,10 @@ table {
 }
 
 .holdings-table .sparkline {
+  display: block;
   width: 6rem;
-  height: 2.25rem;
-  vertical-align: middle;
+  height: 1.5rem;
+  margin: var(--space-1) 0 0 auto;
 }
 
 .stretched {
