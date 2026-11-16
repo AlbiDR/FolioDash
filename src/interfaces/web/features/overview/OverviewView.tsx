@@ -16,7 +16,7 @@ import { Sparkline } from "../../presentation/charts/Sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { euroLabel, monthLabel, observationLabel } from "./chartData";
-import type { OverviewKpi, OverviewModel } from "./OverviewModel";
+import type { OverviewFund, OverviewKpi, OverviewModel } from "./OverviewModel";
 import { Percent, Pill, Signed, tone } from "./parts";
 import { type HoldingsSort, type HoldingsSortKey, SORT_LABELS, describeSort, nextSort, sortHoldings } from "./holdingsSort";
 import "./portfolio-feedback.css";
@@ -84,6 +84,38 @@ const GLOSSARY: readonly { readonly term: string; readonly meaning: string }[] =
 ];
 
 /** Keep allocation inspection local, so pointer movement does not rerender the other charts. */
+/** How many funds the card names: enough to say what drove the month, few enough to read at a glance. */
+const MOVERS_SHOWN = 3;
+
+/**
+ * The funds that changed most since the previous statement, by the size of their change. It only orders figures the
+ * model already holds; a fund with no previous statement has no month-on-month change and is left out.
+ */
+function MoversCard(props: { readonly funds: readonly OverviewFund[] }): JSX.Element | null {
+  const movers = props.funds
+    .filter((fund) => fund.latest?.monthlyGain !== null && fund.latest?.monthlyGain !== undefined)
+    .sort((a, b) => Math.abs(Number(b.latest?.monthlyGain ?? 0)) - Math.abs(Number(a.latest?.monthlyGain ?? 0)))
+    .slice(0, MOVERS_SHOWN);
+  if (movers.length === 0) return null;
+  return (
+    <section class="card movers-card" aria-labelledby="movers-heading">
+      <h3 id="movers-heading" class="card-title">What moved</h3>
+      <p class="card-subtitle">Largest changes since the previous statement.</p>
+      <ul class="movers">
+        {movers.map((fund) => (
+          <li key={fund.isin}>
+            <a class="mover" href={`#fund/${fund.isin}`}>
+              <span class="mover-name">{fund.name}</span>
+              <span class="mover-figures"><Signed cents={fund.latest?.monthlyGain ?? null} /><Pill ratio={fund.latest?.monthlyGainPercent ?? null} signed /></span>
+              <Icon name="chevron" size={18} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }): JSX.Element {
   const [hovered, setHovered] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
@@ -93,7 +125,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
     if (id !== null) setHovered(null);
   }
   return (
-    <div class="card cell-4 allocation-card">
+    <div class="card allocation-card">
       <h3 id="allocation-heading" class="card-title" tabIndex={-1}>Allocation</h3>
       <p class="card-subtitle">Share of total fund value. Select a fund to explore.</p>
       {props.slices.length === 0 ? <p class="empty-note">No fund is held.</p> : <>
@@ -172,6 +204,13 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   const query = fundQuery.trim().toLocaleLowerCase("en");
   const listedFunds = sortHoldings([...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query)), holdingsSort);
   const monthly = kpi("Month on month");
+  /** The bars compare each fund with the largest holding, so a long list still reads; the percentage beside each carries the exact share. */
+  const largestShare = Math.max(0, ...held.map((fund) => fund.latest?.share ?? 0));
+  /** A fund's value across the chart's period, for the small line under its value. It needs two statements to be a line. */
+  const trendOf = (isin: string): readonly (number | null)[] | null => {
+    const values = d.fundSeries.find((series) => series.id === isin)?.points.map((point) => point.value) ?? [];
+    return values.filter((value) => value !== null).length >= 2 ? values : null;
+  };
 
   return (
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
@@ -241,7 +280,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       </section>
       <div class="card cell-8 portfolio-holdings">
         <h3 id="holdings-heading" class="card-title" tabIndex={-1}>Holdings</h3>
-        <p class="card-subtitle">Latest statement. Select a fund to see its performance and history.</p>
+        <p class="card-subtitle">Latest statement. Select a fund to see its performance and history. Share bars compare each fund with your largest holding.</p>
         {funds.length >= SEARCH_FROM && <div class="field fund-search">
           <label for="fund-search">Find a fund</label>
           <div class="fund-search-controls">
@@ -309,8 +348,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                       <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>
                       <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
                     </th>
-                    <td><Amount cents={fund.latest?.value ?? null} /></td>
-                    <td>{fund.status === "closed" ? "-" : <Percent ratio={fund.latest?.share ?? null} />}</td>
+                    <td><Amount cents={fund.latest?.value ?? null} />{trendOf(fund.isin) !== null && <Sparkline times={d.shownTimes} values={trendOf(fund.isin) ?? []} width={96} height={24} />}</td>
+                    <td>{fund.status === "closed" ? "-" : <><Percent ratio={fund.latest?.share ?? null} />{fund.latest?.share !== null && fund.latest?.share !== undefined && <span class="share-bar" aria-hidden="true"><span style={{ inlineSize: `${(largestShare > 0 ? Math.min(1, Math.max(0, fund.latest.share) / largestShare) * 100 : 0).toFixed(2)}%` }} /></span>}</>}</td>
                     <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
                     <td><Signed cents={fund.latest?.gain ?? null} /></td>
                     <td><Amount cents={fund.latest?.netInvested ?? null} /></td>
@@ -340,7 +379,10 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         </div>}
       </div>
 
-      <AllocationCard slices={slices} />
+      <div class="cell-4 portfolio-rail">
+        <AllocationCard slices={slices} />
+        <MoversCard funds={held} />
+      </div>
 
       <section class="cell-12 dashboard-analysis" aria-labelledby="portfolio-analysis">
         <h2 id="portfolio-analysis" class="card-title" tabIndex={-1}>Trends and comparisons</h2>
