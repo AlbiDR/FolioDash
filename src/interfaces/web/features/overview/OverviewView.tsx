@@ -291,7 +291,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
             {listedFunds.map((fund) => <section key={fund.isin} class="recent-fund-history-group" aria-label={`${fund.name} recent history`}>
               <h4>{fund.name}</h4>
               <div class="table-scroll flat" role="region" aria-label={`${fund.name} recent statement values`} tabIndex={0}>
-                <table>
+                <table class="holdings-table statement-table">
                   <thead><tr><th scope="col">Statement</th><th scope="col">Value</th><th scope="col">Net invested</th></tr></thead>
                   <tbody>{dates.slice(-3).map((date, offset) => {
                     const index = Math.max(0, dates.length - 3) + offset;

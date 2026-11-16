@@ -184,6 +184,10 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   const fund = await evaluate("document.querySelector('.holdings-table a')?.getAttribute('href')") as string;
   await visit(fund.slice(1));
   await openDetails();
+  // Fund journey: figures first, then the chart, then the statement history, newest first, in reading order.
+  await check("(()=>{const hero=document.querySelector('.fund-hero');const chart=document.querySelector('#fund-chart, .chart');const history=document.querySelector('.fund-history');return !!hero&&!!chart&&!!history&&!!(hero.compareDocumentPosition(chart)&Node.DOCUMENT_POSITION_FOLLOWING)&&!!(chart.compareDocumentPosition(history)&Node.DOCUMENT_POSITION_FOLLOWING)&&hero.querySelectorAll('.fund-figure').length===5})()", "fund page leads with its figures, then the chart, then its history");
+  await check("(()=>{const rows=[...document.querySelectorAll('.fund-history tbody tr')];return rows.length>1&&rows.length<=12&&Date.parse(rows[0].querySelector('th').textContent)>Date.parse(rows[1].querySelector('th').textContent)})()", "fund statement history is newest first");
+  await check("document.querySelector('.fund-hero').getBoundingClientRect().height<260", "fund figures do not stretch into an empty card");
   await survey("Fund / desktop / disclosures open");
   await evaluate("window.auditFundSelector=document.querySelector('.range-selector');window.auditFundOption=window.auditFundSelector.querySelectorAll('button')[0];window.auditFundOption.focus();window.auditFundOption.click()");
   await delay(50);
