@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../tests/fixtures/FakeGoogle";
 import { canonicalJson } from "../../core/CanonicalJson";
+import { ADD_ADMISSION_LIMIT } from "../../core/Checkpoints";
 import { type CheckpointCommand } from "../../core/Checkpoints";
 import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { toEuroCents } from "../../core/Money";
@@ -173,14 +174,14 @@ describe("direct checkpoint records", () => {
     const { google, id } = await setup();
     await appendCheckpoint(google.client, google.token, id, add("a0"), TODAY);
     const tab = required(google.tab(id, CHECKPOINT_LOG_TITLE));
-    for (let index = 0; index < 4_998; index++) {
+    for (let index = 0; index < ADD_ADMISSION_LIMIT - 2; index++) {
       const text = canonicalJson({ id: `bulk-${String(index).padStart(8, "0")}`, kind: "add", date: "2026-11-14", cents: 100, note: "" });
       tab.rows.push(["1", text, sha256Hex(text)]);
     }
     appendRaw(google, id, add("twoA"));
     appendRaw(google, id, add("twoB"));
     const read = await readCheckpoints(google.client, google.token, id, true);
-    expect(read.status === "ok" && read.commands.length).toBe(5_001);
+    expect(read.status === "ok" && read.commands.length).toBe(ADD_ADMISSION_LIMIT + 1);
     expect((await appendCheckpoint(google.client, google.token, id, add("z9"), TODAY, true)).status).toBe("refused");
     expect((await appendCheckpoint(google.client, google.token, id, voidOf("vtwoA", "twoA"), TODAY, true)).status).toBe("saved");
   });

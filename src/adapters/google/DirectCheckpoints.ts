@@ -155,10 +155,13 @@ export async function checkCheckpoint(rest: RestClient, token: string, id: strin
  * Appends one command. The authoritative log is read and the command admitted again here, so a
  * change since the caller's preflight (a competing void, say) becomes a no-op instead of a write.
  */
-export async function appendCheckpoint(rest: RestClient, token: string, id: string, command: CheckpointCommand, today: IsoDate, expectedInitialized = false, known: readonly CheckpointCommand[] = []): Promise<CheckpointOutcome> {
+export async function appendCheckpoint(rest: RestClient, token: string, id: string, command: CheckpointCommand, today: IsoDate, expectedInitialized = false, known: readonly CheckpointCommand[] = [], alive: () => boolean = () => true): Promise<CheckpointOutcome> {
+  const cancelled: CheckpointOutcome = { status: "not-submitted", message: "The account or device state changed, so nothing was sent." };
   let read = await readCheckpoints(rest, token, id, expectedInitialized);
+  if (!alive()) return cancelled;
   if (read.status === "absent") {
     if (command.kind === "void") return { status: "refused", message: "That checkpoint is not in this log.", commands: [] };
+    if (!alive()) return cancelled;
     await initialize(rest, token, id);
     read = await readCheckpoints(rest, token, id);
     // No append has been attempted yet, even if the setup answer was lost.
@@ -175,6 +178,8 @@ export async function appendCheckpoint(rest: RestClient, token: string, id: stri
   }
   const found = await inspect(rest, token, id);
   if (found.status !== "ok") return { status: "not-submitted", message: found.message, commands: read.commands };
+  // The last look before the write: if Forget or an account change happened during the reads, nothing is submitted.
+  if (!alive()) return cancelled;
   const tab = found.tabs.find((entry) => entry.markers.includes(ROLE));
   if (tab === undefined) return { status: "not-submitted", message: "The checkpoint tab is missing. Nothing was written.", commands: read.commands };
   const payload = canonicalJson(command);

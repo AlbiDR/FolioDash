@@ -10,10 +10,13 @@ import { type EuroCents, toEuroCents } from "./Money";
  */
 
 export const MAX_NOTE_LENGTH = 120;
-/** No more than this many `add` commands are admitted into a log. */
-export const ADD_ADMISSION_LIMIT = 5_000;
+/**
+ * No more than this many `add` commands are admitted into a log. It is sized so a whole log, withdrawals
+ * included and with every note at its longest and fully escaped, still fits the device copy (CheckpointStore).
+ */
+export const ADD_ADMISSION_LIMIT = 1_500;
 /** A log is readable up to this many physical commands; it absorbs concurrent overflow and duplicate rows. */
-export const READ_SAFE_LIMIT = 20_000;
+export const READ_SAFE_LIMIT = 4_500;
 /** A separate guard on how many physical rows are examined at all, so a huge sheet cannot exhaust the device. */
 export const MAX_PHYSICAL_ROWS = 200_000;
 /** One hundred billion euro, far beyond any real portfolio and far inside exact integer range. */

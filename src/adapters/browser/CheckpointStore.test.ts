@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type CheckpointCommand } from "../../core/Checkpoints";
+import { ADD_ADMISSION_LIMIT, type CheckpointCommand, READ_SAFE_LIMIT } from "../../core/Checkpoints";
 import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { toEuroCents } from "../../core/Money";
 import { type CheckpointReceipt, createCheckpointLock, createCheckpointStore } from "./CheckpointStore";
@@ -48,6 +48,18 @@ describe("checkpoint store", () => {
     const store = createCheckpointStore(() => memory(), "foliodash.");
     const huge = Array.from({ length: 20_000 }, (_, index): CheckpointCommand => ({ id: `bulk-${String(index).padStart(8, "0")}`, kind: "add", date: date("2026-11-14"), cents: required(toEuroCentsSafe(100)), note: "x".repeat(100) }));
     expect(store.saveCopy({ workbookId: "wb-1", commands: huge, initialized: true })).toBe(false);
+  });
+
+  it("CR-003 keeps the worst log the rules admit: the add limit with the longest escaped notes, every withdrawal and competing duplicates", () => {
+    const store = createCheckpointStore(() => memory(), "foliodash.");
+    const kv = memory();
+    const real = createCheckpointStore(() => kv, "foliodash.");
+    const note = "\\".repeat(120);
+    const adds = Array.from({ length: ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({ id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`, kind: "add", date: date("2026-11-14"), cents: required(toEuroCents(99_999_999_999)), note }));
+    const voids = Array.from({ length: READ_SAFE_LIMIT - ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({ id: `ffffffff-0000-4000-8000-${String(index).padStart(12, "0")}`, kind: "void", target: `00000000-0000-4000-8000-${String(index % ADD_ADMISSION_LIMIT).padStart(12, "0")}` }));
+    expect(real.saveCopy({ workbookId: "wb-1", commands: [...adds, ...voids], initialized: true })).toBe(true);
+    expect(real.loadCopy("wb-1")?.commands).toHaveLength(READ_SAFE_LIMIT);
+    expect(store.workbooks()).toEqual([]);
   });
 
   it("reports a receipt that cannot be removed", () => {
