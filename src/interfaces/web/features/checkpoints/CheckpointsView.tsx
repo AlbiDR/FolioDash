@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import type { Checkpoint } from "../../../../core/Checkpoints";
+import type { Checkpoint, CheckpointCommand } from "../../../../core/Checkpoints";
 import { MAX_NOTE_LENGTH, isSafeNote } from "../../../../core/Checkpoints";
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/IsoDate";
 import { type EuroCents, parseItalianAmount } from "../../../../core/Money";
@@ -11,11 +11,12 @@ import "./checkpoints.css";
 export interface CheckpointScreenState {
   readonly ready: boolean;
   readonly active: readonly Checkpoint[];
-  readonly pending: boolean;
+  /** Saves that were sent but never confirmed. While any exists, nothing else can be saved. */
+  readonly pending: readonly CheckpointCommand[];
   /** The device's record of an unsent save could not be read, so nothing can be saved. */
   readonly unreadable: boolean;
   readonly message: string;
-  readonly preserved: readonly { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: boolean; readonly unreadable: boolean }[];
+  readonly preserved: readonly { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: readonly CheckpointCommand[]; readonly unreadable: boolean }[];
 }
 
 /** What a save, a withdrawal or a check came to. Only `saved` and `no-change` leave nothing to explain. */
@@ -26,7 +27,15 @@ function listed(active: readonly Checkpoint[]): readonly Checkpoint[] {
   return active.map((entry, index) => ({ entry, index })).sort((left, right) => (left.entry.date === right.entry.date ? right.index - left.index : left.entry.date < right.entry.date ? 1 : -1)).map(({ entry }) => entry);
 }
 
-function PreservedList(props: { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: boolean; readonly unreadable: boolean; readonly text: (masked: boolean) => string }): JSX.Element {
+/** What a never-confirmed save was, in words, so the person can tell whether to expect it. */
+function PendingDescription(props: { readonly command: CheckpointCommand; readonly active: readonly Checkpoint[] }): JSX.Element {
+  const { command } = props;
+  if (command.kind === "add") return <>Save of {formatDateLong(command.date)}, <Amount cents={command.cents} />{command.note === "" ? "" : `, note "${command.note}"`}</>;
+  const target = props.active.find((entry) => entry.id === command.target);
+  return target === undefined ? <>Withdrawal of a checkpoint</> : <>Withdrawal of the checkpoint of {formatDateLong(target.date)}, <Amount cents={target.cents} /></>;
+}
+
+function PreservedList(props: { readonly workbookId: string; readonly active: readonly Checkpoint[]; readonly pending: readonly CheckpointCommand[]; readonly unreadable: boolean; readonly text: (masked: boolean) => string }): JSX.Element {
   const [copied, setCopied] = useState("");
   // The text view and the copy follow the privacy toggle: with amounts hidden they leave the amounts out.
   const hidden = usePrivacy();
@@ -34,10 +43,11 @@ function PreservedList(props: { readonly workbookId: string; readonly active: re
   return (
     <section class="card checkpoint-preserved" aria-labelledby={`preserved-${props.workbookId}`}>
       <h3 id={`preserved-${props.workbookId}`} class="card-title">Kept from another workbook</h3>
-      <p class="card-subtitle">These checkpoints belong to a workbook that is not the one connected now. They are kept on this device, read only. They are not restored into a new workbook.{props.pending ? " One save from that workbook was never confirmed." : ""}{props.unreadable ? " This device's record of an unsent save for it could not be read; it was left untouched." : ""}{hidden ? " Amounts are hidden, so the text below and the copy leave them out." : ""}</p>
-      {props.active.length === 0 ? <p class="empty-note">No active checkpoints.</p> : <ul class="checkpoint-list">{listed(props.active).map((entry) => <li key={entry.id}><span class="checkpoint-date">{formatDateLong(entry.date)}</span><span class="checkpoint-value"><Amount cents={entry.cents} /></span>{entry.note !== "" && <span class="checkpoint-note">{entry.note}</span>}</li>)}</ul>}
+      <p class="card-subtitle">These checkpoints belong to a workbook that is not the one connected now. They are kept on this device, read only. They are not restored into a new workbook.{props.pending.length > 0 ? " A save from that workbook was never confirmed; it is listed below and included in the copy." : ""}{props.unreadable ? " This device's record of an unsent save for it could not be read; it was left untouched." : ""}{hidden ? " Amounts are hidden, so the text below and the copy leave them out." : ""}</p>
+      {props.pending.length > 0 && <ul class="checkpoint-list checkpoint-unconfirmed" aria-label="Unconfirmed saves">{props.pending.map((command) => <li key={command.id}><span class="checkpoint-date">Unconfirmed</span><span class="checkpoint-note"><PendingDescription command={command} active={props.active} /></span></li>)}</ul>}
+      {props.active.length === 0 ? <p class="empty-note">No confirmed checkpoints.</p> : <ul class="checkpoint-list">{listed(props.active).map((entry) => <li key={entry.id}><span class="checkpoint-date">{formatDateLong(entry.date)}</span><span class="checkpoint-value"><Amount cents={entry.cents} /></span>{entry.note !== "" && <span class="checkpoint-note">{entry.note}</span>}</li>)}</ul>}
       <div class="checkpoint-actions">
-        <button type="button" disabled={props.active.length === 0} onClick={() => {
+        <button type="button" disabled={text === ""} onClick={() => {
           const clipboard = (navigator as { readonly clipboard?: Clipboard }).clipboard;
           if (clipboard === undefined) { setCopied("Copying is not available here. Select the text below instead."); return; }
           void clipboard.writeText(text).then(() => { setCopied("Copied."); }, () => { setCopied("Copying was not allowed. Select the text below instead."); });
@@ -113,7 +123,7 @@ export function CheckpointsView(props: {
   }
 
   const { state } = props;
-  const blocked = signedOut || busy || !state.ready || state.pending || state.unreadable;
+  const blocked = signedOut || busy || !state.ready || state.pending.length > 0 || state.unreadable;
   const entries = listed(state.active);
 
   return (
@@ -124,9 +134,10 @@ export function CheckpointsView(props: {
         {signedOut && <p class="notice" role="status">This is a sample. Continue with Google to record your own checkpoints.</p>}
         {!signedOut && !state.ready && state.message === "" && <p class="notice" role="status">Checking your checkpoints.</p>}
         {state.message !== "" && <p class="notice notice-warning" role="status">{state.message}</p>}
-        {state.pending && (
+        {state.pending.length > 0 && (
           <div class="notice notice-warning" role="status">
             <p>A save was sent but its outcome was never confirmed. Nothing else can be saved until it is checked. Checking only reads; it never sends the save again.</p>
+            <ul class="checkpoint-pending">{state.pending.map((command) => <li key={command.id}><PendingDescription command={command} active={state.active} /></li>)}</ul>
             <button type="button" disabled={busy} onClick={() => void check()}>Check outcome</button>
           </div>
         )}

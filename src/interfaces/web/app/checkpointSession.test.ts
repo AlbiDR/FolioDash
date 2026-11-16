@@ -526,4 +526,74 @@ describe("checkpoint session", () => {
     expect(again.state.ready).toBe(true);
     expect((await again.add(request("2026-11-15", 1100))).status).toBe("saved");
   });
+
+  it("REVIEW-001 a command that exists in Google with different content is an integrity failure: the receipt and the block stay", async () => {
+    const { session, google, workbook, make, appends } = await ready();
+    google.faults.push({ match: /:append/u, network: true });
+    await session.add(request());
+    const pending = required(session.state.pending[0]);
+    appendRaw(google, workbook.id, { ...(pending as Extract<CheckpointCommand, { kind: "add" }>), cents: euros(5) });
+    const result = await session.checkPending();
+    expect(result.status).toBe("unknown");
+    expect(session.state.pending).toHaveLength(1);
+    expect(session.state.suspect).toBe(true);
+    const restarted = make({ workbookId: workbook.id });
+    expect(restarted.state.pending).toHaveLength(1);
+    expect((await restarted.add(request("2026-11-15", 1100))).status).toBe("unknown");
+    expect(appends()).toBe(1);
+  });
+
+  it("REVIEW-003 an older answer that the log did not exist cannot hide a checkpoint another window saved meanwhile", async () => {
+    const w = await world();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let held = false;
+    const slow = w.make({ rest: async (call) => {
+      const answer = await w.google.client(call);
+      if (!held && call.method === "GET" && !call.url.includes("/values/")) { held = true; await gate; }
+      return answer;
+    } });
+    const delayed = slow.refresh();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const other = w.make({ workbookId: w.workbook.id });
+    await other.refresh();
+    expect((await other.add(request("2026-11-12", 950))).status).toBe("saved");
+    release();
+    await delayed;
+    expect(slow.state.ready).toBe(false);
+    expect(slow.state.suspect).toBe(true);
+    expect(slow.state.message).toMatch(/knows of checkpoints|missing/u);
+  });
+
+  it("REVIEW-004 an unsuccessful read stops the markers until a read succeeds, and the copy stays listed", async () => {
+    const { session, google } = await ready();
+    await session.add(request());
+    expect(session.state.suspect).toBe(false);
+    google.faults.push({ match: /spreadsheets/u, status: 503 });
+    await session.refresh();
+    expect(session.state.suspect).toBe(true);
+    expect(session.state.active).toHaveLength(1);
+    await session.refresh();
+    expect(session.state.suspect).toBe(false);
+  });
+
+  it("REVIEW-005 the preserved text includes a save that was never confirmed, labelled", async () => {
+    const original = await world();
+    const first = original.make();
+    await first.refresh();
+    original.google.faults.push({ match: /:append/u, network: true });
+    await first.add(request("2026-11-10", 900));
+    const elsewhere = original.make({ workbookId: "some-other-workbook" });
+    const text = elsewhere.preservedText(original.workbook.id);
+    expect(text).toContain("UNCONFIRMED\t2026-11-10\t900.00");
+    expect(elsewhere.preservedText(original.workbook.id, true)).not.toContain("900");
+    expect(elsewhere.state.preserved[0]?.pending).toHaveLength(1);
+  });
+
+  it("REVIEW-002 Forget bumps the generation so a screen can discard private drafts", async () => {
+    const { session } = await ready();
+    const before = session.state.generation;
+    session.forget();
+    expect(session.state.generation).toBe(before + 1);
+  });
 });

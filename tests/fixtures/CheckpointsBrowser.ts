@@ -64,10 +64,11 @@ function Harness(props: { readonly current: CheckpointSession }) {
   }, [props.current]);
   const state = props.current.state;
   const view = h(CheckpointsView, {
+    key: state.generation,
     signedOut: false,
     state: {
-      ready: state.ready, active: state.active, pending: state.pending.length > 0, unreadable: state.receiptsUnreadable, message: state.message,
-      preserved: state.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending.length > 0, unreadable: entry.unreadable })),
+      ready: state.ready, active: state.active, pending: state.pending, unreadable: state.receiptsUnreadable, message: state.message,
+      preserved: state.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending, unreadable: entry.unreadable })),
     },
     today,
     onAdd: (request) => session.add(request),
@@ -110,6 +111,8 @@ async function start(): Promise<void> {
       const receipts = (JSON.parse(raw) as { receipts: { command: CheckpointCommand }[] }).receipts;
       for (const entry of receipts) rawAppend(first, firstWorkbook.id, entry.command);
     },
+    /** Forget this device (as another window or the person may), while a draft is on screen. */
+    forgetDevice: () => { session.forget(); },
     corruptReceipt: () => { window.localStorage.setItem(pendingKey, "damaged"); },
     /** A new page load: the session is rebuilt from what this device kept. */
     reload: async () => { session = makeSession(connected.id); mount(); await session.refresh(); },

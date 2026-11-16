@@ -35,6 +35,8 @@ export type CheckpointOutcome =
   | { readonly status: "saved"; readonly commands: readonly CheckpointCommand[] }
   | { readonly status: "no-op"; readonly commands: readonly CheckpointCommand[] }
   | { readonly status: "refused"; readonly message: string; readonly commands?: readonly CheckpointCommand[] }
+  /** A command with this id is in Google with different content: an integrity failure, never proof nothing was sent. */
+  | { readonly status: "conflict"; readonly message: string; readonly commands: readonly CheckpointCommand[] }
   | { readonly status: "not-submitted"; readonly message: string; readonly commands?: readonly CheckpointCommand[] }
   | { readonly status: "unknown"; readonly message: string };
 
@@ -147,7 +149,7 @@ export async function checkCheckpoint(rest: RestClient, token: string, id: strin
   if (read.status !== "ok") return { status: "unknown", message: "The save outcome could not be checked yet. Keep this page open and check again before another save." };
   const prior = read.commands.find((entry) => entry.id === command.id);
   if (prior === undefined) return { status: "unknown", message: "That checkpoint is not visible in Google yet. Check again; do not submit it as a new one." };
-  if (canonicalJson(prior) !== canonicalJson(command)) return { status: "refused", message: "That save identifier already belongs to a different checkpoint. Nothing further was written.", commands: read.commands };
+  if (canonicalJson(prior) !== canonicalJson(command)) return { status: "conflict", message: "A checkpoint with this save identifier is in Google with different content. The original save cannot be confirmed. Nothing further was written; review the workbook.", commands: read.commands };
   return { status: "saved", commands: read.commands };
 }
 
