@@ -5,7 +5,6 @@ import { join } from "node:path";
 import { crc32, deflateSync } from "node:zlib";
 import { afterEach, describe, it } from "node:test";
 import { preparePages, readFiles, README_IMAGES, treeDigest, writeCaptureReceipt } from "./prepare-pages.ts";
-import { TRANSPARENT_IMAGES } from "./readmeViews.ts";
 
 const REVISION = "a".repeat(40);
 const temporary: string[] = [];
@@ -27,13 +26,13 @@ function png(width: number, height: number, alpha?: number): Buffer {
   header[8] = 8;
   header[9] = alpha === undefined ? 2 : 6;
   const rows = Buffer.alloc(height * (width * (alpha === undefined ? 3 : 4) + 1));
-  // Only the first pixel's alpha is read by the composition check.
-  if (alpha !== undefined) rows[4] = alpha;
+  // Every pixel gets this alpha, so a value of 255 is an opaque picture.
+  if (alpha !== undefined) for (let row = 0; row < height; row++) for (let pixel = 0; pixel < width; pixel++) rows[row * (width * 4 + 1) + 1 + pixel * 4 + 3] = alpha;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", deflateSync(rows)), chunk("IEND", Buffer.alloc(0))]);
 }
 
 const desktop = png(2880, 1200);
-const mobile = png(780, 1688);
+const mobile = png(780, 1688, 0);
 const clear = png(2480, 3600, 0);
 
 function fixture(): { app: string; screenshots: string; output: string } {
@@ -46,7 +45,7 @@ function fixture(): { app: string; screenshots: string; output: string } {
   writeFileSync(join(paths.app, "sw.js"), "Synthetic checked service worker");
   writeFileSync(join(paths.app, "manifest.webmanifest"), "{}");
   writeFileSync(join(paths.app, "assets", "main.js"), "Synthetic checked module");
-  for (const name of README_IMAGES) writeFileSync(join(paths.screenshots, name), name === "portfolio-mobile.png" ? mobile : TRANSPARENT_IMAGES.has(name) ? clear : desktop);
+  for (const name of README_IMAGES) writeFileSync(join(paths.screenshots, name), name === "portfolio-mobile.png" ? mobile : clear);
   writeCaptureReceipt(paths.app, paths.screenshots, treeDigest(readFiles(paths.app)), REVISION);
   return paths;
 }
@@ -119,11 +118,11 @@ void describe("checked Pages composition", () => {
     assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /symlink/u);
   });
 
-  void it("rejects a hero that lost its clear background", () => {
+  void it("rejects an image that is drawn on an opaque page background", () => {
     const { app, screenshots, output } = fixture();
     writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, 255));
-    assert.throws(() => { writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION); }, /clear background/u);
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /clear background/u);
+    assert.throws(() => { writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION); }, /without a page background/u);
+    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /without a page background/u);
   });
 
   void it("rejects receipts for another revision or carrying extra fields", () => {
