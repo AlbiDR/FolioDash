@@ -5,7 +5,7 @@ import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync 
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pngContent } from "./png-content.ts";
-import { MOBILE_IMAGES, README_IMAGES } from "./readmeViews.ts";
+import { MOBILE_IMAGES, README_IMAGES, TRANSPARENT_IMAGES } from "./readmeViews.ts";
 
 export { README_IMAGES };
 const RECEIPT = "screenshots.json";
@@ -57,7 +57,7 @@ function images(root: string): { name: string; sha256: string; width: number; he
     if (bytes.length < 33 || bytes.toString("ascii", 12, 16) !== "IHDR" || bytes.readUInt32BE(8) !== 13) throw new Error("Missing PNG image header.");
     const width = bytes.readUInt32BE(16);
     const height = bytes.readUInt32BE(20);
-    if (MOBILE_IMAGES.has(name) ? width !== 780 || height !== 1688 : width !== 2880 || height < 1200 || height > 4000 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
+    if (MOBILE_IMAGES.has(name) ? width !== 780 || height !== 1688 : TRANSPARENT_IMAGES.has(name) ? width < 1600 || width > 2880 || width % 2 !== 0 || height < 1200 || height > 4000 || height % 2 !== 0 : width !== 2880 || height < 1200 || height > 4000 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
     const channels = bytes[25] === 2 ? 3 : bytes[25] === 6 ? 4 : 0;
     if (bytes[24] !== 8 || channels === 0 || bytes[26] !== 0 || bytes[27] !== 0 || bytes[28] !== 0) throw new Error("Unsupported screenshot PNG encoding.");
     const content = pngContent(bytes);
@@ -70,6 +70,8 @@ function images(root: string): { name: string; sha256: string; width: number; he
     const rowSize = width * channels + 1;
     const pixels = content.subarray(bytes.length - compressedSize);
     if (pixels.length !== height * rowSize) throw new Error("Incomplete screenshot pixel rows.");
+    // Whatever the row filter, the first pixel of the first row is stored as is: its alpha byte must be clear.
+    if (TRANSPARENT_IMAGES.has(name) && (channels !== 4 || pixels[4] !== 0)) throw new Error("A transparent README screenshot must have a clear background.");
     for (let row = 0; row < height; row++) if ((pixels[row * rowSize] ?? 255) > 4) throw new Error("Invalid screenshot row filter.");
     return { name, sha256: sha256(bytes), width, height };
   });
