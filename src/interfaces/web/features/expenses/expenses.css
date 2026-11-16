@@ -198,6 +198,10 @@ label.expense-review-filter { display: flex; align-items: center; gap: var(--spa
   .expense-week { grid-column: span 5; }
   .expense-year-section, .expense-record, .page-nav { grid-column: 1 / -1; }
   .expense-year-grid { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); align-items: start; }
+  /* A long record uses the card's width: two columns of days, newest first down the left and then the right, once there are enough to fill both. */
+  .expense-record-list:has(> li:nth-child(6)) { max-width: none; column-count: 2; column-gap: var(--space-5); }
+  .expense-record-list:has(> li:nth-child(6)) > li { break-inside: avoid; border-top: 0; border-bottom: 1px solid var(--color-border); }
+  .expense-record-list:has(> li:nth-child(6)) > li:last-child { border-bottom: 0; }
 }
 @media (max-width: 70rem) {
   .expense-entry, .expense-week, .expense-year-section, .expense-record, .page-nav { grid-column: 1 / -1; }

@@ -214,6 +214,8 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await survey("Portfolio / twelve funds / search and disclosures");
   await visit("expenses");
   await openDetails();
+  // A long record uses the wide card's width (two columns, still newest first) without overflowing; the phone keeps one column.
+  await check("(()=>{const list=document.querySelector('.expense-record-list');const rows=[...list.children];return rows.length>=6&&getComputedStyle(list).columnCount==='2'&&list.scrollWidth<=list.clientWidth+1&&rows.every(row=>row.getBoundingClientRect().width>200)&&document.documentElement.scrollWidth<=innerWidth})()", "a long expense record flows into two columns on a wide screen");
   await survey("Expenses / desktop / initial and disclosures");
   if (await evaluate("![...document.querySelectorAll('.expense-week-list button')].some(b=>b.querySelector('.expense-week-state').textContent==='Recorded')") === true) {
     await evaluate("document.querySelector('.expense-week-controls button[aria-label=\"Previous week\"]').click()");
@@ -323,6 +325,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     }
     await openDetails();
     await survey(`${route} / phone / disclosures open`);
+    if (route === "expenses") await check("getComputedStyle(document.querySelector('.expense-record-list')).columnCount==='auto'&&document.documentElement.scrollWidth<=innerWidth", "the phone expense record stays one column");
     if (route === "overview") await check("Math.round(document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect().height)===200", "phone Performance plot keeps its compact height");
     if (route === "overview") {
       await check("getComputedStyle(document.querySelector('.holdings-sort-mobile')).display!=='none'&&getComputedStyle(document.querySelector('.desktop-holdings')).display==='none'", "phone holdings offer one sort list instead of table headers");
