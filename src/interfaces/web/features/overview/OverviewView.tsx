@@ -63,6 +63,9 @@ const PHONE_SORTS: readonly HoldingsSort[] = [
   { key: "netInvested", direction: "desc" },
 ];
 
+/** Below this many listed funds a table with sold funds stays one block; from here it is grouped. */
+const GROUP_FROM = 6;
+
 /** A search box is only worth its space once a list is long enough to need one. */
 const SEARCH_FROM = 7;
 
@@ -174,6 +177,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
 export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void; /** Value-only observations drawn on the performance chart. Never part of the statements' figures. */ readonly checkpoints?: readonly CheckpointMarker[] }): JSX.Element {
   const [fundQuery, setFundQuery] = useState("");
   const [holdingsSort, setHoldingsSort] = useState<HoldingsSort | null>(null);
+  const [closedOpen, setClosedOpen] = useState(true);
   const searchInput = useRef<HTMLInputElement>(null);
   function clearSearch(): void {
     setFundQuery("");
@@ -205,6 +209,10 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   const query = fundQuery.trim().toLocaleLowerCase("en");
   const listedFunds = sortHoldings([...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query)), holdingsSort);
   const monthly = kpi("Month on month");
+  /** Long lists with funds you have sold read as two blocks, each with its count; a short list stays one table. */
+  const heldListed = listedFunds.filter((fund) => fund.status !== "closed");
+  const closedListed = listedFunds.filter((fund) => fund.status === "closed");
+  const grouped = listedFunds.length >= GROUP_FROM && heldListed.length > 0 && closedListed.length > 0;
   /** The bars compare each fund with the largest holding, so a long list still reads; the percentage beside each carries the exact share. */
   const largestShare = Math.max(0, ...held.map((fund) => fund.latest?.share ?? 0));
   /** A fund's value across the chart's period, for the small line under its value. It needs two statements to be a line. */
@@ -212,6 +220,20 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
     const values = d.fundSeries.find((series) => series.id === isin)?.points.map((point) => point.value) ?? [];
     return values.filter((value) => value !== null).length >= 2 ? values : null;
   };
+
+  const holdingRow = (fund: OverviewFund): JSX.Element => (
+    <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
+      <th scope="row">
+        <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>
+        <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
+      </th>
+      <td><Amount cents={fund.latest?.value ?? null} />{trendOf(fund.isin) !== null && <Sparkline times={d.shownTimes} values={trendOf(fund.isin) ?? []} width={96} height={24} />}</td>
+      <td>{fund.status === "closed" ? "-" : <><Percent ratio={fund.latest?.share ?? null} />{fund.latest?.share !== null && fund.latest?.share !== undefined && <span class="share-bar" aria-hidden="true"><span style={{ inlineSize: `${(largestShare > 0 ? Math.min(1, Math.max(0, fund.latest.share) / largestShare) * 100 : 0).toFixed(2)}%` }} /></span>}</>}</td>
+      <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
+      <td><Signed cents={fund.latest?.gain ?? null} /></td>
+      <td><Amount cents={fund.latest?.netInvested ?? null} /></td>
+    </tr>
+  );
 
   return (
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
@@ -342,21 +364,24 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                   </th>)}
                 </tr>
               </thead>
-              <tbody>
-                {listedFunds.map((fund) => (
-                  <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
-                    <th scope="row">
-                      <a href={`#fund/${fund.isin}`} class="stretched">{fund.name}</a>
-                      <span class="holding-meta">{fund.status === "closed" ? "Closed" : fund.isin}</span>
-                    </th>
-                    <td><Amount cents={fund.latest?.value ?? null} />{trendOf(fund.isin) !== null && <Sparkline times={d.shownTimes} values={trendOf(fund.isin) ?? []} width={96} height={24} />}</td>
-                    <td>{fund.status === "closed" ? "-" : <><Percent ratio={fund.latest?.share ?? null} />{fund.latest?.share !== null && fund.latest?.share !== undefined && <span class="share-bar" aria-hidden="true"><span style={{ inlineSize: `${(largestShare > 0 ? Math.min(1, Math.max(0, fund.latest.share) / largestShare) * 100 : 0).toFixed(2)}%` }} /></span>}</>}</td>
-                    <td><Pill ratio={fund.latest?.gainPercent ?? null} signed /></td>
-                    <td><Signed cents={fund.latest?.gain ?? null} /></td>
-                    <td><Amount cents={fund.latest?.netInvested ?? null} /></td>
-                  </tr>
-                ))}
-              </tbody>
+              {grouped ? (
+                <>
+                  <tbody id="holdings-held-rows">
+                    <tr class="holdings-group"><th colSpan={6} scope="colgroup">Held funds <span class="holdings-group-count">{heldListed.length}</span></th></tr>
+                    {heldListed.map(holdingRow)}
+                  </tbody>
+                  <tbody id="holdings-closed-rows">
+                    <tr class="holdings-group closed-group"><th colSpan={6} scope="colgroup">
+                      <button type="button" class="group-toggle" aria-expanded={closedOpen} aria-controls="holdings-closed-rows" onClick={() => { setClosedOpen(!closedOpen); }}>
+                        <Icon name="chevron" size={16} />Closed funds <span class="holdings-group-count">{closedListed.length}</span>
+                      </button>
+                    </th></tr>
+                    {closedOpen && closedListed.map(holdingRow)}
+                  </tbody>
+                </>
+              ) : (
+                <tbody>{listedFunds.map(holdingRow)}</tbody>
+              )}
               {/* The portfolio's own totals, the same figures as the headline, so the rows and the total can be checked against each other. A filter hides them rather than showing a sum of part of the list. */}
               <tfoot>
                 {query === "" ? (

@@ -8,7 +8,7 @@ const assertions = await runSyntheticJourney({
   port: Number(process.env["FOLIODASH_ACCOUNT_AUDIT_PORT"] ?? 4202),
   config: "config/vite.account-audit.config.ts",
   readySelector: "#account-connection-heading",
-  run: async ({ evaluate, waitFor, check, click, text }) => {
+  run: async ({ evaluate, waitFor, check, click, text, call }) => {
     const seen = async (value: string, label: string): Promise<void> => { await waitFor(async () => await evaluate(text(value)) === true, label); };
     const idle = async (): Promise<void> => { await waitFor(async () => await evaluate("document.querySelector('.status')?.getAttribute('data-busy')==='false'") === true, "idle screen"); };
 
@@ -22,6 +22,15 @@ const assertions = await runSyntheticJourney({
     await waitFor(async () => await evaluate("window.syntheticAccount.statements()===1") === true, "saved statement");
 
     // Sync, verify and organize report their own outcomes.
+    // Settings rows: on a wide screen the action is a compact control beside its title; on a phone it stays a full-width action.
+    await call("Emulation.setDeviceMetricsOverride", { width: 1100, height: 900, deviceScaleFactor: 1, mobile: false });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await check("(()=>{const rows=['.account-health','.account-maintenance'].map(selector=>{const section=document.querySelector(selector);const button=section.querySelector(':scope > button').getBoundingClientRect();const title=section.querySelector(':scope > .card-title').getBoundingClientRect();const sentence=section.querySelector(':scope > .card-subtitle').getBoundingClientRect();const box=section.getBoundingClientRect();return button.width<320&&button.top<sentence.bottom&&button.bottom>title.top&&box.right-button.right<4});return rows.every(Boolean)})()", "Your data actions are compact controls beside their titles on a wide screen");
+    await check("(()=>{const forget=[...document.querySelectorAll('.account-section > button')].find(button=>button.textContent.trim()==='Forget this device');return !!forget&&forget.getBoundingClientRect().width<320})()", "Forget this device is a compact control, not a bar");
+    await call("Emulation.setDeviceMetricsOverride", { width: 390, height: 900, deviceScaleFactor: 1, mobile: true });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await check("(()=>{const button=document.querySelector('.account-health > button').getBoundingClientRect();return button.width>250})()", "on a phone the Your data action stays full width");
+    await call("Emulation.setDeviceMetricsOverride", { width: 1100, height: 900, deviceScaleFactor: 1, mobile: false });
     await idle();
     await click("Sync now");
     await seen("Already up to date", "sync result");

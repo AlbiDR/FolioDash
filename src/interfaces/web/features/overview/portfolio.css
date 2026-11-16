@@ -68,6 +68,11 @@
 .mover-figures { display: grid; justify-items: end; gap: var(--space-1); font-size: var(--text-small); font-variant-numeric: tabular-nums; }
 .mover > svg { color: var(--color-muted); }
 
+.holdings-table .holdings-group th { padding-block: var(--space-2); border-bottom: 1px solid var(--color-border); color: var(--color-muted); font-size: var(--text-caption); font-weight: var(--weight-semibold); letter-spacing: 0.02em; text-align: left; text-transform: none; }
+.holdings-group-count { margin-inline-start: var(--space-1); padding: 0 var(--space-1); border-radius: var(--shape-full); background: var(--color-surface-2); font-variant-numeric: tabular-nums; }
+.group-toggle { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--touch-target); padding: 0 var(--space-1); border: 0; border-radius: var(--shape-sm); background: transparent; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; }
+.group-toggle > svg { transition: transform var(--duration-short) var(--ease-standard); transform: rotate(90deg); }
+.group-toggle[aria-expanded="false"] > svg { transform: none; }
 .holdings-table tfoot th, .holdings-table tfoot td { border-top: 2px solid var(--color-border); border-bottom: 0; font-weight: var(--weight-semibold); }
 .holdings-table tfoot td[colspan] { color: var(--color-muted); font-weight: var(--weight-regular); text-align: left; }
 
