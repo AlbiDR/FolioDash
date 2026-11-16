@@ -95,6 +95,20 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   // The wide Performance card spans the hero and Changes rows: its plot uses the spare height instead of leaving a void.
   await waitFor(async () => await evaluate("(()=>{const card=document.querySelector('.portfolio-trend .chart');const last=card.lastElementChild.getBoundingClientRect();return card.getBoundingClientRect().bottom-last.bottom<=40&&document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect().height>300})()") === true, "wide Performance plot filling its card");
   await check("(()=>{const svg=document.querySelector('.portfolio-trend .chart-svg');const box=svg.getBoundingClientRect();return box.height<=box.width*0.8+1&&box.height<=560})()", "filled Performance plot stays a wide, bounded shape");
+  // The headline carries the change since last month beside the total.
+  await check("!!document.querySelector('.hero .hero-delta .pill') && document.querySelector('.hero .hero-delta').getBoundingClientRect().top>document.querySelector('.hero .hero-value').getBoundingClientRect().top", "the hero shows the month's change beside the total");
+  // Holdings sort: a header sorts, repeating reverses, a third choice restores the saved order, and the order is announced.
+  await evaluate("window.auditHoldingNames=()=>[...document.querySelectorAll('.desktop-holdings .holdings-table tbody th a')].map(a=>a.textContent)");
+  await evaluate("window.auditDefaultOrder=window.auditHoldingNames().join('|')");
+  await evaluate("[...document.querySelectorAll('.sort-button')].find(button=>button.textContent==='Gain %').click()");
+  await delay(300);
+  await check("(()=>{const th=[...document.querySelectorAll('.desktop-holdings .holdings-table thead th')].find(n=>n.textContent.trim()==='Gain %');const held=[...document.querySelectorAll('.desktop-holdings .holdings-table tbody tr:not(.closed)')].map(row=>parseFloat(row.children[3].textContent.replace('+','').replace('.','').replace(',','.')));const last=document.querySelector('.desktop-holdings .holdings-table tbody tr:last-child');return th.getAttribute('aria-sort')==='descending'&&held.length>1&&held.every((value,index)=>index===0||held[index-1]>=value)&&last.classList.contains('closed')&&[...document.querySelectorAll('[role=status]')].some(n=>n.textContent.includes('sorted by Gain %, highest first'))})()", "a column sorts holdings high to low, keeps sold funds last and announces it");
+  await evaluate("[...document.querySelectorAll('.sort-button')].find(button=>button.textContent==='Gain %').click()");
+  await delay(300);
+  await check("[...document.querySelectorAll('.desktop-holdings .holdings-table thead th')].find(n=>n.textContent.trim()==='Gain %').getAttribute('aria-sort')==='ascending'", "choosing the column again reverses it");
+  await evaluate("[...document.querySelectorAll('.sort-button')].find(button=>button.textContent==='Gain %').click()");
+  await delay(300);
+  await check("window.auditHoldingNames().join('|')===window.auditDefaultOrder && [...document.querySelectorAll('.desktop-holdings .holdings-table thead th')].every(n=>n.getAttribute('aria-sort')==='none')", "a third choice restores the saved order");
   // Journey order: summary and performance, then the fund list, then analysis. Analysis cards end with their content.
   await check("(()=>{const holdings=document.querySelector('.portfolio-holdings');const analysis=document.querySelector('.dashboard-analysis');return !!holdings&&!!analysis&&holdings.getBoundingClientRect().top<analysis.getBoundingClientRect().top&&!!(holdings.compareDocumentPosition(analysis)&Node.DOCUMENT_POSITION_FOLLOWING)})()", "holdings come before trends and comparisons");
   await check("[...document.querySelectorAll('.analysis-grid > .card')].every(card=>{const style=getComputedStyle(card);const room=card.getBoundingClientRect().bottom-card.lastElementChild.getBoundingClientRect().bottom;return room<=parseFloat(style.paddingBottom)+16})", "analysis cards end with their content instead of stretching into empty space");
@@ -297,6 +311,15 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     await openDetails();
     await survey(`${route} / phone / disclosures open`);
     if (route === "overview") await check("Math.round(document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect().height)===200", "phone Performance plot keeps its compact height");
+    if (route === "overview") {
+      await check("getComputedStyle(document.querySelector('.holdings-sort-mobile')).display!=='none'&&getComputedStyle(document.querySelector('.desktop-holdings')).display==='none'", "phone holdings offer one sort list instead of table headers");
+      await evaluate("window.auditPhoneNames=()=>[...document.querySelectorAll('.mobile-holdings .holding-name')].map(n=>n.textContent).join('|');window.auditPhoneDefault=window.auditPhoneNames();(()=>{const select=document.getElementById('holdings-sort');select.value='gainPercent:asc';select.dispatchEvent(new Event('change',{bubbles:true}))})()");
+      await delay(300);
+      await check("window.auditPhoneNames()!==window.auditPhoneDefault && document.getElementById('holdings-sort').value==='gainPercent:asc'", "the phone sort list reorders holdings");
+      await evaluate("(()=>{const select=document.getElementById('holdings-sort');select.value='';select.dispatchEvent(new Event('change',{bubbles:true}))})()");
+      await delay(300);
+      await check("window.auditPhoneNames()===window.auditPhoneDefault", "choosing the default order restores the saved order");
+    }
     if (route === "overview") {
       const point = await evaluate("(()=>{const n=document.querySelector('.chart-svg');n.scrollIntoView({block:'center'});const r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()") as { x: number; y: number };
       await call("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [point] });
