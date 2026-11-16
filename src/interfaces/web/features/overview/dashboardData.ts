@@ -6,6 +6,23 @@ import type { Bar } from "../../presentation/charts/MonthlyBars";
 import type { ChartSeries } from "../../presentation/charts/lineChartGeometry";
 import { type ChartRange, rangeStart } from "./chartRange";
 import { memoizeLast } from "../../shared/ui/memo";
+import type { CheckpointMarker } from "../../../../core/Checkpoints";
+
+export const NO_MARKERS: readonly CheckpointMarker[] = [];
+
+/** The value-only observations to draw within the shown period. They are never part of the statements' figures. */
+export function checkpointSeries(markers: readonly CheckpointMarker[], from: IsoDate | undefined): ChartSeries | null {
+  if (from === undefined) return null;
+  const inside = markers.filter((marker) => marker.date >= from);
+  if (inside.length === 0) return null;
+  return {
+    id: "checkpoints",
+    label: "Checkpoint (value only)",
+    slot: 2,
+    markers: true,
+    points: inside.map((marker) => ({ time: utcTime(marker.date), value: marker.cents / 100, ...(marker.count > 1 ? { detail: `${String(marker.count)} checkpoints on this date` } : {}) })),
+  };
+}
 
 export interface AllocationSlice {
   readonly isin: string;
@@ -78,7 +95,7 @@ export interface Dashboard {
  * range. It is a pure function of those two inputs, so it is remembered and only
  * redone when one of them changes.
  */
-export function computeDashboard(model: OverviewModel, range: ChartRange): Dashboard {
+export function computeDashboard(model: OverviewModel, range: ChartRange, markers: readonly CheckpointMarker[] = NO_MARKERS): Dashboard {
   const { dates, funds, totals, months } = model;
   const start = rangeStart(dates, range);
   const shown = dates.slice(start);
@@ -90,6 +107,7 @@ export function computeDashboard(model: OverviewModel, range: ChartRange): Dashb
     totalSeries: [
       { id: "value", label: "Portfolio value", points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.value ?? null) })) },
       { id: "invested", label: "Net invested", dashed: true, points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.invested ?? null) })) },
+      ...(() => { const extra = checkpointSeries(markers, shown[0]); return extra === null ? [] : [extra]; })(),
     ],
     // Each fund's money invested is drawn beneath its value, in the same colour, dotted and faded.
     fundSeries: [

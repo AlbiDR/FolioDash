@@ -1,4 +1,4 @@
-import { type IsoDate, formatMonthShort, toIsoDate } from "../../../../core/IsoDate";
+import { type IsoDate, formatDateLong, formatMonthShort, toIsoDate } from "../../../../core/IsoDate";
 import { type EuroCents, formatEuro, toEuroCents } from "../../../../core/Money";
 import type { StatementLabel } from "../../../../core/StatementLabels";
 
@@ -26,11 +26,14 @@ export function euros(cents: EuroCents | null): number | null {
  * date when the label is not simply its own month. A position that is not a
  * statement keeps its calendar label, so axis ticks are never renamed.
  */
-export function observationLabel(dates: readonly IsoDate[], labels: readonly StatementLabel[]): (time: number) => string {
+export function observationLabel(dates: readonly IsoDate[], labels: readonly StatementLabel[], checkpointDates: readonly IsoDate[] = []): (time: number) => string {
   const byTime = new Map(dates.map((date, index) => [utcTime(date), labels[index]] as const));
+  const checkpoints = new Map(checkpointDates.map((date) => [utcTime(date), date] as const));
   return (time) => {
     const label = byTime.get(time);
-    if (label === undefined) return monthLabel(time);
-    return label.detail === null ? label.short : `${label.short}, ${label.detail}`;
+    const checkpoint = checkpoints.get(time);
+    if (label === undefined) return checkpoint === undefined ? monthLabel(time) : `Checkpoint of ${formatDateLong(checkpoint)}`;
+    const named = label.detail === null ? label.short : `${label.short}, ${label.detail}`;
+    return checkpoint === undefined ? named : `${named}; checkpoint also recorded`;
   };
 }

@@ -6,7 +6,8 @@ import { formatPercent } from "../../../../core/Percent";
 import { availableRanges, type ChartRange } from "./chartRange";
 import { RangeSelector } from "../../shared/ui/RangeSelector";
 import { PageNav } from "../../shared/ui/PageNav";
-import { type AllocationSlice, type MonthMetric, dashboardFor } from "./dashboardData";
+import { type AllocationSlice, type MonthMetric, NO_MARKERS, dashboardFor } from "./dashboardData";
+import type { CheckpointMarker } from "../../../../core/Checkpoints";
 import { Donut } from "../../presentation/charts/Donut";
 import { LineChart } from "../../presentation/charts/LineChart";
 import { MonthlyBars } from "../../presentation/charts/MonthlyBars";
@@ -138,7 +139,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
  * nothing here calculates a financial result. The grid shows value, trend,
  * period results, allocation, monthly pattern, fund ranking and holdings at once.
  */
-export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void }): JSX.Element {
+export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void; /** Value-only observations drawn on the performance chart. Never part of the statements' figures. */ readonly checkpoints?: readonly CheckpointMarker[] }): JSX.Element {
   const [fundQuery, setFundQuery] = useState("");
   const [holdingsSort, setHoldingsSort] = useState<HoldingsSort | null>(null);
   const searchInput = useRef<HTMLInputElement>(null);
@@ -165,7 +166,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
 
   const kpi = (label: string): OverviewKpi | undefined => kpis.find((entry) => entry.label === label);
   const gain = kpi("Current gain");
-  const d = dashboardFor(props.model, props.range);
+  const markers = props.checkpoints ?? NO_MARKERS;
+  const d = dashboardFor(props.model, props.range, markers);
   const { held, slices, ranking, bars } = d;
   const query = fundQuery.trim().toLocaleLowerCase("en");
   const listedFunds = sortHoldings([...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query)), holdingsSort);
@@ -211,7 +213,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           series={d.totalSeries}
           fillFirst
           formatTime={monthLabel}
-          formatObservation={observationLabel(props.model.dates, props.model.labels)}
+          formatObservation={observationLabel(props.model.dates, props.model.labels, markers.map((marker) => marker.date))}
           formatValue={euroLabel}
           emptyMessage="There is nothing to plot yet."
         />
@@ -231,7 +233,10 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
         <h2 id="portfolio-explore-heading" class="visually-hidden">Explore your portfolio</h2>
         <div class="portfolio-explore-row">
           <PageNav items={[{ id: "holdings-heading", label: "Holdings" }, { id: "allocation-heading", label: "Allocation" }, { id: "portfolio-analysis", label: "Trends and comparisons" }]} />
-          <a class="portfolio-history-link" href="#months"><span>Month by month</span><Icon name="chevron" size={18} /></a>
+          <span class="portfolio-links">
+            <a class="portfolio-history-link" href="#months"><span>Month by month</span><Icon name="chevron" size={18} /></a>
+            <a class="portfolio-history-link" href="#checkpoints"><span>Checkpoints</span><Icon name="chevron" size={18} /></a>
+          </span>
         </div>
       </section>
       <div class="card cell-8 portfolio-holdings">

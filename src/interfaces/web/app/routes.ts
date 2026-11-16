@@ -4,6 +4,7 @@ export type Route =
   | { readonly name: "overview" }
   | { readonly name: "expenses" }
   | { readonly name: "months" }
+  | { readonly name: "checkpoints" }
   | { readonly name: "fund"; readonly isin: string }
   | { readonly name: "import" }
   | { readonly name: "history" }
@@ -16,6 +17,7 @@ export function routeFrom(hash: string): Route {
   if (hash === "#history") return { name: "history" };
   if (hash === "#connection") return { name: "connection" };
   if (hash === "#months") return { name: "months" };
+  if (hash === "#checkpoints") return { name: "checkpoints" };
   if (hash.startsWith("#fund/")) {
     const isin = parseIsin(hash.slice("#fund/".length));
     if (isin !== null) return { name: "fund", isin };
@@ -25,6 +27,6 @@ export function routeFrom(hash: string): Route {
 
 /** Which main navigation entry a route belongs to: detail screens belong to the portfolio, and importing a history belongs to Import. */
 export function navEntryOf(route: Route): "overview" | "expenses" | "import" | "history" | "connection" {
-  if (route.name === "months" || route.name === "fund") return "overview";
+  if (route.name === "months" || route.name === "fund" || route.name === "checkpoints") return "overview";
   return route.name === "history" ? "import" : route.name;
 }

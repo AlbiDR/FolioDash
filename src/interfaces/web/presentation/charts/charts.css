@@ -152,6 +152,20 @@
   opacity: 1;
 }
 
+/* A checkpoint is one observation, not part of a line: a diamond that is always visible, never joined to its neighbours. */
+.chart-series .checkpoint-marker {
+  fill: var(--series-color);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.chart-series .checkpoint-marker.is-active { stroke: var(--color-text); }
+
+.chart-swatch rect.checkpoint-swatch {
+  fill: var(--series-color);
+  stroke: none;
+}
+
 .chart-guide {
   stroke: var(--color-muted);
   stroke-width: 1;
