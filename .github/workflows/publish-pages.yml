@@ -48,3 +48,36 @@ jobs:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           printf 'Published the verified Node 22 artifact for `%s`: %s\n' "$GITHUB_SHA" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      # Best effort. GitHub's image proxy keeps each README image for ten minutes at every location, so without this the
+      # README can keep showing the previous screenshots after a release. Only this release's own image URLs are purged.
+      - name: Refresh GitHub's cached copies of the README images
+        if: steps.deployment.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          html="$RUNNER_TEMP/readme.html"
+          urls="$RUNNER_TEMP/readme-image-urls.txt"
+          gh api "repos/$GITHUB_REPOSITORY/readme" -H 'Accept: application/vnd.github.html+json' > "$html"
+          python3 - "$html" > "$urls" <<'PY'
+          import os, re, sys
+          prefix = os.environ["PAGE_URL"].rstrip("/") + "/readme/"
+          seen = set()
+          for url, encoded in re.findall(r"(https://camo\.githubusercontent\.com/[0-9a-f]+/([0-9a-f]+))", open(sys.argv[1], encoding="utf-8").read()):
+              try:
+                  target = bytes.fromhex(encoded).decode()
+              except ValueError:
+                  continue
+              if target.startswith(prefix) and url not in seen:
+                  seen.add(url)
+                  print(url)
+          PY
+          total=0
+          purged=0
+          while read -r url; do
+            total=$((total + 1))
+            if curl -fsS --max-time 20 -X PURGE "$url" > /dev/null; then purged=$((purged + 1)); else echo "::warning::Could not purge one cached README image."; fi
+          done < "$urls"
+          printf 'Refreshed %s of %s cached README images.\n' "$purged" "$total" >> "$GITHUB_STEP_SUMMARY"
