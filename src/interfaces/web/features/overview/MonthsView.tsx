@@ -51,10 +51,18 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
       for (const region of regions) for (const type of ["wheel", "touchstart", "pointerdown", "keydown"]) region.removeEventListener(type, stop);
     };
   }, [dates.length]);
-  /** Both tables share the same statement columns, so they scroll as one. Setting an equal position fires no event, so the two never echo. */
+  /**
+   * Both tables share the same statement columns, so they scroll as one. They can differ in width by a few pixels
+   * (number widths vary with the font), so a table at its end sends the other to its own end rather than to a
+   * position that may fall short of it. Setting an equal position fires no event, so the two never echo.
+   */
   const follow = (other: { readonly current: HTMLDivElement | null }) => (event: Event): void => {
     const source = event.currentTarget as HTMLDivElement;
-    if (other.current !== null && other.current.scrollLeft !== source.scrollLeft) other.current.scrollLeft = source.scrollLeft;
+    const target = other.current;
+    if (target === null) return;
+    const atEnd = source.scrollLeft >= source.scrollWidth - source.clientWidth - 1;
+    const position = atEnd ? Math.max(0, target.scrollWidth - target.clientWidth) : source.scrollLeft;
+    if (Math.abs(target.scrollLeft - position) >= 1) target.scrollLeft = position;
   };
   const date = dates.find((entry) => entry === selected) ?? dates[dates.length - 1];
   const index = dates.findIndex((entry) => entry === date);
