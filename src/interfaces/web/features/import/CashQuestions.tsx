@@ -104,6 +104,8 @@ function AmountField(props: {
   readonly label: string;
   readonly value: string;
   readonly hint?: string;
+  /** One explanation shown once for a whole group of fields, instead of the same text under each fund. */
+  readonly describedBy?: string;
   readonly onInput: (value: string) => void;
 }): JSX.Element {
   return (
@@ -114,7 +116,7 @@ function AmountField(props: {
         type="text"
         inputMode="decimal"
         autoComplete="off"
-        aria-describedby={props.hint === undefined ? undefined : `${props.id}-hint`}
+        aria-describedby={props.hint === undefined ? props.describedBy : `${props.id}-hint`}
         value={props.value}
         onInput={(event) => {
           props.onInput(event.currentTarget.value);
@@ -274,7 +276,7 @@ export function CashQuestions(props: {
     <section ref={questions} class="questions" aria-labelledby={`${prefix}-questions-heading`}>
       <h4 id={`${prefix}-questions-heading`} tabIndex={-1}>{latest === undefined ? "Set your starting balances" : "Review money in and out"}</h4>
       {latest === undefined ? (
-        <p>
+        <p id={`${prefix}-opening-help`}>
           Start from your records as of {formatDateLong(props.date)}: total money paid into each fund, minus all money already received from it. Enter that net invested amount below. It is separate from the fund’s current market value.
         </p>
       ) : (
@@ -295,6 +297,7 @@ export function CashQuestions(props: {
             <input type="radio" name={`${prefix}-money-moved`} checked={moneyMoved === "no"} onChange={() => { setMoneyMoved("no"); }} /> No money moved
           </label>
           <p class="hint">Include extra investments, partial sales, cash distributions and switches. New funds and full sales are reviewed separately below. For a switch, record money received from the old fund and money added to the new one.</p>
+          {moneyMoved === "yes" && <p id={`${prefix}-movement-help`} class="hint"><strong>Money added</strong> is contributions and money switched into a fund. <strong>Money received</strong> is the whole amount paid out by sales, withdrawals, cash distributions and switches out, not just the profit. Enter 0 where there was none.</p>}
         </fieldset>
       )}
 
@@ -325,7 +328,7 @@ export function CashQuestions(props: {
             </p>
 
             {row.detected === "Opening" && (
-              <AmountField id={id("opening")} label="Net invested on this date" hint="Total paid in minus total already received, up to this date. Use your records rather than the current fund value." value={answer.opening} onInput={(value) => { update(row.isin, { opening: value }); }} />
+              <AmountField id={id("opening")} label="Net invested on this date" describedBy={`${prefix}-opening-help`} value={answer.opening} onInput={(value) => { update(row.isin, { opening: value }); }} />
             )}
             {row.detected === "New" && (
               <>
@@ -372,8 +375,8 @@ export function CashQuestions(props: {
             <Presence show={showMoney && !(row.detected === "Held" && row.value === 0 && answer.zero === "close")}>
               <div class="cash-movements">
                 <div class="cash-movement-fields">
-                  <AmountField id={id("in")} label="Money added to this fund" hint="Contributions and money switched into this fund during the period. Enter 0 if none." value={answer.moneyIn} onInput={(value) => { update(row.isin, { moneyIn: value }); }} />
-                  <AmountField id={id("out")} label="Money received from this fund" hint="Total received from sales, withdrawals, cash distributions and switches out. Enter the whole amount, not just the profit. Enter 0 if none." value={answer.moneyOut} onInput={(value) => { update(row.isin, { moneyOut: value }); }} />
+                  <AmountField id={id("in")} label="Money added to this fund" describedBy={`${prefix}-movement-help`} value={answer.moneyIn} onInput={(value) => { update(row.isin, { moneyIn: value }); }} />
+                  <AmountField id={id("out")} label="Money received from this fund" describedBy={`${prefix}-movement-help`} value={answer.moneyOut} onInput={(value) => { update(row.isin, { moneyOut: value }); }} />
                 </div>
                 <button type="button" class="link-button" disabled={locked || amount(answer.moneyIn) === 0 && amount(answer.moneyOut) === 0} onClick={() => { update(row.isin, { moneyIn: "0", moneyOut: "0" }); }}>No money moved for this fund</button>
               </div>

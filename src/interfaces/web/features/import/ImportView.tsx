@@ -130,8 +130,10 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
         </table>
       )}
 
-      <h4 id="review-categories-heading">Categories in the file</h4>
-      <table class="funds" aria-labelledby="review-categories-heading">
+      <div class="more">
+        <details>
+          <summary>Categories in the file<span class="disclosure-description">Why the grand total can differ from the funds subtotal.</span></summary>
+          <table class="funds" aria-label="Categories in the file">
         <thead>
           <tr>
             <th scope="col">Category</th>
@@ -149,9 +151,13 @@ function Statement(props: { readonly statement: ReviewStatement }): JSX.Element 
           ))}
         </tbody>
       </table>
+        </details>
+      </div>
     </>
   );
 }
+
+const JOURNEY_STEPS = ["Choose statements", "Review dates & movements", "Save & check"] as const;
 
 function Review(props: {
   readonly review: Extract<ImportReview, { status: "reviewed" }>;
@@ -356,7 +362,11 @@ export function ImportView(props: {
   return (
     <section aria-labelledby="import-heading" class="import">
       <h2 id="import-heading" class="import-heading">{props.historyMode ? "Choose your history files" : method === "manual" ? "Enter a statement" : method === "earlier" ? "Add earlier history" : "Choose bank statements"}</h2>
-      <ol class="journey-steps" aria-label="Import process"><li aria-current={phase.name === "idle" && method === "file" ? "step" : undefined}><span>01</span> Choose statements</li><li aria-current={!saveLocked && (method === "manual" || phase.name === "reviewed" || phase.name === "batch") ? "step" : undefined}><span>02</span> Review dates &amp; movements</li><li aria-current={saveLocked ? "step" : undefined}><span>03</span> Save &amp; check</li></ol>
+      <ol class="journey-steps" aria-label="Import process">{JOURNEY_STEPS.map((label, position) => {
+        const number = position + 1;
+        const step = saveLocked ? 3 : method === "manual" || phase.name === "reviewed" || phase.name === "batch" ? 2 : 1;
+        return <li key={label} aria-current={step === number ? "step" : undefined} data-done={step > number ? "true" : undefined}><span>0{number}</span> {label}{step > number && <span class="visually-hidden">, completed</span>}</li>;
+      })}</ol>
       <Presence show={recorded !== null}>{recorded !== null && <p ref={recordedMessage} class="notice notice-success" role="status" tabIndex={-1}>Statement for {formatDateLong(recorded)} {props.save === undefined ? "recorded in this browser tab" : "saved to your spreadsheet and checked"}. You can choose another statement below.</p>}</Presence>
       {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="file-entry-panel" aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
