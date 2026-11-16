@@ -4,6 +4,7 @@ import { useEffect, useState } from "preact/hooks";
 import { FakeGoogle } from "./FakeGoogle";
 import { createWorkbook } from "../../src/adapters/google/GoogleWorkbook";
 import { parseIsoDate } from "../../src/core/IsoDate";
+import { toEuroCents, ZERO_CENTS } from "../../src/core/Money";
 import { ExpenseSession } from "../../src/interfaces/web/app/expenseSession";
 import { ExpensesView } from "../../src/interfaces/web/features/expenses/ExpensesView";
 import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/privacy";
@@ -11,6 +12,7 @@ import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/p
 const google = new FakeGoogle();
 const today = parseIsoDate("2026-11-04");
 let blockNextCheck = false;
+let raceOnNextAppend: (() => Promise<unknown>) | null = null;
 
 function Harness(props: { readonly session: ExpenseSession }) {
   const [, tick] = useState(0);
@@ -30,12 +32,16 @@ async function start(): Promise<void> {
   if (!created.ok) throw new Error("Synthetic workbook setup failed");
   let ids = 0;
   const session = new ExpenseSession({ rest: async call => {
+    if (raceOnNextAppend !== null && call.url.includes(":append")) { const race = raceOnNextAppend; raceOnNextAppend = null; await race(); }
     try { return await google.client(call); } catch (error) {
       if (blockNextCheck && call.url.includes(":append")) { blockNextCheck = false; google.faults.push({ match: /^GET .*\/values\//u, network: true }); }
       throw error;
     }
   }, newId: () => `synthetic-${String(++ids)}`, access: () => Promise.resolve({ ok: true as const, token: google.token, workbook: created.value }) });
   await session.refresh();
+  const other = new ExpenseSession({ rest: google.client, newId: () => `synthetic-other-${String(++ids)}`, access: () => Promise.resolve({ ok: true as const, token: google.token, workbook: created.value }) });
+  await other.refresh();
+  const racedDate = parseIsoDate("2026-11-04");
   const root = document.getElementById("root");
   if (root === null) throw new Error("Synthetic mount missing");
   render(h(Harness, { session }), root);
@@ -43,6 +49,8 @@ async function start(): Promise<void> {
     refuseNextWrite: () => { google.faults.push({ match: /:append$/u, status: 403 }); },
     loseNextAnswer: () => { google.faults.push({ match: /:append$/u, network: true, applyFirst: true }); },
     loseAnswerAndFirstCheck: () => { blockNextCheck = true; google.faults.push({ match: /:append$/u, network: true, applyFirst: true }); },
+    raceFromAnotherDevice: () => { raceOnNextAppend = async () => { await other.refresh(); const date = racedDate; const ten = toEuroCents(1000); if (date === null || ten === null) throw new Error("Invalid synthetic date"); return other.save({ date, amounts: [ten, ZERO_CENTS, ZERO_CENTS, ZERO_CENTS, ZERO_CENTS], expectedRevision: other.state.days.find(day => day.date === date)?.revision ?? null }); }; },
+    conflicts: () => session.state.conflicts.length,
     commands: () => session.state.commands.length,
     pending: () => session.state.pending,
     appends: () => google.calls.filter(call => /:append$/u.test(call)).length,

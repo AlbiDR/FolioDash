@@ -24,6 +24,7 @@ try {
     };
     const text = (value: string): string => `document.body.innerText.includes(${JSON.stringify(value)})`;
     const click = async (label: string): Promise<void> => {
+      if (await evaluate(`[...document.querySelectorAll('button')].some(button=>button.textContent.trim()===${JSON.stringify(label)})`) !== true) throw new Error(`No button named "${label}"; found: ${String(await evaluate("[...document.querySelectorAll('button')].map(b=>b.textContent.trim()).join(' | ')"))}`);
       await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent.trim()===${JSON.stringify(label)}).click()`);
     };
     await call("Page.navigate", { url: `${origin}/` });
@@ -52,6 +53,47 @@ try {
     await check("window.syntheticExpenses.commands()===1 && window.syntheticExpenses.pending()===false", "the lost answer is confirmed once, without a second write");
     await check("![...document.querySelectorAll('button')].some(button=>button.textContent.trim()==='Check save outcome')", "the outcome check disappears once settled");
     await check(`window.syntheticExpenses.appends()===${String(appendsBefore)}`, "the check read the original without appending again");
+
+    // Two devices write the same day: neither version replaces the other until the owner resolves it.
+    await waitFor(async () => await evaluate("!document.body.innerText.includes('Check original save')") === true, "settled save notice leaving");
+    await click("Show amounts to edit");
+    await waitFor(async () => await evaluate("!!document.getElementById('expense-0') && !document.getElementById('expense-0').readOnly") === true, "editable day");
+    // The as-it-comes journey: adding to a blank category on a recorded day is an addition, saved in one step without a correction review.
+    await evaluate("(()=>{const input=document.getElementById('expense-3');input.value='12,50';input.dispatchEvent(new Event('input',{bubbles:true}))})()");
+    await check("[...document.querySelectorAll('.expense-save-button')].some(button=>button.textContent.trim()==='Save added expenses')", "filling a blank category offers Save added expenses, not a correction");
+    await click("Save added expenses");
+    await waitFor(async () => await evaluate(text("Saved to your Google Sheet.") + "||" + text("Your entry is saved.")) === true, "added expense saved");
+    await check("!document.querySelector('.expense-review') && window.syntheticExpenses.commands()===2", "an addition saves directly with no review step");
+    await waitFor(async () => await evaluate("!document.body.innerText.includes('Check original save')") === true, "settled addition notice leaving");
+    await click("Show amounts to edit");
+    await waitFor(async () => await evaluate("!!document.getElementById('expense-0') && !document.getElementById('expense-0').readOnly") === true, "editable day after addition");
+    await evaluate("window.syntheticExpenses.raceFromAnotherDevice()");
+    await evaluate("(()=>{const input=document.getElementById('expense-0');input.value='5,00';input.dispatchEvent(new Event('input',{bubbles:true}))})()");
+    await click("Review correction");
+    await waitFor(async () => await evaluate(text("Review your correction")) === true, "correction review before the race");
+    await click("Confirm correction");
+    await waitFor(async () => await evaluate(text("also changed on another device")) === true, "conflict message");
+    await check("window.syntheticExpenses.conflicts()===1 && window.syntheticExpenses.pending()===false", "a collision is a known conflict, not an unknown outcome");
+    await check("window.syntheticExpenses.commands()===4", "both versions are kept in history");
+    await check(text("Conflicting versions"), "the day is labelled as conflicting");
+    await check("[...document.querySelectorAll('.expense-entry-card input[type=text], #expense-0')].every(input=>input.disabled)", "entry fields are locked until a version is chosen");
+    await check("!!document.querySelector('.notice-warning') && !![...document.querySelectorAll('.expense-conflict details')].length", "the conflict list shows both saved versions");
+    await check("[...document.querySelectorAll('.expense-conflict')].length===1 && document.querySelectorAll('.expense-conflict details').length===2", "exactly two versions are offered");
+    await evaluate("document.querySelector('.expense-conflict details').open=true");
+    await check("[...document.querySelectorAll('.expense-conflict button')].every(button=>button.disabled)", "versions cannot be reviewed over an unsaved draft");
+    await click("Discard draft");
+    await check("[...document.querySelectorAll('.expense-conflict button')].every(button=>!button.disabled)", "discarding the draft allows a version to be reviewed");
+    await click("Review this version");
+    await waitFor(async () => await evaluate(text("Review these amounts, then save the correction")) === true, "version review");
+    await waitFor(async () => await evaluate("!!document.getElementById('expense-0') && !document.getElementById('expense-0').disabled") === true, "unlocked editor");
+    await check("!document.getElementById('expense-0').disabled", "choosing a version unlocks the editor for a resolving correction");
+    await click("Save resolution");
+    await waitFor(async () => await evaluate(text("Resolve these conflicting versions?")) === true, "resolution review");
+    await check("window.syntheticExpenses.conflicts()===1", "review alone does not resolve the conflict");
+    await click("Confirm correction");
+    await waitFor(async () => await evaluate("window.syntheticExpenses.conflicts()===0") === true, "resolved conflict");
+    await check("window.syntheticExpenses.commands()===5 && !window.syntheticExpenses.pending()", "resolution is one new revision and earlier versions remain");
+    await check("!document.querySelector('.expense-conflict')", "the conflict card clears once resolved");
   }, Number(process.env["FOLIODASH_EXPENSE_AUDIT_PORT"] ?? 4199), "config/vite.expense-audit.config.ts");
   console.log(`Synthetic rendered expense recovery passed: ${String(assertions)} assertions.`);
 } finally {
