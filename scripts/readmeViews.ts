@@ -16,6 +16,9 @@ export interface CapturedView {
   readonly file: string;
   /** Elements whose bottom edge sets the desktop frame; the page content when absent. */
   readonly frame?: string;
+  /** Desktop shots drawn without the page background, so the cards float on GitHub's own canvas. `include` names what the crop
+   * must contain; `hide` removes what sits below it. The sidebar and top bar are not part of the picture. */
+  readonly transparent?: { readonly include: string; readonly hide: string };
   /** Phone-sized dark capture, written to this file name. */
   readonly mobile?: string;
   /** Placed by the generated README gallery. The overview and expenses are placed by hand in the README. */
@@ -26,7 +29,10 @@ export type ViewEntry = CapturedView | { readonly skip: string };
 
 /** Keyed by every route name, so TypeScript rejects a route without an entry. */
 export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
-  overview: { hash: "#overview", heading: "Portfolio", file: "hero", frame: ".hero,.portfolio-trend,.portfolio-holdings,.movers-card", mobile: "portfolio-mobile.png" },
+  overview: {
+    hash: "#overview", heading: "Portfolio", file: "hero", mobile: "portfolio-mobile.png",
+    transparent: { include: ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.movers-card,.period-results,.portfolio-explore", hide: ".dashboard-analysis,.more" },
+  },
   expenses: { hash: "#expenses", heading: "Work expenses", file: "expenses", frame: ".expense-entry,.expense-week" },
   months: {
     hash: "#months", heading: "Month by month", file: "months",
@@ -56,6 +62,9 @@ export const CAPTURED: readonly (readonly [RouteName, CapturedView])[] = (Object
 
 /** Every PNG the release must contain: light and dark per view, plus the phone shots. */
 export const README_IMAGES: readonly string[] = CAPTURED.flatMap(([, view]) => [`${view.file}-light.png`, `${view.file}-dark.png`, ...(view.mobile === undefined ? [] : [view.mobile])]);
+
+/** Light and dark desktop images that must have a clear background. */
+export const TRANSPARENT_IMAGES: ReadonlySet<string> = new Set(CAPTURED.flatMap(([, view]) => (view.transparent === undefined ? [] : [`${view.file}-light.png`, `${view.file}-dark.png`])));
 
 export const MOBILE_IMAGES: ReadonlySet<string> = new Set(CAPTURED.flatMap(([, view]) => (view.mobile === undefined ? [] : [view.mobile])));
 
