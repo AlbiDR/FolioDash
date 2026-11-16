@@ -57,7 +57,7 @@ function images(root: string): { name: string; sha256: string; width: number; he
     if (bytes.length < 33 || bytes.toString("ascii", 12, 16) !== "IHDR" || bytes.readUInt32BE(8) !== 13) throw new Error("Missing PNG image header.");
     const width = bytes.readUInt32BE(16);
     const height = bytes.readUInt32BE(20);
-    if (MOBILE_IMAGES.has(name) ? width !== 780 || height !== 1688 : width !== 2880 || height < 1200 || height > 3200 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
+    if (MOBILE_IMAGES.has(name) ? width !== 780 || height !== 1688 : width !== 2880 || height < 1200 || height > 4000 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
     const channels = bytes[25] === 2 ? 3 : bytes[25] === 6 ? 4 : 0;
     if (bytes[24] !== 8 || channels === 0 || bytes[26] !== 0 || bytes[27] !== 0 || bytes[28] !== 0) throw new Error("Unsupported screenshot PNG encoding.");
     const content = pngContent(bytes);

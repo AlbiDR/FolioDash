@@ -40,10 +40,10 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   await waitFor(async () => await evaluate("document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed') === 'false' && document.getAnimations().every(animation => animation.playState !== 'running')") === true, "visible demo values and idle rendering");
   await delay(300);
   if (!mobile) {
-    const rowBottom = await evaluate(`Math.ceil(Math.max(...[...document.querySelectorAll(${JSON.stringify(view.frame ?? "#main-content > *")})].map(element=>element.getBoundingClientRect().bottom))+24)`);
+    const rowBottom = await evaluate(`Math.ceil(Math.max(...[...document.querySelectorAll(${JSON.stringify(view.frame ?? "#main-content > *")})].map(element=>element.getBoundingClientRect().bottom))+12)`);
     if (typeof rowBottom !== "number" || !Number.isFinite(rowBottom) || rowBottom < 600) throw new Error("Unexpected screenshot framing.");
-    // A long screen is cut at the first 1600 points; the file check bounds the finished image the same way.
-    height = Math.min(rowBottom, 1600);
+    // A long screen is cut at the first 2000 points; the file check bounds the finished image the same way.
+    height = Math.min(rowBottom, 2000);
     await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
     await delay(100);
   }
@@ -71,4 +71,4 @@ await withLocalBrowser(async browser => {
     if (view.mobile !== undefined) await capture(browser, view.mobile, "dark", route, view, true);
   }
   writeCaptureReceipt(APP, OUTPUT, appDigest, revision);
-});
+}, Number(process.env["FOLIODASH_AUDIT_PORT"] ?? 4197));

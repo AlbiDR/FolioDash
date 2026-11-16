@@ -28,7 +28,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://albidr.github.io/FolioDash/readme/hero-dark.png">
-    <img src="https://albidr.github.io/FolioDash/readme/hero-light.png" width="1040" alt="FolioDash portfolio overview with total value, invested capital, gain and a dated history chart">
+    <img src="https://albidr.github.io/FolioDash/readme/hero-light.png" width="1040" alt="FolioDash portfolio overview with total value, gain, the Performance chart, holdings with share bars and trends, allocation and what moved most">
   </picture>
   <br>
 </p>
