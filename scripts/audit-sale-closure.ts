@@ -9,10 +9,12 @@ const assertions = await runSyntheticJourney({
   config: "config/vite.sale-audit.config.ts",
   readySelector: ".fund-question",
   run: async ({ evaluate, waitFor, check, click, text }) => {
+    // Values reach the page as percent-encoded text, which holds only characters that are inert inside a JavaScript string literal.
+    const literal = (value: string): string => `decodeURIComponent('${encodeURIComponent(value).replace(/'/g, "%27")}')`;
     const type = async (selector: string, value: string): Promise<void> => {
-      await evaluate(`(()=>{const input=document.querySelector(${JSON.stringify(selector)});input.value=${JSON.stringify(value)};input.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+      await evaluate(`(()=>{const input=document.querySelector(${literal(selector)});input.value=${literal(value)};input.dispatchEvent(new Event('input',{bubbles:true}))})()`);
     };
-    const choose = async (selector: string): Promise<void> => { await evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`); };
+    const choose = async (selector: string): Promise<void> => { await evaluate(`document.querySelector(${literal(selector)}).click()`); };
     await check("document.querySelectorAll('.fund-question').length===4", "all four funds are asked about");
 
     // Nothing is recorded until every branch has its own explicit answer.
