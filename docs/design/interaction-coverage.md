@@ -73,24 +73,27 @@ One row is a source template; a fund-link template can render many controls. All
 | 7830fcf45616-1 | [App.tsx:314](../../src/interfaces/web/app/App.tsx#L314) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | d1b5caf7a0bd-1 | [App.tsx:366](../../src/interfaces/web/app/App.tsx#L366) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
 | ff1efa7f6ad1-1 | [App.tsx:372](../../src/interfaces/web/app/App.tsx#L372) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4b205198dc1e-1 | [App.tsx:399](../../src/interfaces/web/app/App.tsx#L399) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
-| a84d603e0083-1 | [AccountView.tsx:127](../../src/interfaces/web/features/account/AccountView.tsx#L127) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| d2c1f7c2e15c-1 | [AccountView.tsx:142](../../src/interfaces/web/features/account/AccountView.tsx#L142) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
-| 340a47c93acd-1 | [AccountView.tsx:167](../../src/interfaces/web/features/account/AccountView.tsx#L167) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| f9f02dcf602a-1 | [AccountView.tsx:174](../../src/interfaces/web/features/account/AccountView.tsx#L174) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 001918fc3d37-1 | [AccountView.tsx:175](../../src/interfaces/web/features/account/AccountView.tsx#L175) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
-| fc05a936c8c9-1 | [AccountView.tsx:184](../../src/interfaces/web/features/account/AccountView.tsx#L184) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 383c3dfd904e-1 | [AccountView.tsx:197](../../src/interfaces/web/features/account/AccountView.tsx#L197) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 1cb2b8595051-1 | [AccountView.tsx:215](../../src/interfaces/web/features/account/AccountView.tsx#L215) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 63597cc1fbdf-1 | [AccountView.tsx:225](../../src/interfaces/web/features/account/AccountView.tsx#L225) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 3cf4f25191b0-1 | [AccountView.tsx:252](../../src/interfaces/web/features/account/AccountView.tsx#L252) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 161f99a4773d-1 | [AccountView.tsx:264](../../src/interfaces/web/features/account/AccountView.tsx#L264) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
-| 60e960948fc2-1 | [AccountView.tsx:277](../../src/interfaces/web/features/account/AccountView.tsx#L277) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 89aba6e5ab63-1 | [AccountView.tsx:291](../../src/interfaces/web/features/account/AccountView.tsx#L291) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
-| 40b02da8f303-1 | [AccountView.tsx:291](../../src/interfaces/web/features/account/AccountView.tsx#L291) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 82a0cea1caa2-1 | [AccountView.tsx:296](../../src/interfaces/web/features/account/AccountView.tsx#L296) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
-| b17867e45ea1-1 | [AccountView.tsx:303](../../src/interfaces/web/features/account/AccountView.tsx#L303) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
-| e9abdd4e5d5a-1 | [AccountView.tsx:319](../../src/interfaces/web/features/account/AccountView.tsx#L319) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
+| 4b205198dc1e-1 | [App.tsx:401](../../src/interfaces/web/app/App.tsx#L401) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
+| a84d603e0083-1 | [AccountView.tsx:161](../../src/interfaces/web/features/account/AccountView.tsx#L161) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| d2c1f7c2e15c-1 | [AccountView.tsx:176](../../src/interfaces/web/features/account/AccountView.tsx#L176) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
+| 340a47c93acd-1 | [AccountView.tsx:201](../../src/interfaces/web/features/account/AccountView.tsx#L201) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| f9f02dcf602a-1 | [AccountView.tsx:208](../../src/interfaces/web/features/account/AccountView.tsx#L208) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 001918fc3d37-1 | [AccountView.tsx:209](../../src/interfaces/web/features/account/AccountView.tsx#L209) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
+| 478e32bcf11d-1 | [AccountView.tsx:217](../../src/interfaces/web/features/account/AccountView.tsx#L217) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0fb07aa1aedf-1 | [AccountView.tsx:218](../../src/interfaces/web/features/account/AccountView.tsx#L218) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 33fdd4741ec0-1 | [AccountView.tsx:219](../../src/interfaces/web/features/account/AccountView.tsx#L219) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| fc05a936c8c9-1 | [AccountView.tsx:227](../../src/interfaces/web/features/account/AccountView.tsx#L227) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 383c3dfd904e-1 | [AccountView.tsx:240](../../src/interfaces/web/features/account/AccountView.tsx#L240) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 1cb2b8595051-1 | [AccountView.tsx:258](../../src/interfaces/web/features/account/AccountView.tsx#L258) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 63597cc1fbdf-1 | [AccountView.tsx:268](../../src/interfaces/web/features/account/AccountView.tsx#L268) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 3cf4f25191b0-1 | [AccountView.tsx:295](../../src/interfaces/web/features/account/AccountView.tsx#L295) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 161f99a4773d-1 | [AccountView.tsx:307](../../src/interfaces/web/features/account/AccountView.tsx#L307) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
+| 60e960948fc2-1 | [AccountView.tsx:320](../../src/interfaces/web/features/account/AccountView.tsx#L320) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 89aba6e5ab63-1 | [AccountView.tsx:334](../../src/interfaces/web/features/account/AccountView.tsx#L334) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
+| 40b02da8f303-1 | [AccountView.tsx:334](../../src/interfaces/web/features/account/AccountView.tsx#L334) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 82a0cea1caa2-1 | [AccountView.tsx:339](../../src/interfaces/web/features/account/AccountView.tsx#L339) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
+| b17867e45ea1-1 | [AccountView.tsx:346](../../src/interfaces/web/features/account/AccountView.tsx#L346) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
+| e9abdd4e5d5a-1 | [AccountView.tsx:362](../../src/interfaces/web/features/account/AccountView.tsx#L362) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
 | 0a73764b8ca3-1 | [GetStarted.tsx:32](../../src/interfaces/web/features/account/GetStarted.tsx#L32) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 52ec4b541dc0-1 | [GetStarted.tsx:39](../../src/interfaces/web/features/account/GetStarted.tsx#L39) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 851794683e90-1 | [GetStarted.tsx:48](../../src/interfaces/web/features/account/GetStarted.tsx#L48) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
@@ -143,6 +146,29 @@ One row is a source template; a fund-link template can render many controls. All
 | 499b0198d43e-1 | [HistoryView.tsx:238](../../src/interfaces/web/features/history/HistoryView.tsx#L238) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | a5a93b862651-1 | [HistoryView.tsx:274](../../src/interfaces/web/features/history/HistoryView.tsx#L274) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | ceab431b5293-1 | [HistoryView.tsx:289](../../src/interfaces/web/features/history/HistoryView.tsx#L289) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2054efc5c8ed-1 | [BackfillEntry.tsx:139](../../src/interfaces/web/features/import/BackfillEntry.tsx#L139) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| bfeeedfcb079-1 | [BackfillEntry.tsx:140](../../src/interfaces/web/features/import/BackfillEntry.tsx#L140) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 52a4a1f47f7f-1 | [BackfillEntry.tsx:142](../../src/interfaces/web/features/import/BackfillEntry.tsx#L142) | input / field | backfill-file | SOURCE CLASSIFIED; STATES OPEN |
+| f22bb7c78c0c-1 | [BackfillEntry.tsx:143](../../src/interfaces/web/features/import/BackfillEntry.tsx#L143) | input / field | backfill-date | SOURCE CLASSIFIED; STATES OPEN |
+| c57496d25300-1 | [BackfillEntry.tsx:145](../../src/interfaces/web/features/import/BackfillEntry.tsx#L145) | input / field | {'backfill-name-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| c97a51ef4ba7-1 | [BackfillEntry.tsx:146](../../src/interfaces/web/features/import/BackfillEntry.tsx#L146) | input / field | {'backfill-isin-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 150fcccbebcd-1 | [BackfillEntry.tsx:147](../../src/interfaces/web/features/import/BackfillEntry.tsx#L147) | input / field | {'backfill-value-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 8e6d1afd64ce-1 | [BackfillEntry.tsx:148](../../src/interfaces/web/features/import/BackfillEntry.tsx#L148) | button / action | {'Remove ${row.name.trim() &#124;&#124; 'fund ${String(index + 1)}'} from this draft'} | SOURCE CLASSIFIED; STATES OPEN |
+| 5850c901a01d-1 | [BackfillEntry.tsx:150](../../src/interfaces/web/features/import/BackfillEntry.tsx#L150) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
+| 8930e4dd20b5-1 | [BackfillEntry.tsx:151](../../src/interfaces/web/features/import/BackfillEntry.tsx#L151) | button / action | Review this month | SOURCE CLASSIFIED; STATES OPEN |
+| e64b0842cda1-1 | [BackfillEntry.tsx:153](../../src/interfaces/web/features/import/BackfillEntry.tsx#L153) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
+| 5c9b0940d6d3-1 | [BackfillEntry.tsx:154](../../src/interfaces/web/features/import/BackfillEntry.tsx#L154) | button / action | Add another earlier month | SOURCE CLASSIFIED; STATES OPEN |
+| 2e195f835bf0-1 | [BackfillEntry.tsx:154](../../src/interfaces/web/features/import/BackfillEntry.tsx#L154) | button / action | Review movements to first saved month | SOURCE CLASSIFIED; STATES OPEN |
+| 3a26881ca88d-1 | [BackfillEntry.tsx:155](../../src/interfaces/web/features/import/BackfillEntry.tsx#L155) | button / action | Back to earlier months | SOURCE CLASSIFIED; STATES OPEN |
+| 6fbe847e7fa2-1 | [BackfillEntry.tsx:156](../../src/interfaces/web/features/import/BackfillEntry.tsx#L156) | button / action | Back to movements | SOURCE CLASSIFIED; STATES OPEN |
+| ddb38b9a7d61-1 | [BackfillEntry.tsx:157](../../src/interfaces/web/features/import/BackfillEntry.tsx#L157) | div / scroll-region | Changes by month | SOURCE CLASSIFIED; STATES OPEN |
+| 69cfca9ee28b-1 | [BackfillEntry.tsx:164](../../src/interfaces/web/features/import/BackfillEntry.tsx#L164) | summary / action | Fund changes for | SOURCE CLASSIFIED; STATES OPEN |
+| 9bd3547d7b1e-1 | [BackfillEntry.tsx:165](../../src/interfaces/web/features/import/BackfillEntry.tsx#L165) | div / scroll-region | {'Fund changes for ${formatDateLong(before.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 96eb79b3058d-1 | [BackfillEntry.tsx:170](../../src/interfaces/web/features/import/BackfillEntry.tsx#L170) | button / action | Confirm and save earlier statement | SOURCE CLASSIFIED; STATES OPEN |
+| 57f43991455c-1 | [BackfillEntry.tsx:173](../../src/interfaces/web/features/import/BackfillEntry.tsx#L173) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| 9f70160fd22f-1 | [BackfillEntry.tsx:174](../../src/interfaces/web/features/import/BackfillEntry.tsx#L174) | button / action | Start a new review | SOURCE CLASSIFIED; STATES OPEN |
+| 56423fc4f0ab-1 | [BackfillEntry.tsx:175](../../src/interfaces/web/features/import/BackfillEntry.tsx#L175) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| ef38b96cfb2d-1 | [BackfillEntry.tsx:175](../../src/interfaces/web/features/import/BackfillEntry.tsx#L175) | button / action | Restore the history from before this change | SOURCE CLASSIFIED; STATES OPEN |
 | 6b04415cce22-1 | [CashQuestions.tsx:112](../../src/interfaces/web/features/import/CashQuestions.tsx#L112) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
 | 162651b70a59-1 | [CashQuestions.tsx:292](../../src/interfaces/web/features/import/CashQuestions.tsx#L292) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | c978e4f9d3fb-1 | [CashQuestions.tsx:295](../../src/interfaces/web/features/import/CashQuestions.tsx#L295) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
@@ -167,11 +193,12 @@ One row is a source template; a fund-link template can render many controls. All
 | 5f01b4cb9bd2-1 | [ExcelHistoryView.tsx:216](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L216) | a / action | View your portfolio | SOURCE CLASSIFIED; STATES OPEN |
 | 8409cc5c50b2-1 | [ExcelHistoryView.tsx:218](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L218) | button / action | Previous statement (keep answers) | SOURCE CLASSIFIED; STATES OPEN |
 | 1b70e1f77040-1 | [ExcelHistoryView.tsx:219](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L219) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 69152a5dd9c5-1 | [ImportView.tsx:178](../../src/interfaces/web/features/import/ImportView.tsx#L178) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
-| ae498c8dad4d-1 | [ImportView.tsx:204](../../src/interfaces/web/features/import/ImportView.tsx#L204) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
-| 2237d7e73393-1 | [ImportView.tsx:358](../../src/interfaces/web/features/import/ImportView.tsx#L358) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
-| 2f10630fb5c6-1 | [ImportView.tsx:359](../../src/interfaces/web/features/import/ImportView.tsx#L359) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
-| 1672104f17d7-1 | [ImportView.tsx:367](../../src/interfaces/web/features/import/ImportView.tsx#L367) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
+| 69152a5dd9c5-1 | [ImportView.tsx:179](../../src/interfaces/web/features/import/ImportView.tsx#L179) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
+| ae498c8dad4d-1 | [ImportView.tsx:205](../../src/interfaces/web/features/import/ImportView.tsx#L205) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
+| 2237d7e73393-1 | [ImportView.tsx:362](../../src/interfaces/web/features/import/ImportView.tsx#L362) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
+| 2f10630fb5c6-1 | [ImportView.tsx:363](../../src/interfaces/web/features/import/ImportView.tsx#L363) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
+| 039be431f469-1 | [ImportView.tsx:364](../../src/interfaces/web/features/import/ImportView.tsx#L364) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
+| 1672104f17d7-1 | [ImportView.tsx:375](../../src/interfaces/web/features/import/ImportView.tsx#L375) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
 | 0d2ce4a9518f-1 | [ManualEntry.tsx:77](../../src/interfaces/web/features/import/ManualEntry.tsx#L77) | input / field | manual-date | SOURCE CLASSIFIED; STATES OPEN |
 | 01bdb3165526-1 | [ManualEntry.tsx:86](../../src/interfaces/web/features/import/ManualEntry.tsx#L86) | input / field | {'${row.id}-name'} | SOURCE CLASSIFIED; STATES OPEN |
 | ef899d0d6276-1 | [ManualEntry.tsx:87](../../src/interfaces/web/features/import/ManualEntry.tsx#L87) | input / field | {'${row.id}-isin'} | SOURCE CLASSIFIED; STATES OPEN |
@@ -240,3 +267,7 @@ CI audit amendment: the first Linux run correctly blocked release when the focus
 The audit also asserts the period-option classification explicitly. Its diagnostic CSS marker uses a more specific selector than the general action rule, so the range control remains identifiable as its own family in rendered reports.
 
 After the CI amendment, both the default and `--focus-only` local browser runs PASS with 40 journey assertions and 563 control samples each. The complete `npm run verify` suite remains PASS at 68 files / 862 tests. The sampler does not relax property-transition or settled-release checks; it establishes their starting state and waits for actual finite-animation completion.
+
+## Earlier-history interaction evidence, 2026-11-16
+
+The local production-renderer audit uses a synthetic device copy and a generated bank workbook. It exercises manual entry followed by an Excel month, movement review, the before-and-after preview, fund disclosure, returning to the boundary review without losing its answer, and phone reflow at 200% text. It surveys the visible manual form, Excel selection and preview on desktop and the preview on a phone-sized viewport; 75 journey assertions and 740 control samples passed across the full run; the preview also showed no running animation under reduced motion. The independent local Google acceptance run saved and restored synthetic histories, including a retained bank source, but is not evidence of every interaction state. Recovery confirmation, uncertain-outcome controls, errors, other reduced-motion states, physical devices and screen readers remain OPEN until individually demonstrated. Existing global reduced-motion and control feedback rules still apply.

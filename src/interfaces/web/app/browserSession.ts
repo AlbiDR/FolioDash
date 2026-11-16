@@ -6,6 +6,7 @@ import { interpretStatement } from "./interpretStatement";
 import { Session } from "./session";
 import { revokeToken, signIn } from "../../../adapters/browser/GoogleIdentity";
 import { createExpenseCache } from "../../../adapters/browser/ExpenseCache";
+import { createRevisionPendingStore } from "../../../adapters/browser/RevisionPending";
 import { createAccountHintStore } from "../../../adapters/browser/ConnectionMemory";
 import { createDurableStore } from "../../../adapters/browser/DurableStore";
 import { type SharedConnectionHandlers, createSharedConnection } from "../../../adapters/browser/TabCoordination";
@@ -57,6 +58,7 @@ export function createBrowserSession(clientId: string): Session {
     coordination: shared,
     rest: browserRest,
     cache: __SYNTHETIC_ACCEPTANCE__ ? createLedgerCache(() => window.localStorage, "foliodash.synthetic-acceptance.ledger.v1") : browserLedgerCache,
+    revisionPending: createRevisionPendingStore(() => window.localStorage, `${PREFIX}revision-pending.v1.`),
     expenseCache: createExpenseCache(() => window.localStorage, __SYNTHETIC_ACCEPTANCE__ ? "foliodash.synthetic-acceptance.expenses.v1" : "foliodash.expenses.v1"),
     ...(__SYNTHETIC_ACCEPTANCE__ ? { workbookIdentity: { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" } } : {}),
     now: () => Date.now(),

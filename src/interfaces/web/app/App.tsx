@@ -384,8 +384,10 @@ export function App(): JSX.Element {
               {route.name === "import" && (
                 <div inert={jsonImportLocked}>
                 <ImportView
+                  key={data.workbook?.id ?? "signed-out"}
                   prepare={prepareImport}
                   ledger={data.ledger}
+                  {...(data.workbook === null ? {} : { workbookId: data.workbook.id })}
                   createRevision={() => crypto.randomUUID()}
                   onRecord={() => undefined}
                   save={session.save}
@@ -399,11 +401,13 @@ export function App(): JSX.Element {
               {(route.name === "import" || route.name === "history") && <div class="more" inert={statementLocked}><details><summary>Import an existing FolioDash JSON history file</summary><HistoryView ledger={data.ledger} onLedger={() => undefined} save={session.save} onWorkflowLock={setJsonImportLocked} /></details></div>}
               {route.name === "connection" && (
                 <AccountView
+                  key={data.workbook?.id ?? "signed-out"}
                   state={data}
                   now={now}
                   clientConfigured={clientConfigured}
                   build={__APP_BUILD__}
                   expenseCommands={expenseData.commands.length}
+                  revisionSave={session.save}
                   actions={{
                     connect: () => session.connect(),
                     refresh: () => session.refresh(),

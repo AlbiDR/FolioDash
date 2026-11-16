@@ -1,6 +1,7 @@
 import { Presence } from "../../shared/ui/Presence";
 import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../../../applications/SessionModel";
 import type { JSX } from "preact";
+import type { RemoteSave } from "../../../../applications/ImportModel";
 import { useRef, useState } from "preact/hooks";
 import { describeAge } from "./timeAgo";
 import { Icon } from "../../shared/ui/icons";
@@ -38,10 +39,13 @@ export function AccountView(props: {
   /** Which build of the app this page is running, so a stale page is never mistaken for the new one. */
   readonly build: string;
   readonly expenseCommands?: number;
+  readonly revisionSave?: RemoteSave;
 }): JSX.Element {
   const { state, actions } = props;
-  const [pending, setPending] = useState<"connect" | "sync" | "restore" | "verify" | "tidy" | null>(null);
-  const busy = pending !== null;
+  const [pending, setPending] = useState<"connect" | "sync" | "restore" | "restore-history" | "verify" | "tidy" | null>(null);
+  const [uncertainRecovery, setUncertainRecovery] = useState<string | null>(null);
+  const pendingChange = uncertainRecovery ?? state.pendingRevision ?? null;
+  const busy = pending !== null || pendingChange !== null;
   const forgetButton = useRef<HTMLButtonElement>(null);
   const keepButton = useRef<HTMLButtonElement>(null);
   const connectionHeading = useRef<HTMLHeadingElement>(null);
@@ -49,6 +53,8 @@ export function AccountView(props: {
   const [checkMessage, setCheckMessage] = useState<Message | null>(null);
   const [tidyMessage, setTidyMessage] = useState<Message | null>(null);
   const [confirmRestore, setConfirmRestore] = useState(false);
+  const [confirmHistoryRestore, setConfirmHistoryRestore] = useState(false);
+  const [historyRestoreMessage, setHistoryRestoreMessage] = useState<Message | null>(null);
   const [confirmForget, setConfirmForget] = useState(false);
   const [clientText, setClientText] = useState("");
   const [clientError, setClientError] = useState(false);
@@ -79,6 +85,34 @@ export function AccountView(props: {
     } finally {
       setPending(null);
     }
+  }
+
+  async function restoreHistory(): Promise<void> {
+    const save = props.revisionSave;
+    if (busy || !confirmHistoryRestore || state.workbook === null || state.recoveryTarget == null || save?.recoverRevision === undefined) return;
+    const id = save.newCommandId();
+    setPending("restore-history"); setHistoryRestoreMessage(null);
+    try {
+      const result = await save.recoverRevision(state.recoveryTarget, id, state.ledger.revision, state.workbook.id);
+      if (result.status === "recorded") { setConfirmHistoryRestore(false); setHistoryRestoreMessage({ good: true, title: "Previous history restored", body: "The portfolio and its attached bank statements were restored and checked." }); }
+      else if (result.status === "unknown" || result.status === "saved-not-reloaded") { setUncertainRecovery(id); setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: "The result is not confirmed. Check what happened before trying again." }); }
+      else setHistoryRestoreMessage({ good: false, title: "History not restored", body: result.status === "rejected" ? result.messages.join(" ") : result.status === "stale" ? "Your history changed. Review the latest data before restoring." : result.message });
+    } catch {
+      setUncertainRecovery(id); setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: "The result is not confirmed. Check what happened before trying again." });
+    } finally { setPending(null); }
+  }
+
+  async function checkHistoryRestore(): Promise<void> {
+    const save = props.revisionSave;
+    if (pendingChange === null || save === undefined || state.workbook === null || pending !== null) return;
+    setPending("restore-history");
+    try {
+      const result = await save.check(pendingChange, state.workbook.id);
+      if (result.status === "recorded") { setUncertainRecovery(null); setConfirmHistoryRestore(false); setHistoryRestoreMessage({ good: true, title: "History change confirmed", body: "The portfolio was read back and checked." }); }
+      else if (result.status === "not-recorded") { setUncertainRecovery(null); setHistoryRestoreMessage({ good: false, title: "History not restored", body: "The spreadsheet shows that the recovery was not recorded. You can review it again." }); }
+      else setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: result.status === "cannot-tell" ? result.message : "The recovery was recorded but the spreadsheet could not be reloaded." });
+    } catch { setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: "The spreadsheet could not be checked. Try again shortly." }); }
+    finally { setPending(null); }
   }
 
   async function verify(): Promise<void> {
@@ -114,7 +148,7 @@ export function AccountView(props: {
   return (
     <section class="account screen" aria-labelledby="account-connection-heading">
       <p class="account-lead">Check synchronization, verify your saved history and manage the copy on this device.</p>
-      <div class="status" data-busy={busy} aria-live="polite">{pending !== null && <p>{pending === "connect" ? "Waiting for Google…" : pending === "sync" ? "Checking your latest saved history…" : pending === "restore" ? "Restoring your spreadsheet and checking the result…" : pending === "verify" ? "Reading and checking your saved statements…" : "Checking and organizing your spreadsheet…"}</p>}</div>
+      <div class="status" data-busy={busy} aria-live="polite">{pending !== null && <p>{pending === "connect" ? "Waiting for Google…" : pending === "sync" ? "Checking your latest saved history…" : pending === "restore" ? "Restoring your spreadsheet and checking the result…" : pending === "restore-history" ? "Restoring or checking your previous portfolio history…" : pending === "verify" ? "Reading and checking your saved statements…" : "Checking and organizing your spreadsheet…"}</p>}</div>
 
       <div class="card account-summary">
         <h2 id="account-connection-heading" ref={connectionHeading} class="card-title" tabIndex={-1}>Your connection</h2>
@@ -176,6 +210,15 @@ export function AccountView(props: {
       </div>
 
       {!signedOut && state.workbook !== null && <PageNav items={[{ id: "account-health-heading", label: "Verify" }, { id: "account-maintenance-heading", label: "Organize" }, { id: "account-device-heading", label: "Storage" }]} />}
+
+      {!signedOut && state.workbook !== null && (state.recoveryTarget != null || pendingChange !== null || historyRestoreMessage !== null) && <section class="account-section" aria-labelledby="account-recover-history-heading">
+        <h2 id="account-recover-history-heading" class="card-title">Restore the previous history</h2>
+        <p>Restore the portfolio and bank statements from before the most recent earlier-history insertion. Changes made since then will no longer appear in the current portfolio. Work expenses are not changed.</p>
+        {state.recoveryTarget != null && pendingChange === null && <><label class="check"><input type="checkbox" checked={confirmHistoryRestore} disabled={busy} onChange={event => { setConfirmHistoryRestore(event.currentTarget.checked); }} /> I understand that this replaces the current portfolio history.</label>
+          <button type="button" disabled={busy || !confirmHistoryRestore || state.sheet !== "ok"} onClick={() => { void restoreHistory(); }}>{pending === "restore-history" ? "Restoring…" : "Restore previous history"}</button></>}
+        {pendingChange !== null && <><p>A previous history change needs checking before another portfolio save.</p><button type="button" disabled={pending !== null} onClick={() => { void checkHistoryRestore(); }}>{pending === "restore-history" ? "Checking…" : "Check what happened"}</button></>}
+        <Result message={historyRestoreMessage} />
+      </section>}
 
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-health" aria-labelledby="account-health-heading">

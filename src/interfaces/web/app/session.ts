@@ -4,14 +4,17 @@ import { fetchAccountHint } from "../../../adapters/google/AccountHint";
 import {
   type DirectDeps,
   attachDirect,
+  backfillDirect,
   commitDirect,
   ensureWorkbook,
+  fenceRevisionDirect,
   type PresentStatement,
   outcomeDirect,
   readAllDirect,
   readDirect,
   refreshView,
   restoreDirect,
+  recoverRevisionDirect,
   tidyLedgerTab,
   statementTabTitle,
 } from "../../../adapters/google/DirectLedger";
@@ -22,6 +25,8 @@ import { rawGrid } from "../../../applications/SheetGrid";
 import { readableView, previousReadableViews } from "../../../applications/ReadableView";
 import { VIEW_TAB } from "../../../adapters/google/SheetsLayout";
 import type { AttachItem } from "../../../applications/LedgerService";
+import type { BackfillStatement } from "../../../applications/BackfillReview";
+import type { FundCommand } from "../../../core/ImportPlan";
 import { type InterpretStatement, verifyRebuild } from "../../../applications/Rebuild";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
 import { type RawSheet, parseStoredSheet } from "../../../core/RawSheet";
@@ -29,6 +34,7 @@ import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../applications/ImportModel";
 import type { LedgerCache } from "../../../adapters/browser/LedgerCache";
 import type { ExpenseCache } from "../../../adapters/browser/ExpenseCache";
+import type { RevisionPendingStore } from "../../../adapters/browser/RevisionPending";
 import { ExpenseSession } from "./expenseSession";
 
 /** The narrow permission: only files this app creates or the person opens with it. */
@@ -51,6 +57,7 @@ export interface SessionDeps {
   readonly rest: RestClient;
   readonly cache: LedgerCache;
   readonly expenseCache?: ExpenseCache;
+  readonly revisionPending?: RevisionPendingStore;
   readonly now: () => number;
   readonly newId: () => string;
   /** How long to wait for quiet before writing the readable tabs, so a run of saves writes them once. */
@@ -126,6 +133,8 @@ export class Session {
         ? { mode: "signed-out", ledger: EMPTY_LEDGER, workbook: null, syncedAt: null, sheet: "unchecked", trailingRows: 0 }
         : { mode: "device-copy", ledger: copy.ledger, workbook: copy.workbook, syncedAt: copy.syncedAt, sheet: "unchecked", trailingRows: 0 };
     if (copy !== null) {
+      const pending = deps.revisionPending?.load(copy.workbook.id);
+      if (pending?.ok === true && pending.commandId !== null) this.current = { ...this.current, pendingRevision: pending.commandId };
       this.token = deps.googleSession?.load(deps.clientId, copy.workbook.id, deps.now()) ?? null;
       // Remembered, but not yet confirmed this visit: the next click renews access if it is missing.
       if (this.token === null) this.current = { ...this.current, connection: "waiting" };
@@ -257,8 +266,10 @@ export class Session {
   }
 
   private set(next: SessionState): void {
-    this.current = next.organization === undefined && next.workbook?.id === this.current.workbook?.id && this.current.organization !== undefined
-      ? { ...next, organization: this.current.organization } : next;
+    const pending = next.workbook === null ? null : this.deps.revisionPending?.load(next.workbook.id);
+    const withPending = pending?.ok === true ? { ...next, pendingRevision: pending.commandId } : next;
+    this.current = withPending.organization === undefined && withPending.workbook?.id === this.current.workbook?.id && this.current.organization !== undefined
+      ? { ...withPending, organization: this.current.organization } : withPending;
     for (const listener of this.listeners) listener();
   }
 
@@ -501,7 +512,7 @@ export class Session {
     if (read.state.snapshots.length === 0 && copy.snapshots.length > 0) return attention("emptied");
     const changed = read.state.revision !== copy.revision;
     this.keep(workbook, read.state);
-    this.set({ mode: "online", connection: "connected", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
+    this.set({ mode: "online", connection: "connected", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows, recoveryTarget: read.recoveryTarget ?? null });
     if (this.tidied !== workbook.id) {
       this.tidied = workbook.id;
       this.later(tidyLedgerTab(this.deps.rest, accessToken, workbook.id));
@@ -736,10 +747,15 @@ export class Session {
   readonly save: RemoteSave = {
     newCommandId: () => this.deps.newId(),
 
+    backfill: (earlier: readonly BackfillStatement[], boundary: readonly FundCommand[], commandId: string, expectedRevision: string, expectedWorkbookId: string): Promise<RecordResult> => this.writeRevision(commandId, (deps, token, workbook) => backfillDirect(deps, token, workbook.id, { earlier, boundary, commandId, expectedRevision }, this.deps.interpret), earlier.flatMap(item => item.source === undefined ? [] : [{ date: item.date, sheet: item.source.sheet }]), expectedWorkbookId),
+
+    recoverRevision: (targetRevision: string, commandId: string, expectedRevision: string, expectedWorkbookId: string): Promise<RecordResult> => this.writeRevision(commandId, (deps, token, workbook) => recoverRevisionDirect(deps, token, workbook.id, { targetRevision, commandId, expectedRevision }), [], expectedWorkbookId),
+
     record: async (request: RecordRequest, commandId: string, expectedRevision: string): Promise<RecordResult> => {
       const generation = this.generation;
       const { workbook } = this.current;
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
+      if (this.revisionBlocked(workbook.id)) return { status: "not-saved", message: "Check the previous history change before saving another statement." };
       const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
       if (generation !== this.generation) return { status: "not-saved", message: "The account changed before saving. Nothing was submitted. Review the selected account before continuing." };
@@ -779,6 +795,7 @@ export class Session {
       const generation = this.generation;
       const { workbook } = this.current;
       if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
+      if (this.revisionBlocked(workbook.id)) return { status: "not-saved", message: "Check the previous history change before attaching statements." };
       const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
       if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
       if (generation !== this.generation) return { status: "not-saved", message: "The account changed before saving. Nothing was submitted. Review the selected account before continuing." };
@@ -816,14 +833,28 @@ export class Session {
       return all.status === "ok" ? new Set(all.sources.map((source) => source.date)) : null;
     },
 
-    check: async (commandId: string): Promise<CheckResult> => {
+    check: async (commandId: string, expectedWorkbookId?: string): Promise<CheckResult> => {
       const { workbook } = this.current;
       if (workbook === null) return { status: "cannot-tell", message: "There is no spreadsheet to check." };
+      if (expectedWorkbookId !== undefined && workbook.id !== expectedWorkbookId) return { status: "cannot-tell", message: "The account changed. Check this operation in its original workbook." };
+      const pending = this.deps.revisionPending?.load(workbook.id);
+      if (pending !== undefined && !pending.ok) return { status: "cannot-tell", message: "The pending change on this device could not be read." };
+      if (pending?.ok === true && pending.commandId !== null && pending.commandId !== commandId) return { status: "cannot-tell", message: "A different history change needs checking first." };
       const signed = await this.accessToken();
       if (!signed.ok) return { status: "cannot-tell", message: SIGN_IN_TEXT[signed.reason].replace(", so nothing was saved", "") };
       const outcome = await outcomeDirect(this.deps.rest, signed.token, workbook.id, commandId);
       switch (outcome.status) {
         case "not-found":
+          if (pending?.ok === true && pending.commandId === commandId) {
+            if (pending.predecessor === null) return { status: "cannot-tell", message: "The change is not visible yet. Check again before making another change." };
+            const fenced = await fenceRevisionDirect({ rest: this.deps.rest, newRevision: this.deps.newId }, signed.token, workbook.id, commandId, pending.predecessor);
+            if (fenced === "unknown") return { status: "cannot-tell", message: "The change could not yet be resolved. Check again before making another change." };
+            const read = await this.readBack(workbook, signed.token);
+            if (read.status !== "recorded") return { status: "cannot-tell", message: "The spreadsheet could not be reloaded. Check the change again." };
+            if (!this.deps.revisionPending?.clear(workbook.id, commandId)) return { status: "cannot-tell", message: "The pending receipt could not be cleared on this device." };
+            this.set({ ...this.current, pendingRevision: null });
+            return fenced === "fenced" ? { status: "not-recorded" } : read;
+          }
           return { status: "not-recorded" };
         case "damaged":
           return { status: "cannot-tell", message: `${outcome.message} Do not record anything until it is restored.` };
@@ -831,11 +862,56 @@ export class Session {
           return { status: "cannot-tell", message: "The spreadsheet could not be checked. Try again shortly." };
         case "committed": {
           const back = await this.readBack(workbook, signed.token);
+          if (back.status === "recorded" && pending?.ok === true && pending.commandId === commandId) {
+            if (!this.deps.revisionPending?.clear(workbook.id, commandId)) return { status: "cannot-tell", message: "The change is recorded, but its pending receipt could not be cleared on this device." };
+            this.set({ ...this.current, pendingRevision: null });
+          }
           return back.status === "recorded" ? back : { status: "saved-not-reloaded" };
         }
       }
     },
   };
+
+  private revisionBlocked(workbookId: string): boolean {
+    const pending = this.deps.revisionPending?.load(workbookId);
+    return pending !== undefined && (!pending.ok || pending.commandId !== null);
+  }
+
+  private async writeRevision(commandId: string, action: (deps: DirectDeps, token: string, workbook: Workbook) => ReturnType<typeof backfillDirect>, mirror: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[] = [], expectedWorkbookId?: string): Promise<RecordResult> {
+    const generation = this.generation;
+    const { workbook } = this.current;
+    if (workbook === null) return { status: "not-saved", message: "Continue with Google first, so there is somewhere to save to." };
+    if (expectedWorkbookId !== undefined && workbook.id !== expectedWorkbookId) return { status: "stale" };
+    const signed = await this.accessToken(WRITE_MINIMUM_MILLISECONDS);
+    if (!signed.ok) return { status: "not-saved", message: SIGN_IN_TEXT[signed.reason] };
+    if (generation !== this.generation) return { status: "not-saved", message: "The account changed before saving. Nothing was submitted." };
+    if (this.deps.revisionPending === undefined || !this.deps.revisionPending.begin(workbook.id, commandId)) return { status: "not-saved", message: "The previous history change needs checking, or this device cannot keep a recovery receipt. Nothing was submitted." };
+    this.set({ ...this.current, pendingRevision: commandId });
+    let result: Awaited<ReturnType<typeof backfillDirect>>;
+    try { result = await action({ rest: this.deps.rest, newRevision: this.deps.newId, beforeRevisionWrite: (fingerprint) => this.deps.revisionPending?.prepare(workbook.id, commandId, fingerprint) ?? false }, signed.token, workbook); }
+    catch { return { status: "unknown", message: "The result is not known. Check the change before trying again." }; }
+    if (generation !== this.generation) return { status: "unknown", message: "The account changed during this save. Check its outcome in the original workbook before another attempt." };
+    if (result.status !== "unknown" && result.status !== "committed" && result.status !== "already-committed") {
+      if (!this.deps.revisionPending.clear(workbook.id, commandId)) return { status: "unknown", message: "The pending receipt could not be cleared. Check the change before continuing." };
+      this.set({ ...this.current, pendingRevision: null });
+    }
+    switch (result.status) {
+      case "committed": case "already-committed": {
+        const read = await this.readBack(workbook, signed.token, mirror);
+        if (read.status !== "recorded") return read;
+        if (!this.deps.revisionPending.clear(workbook.id, commandId)) return { status: "unknown", message: "The change was recorded, but its pending receipt could not be cleared. Check the change before continuing." };
+        this.set({ ...this.current, pendingRevision: null });
+        return read;
+      }
+      case "stale": await this.load(workbook, signed.token, false, generation); return { status: "stale" };
+      case "rejected": return { status: "rejected", messages: result.messages };
+      case "damaged": return { status: "damaged", message: result.message };
+      case "not-committed": return { status: "not-saved", message: result.message };
+      case "not-sent": return { status: "not-saved", message: NOT_SENT_TEXT[result.failure] };
+      case "refused": return { status: "not-saved", message: result.message };
+      case "unknown": return { status: "unknown", message: result.message };
+    }
+  }
 
   private async readBack(workbook: Workbook, accessToken: string, mirror: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[] = []): Promise<RecordResult> {
     const generation = this.generation;
@@ -845,7 +921,7 @@ export class Session {
     if (generation !== this.generation || sequence !== this.syncSequence) return { status: "saved-not-reloaded" };
     if (read.status !== "ok") return { status: "saved-not-reloaded" };
     this.keep(workbook, read.state);
-    this.set({ mode: "online", connection: "connected", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows });
+    this.set({ mode: "online", connection: "connected", ledger: read.state, workbook, syncedAt: this.deps.now(), sheet: "ok", trailingRows: read.ignoredTrailingRows, recoveryTarget: read.recoveryTarget ?? null });
     // The readable tab is a convenience; its failure never affects the saved records.
     this.queueViews(workbook, read.state, mirror);
     return { status: "recorded", ledger: read.state };

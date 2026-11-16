@@ -1,4 +1,7 @@
 import type { SourceRecord } from "../../applications/StatementSource";
+import { prepareBackfillReview, type BackfillStatement } from "../../applications/BackfillReview";
+import type { InterpretStatement } from "../../applications/Rebuild";
+import type { FundCommand } from "../../core/ImportPlan";
 import type { CallFailure, Workbook } from "../../applications/SessionModel";
 import { type AttachRequest, type CommitRequest, type ServiceEnvironment, attachStatements, commitStatement } from "../../applications/LedgerService";
 import { rawGrid } from "../../applications/SheetGrid";
@@ -7,10 +10,10 @@ import type { Grid } from "../../applications/SheetGrid";
 import { canonicalJson } from "../../core/CanonicalJson";
 import { type LedgerState, parseLedgerState } from "../../core/Ledger";
 import type { IsoDate } from "../../core/IsoDate";
-import type { RawSheet } from "../../core/RawSheet";
+import { toStoredSheet, type RawSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedgerStore";
-import { appendLedgerRows, createWorkbook, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs, type WorkbookIdentity } from "./GoogleWorkbook";
+import { appendLedgerRows, createWorkbook, fenceLedgerWrite, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs, type WorkbookIdentity } from "./GoogleWorkbook";
 import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
 import { VIEW_TAB } from "./SheetsLayout";
 import { type RestClient, type RestFailure } from "./Rest";
@@ -49,6 +52,8 @@ export interface DirectDeps {
   readonly rest: RestClient;
   readonly newRevision: () => string;
   readonly workbookIdentity?: WorkbookIdentity;
+  /** Persist the predecessor fingerprint before a revision-changing write is sent. */
+  readonly beforeRevisionWrite?: (fingerprint: string) => boolean;
 }
 
 export type EnsureResult =
@@ -77,9 +82,10 @@ export async function readDirect(rest: RestClient, accessToken: string, workbook
     return tab.failure === "not-found" ? { status: "workbook-unavailable" } : { status: "call-failed", failure: tab.failure, message: null };
   }
   if ("notALedger" in tab.value) return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so it was not changed." };
-  const loaded = storeOf(tab.value.rows).store.load();
+  const store = storeOf(tab.value.rows).store;
+  const loaded = store.load();
   return loaded.status === "ok"
-    ? { status: "ok", state: loaded.state, ignoredTrailingRows: loaded.ignoredTrailingRows }
+    ? { status: "ok", state: loaded.state, ignoredTrailingRows: loaded.ignoredTrailingRows, ...(store.recoveryTarget() === null ? {} : { recoveryTarget: store.recoveryTarget() }) }
     : { status: "damaged", message: loaded.message };
 }
 
@@ -104,13 +110,18 @@ async function writeOnce(
 
   const { sheet, store } = storeOf(before.value.rows);
   const environment: ServiceEnvironment = { store, withLock: (action) => action(), newRevision: deps.newRevision };
-  const { result, wrote } = operate(environment);
+  let prepared: ReturnType<typeof operate>;
+  try { prepared = operate(environment); }
+  catch { return { status: "not-committed", message: "The change could not be prepared. Nothing was sent." }; }
+  const { result, wrote } = prepared;
   if (!wrote) return result;
 
   // Nothing has been written yet. Make sure the sheet has not changed since it was read.
   const again = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!again.ok) return notWritten(again.failure);
   if ("notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows)) return { status: "stale" };
+
+  if (deps.beforeRevisionWrite !== undefined && !deps.beforeRevisionWrite(sha256Hex(canonicalJson(before.value.rows)))) return { status: "not-committed", message: "The safety receipt could not be stored. Nothing was sent." };
 
   const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending, before.value.rows);
   if (sent.ok) {
@@ -128,12 +139,41 @@ async function writeOnce(
     if (check.ok && !("notALedger" in check.value)) {
       const checked = storeOf(check.value.rows).store;
       if (checked.load().status === "ok" && canonicalJson(check.value.rows) !== canonicalJson(before.value.rows)) {
-        const reconciled = operate({ store: checked, withLock: (action) => action(), newRevision: deps.newRevision });
-        if (!reconciled.wrote) return reconciled.result;
+        try {
+          const reconciled = operate({ store: checked, withLock: (action) => action(), newRevision: deps.newRevision });
+          if (!reconciled.wrote) return reconciled.result;
+        } catch { return { status: "unknown", message: LOST }; }
       }
     }
   }
   return sent.failure === "unavailable" || sent.failure === "network" || sent.failure === "unexpected" ? { status: "unknown", message: LOST } : notWritten(sent.failure);
+}
+
+/** Resolve a missing uncertain command by atomically fencing its predecessor. */
+export async function fenceRevisionDirect(deps: DirectDeps, accessToken: string, workbookId: string, commandId: string, predecessor: string): Promise<"fenced" | "committed" | "unknown"> {
+  const before = await readLedgerRows(deps.rest, accessToken, workbookId);
+  if (!before.ok || "notALedger" in before.value) return "unknown";
+  const { sheet, store } = storeOf(before.value.rows);
+  const current = store.load();
+  if (current.status !== "ok") return "unknown";
+  if (store.findCommand(commandId) !== null) return "committed";
+  const fenceId = `fence-${commandId}`;
+  const fenceHash = sha256Hex(canonicalJson({ commandId, predecessor }));
+  const priorFence = store.findCommand(fenceId);
+  if (priorFence !== null) return priorFence.requestHash === fenceHash ? "fenced" : "unknown";
+  const revision = deps.newRevision();
+  try { store.publish({ ...current.state, revision }, { commandId: fenceId, revision, requestHash: fenceHash }); }
+  catch { return "unknown"; }
+  const again = await readLedgerRows(deps.rest, accessToken, workbookId);
+  if (!again.ok || "notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows)) return "unknown";
+  const sent = await fenceLedgerWrite(deps.rest, accessToken, workbookId, predecessor, before.value.rows, sheet.pending);
+  if (!sent.ok) return "unknown";
+  const after = await readLedgerRows(deps.rest, accessToken, workbookId);
+  if (!after.ok || "notALedger" in after.value) return "unknown";
+  const checked = storeOf(after.value.rows).store;
+  if (checked.load().status !== "ok") return "unknown";
+  if (checked.findCommand(commandId) !== null) return "committed";
+  return checked.findCommand(fenceId)?.requestHash === fenceHash ? "fenced" : "unknown";
 }
 
 /** Saves one reviewed statement. */
@@ -182,6 +222,61 @@ export function attachDirect(deps: DirectDeps, accessToken: string, workbookId: 
       case "unknown":
         return { result: { status: "unknown", message: outcome.message }, wrote: false };
     }
+  });
+}
+
+/** Restore a reviewed historical revision as a new revision, including its bank sources. */
+export function recoverRevisionDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: { readonly commandId: string; readonly expectedRevision: string; readonly targetRevision: string }): Promise<RemoteCommit> {
+  return writeOnce(deps, accessToken, workbookId, (environment) => {
+    const store = environment.store;
+    if (!(store instanceof RowLedgerStore)) return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
+    const loaded = store.load();
+    if (loaded.status === "damaged") return { result: loaded, wrote: false };
+    const hash = sha256Hex(canonicalJson({ kind: "recover-revision", targetRevision: request.targetRevision, expectedRevision: request.expectedRevision }));
+    const existing = store.findCommand(request.commandId);
+    if (existing !== null) return existing.requestHash === hash
+      ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
+      : { result: { status: "rejected", messages: ["This recovery identifier was already used for another request."] }, wrote: false };
+    if (loaded.state.revision !== request.expectedRevision) return { result: { status: "stale" }, wrote: false };
+    if (request.commandId.trim() === "" || request.targetRevision.trim() === "") return { result: { status: "rejected", messages: ["The recovery request is incomplete."] }, wrote: false };
+    const target = store.loadRevision(request.targetRevision);
+    if (target.status !== "ok") return { result: { status: "damaged", message: target.message }, wrote: false };
+    const revision = deps.newRevision();
+    try {
+      store.publishWithSources({ ...target.state, revision }, { commandId: request.commandId, revision, requestHash: hash }, target.sources, target.recoveryTarget ?? null);
+    } catch {
+      return { result: { status: "rejected", messages: ["The recovery could not be prepared. Nothing was sent."] }, wrote: false };
+    }
+    return { result: { status: "committed", revision }, wrote: true };
+  });
+}
+
+/** Save a reviewed prefix and its replacement source decisions as one guarded revision. */
+export function backfillDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: { readonly commandId: string; readonly expectedRevision: string; readonly earlier: readonly BackfillStatement[]; readonly boundary: readonly FundCommand[] }, interpret: InterpretStatement): Promise<RemoteCommit> {
+  return writeOnce(deps, accessToken, workbookId, (environment) => {
+    const store = environment.store;
+    if (!(store instanceof RowLedgerStore)) return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
+    const loaded = store.load();
+    if (loaded.status === "damaged") return { result: loaded, wrote: false };
+    const normalized = request.earlier.map(item => ({ date: item.date, statement: item.statement, commands: item.commands, ...(item.source === undefined ? {} : { source: { sheetName: item.source.sheetName, sheet: toStoredSheet(item.source.sheet) } }) }));
+    const hash = sha256Hex(canonicalJson({ kind: "backfill", expectedRevision: request.expectedRevision, earlier: normalized, boundary: request.boundary }));
+    const existing = store.findCommand(request.commandId);
+    if (existing !== null) return existing.requestHash === hash
+      ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
+      : { result: { status: "rejected", messages: ["This import identifier was already used for another request."] }, wrote: false };
+    if (loaded.state.revision !== request.expectedRevision) return { result: { status: "stale" }, wrote: false };
+    if (request.commandId.trim() === "") return { result: { status: "rejected", messages: ["The import identifier is missing."] }, wrote: false };
+    const sources = store.loadSources();
+    if (sources.status === "damaged") return { result: sources, wrote: false };
+    const revision = deps.newRevision();
+    const candidate = prepareBackfillReview(loaded.state, sources.sources, request.earlier, request.boundary, revision, request.commandId, interpret);
+    if (!candidate.ok) return { result: { status: "rejected", messages: [candidate.message] }, wrote: false };
+    try {
+      store.publishWithSources(candidate.ledger, { commandId: request.commandId, revision, requestHash: hash }, candidate.sources, loaded.state.revision);
+    } catch {
+      return { result: { status: "rejected", messages: ["The import could not be prepared. Nothing was sent."] }, wrote: false };
+    }
+    return { result: { status: "committed", revision }, wrote: true };
   });
 }
 

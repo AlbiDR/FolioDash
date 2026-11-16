@@ -153,6 +153,25 @@ export async function appendLedgerRows(rest: RestClient, accessToken: string, wo
   return { ok: true, value: rows.length };
 }
 
+/** Atomically fence a pending predecessor and advance the current ledger without changing its figures. */
+export async function fenceLedgerWrite(rest: RestClient, accessToken: string, workbookId: string, predecessorHash: string, current: readonly LedgerRow[], rows: readonly LedgerRow[]): Promise<RestResult<boolean>> {
+  if (!/^[0-9a-f]{64}$/u.test(predecessorHash)) return fail("unexpected");
+  const tabs = await listTabs(rest, accessToken, workbookId);
+  if (!tabs.ok) return tabs;
+  const ledger = tabs.value.find(tab => tab.title === LEDGER_TAB);
+  if (ledger === undefined) return fail("not-found");
+  const hashes = [...new Set([predecessorHash, sha256Hex(canonicalJson(current))])];
+  const markers = hashes.map(hash => {
+    const marker = `FolioDash_commit_${hash}`;
+    return { addNamedRange: { namedRange: { namedRangeId: marker, name: marker, range: { sheetId: ledger.id, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 1 } } } };
+  });
+  const result = await callRest(rest, accessToken, { method: "POST", url: `${SHEETS}/${encodeURIComponent(workbookId)}:batchUpdate`, body: { requests: [
+    ...markers,
+    { appendCells: { sheetId: ledger.id, rows: rows.map(row => ({ values: [row.revision, row.type, row.payload, row.checksum].map(value => ({ userEnteredValue: { stringValue: value } })) })), fields: "userEnteredValue" } },
+  ] } });
+  return result.ok ? { ok: true, value: true } : result;
+}
+
 interface TabInfo {
   readonly id: number;
   readonly title: string;

@@ -5,6 +5,7 @@ import type { RawSheet } from "../core/RawSheet";
 import type { AttachItem, StatementSource } from "./LedgerService";
 import type { EuroCents } from "../core/Money";
 import type { DateCandidate } from "../core/StatementDate";
+import type { BackfillStatement } from "./BackfillReview";
 
 /** A file the user chose, as the screen needs it. Wrapping the browser's File keeps the logic testable. */
 export interface ImportFile {
@@ -108,8 +109,10 @@ export type CheckResult =
 export interface RemoteSave {
   newCommandId(): string;
   record(request: RecordRequest, commandId: string, expectedRevision: string): Promise<RecordResult>;
+  backfill?(earlier: readonly BackfillStatement[], boundary: readonly FundCommand[], commandId: string, expectedRevision: string, expectedWorkbookId: string): Promise<RecordResult>;
+  recoverRevision?(targetRevision: string, commandId: string, expectedRevision: string, expectedWorkbookId: string): Promise<RecordResult>;
   /** Resolves a save whose result was lost, without writing anything. */
-  check(commandId: string): Promise<CheckResult>;
+  check(commandId: string, expectedWorkbookId?: string): Promise<CheckResult>;
   /**
    * Adds bank statements to months that are already saved, in one request. Nothing
    * saved changes, and a statement that does not reproduce its month is refused.

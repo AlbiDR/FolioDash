@@ -7,6 +7,7 @@ import { Amount } from "../../presentation/privacy/privacy";
 import type { DateSource } from "../../../../core/StatementDate";
 import { CashQuestions } from "./CashQuestions";
 import { ManualEntry } from "./ManualEntry";
+import { BackfillEntry } from "./BackfillEntry";
 import { ExcelHistoryView } from "./ExcelHistoryView";
 import { prepareExcelHistory, type ExcelHistoryReview } from "../../../../applications/ExcelHistory";
 import type { ImportFile, ImportPreparer, ImportReview, RemoteSave, ReviewAdjustment, ReviewIssue, ReviewStatement } from "../../../../applications/ImportModel";
@@ -287,6 +288,7 @@ function RecordedSummary(props: { readonly ledger: LedgerState }): JSX.Element |
 export function ImportView(props: {
   readonly prepare: ImportPreparer;
   readonly ledger: LedgerState;
+  readonly workbookId?: string;
   readonly createRevision: () => string;
   readonly onRecord: (next: LedgerState) => void;
   /** Present once a spreadsheet is connected; statements are then saved there instead of kept in this tab. */
@@ -298,11 +300,13 @@ export function ImportView(props: {
   const [phase, setPhase] = useState<Phase>(props.initialPhase ?? { name: "idle" });
   const [sheetIndex, setSheetIndex] = useState(0);
   const [date, setDate] = useState("");
-  const [method, setMethod] = useState<"file" | "manual">("file");
+  const [method, setMethod] = useState<"file" | "manual" | "earlier">("file");
   const [manualStarted, setManualStarted] = useState(false);
+  const [backfillStarted, setBackfillStarted] = useState(false);
   const [fileSaveLocked, setFileSaveLocked] = useState(false);
   const [manualSaveLocked, setManualSaveLocked] = useState(false);
-  const saveLocked = fileSaveLocked || manualSaveLocked;
+  const [backfillSaveLocked, setBackfillSaveLocked] = useState(false);
+  const saveLocked = fileSaveLocked || manualSaveLocked || backfillSaveLocked;
   const [batchLocked, setBatchLocked] = useState(false);
   const [recorded, setRecorded] = useState<IsoDate | null>(null);
   const recordedMessage = useRef<HTMLParagraphElement>(null);
@@ -351,15 +355,19 @@ export function ImportView(props: {
 
   return (
     <section aria-labelledby="import-heading" class="import">
-      <h2 id="import-heading" class="import-heading">{props.historyMode ? "Choose your history files" : method === "manual" ? "Enter a statement" : "Choose bank statements"}</h2>
+      <h2 id="import-heading" class="import-heading">{props.historyMode ? "Choose your history files" : method === "manual" ? "Enter a statement" : method === "earlier" ? "Add earlier history" : "Choose bank statements"}</h2>
       <ol class="journey-steps" aria-label="Import process"><li aria-current={phase.name === "idle" && method === "file" ? "step" : undefined}><span>01</span> Choose statements</li><li aria-current={!saveLocked && (method === "manual" || phase.name === "reviewed" || phase.name === "batch") ? "step" : undefined}><span>02</span> Review dates &amp; movements</li><li aria-current={saveLocked ? "step" : undefined}><span>03</span> Save &amp; check</li></ol>
       <Presence show={recorded !== null}>{recorded !== null && <p ref={recordedMessage} class="notice notice-success" role="status" tabIndex={-1}>Statement for {formatDateLong(recorded)} {props.save === undefined ? "recorded in this browser tab" : "saved to your spreadsheet and checked"}. You can choose another statement below.</p>}</Presence>
       {!props.historyMode && <div class="segmented entry-methods" role="group" aria-label="Entry method">
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="file-entry-panel" aria-pressed={method === "file"} onClick={() => { setMethod("file"); }}>Import Excel</button>
         <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="manual-entry-panel" aria-pressed={method === "manual"} onClick={() => { setManualStarted(true); setMethod("manual"); }}>Enter manually</button>
+        {props.ledger.snapshots.length > 0 && props.workbookId !== undefined && props.save?.backfill !== undefined && <button type="button" disabled={saveLocked || batchLocked || phase.name === "reading"} aria-controls="earlier-entry-panel" aria-pressed={method === "earlier"} onClick={() => { setBackfillStarted(true); setMethod("earlier"); }}>Add earlier history</button>}
       </div>}
       <div id="manual-entry-panel" class="entry-panel" hidden={method !== "manual"}>
         {manualStarted && <ManualEntry ledger={props.ledger} createRevision={props.createRevision} onRecord={props.onRecord} onSaveLock={setManualSaveLocked} {...(props.save === undefined ? {} : { save: props.save })} />}
+      </div>
+      <div id="earlier-entry-panel" class="entry-panel" hidden={method !== "earlier"}>
+        {backfillStarted && props.save !== undefined && props.workbookId !== undefined && <BackfillEntry ledger={props.ledger} workbookId={props.workbookId} save={props.save} prepare={props.prepare} onRecord={props.onRecord} onLock={setBackfillSaveLocked} />}
       </div>
       <div id="file-entry-panel" class="entry-panel" hidden={method !== "file"}>
       <div class="field">
