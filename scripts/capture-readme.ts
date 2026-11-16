@@ -52,7 +52,7 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   await evaluate("window.scrollTo(0,0)");
   let clip: Record<string, number> | undefined;
   // Applied after the safety checks above, which read the page's visible text.
-  await evaluate(`(()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(`${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}`)};document.head.append(style)})()`);
+  await evaluate(`(()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(`${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}${view.crop?.style ?? ""}`)};document.head.append(style)})()`);
   await delay(300);
   if (!mobile) {
     const box = await evaluate(`(()=>{const rects=[...document.querySelectorAll(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})].map(element=>element.getBoundingClientRect()).filter(rect=>rect.width>0&&rect.height>0);return rects.length===0?null:{left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))}})()`);

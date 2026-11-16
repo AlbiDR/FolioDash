@@ -15,8 +15,9 @@ export interface CapturedView {
   /** File name without theme or extension. */
   readonly file: string;
   /** Every image is drawn without the page background, the sidebar and the top bar. `include` names the elements the crop must
-   * contain (the banner and the page content when absent); `hide` removes what sits below them. */
-  readonly crop?: { readonly include?: string; readonly hide?: string };
+   * contain (the banner and the page content when absent); `hide` removes what sits below them; `style` is extra CSS for a
+   * view whose parts differ in width. */
+  readonly crop?: { readonly include?: string; readonly hide?: string; readonly style?: string };
   /** Phone-sized dark capture, written to this file name. */
   readonly mobile?: string;
   /** Placed by the generated README gallery. The overview and expenses are placed by hand in the README. */
@@ -45,7 +46,9 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
     gallery: { title: "One fund in detail", caption: "Weight, trend and history for a single holding.", alt: "A fund detail page with its value history and invented holdings" },
   },
   import: {
-    hash: "#import", heading: "Update your portfolio", file: "import", crop: { include: ".notice,.import" },
+    hash: "#import", heading: "Update your portfolio", file: "import",
+    // The notice spans the page but the form below it is 52rem wide; matching them keeps the picture balanced.
+    crop: { include: ".notice,.import", style: ".notice{max-inline-size:52rem}" },
     gallery: { title: "Review before you save", caption: "Check dates, holdings and cash movements before anything is stored.", alt: "The import screen where a statement is chosen and reviewed before saving" },
   },
   connection: {
