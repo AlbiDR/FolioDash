@@ -84,6 +84,8 @@ describe("reviewing an earlier history", () => {
     if (januarySource === undefined || februarySource === undefined) throw new Error("missing sources");
     const zeroSources = [januarySource, { ...februarySource, commands: [keep, zeroAddition] }];
     const zeroRead = (sheet: RawSheet) => sheet.rows[0]?.[0]?.kind === "text" && sheet.rows[0][0].text === "jan" ? { ok: true as const, statement: jan } : { ok: true as const, statement: zeroFebruary };
-    expect(prepareBackfillReview(ambiguous.state, zeroSources, [{ date: date("2025-12-31"), statement: feb, commands: [opening(a.isin), opening(b.isin)] }], [keep, close], "candidate", "backfill", zeroRead).ok).toBe(false);
+    const zeroResult = prepareBackfillReview(ambiguous.state, zeroSources, [{ date: date("2025-12-31"), statement: feb, commands: [opening(a.isin), opening(b.isin)] }], [keep, close], "candidate", "backfill", zeroRead);
+    expect(zeroResult.ok).toBe(true);
+    if (zeroResult.ok) expect(zeroResult.ledger.snapshots[2]?.holdings[b.isin]).toMatchObject({ action: "Reopen", status: "active", value: ZERO_CENTS });
   });
 });

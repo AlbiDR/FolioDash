@@ -151,7 +151,9 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
     await call("Network.setBypassServiceWorker", { bypass: true });
     await call("Fetch.enable", { patterns: [{ urlPattern: "*", requestStage: "Request" }] });
     await run({ origin: ORIGIN, call, evaluate, waitFor });
-    if (browserErrors.length > 0 || blockedOrigins.size > 0) throw new Error("Browser check failed: runtime error or nonlocal request.");
+    if (browserErrors.length > 0 || blockedOrigins.size > 0) {
+      throw new Error(`Browser check failed: ${browserErrors.join(" ") || "no runtime errors"}; ${String(blockedOrigins.size)} nonlocal origin(s) blocked.`);
+    }
   } finally {
     // Closing through CDP lets Chrome stop its profile-writing helpers first.
     let closingBrowser = false;
