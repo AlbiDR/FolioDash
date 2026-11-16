@@ -1180,6 +1180,13 @@ table {
   min-width: 0;
 }
 
+.backfill-phase {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  animation: motion-label var(--duration-feedback) var(--ease-standard);
+}
+
 .manual-funds {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
 }

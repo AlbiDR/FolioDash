@@ -95,6 +95,10 @@ export interface SessionState {
   readonly organization?: { readonly status: "pending" | "organizing" | "current" | "needs-attention"; readonly message: string };
   /** Rows after the last commit: an interrupted write, ignored and harmless. */
   readonly trailingRows: number;
+  /** Prior history available for explicit recovery after an earlier insertion. */
+  readonly recoveryTarget?: string | null;
+  /** A revision operation whose outcome must be checked before another portfolio write. */
+  readonly pendingRevision?: string | null;
 }
 
 export type ConnectOutcome =

@@ -10,7 +10,7 @@ import { parseIsin } from "../../core/Isin";
 import { EMPTY_LEDGER } from "../../core/Ledger";
 import type { RawSheet } from "../../core/RawSheet";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
-import { type DirectDeps, attachDirect, commitDirect, ensureWorkbook, mirrorStatements, outcomeDirect, readAllDirect, readDirect, refreshView, restoreDirect, statementTabTitle, tidyLedgerTab } from "./DirectLedger";
+import { type DirectDeps, attachDirect, backfillDirect, commitDirect, ensureWorkbook, mirrorStatements, outcomeDirect, readAllDirect, readDirect, recoverRevisionDirect, refreshView, restoreDirect, statementTabTitle, tidyLedgerTab } from "./DirectLedger";
 import { LEDGER_TAB, VIEW_TAB } from "./SheetsLayout";
 import { writeGridTabs } from "./GoogleWorkbook";
 
@@ -969,5 +969,108 @@ describe("atomic predecessor guard", () => {
     expect(google.namedRanges.get(workbook.id)?.size ?? 0).toBe(0);
     expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "not-found" });
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("committed");
+  });
+});
+
+describe("recovery of an earlier revision", () => {
+  it("restores the complete reviewed revision and sources without discarding later evidence", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "synthetic" }]] };
+    const initial = await commitDirect(deps, google.token, workbook.id, { ...first(), source: { sheetName: "Synthetic", sheet } });
+    if (initial.status !== "committed") throw new Error("first save failed");
+    const target = await readAllDirect(google.client, google.token, workbook.id);
+    if (target.status !== "ok") throw new Error("first read failed");
+    const later = await commitDirect(deps, google.token, workbook.id, second(initial.revision));
+    if (later.status !== "committed") throw new Error("second save failed");
+    const request = { commandId: "recover-first", expectedRevision: later.revision, targetRevision: initial.revision };
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, { ...request, expectedRevision: initial.revision })).toMatchObject({ status: "stale" });
+    const result = await recoverRevisionDirect(deps, google.token, workbook.id, request);
+    expect(result.status).toBe("committed");
+    const restored = await readAllDirect(google.client, google.token, workbook.id);
+    if (restored.status !== "ok") throw new Error("recovery read failed");
+    expect(restored.state.snapshots).toEqual(target.state.snapshots);
+    expect(restored.sources).toEqual(target.sources);
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({ status: "already-committed" });
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, { ...request, targetRevision: later.revision })).toMatchObject({ status: "rejected" });
+  });
+
+  it("reports a lost recovery response as unknown and resolves the same command without writing twice", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const initial = await commitDirect(deps, google.token, workbook.id, first());
+    if (initial.status !== "committed") throw new Error("first save failed");
+    const later = await commitDirect(deps, google.token, workbook.id, second(initial.revision));
+    if (later.status !== "committed") throw new Error("second save failed");
+    const request = { commandId: "recover-lost", expectedRevision: later.revision, targetRevision: initial.revision };
+    google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({ status: "unknown" });
+    expect(await outcomeDirect(google.client, google.token, workbook.id, request.commandId)).toMatchObject({ status: "committed" });
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({ status: "already-committed" });
+  });
+});
+
+describe("guarded earlier history", () => {
+  it("reports a preparation exception as not committed and sends no ledger append", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "synthetic" }]] };
+    const initial = await commitDirect(deps, google.token, workbook.id, { ...first(), source: { sheetName: "Synthetic", sheet } });
+    if (initial.status !== "committed") throw new Error("first save failed");
+    const before = google.requests.filter(request => request["appendCells"] !== undefined).length;
+    const result = await backfillDirect(deps, google.token, workbook.id, { commandId: "invalid-input", expectedRevision: initial.revision, earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], boundary: [keep] }, () => { throw new Error("parser failure"); });
+    expect(result.status).toBe("not-committed");
+    expect(google.requests.filter(request => request["appendCells"] !== undefined)).toHaveLength(before);
+  });
+  it("commits one complete candidate and permits recovery of the prior revision", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const firstSave = await commitDirect(deps, google.token, workbook.id, first());
+    if (firstSave.status !== "committed") throw new Error("first save failed");
+    const before = await readAllDirect(google.client, google.token, workbook.id);
+    if (before.status !== "ok") throw new Error("read failed");
+    const request = { commandId: "insert-december", expectedRevision: firstSave.revision, earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], boundary: [keep] };
+    const interpret = () => ({ ok: false as const, message: "no bank sources" });
+    const result = await backfillDirect(deps, google.token, workbook.id, request, interpret);
+    expect(result.status).toBe("committed");
+    if (result.status !== "committed") throw new Error("insertion failed");
+    const after = await readAllDirect(google.client, google.token, workbook.id);
+    if (after.status !== "ok") throw new Error("read failed");
+    expect(after.state.snapshots.map(snapshot => snapshot.date)).toEqual(["2025-12-31", "2026-01-31"]);
+    expect(await backfillDirect(deps, google.token, workbook.id, request, interpret)).toMatchObject({ status: "already-committed" });
+    const recovered = await recoverRevisionDirect(deps, google.token, workbook.id, { commandId: "undo-insert", expectedRevision: result.revision, targetRevision: firstSave.revision });
+    expect(recovered.status).toBe("committed");
+    const restored = await readAllDirect(google.client, google.token, workbook.id);
+    if (restored.status !== "ok") throw new Error("recovery read failed");
+    expect(restored.state.snapshots).toEqual(before.state.snapshots);
+    expect(restored.sources).toEqual(before.sources);
+  });
+
+  it("prevents a simultaneous older guarded writer from appending on the same predecessor", async () => {
+    const { google, deps } = setup();
+    const workbook = await readyWorkbook(google);
+    const initial = await commitDirect(deps, google.token, workbook.id, first());
+    if (initial.status !== "committed") throw new Error("first save failed");
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    let waiting = 0;
+    const rest: DirectDeps["rest"] = async request => {
+      if (request.body?.includes('"appendCells"')) {
+        waiting++;
+        if (waiting === 2) release?.();
+        await gate;
+      }
+      return google.client(request);
+    };
+    const candidate = { commandId: "insert-race", expectedRevision: initial.revision, earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], boundary: [keep] };
+    const interpret = () => ({ ok: false as const, message: "no source" });
+    const results = await Promise.all([
+      backfillDirect({ ...deps, rest }, google.token, workbook.id, candidate, interpret),
+      commitDirect({ ...deps, rest }, google.token, workbook.id, second(initial.revision, "legacy-race")),
+    ]);
+    expect(results.map(result => result.status).sort()).toEqual(["committed", "stale"]);
+    const read = await readDirect(google.client, google.token, workbook.id);
+    expect(read.status).toBe("ok");
+    if (read.status === "ok") expect(read.state.snapshots).toHaveLength(2);
   });
 });

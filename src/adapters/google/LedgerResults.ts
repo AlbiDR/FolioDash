@@ -3,7 +3,7 @@ import type { LedgerState } from "../../core/Ledger";
 
 /** What reading the ledger can turn up. Shared by every way of reaching the person's spreadsheet. */
 export type RemoteRead =
-  | { readonly status: "ok"; readonly state: LedgerState; readonly ignoredTrailingRows: number }
+  | { readonly status: "ok"; readonly state: LedgerState; readonly ignoredTrailingRows: number; readonly recoveryTarget?: string | null }
   | { readonly status: "damaged"; readonly message: string }
   | { readonly status: "workbook-unavailable" }
   | { readonly status: "refused"; readonly message: string }
