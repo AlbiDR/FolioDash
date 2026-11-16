@@ -18,10 +18,42 @@ describe("statementLabels", () => {
     expect(names("2026-11-03")[0]).toMatchObject({ short: "Oct 26", long: "October 2026 close, exported 3 November 2026" });
   });
 
-  it("leaves every other date named exactly as before", () => {
-    expect(names("2026-11-04")).toEqual([{ short: "Nov 26", long: "4 November 2026", kind: "unchanged" }]);
-    expect(names("2026-11-14")[0]).toMatchObject({ short: "Nov 26", long: "14 November 2026" });
-    expect(names("2026-02-28")[0]).toMatchObject({ short: "Feb 26", kind: "unchanged" });
+  it("names an export from the first seven days after the month it closes", () => {
+    expect(names("2026-11-07")[0]).toMatchObject({ short: "Oct 26", long: "October 2026 close, exported 7 November 2026", kind: "closes-previous-month" });
+    expect(names("2026-11-08")).toEqual([{ short: "Nov 26", long: "8 November 2026", kind: "unchanged" }]);
+  });
+
+  it("names a slightly early export in the last seven days as that month's close", () => {
+    expect(names("2026-10-25")[0]).toMatchObject({ short: "Oct 26", long: "October 2026 close, exported 25 October 2026", kind: "closes-month" });
+    expect(names("2026-10-31")[0]).toMatchObject({ short: "Oct 26", kind: "closes-month" });
+    expect(names("2026-10-24")).toEqual([{ short: "Oct 26", long: "24 October 2026", kind: "unchanged" }]);
+  });
+
+  it("measures the last seven days from the real month end, leap years included", () => {
+    expect(names("2026-02-22")[0]).toMatchObject({ short: "Feb 26", kind: "closes-month" });
+    expect(names("2026-02-21")[0]).toMatchObject({ kind: "unchanged" });
+    expect(names("2028-02-23")[0]).toMatchObject({ short: "Feb 28", kind: "closes-month" });
+    expect(names("2028-02-22")[0]).toMatchObject({ kind: "unchanged" });
+    expect(names("2026-04-24")[0]).toMatchObject({ kind: "closes-month" });
+    expect(names("2026-04-23")[0]).toMatchObject({ kind: "unchanged" });
+  });
+
+  it("leaves a date well inside a month named exactly as before", () => {
+    expect(names("2026-11-14")).toEqual([{ short: "Nov 26", long: "14 November 2026", kind: "unchanged" }]);
+    expect(names("2026-02-15")[0]).toMatchObject({ short: "Feb 26", kind: "unchanged" });
+  });
+
+  it("gives a second export around the same month end a date-only name", () => {
+    expect(names("2026-10-28", "2026-11-03")).toEqual([
+      { short: "Oct 26", long: "October 2026 close, exported 28 October 2026", kind: "closes-month" },
+      { short: "3 Nov 26", long: "Statement of 3 November 2026", kind: "date-only" },
+    ]);
+  });
+
+  it("lets a run of month-end exports, early and late, each close their own month", () => {
+    const result = names("2026-09-29", "2026-11-01", "2026-11-30", "2027-01-02");
+    expect(result.map((entry) => entry.short)).toEqual(["Sep 26", "Oct 26", "Nov 26", "Dec 26"]);
+    expect(result.map((entry) => entry.kind)).toEqual(["closes-month", "closes-previous-month", "closes-month", "closes-previous-month"]);
   });
 
   it("crosses year ends and leap years", () => {

@@ -1,20 +1,26 @@
 import { type IsoDate, formatDateLong, formatMonthShort, formatMonthYear, monthSerial, toIsoDate } from "./IsoDate";
 
 /**
- * The bank's export is a snapshot of the moment it is made. An export taken on
- * the 1st of a month holds the close of the month before, so naming it after the
- * month it was made in is misleading. This module only chooses names. It reads
- * no money and changes no figure: every calculation still follows the actual
- * statement dates (reporting policy "legacy-parity-v1").
+ * The bank's export is a snapshot of the moment it is made. An export taken just
+ * after a month ends holds that month's close, so naming it after the month it
+ * was made in is misleading, and one taken a little early is still that month's
+ * close. This module only chooses names. It reads no money and changes no figure:
+ * every calculation still follows the actual statement dates (reporting policy
+ * "legacy-parity-v1").
  */
 
-/** A statement dated on the 1st to this day of a month is taken to close the previous month. */
-export const CLOSE_GRACE_DAYS = 3;
+/**
+ * The window around a month end: the last this-many days of a month and the
+ * first this-many days of the next are taken to be that month's close.
+ */
+export const CLOSE_WINDOW_DAYS = 7;
 
 export type StatementLabelKind =
-  /** Named after its own month, exactly as before. */
+  /** Dated well inside a month, named after its own month exactly as before. */
   | "unchanged"
-  /** Named after the previous month it most likely closes. */
+  /** Exported in the last days of a month: named after that month, as its close. */
+  | "closes-month"
+  /** Exported in the first days of a month: named after the previous month it closes. */
   | "closes-previous-month"
   /** The previous month is already named by an earlier statement, so no period is claimed. */
   | "date-only";
@@ -37,12 +43,16 @@ function firstOfMonth(serial: number): IsoDate | null {
   return toIsoDate(Math.floor(serial / 12), (serial % 12) + 1, 1);
 }
 
+function lastDayOfMonth(date: IsoDate): number {
+  return new Date(Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)), 0)).getUTCDate();
+}
+
 /**
- * Names every statement, in the order given. One pass in date order. A
- * statement dated on day 1 to 3 closes the previous month unless an earlier
- * statement already carries that month's name; then it is named by its date
- * only, which claims no period and cannot push later statements out of step.
- * Display only: nothing here is stored.
+ * Names every statement, in the order given. One pass in date order. A statement
+ * in the first days of a month closes the previous month, and one in the last
+ * days closes its own month, unless an earlier statement already carries that
+ * month's name; then it is named by its date only, which claims no period and
+ * cannot push later statements out of step. Display only: nothing here is stored.
  */
 export function statementLabels(dates: readonly IsoDate[]): readonly StatementLabel[] {
   const order = dates.map((date, index) => ({ date, index })).sort((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : left.index - right.index));
@@ -51,23 +61,27 @@ export function statementLabels(dates: readonly IsoDate[]): readonly StatementLa
 
   for (const { date, index } of order) {
     const own = monthSerial(date);
-    if (dayOf(date) <= CLOSE_GRACE_DAYS) {
-      const previous = firstOfMonth(own - 1);
-      if (previous !== null && !named.has(own - 1)) {
-        named.add(own - 1);
+    const day = dayOf(date);
+    const early = day <= CLOSE_WINDOW_DAYS;
+    const late = !early && day > lastDayOfMonth(date) - CLOSE_WINDOW_DAYS;
+    if (early || late) {
+      const target = early ? firstOfMonth(own - 1) : firstOfMonth(own);
+      const targetSerial = early ? own - 1 : own;
+      if (target !== null && !named.has(targetSerial)) {
+        named.add(targetSerial);
         labels[index] = {
-          kind: "closes-previous-month",
-          short: formatMonthShort(previous),
-          long: `${formatMonthYear(previous)} close, exported ${formatDateLong(date)}`,
+          kind: early ? "closes-previous-month" : "closes-month",
+          short: formatMonthShort(target),
+          long: `${formatMonthYear(target)} close, exported ${formatDateLong(date)}`,
           detail: `exported ${formatDateLong(date)}`,
         };
         continue;
       }
-      if (previous !== null) {
+      if (target !== null) {
         const month = formatMonthShort(date).slice(0, 3);
         labels[index] = {
           kind: "date-only",
-          short: `${String(dayOf(date))} ${month} ${formatMonthShort(date).slice(4)}`,
+          short: `${String(day)} ${month} ${formatMonthShort(date).slice(4)}`,
           long: `Statement of ${formatDateLong(date)}`,
           detail: null,
         };
