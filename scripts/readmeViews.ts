@@ -14,11 +14,9 @@ export interface CapturedView {
   readonly open?: string;
   /** File name without theme or extension. */
   readonly file: string;
-  /** Elements whose bottom edge sets the desktop frame; the page content when absent. */
-  readonly frame?: string;
-  /** Desktop shots drawn without the page background, so the cards float on GitHub's own canvas. `include` names what the crop
-   * must contain; `hide` removes what sits below it. The sidebar and top bar are not part of the picture. */
-  readonly transparent?: { readonly include: string; readonly hide: string };
+  /** Every image is drawn without the page background, the sidebar and the top bar. `include` names the elements the crop must
+   * contain (the banner and the page content when absent); `hide` removes what sits below them. */
+  readonly crop?: { readonly include?: string; readonly hide?: string };
   /** Phone-sized dark capture, written to this file name. */
   readonly mobile?: string;
   /** Placed by the generated README gallery. The overview and expenses are placed by hand in the README. */
@@ -31,11 +29,11 @@ export type ViewEntry = CapturedView | { readonly skip: string };
 export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
   overview: {
     hash: "#overview", heading: "Portfolio", file: "hero", mobile: "portfolio-mobile.png",
-    transparent: { include: ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.movers-card,.period-results,.portfolio-explore", hide: ".dashboard-analysis,.more" },
+    crop: { include: ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.movers-card,.period-results,.portfolio-explore", hide: ".dashboard-analysis" },
   },
-  expenses: { hash: "#expenses", heading: "Work expenses", file: "expenses", frame: ".expense-entry,.expense-week" },
+  expenses: { hash: "#expenses", heading: "Work expenses", file: "expenses", crop: { include: ".get-started,.expense-entry,.expense-week", hide: ".page-nav,.expense-year-section,.expense-record" } },
   months: {
-    hash: "#months", heading: "Month by month", file: "months",
+    hash: "#months", heading: "Month by month", file: "months", crop: { include: ".notice,.month-matrices", hide: ".mobile-months" },
     gallery: { title: "Month by month", caption: "Every statement laid side by side, so you can see how each month moved.", alt: "The month-by-month tables for the invented portfolio, one column per statement" },
   },
   checkpoints: {
@@ -47,7 +45,7 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
     gallery: { title: "One fund in detail", caption: "Weight, trend and history for a single holding.", alt: "A fund detail page with its value history and invented holdings" },
   },
   import: {
-    hash: "#import", heading: "Update your portfolio", file: "import",
+    hash: "#import", heading: "Update your portfolio", file: "import", crop: { include: ".notice,.import" },
     gallery: { title: "Review before you save", caption: "Check dates, holdings and cash movements before anything is stored.", alt: "The import screen where a statement is chosen and reviewed before saving" },
   },
   connection: {
@@ -62,9 +60,6 @@ export const CAPTURED: readonly (readonly [RouteName, CapturedView])[] = (Object
 
 /** Every PNG the release must contain: light and dark per view, plus the phone shots. */
 export const README_IMAGES: readonly string[] = CAPTURED.flatMap(([, view]) => [`${view.file}-light.png`, `${view.file}-dark.png`, ...(view.mobile === undefined ? [] : [view.mobile])]);
-
-/** Light and dark desktop images that must have a clear background. */
-export const TRANSPARENT_IMAGES: ReadonlySet<string> = new Set(CAPTURED.flatMap(([, view]) => (view.transparent === undefined ? [] : [`${view.file}-light.png`, `${view.file}-dark.png`])));
 
 export const MOBILE_IMAGES: ReadonlySet<string> = new Set(CAPTURED.flatMap(([, view]) => (view.mobile === undefined ? [] : [view.mobile])));
 

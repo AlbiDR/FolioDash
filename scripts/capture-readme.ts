@@ -7,8 +7,12 @@ import { readFiles, treeDigest, writeCaptureReceipt } from "./prepare-pages.ts";
 import { type LocalBrowser, withLocalBrowser } from "./localBrowser.ts";
 import { CAPTURED, type CapturedView, type RouteName } from "./readmeViews.ts";
 
-// Opaque surfaces replace frosted glass, which would otherwise show the page behind it through the cards' neighbours.
-const TRANSPARENT_CSS = "html,body{background:transparent!important}body::before{display:none!important}:root{--glass:var(--color-surface)!important;--glass-edge:transparent!important;--glass-blur:none!important}.topbar,.main-nav{visibility:hidden!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}";
+// Every README image is drawn without the page background, so the cards sit on GitHub's own light or dark canvas.
+// Opaque surfaces replace frosted glass, which would otherwise show whatever lies behind the picture through the bar.
+const CLEAR_CSS = "html,body{background:transparent!important}body::before{display:none!important}:root{--glass:var(--color-surface)!important;--glass-edge:transparent!important;--glass-blur:none!important}.topbar,.main-nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}.more{display:none!important}";
+// A desktop picture shows the cards only. The bars only hide: removing them would reflow the page.
+const DESKTOP_CSS = ".topbar,.main-nav{visibility:hidden!important}";
+const DEFAULT_INCLUDE = ".get-started,.notice,#main-content > *";
 const APP = resolve("dist/web");
 const OUTPUT = resolve("dist/readme");
 
@@ -18,9 +22,7 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   let height = mobile ? 844 : 1120;
   await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
   await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: theme }, { name: "prefers-reduced-motion", value: "reduce" }] });
-  const transparent = mobile ? undefined : view.transparent;
-  // Without a colour this restores the opaque default for the next capture.
-  await call("Emulation.setDefaultBackgroundColorOverride", transparent === undefined ? {} : { color: { r: 0, g: 0, b: 0, a: 0 } });
+  await call("Emulation.setDefaultBackgroundColorOverride", { color: { r: 0, g: 0, b: 0, a: 0 } });
   const url = `${ORIGIN}/?demo=typical&readme=${encodeURIComponent(file)}${view.hash}`;
   await call("Page.navigate", { url });
   await waitFor(async () => await evaluate(`location.href === ${JSON.stringify(url)} && document.readyState === "complete" && document.querySelector('.privacy-toggle') !== null && ${view.open === undefined ? `document.querySelector('h1')?.textContent === ${JSON.stringify(view.heading)}` : `document.querySelector(${JSON.stringify(view.open)}) !== null`}`) === true, `the ${route} view`);
@@ -44,28 +46,19 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   }
   await waitFor(async () => await evaluate("document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed') === 'false' && document.getAnimations().every(animation => animation.playState !== 'running')") === true, "visible demo values and idle rendering");
   await delay(300);
-  if (!mobile && transparent === undefined) {
-    const rowBottom = await evaluate(`Math.ceil(Math.max(...[...document.querySelectorAll(${JSON.stringify(view.frame ?? "#main-content > *")})].map(element=>element.getBoundingClientRect().bottom))+12)`);
-    if (typeof rowBottom !== "number" || !Number.isFinite(rowBottom) || rowBottom < 600) throw new Error("Unexpected screenshot framing.");
-    // A long screen is cut at the first 2000 points; the file check bounds the finished image the same way.
-    height = Math.min(rowBottom, 2000);
-    await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
-    await delay(100);
-  }
   // A phone draws the short word "Demo"; the full "Demo data" sentence is then the status control's accessible name.
   const safe = await evaluate(`(()=>{const text=document.body.innerText;const chip=document.querySelector('.status-chip');return (text.includes('Demo data') || (text.includes('Demo') && chip?.getAttribute('aria-label')==='Demo data')) && !text.includes('Synced with Google') && !text.includes('Saved on this device') && document.querySelector('.privacy-toggle')?.getAttribute('aria-pressed')==='false' && ![...document.scripts].some(script=>script.src && new URL(script.src).origin!==location.origin) && document.documentElement.scrollWidth<=innerWidth})()`);
   if (safe !== true) throw new Error("Capture stopped: synthetic-demo, network or rendering checks failed.");
   await evaluate("window.scrollTo(0,0)");
   let clip: Record<string, number> | undefined;
-  if (transparent !== undefined) {
-    // Applied after the safety checks above, which read the page's visible text. The sidebar and top bar only hide;
-    // removing them would reflow the page.
-    await evaluate(`(()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(`${TRANSPARENT_CSS}${transparent.hide}{display:none!important}`)};document.head.append(style)})()`);
-    await delay(300);
-    const box = await evaluate(`(()=>{const rects=[...document.querySelectorAll(${JSON.stringify(transparent.include)})].map(element=>element.getBoundingClientRect());return rects.length===0?null:{left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))}})()`);
+  // Applied after the safety checks above, which read the page's visible text.
+  await evaluate(`(()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(`${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}`)};document.head.append(style)})()`);
+  await delay(300);
+  if (!mobile) {
+    const box = await evaluate(`(()=>{const rects=[...document.querySelectorAll(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})].map(element=>element.getBoundingClientRect()).filter(rect=>rect.width>0&&rect.height>0);return rects.length===0?null:{left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))}})()`);
     if (typeof box !== "object" || box === null) throw new Error("Unexpected screenshot framing.");
     const { left, top, right, bottom } = box as Record<string, number>;
-    if (![left, top, right, bottom].every(value => Number.isFinite(value)) || (bottom ?? 0) - (top ?? 0) < 600) throw new Error("Unexpected screenshot framing.");
+    if (![left, top, right, bottom].every(value => Number.isFinite(value)) || (bottom ?? 0) - (top ?? 0) < 300) throw new Error("Unexpected screenshot framing.");
     // Room for the cards' shadows, so they are not cut off at the edge of the picture.
     const margin = 36;
     height = Math.min(Math.ceil((bottom ?? 0) - (top ?? 0)) + 2 * margin, 2000);
@@ -76,7 +69,7 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   const screenshot = await call("Page.captureScreenshot", { format: "png", captureBeyondViewport: false, fromSurface: true, ...(clip === undefined ? {} : { clip }) });
   if (typeof screenshot["data"] !== "string") throw new Error("Chrome returned no screenshot.");
   writeFileSync(join(OUTPUT, file), Buffer.from(screenshot["data"], "base64"));
-  console.log(`Captured ${file}: signed-out demo, ${theme}, ${String(clip === undefined ? width : clip["width"])}x${String(height)}, 2x${clip === undefined ? "" : ", transparent"}.`);
+  console.log(`Captured ${file}: signed-out demo, ${theme}, ${String(clip === undefined ? width : clip["width"])}x${String(height)}, 2x.`);
 }
 
 // This snapshot predates every browser request; the checked app is never rebuilt.
