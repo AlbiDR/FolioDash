@@ -3,7 +3,7 @@ import { useRef, useState } from "preact/hooks";
 import { formatDateLong } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
-import { CHART_RANGES, type ChartRange } from "./chartRange";
+import { availableRanges, type ChartRange } from "./chartRange";
 import { RangeSelector } from "../../shared/ui/RangeSelector";
 import { PageNav } from "../../shared/ui/PageNav";
 import { type AllocationSlice, type MonthMetric, dashboardFor } from "./dashboardData";
@@ -206,7 +206,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           updateKey={props.range}
           title="Performance"
           note="Fund value against net invested. The chart period applies to this chart and to the small trends under Changes."
-          controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}
+          controls={<RangeSelector label="Chart time range (charts only)" options={availableRanges(props.model.dates)} value={props.range} onChange={props.onRangeChange} />}
           description="Two lines over time: the value of all funds, and the cash invested in them, dashed."
           series={d.totalSeries}
           fillFirst

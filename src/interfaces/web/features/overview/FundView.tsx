@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import { CHART_RANGES, type ChartRange, rangeStart } from "./chartRange";
+import { availableRanges, type ChartRange, rangeStart } from "./chartRange";
 import { RangeSelector } from "../../shared/ui/RangeSelector";
 import { LineChart } from "../../presentation/charts/LineChart";
 import type { ChartSeries } from "../../presentation/charts/lineChartGeometry";
@@ -91,7 +91,7 @@ export function FundView(props: { readonly model: OverviewModel; readonly isin: 
           updateKey={props.range}
           title="Performance"
           note="Value and net invested for this fund. The chart period changes the chart, not your latest figures."
-          controls={<RangeSelector label="Chart time range (charts only)" options={CHART_RANGES} value={props.range} onChange={props.onRangeChange} />}
+          controls={<RangeSelector label="Chart time range (charts only)" options={availableRanges(props.model.dates)} value={props.range} onChange={props.onRangeChange} />}
           description="Two lines over time for this fund: its value, and the cash invested in it, dashed."
           series={series}
           fillFirst
