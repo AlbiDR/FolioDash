@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import { formatDateLong } from "../../../../core/IsoDate";
+import { formatDateLong, type IsoDate } from "../../../../core/IsoDate";
 import { REPORTING_POLICY } from "../../../../core/Metrics";
 import { formatPercent } from "../../../../core/Percent";
 import { availableRanges, type ChartRange } from "./chartRange";
@@ -18,6 +18,8 @@ import { Icon } from "../../shared/ui/icons";
 import { euroLabel, monthLabel, observationLabel } from "./chartData";
 import type { OverviewFund, OverviewKpi, OverviewModel } from "./OverviewModel";
 import { Percent, Pill, Signed, tone } from "./parts";
+import { portfolioAttention } from "./attention";
+import { GRID_MONTHS, type ReturnsGrid, returnsGrid } from "./returnsGrid";
 import { type HoldingsSort, type HoldingsSortKey, SORT_LABELS, describeSort, nextSort, sortHoldings } from "./holdingsSort";
 import "./portfolio-feedback.css";
 
@@ -87,6 +89,41 @@ const GLOSSARY: readonly { readonly term: string; readonly meaning: string }[] =
 ];
 
 /** Keep allocation inspection local, so pointer movement does not rerender the other charts. */
+/**
+ * Month-on-month change by calendar year and month, as the sheet's matrix gives it, with each cell tinted by the size
+ * of the move. The signed figure is always written in the cell, so the tint is only a quick read of where the big
+ * months were. It appears once the history spans two calendar years, where a row of months is no longer the bars above.
+ */
+function ReturnsCard(props: { readonly grid: ReturnsGrid; readonly estimated: boolean }): JSX.Element {
+  const { grid } = props;
+  return (
+    <div class="card cell-12 returns-card">
+      <h3 id="returns-heading" class="card-title">Monthly returns</h3>
+      <p class="card-subtitle">Change since the previous statement, by calendar year and month. A darker cell is a larger move.</p>
+      <div class="table-scroll flat" role="region" aria-labelledby="returns-heading" tabIndex={0}>
+        <table class="returns-table">
+          <thead>
+            <tr><th scope="col" class="returns-year">Year</th>{GRID_MONTHS.map((month) => <th key={month} scope="col">{month}</th>)}</tr>
+          </thead>
+          <tbody>
+            {grid.rows.map((row) => (
+              <tr key={row.year}>
+                <th scope="row" class="returns-year">{row.year}</th>
+                {row.cells.map((cell, index) => (
+                  <td key={GRID_MONTHS[index]} class="returns-cell" data-tone={cell === null || cell === 0 ? "none" : cell > 0 ? "gain" : "loss"} style={cell === null || grid.largest === 0 ? undefined : { "--heat": String(Math.min(1, Math.abs(cell) / grid.largest)) }}>
+                    {cell === null ? <span class="empty">-</span> : formatPercent(cell, { signed: true })}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {props.estimated && <p class="footnote">Cash timing affects percentage estimates.</p>}
+    </div>
+  );
+}
+
 /** How many funds the card names: enough to say what drove the month, few enough to read at a glance. */
 const MOVERS_SHOWN = 3;
 
@@ -174,7 +211,7 @@ function AllocationCard(props: { readonly slices: readonly AllocationSlice[] }):
  * nothing here calculates a financial result. The grid shows value, trend,
  * period results, allocation, monthly pattern, fund ranking and holdings at once.
  */
-export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void; /** Value-only observations drawn on the performance chart. Never part of the statements' figures. */ readonly checkpoints?: readonly CheckpointMarker[] }): JSX.Element {
+export function OverviewView(props: { readonly model: OverviewModel; readonly range: ChartRange; readonly onRangeChange: (range: ChartRange) => void; /** Value-only observations drawn on the performance chart. Never part of the statements' figures. */ readonly checkpoints?: readonly CheckpointMarker[]; /** Today's date, so the Portfolio can ask for the next statement when it is due. */ readonly today?: IsoDate; /** True while a history change has an unconfirmed outcome. */ readonly pendingChange?: boolean }): JSX.Element {
   const [fundQuery, setFundQuery] = useState("");
   const [holdingsSort, setHoldingsSort] = useState<HoldingsSort | null>(null);
   const [closedOpen, setClosedOpen] = useState(true);
@@ -183,7 +220,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
     setFundQuery("");
     searchInput.current?.focus({ preventScroll: true });
   }
-  const { dates, funds, totals, kpis } = props.model;
+  const { dates, funds, totals, kpis, labels, months } = props.model;
   const latestTotal = totals[totals.length - 1];
   const lastDate = dates[dates.length - 1];
 
@@ -209,6 +246,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
   const query = fundQuery.trim().toLocaleLowerCase("en");
   const listedFunds = sortHoldings([...d.held, ...d.closed].filter(fund => `${fund.name} ${fund.isin}`.toLocaleLowerCase("en").includes(query)), holdingsSort);
   const monthly = kpi("Month on month");
+  const attention = props.today === undefined ? [] : portfolioAttention({ source: props.model.source, lastStatement: lastDate, today: props.today, pendingChange: props.pendingChange === true });
+  const grid = returnsGrid(dates, labels, months.map((month) => month.monthlyGainPercent));
   /** Long lists with funds you have sold read as two blocks, each with its count; a short list stays one table. */
   const heldListed = listedFunds.filter((fund) => fund.status !== "closed");
   const closedListed = listedFunds.filter((fund) => fund.status === "closed");
@@ -291,6 +330,9 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
       })}
       {props.model.estimated && <p class="footnote">Cash timing affects percentage estimates.</p>}
       </section>
+      {attention.length > 0 && <section class="cell-12 attention" aria-label="Needs attention">
+        {attention.map((item) => <p key={item.id} class="notice notice-warning" role="status">{item.message} <a href={item.href}>{item.action}</a></p>)}
+      </section>}
       <section class="portfolio-explore cell-12" aria-labelledby="portfolio-explore-heading">
         <h2 id="portfolio-explore-heading" class="visually-hidden">Explore your portfolio</h2>
         <div class="portfolio-explore-row">
@@ -456,6 +498,8 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           emptyMessage="No fund has a value to plot yet."
         />
       </div>
+
+      {grid.rows.length >= 2 && <ReturnsCard grid={grid} estimated={props.model.estimated} />}
 
       <div class="card cell-8">
         <h3 class="card-title">Gain by fund</h3>

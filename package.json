@@ -36,6 +36,7 @@
     "audit:expense-restore": "node scripts/audit-expense-restore.ts",
     "audit:sale-closure": "node scripts/audit-sale-closure.ts",
     "audit:account-outcomes": "node scripts/audit-account-outcomes.ts",
+    "audit:overview-signals": "node scripts/audit-overview-signals.ts",
     "audit:checkpoints": "node scripts/audit-checkpoints.ts"
   },
   "engines": {

@@ -341,7 +341,7 @@ export function App(): JSX.Element {
                   }}
                 />
               )}
-              {route.name === "overview" && <OverviewView model={model} range={resolveRange(range, model.dates)} onRangeChange={setRange} checkpoints={checkpointMarkers} />}
+              {route.name === "overview" && <OverviewView model={model} range={resolveRange(range, model.dates)} onRangeChange={setRange} checkpoints={checkpointMarkers} today={today} pendingChange={data.pendingRevision != null} />}
               {route.name === "checkpoints" && <CheckpointsView
                 signedOut={data.mode === "signed-out"}
                 state={{
