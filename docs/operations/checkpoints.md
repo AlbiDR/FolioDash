@@ -9,7 +9,8 @@ Decision: FD-026 (the owner's private register).
 - **Record a checkpoint** on the Checkpoints screen (`#checkpoints`, reached from the Portfolio screen, from the empty-portfolio card and from Your data): a date no later than today, an amount in Italian notation and an optional note of at most 120 characters that cannot start with a formula character.
 - **The Performance chart** draws one diamond per day: the latest checkpoint of that day, with a note when several share it. Diamonds are never joined to each other or to the statement lines, and the chart still opens on the latest statement.
 - **The list** on the Checkpoints screen shows every active checkpoint, newest first. **Withdraw** takes one off the chart after a confirmation; a correction is a withdrawal followed by a new checkpoint, which may use the same date. Both stay in the log.
-- After a failed integrity check (an altered, missing or incomplete log) the chart draws no markers, while the screen keeps listing the device copy.
+- After any unsuccessful read of the log (altered, missing, incomplete or unreachable) the chart draws no markers until a read succeeds, while the screen keeps listing the device copy with the explanation. When the app is simply not connected, the device copy is shown as it is.
+- A save whose outcome was never confirmed is described on the screen (its date, amount and note, or the checkpoint a withdrawal targets). A command that exists in Google with different content is treated as an integrity failure, never as proof nothing was sent: the receipt stays and writes stay blocked.
 - The signed-out demo shows two sample checkpoints so the screen and the chart can be seen.
 
 ## Where the data lives
@@ -29,11 +30,11 @@ Decision: FD-026 (the owner's private register).
 7. A receipt that cannot be read is treated as an unresolved save, never as an empty one: nothing can be saved and the record is left untouched.
 8. Before every append the log is read again and must still hold every checkpoint this device knows, including what another window stored in the shared device copy; otherwise nothing is sent. Forget or an account change during the reads or while waiting for the lock cancels the save before anything is sent or stored.
 9. A withdrawal of something another device already withdrew writes nothing, but this window's list and device copy catch up at once. An absent log stays uninitialised through a failed first save, so the workbook never becomes unwritable.
-10. Forget this device, sign-out and an account change cancel in-flight work and attribute nothing to the new state.
+10. Forget this device, sign-out and an account change cancel in-flight work and attribute nothing to the new state; the screen also discards any amount or note being typed.
 
 ## Recovery and privacy
 
-- Checkpoints are **not** restored when a workbook is recreated from this device. Copies bound to another workbook are kept, read only and copyable as text, and are never overwritten by the replacement workbook. Only Forget this device removes them.
+- Checkpoints are **not** restored when a workbook is recreated from this device. Copies bound to another workbook are kept, read only and copyable as text (with any never-confirmed save included and labelled), and are never overwritten by the replacement workbook. Only Forget this device removes them.
 - Copies, receipts and the lock name carry the build's storage prefix, so the synthetic acceptance build can never see, change or forget ordinary checkpoints.
 - Amounts hide immediately with the privacy toggle, in the chart, the readout, the table and the list; the preserved copy's text view and its copy leave amounts out while they are hidden.
 

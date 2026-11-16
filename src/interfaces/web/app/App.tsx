@@ -343,14 +343,15 @@ export function App(): JSX.Element {
               )}
               {route.name === "overview" && <OverviewView model={model} range={resolveRange(range, model.dates)} onRangeChange={setRange} checkpoints={checkpointMarkers} today={today} pendingChange={data.pendingRevision != null} />}
               {route.name === "checkpoints" && <CheckpointsView
+                key={checkpointData.generation}
                 signedOut={data.mode === "signed-out"}
                 state={{
                   ready: data.mode === "signed-out" || checkpointData.ready,
                   active: shownCheckpoints,
-                  pending: data.mode !== "signed-out" && checkpointData.pending.length > 0,
+                  pending: data.mode === "signed-out" ? [] : checkpointData.pending,
                   unreadable: data.mode !== "signed-out" && checkpointData.receiptsUnreadable,
                   message: data.mode === "signed-out" ? "" : checkpointData.message,
-                  preserved: data.mode === "signed-out" ? [] : checkpointData.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending.length > 0, unreadable: entry.unreadable })),
+                  preserved: data.mode === "signed-out" ? [] : checkpointData.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending, unreadable: entry.unreadable })),
                 }}
                 today={today}
                 onAdd={(request) => session.checkpoints.add(request)}

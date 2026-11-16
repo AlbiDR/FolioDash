@@ -56,6 +56,7 @@ const assertions = await runSyntheticJourney({
     await click("Save checkpoint");
     await waitFor(async () => await evaluate("[...document.querySelectorAll('button')].some(button=>button.textContent.trim()==='Check outcome')") === true, "an unknown save offers Check outcome");
     await check("window.syntheticCheckpoints.receipt() && !!document.querySelector('.checkpoint-form button[type=submit]').disabled", "an unknown save keeps a receipt and blocks other saves");
+    await check("(document.querySelector('.checkpoint-pending')?.textContent ?? '').includes('12.500') && (document.querySelector('.checkpoint-pending')?.textContent ?? '').includes('Save of')", "the unconfirmed save is described, not only counted");
     const sent = await evaluate("window.syntheticCheckpoints.appends()");
     await click("Check outcome");
     await waitFor(async () => await evaluate(text("not visible in Google yet")) === true || await evaluate(text("could not be checked")) === true, "checking while it is still missing stays unknown");
@@ -103,6 +104,14 @@ const assertions = await runSyntheticJourney({
     // With amounts hidden, the preserved text and the copy leave the amounts out.
     await evaluate("window.syntheticCheckpoints.setHidden(true)");
     await check("!!document.querySelector('.checkpoint-preserved .amount.masked') && !/\\d{2}\\.\\d{2}/.test(document.querySelector('.checkpoint-preserved textarea').value) && document.querySelector('.checkpoint-preserved textarea').value.includes('hidden')", "hidden amounts are left out of the preserved text too");
+    // Forgetting this device (as another window may) discards what was being typed, not only the stored data.
+    await waitFor(async () => await evaluate("!document.querySelector('.checkpoint-form input[type=text]').disabled") === true, "the replacement workbook's form is writable");
+    await set(amount, "99,00");
+    await set(note, "private note");
+    await check(`document.querySelector(${JSON.stringify(amount)}).value==='99,00'`, "a draft is on screen");
+    await evaluate("window.syntheticCheckpoints.forgetDevice()");
+    await waitFor(async () => await evaluate(`document.querySelector(${JSON.stringify(amount)}).value===''`) === true, "forgetting the device discards the amount being typed");
+    await check(`document.querySelector(${JSON.stringify(note)}).value==='' && !document.body.innerText.includes('private note')`, "forgetting the device discards the note being typed");
   },
 }).then((count) => count);
 console.log(`Synthetic rendered checkpoints passed: ${String(assertions)} assertions.`);

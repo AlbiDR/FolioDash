@@ -101,9 +101,9 @@ One row is a source template; a fund-link template can render many controls. All
 | cc8374a68917-1 | [App.tsx:314](../../src/interfaces/web/app/App.tsx#L314) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
 | 0ae4a332d365-1 | [App.tsx:321](../../src/interfaces/web/app/App.tsx#L321) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
 | 7830fcf45616-1 | [App.tsx:324](../../src/interfaces/web/app/App.tsx#L324) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| d1b5caf7a0bd-1 | [App.tsx:392](../../src/interfaces/web/app/App.tsx#L392) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
-| ff1efa7f6ad1-1 | [App.tsx:398](../../src/interfaces/web/app/App.tsx#L398) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4b205198dc1e-1 | [App.tsx:427](../../src/interfaces/web/app/App.tsx#L427) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
+| d1b5caf7a0bd-1 | [App.tsx:393](../../src/interfaces/web/app/App.tsx#L393) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
+| ff1efa7f6ad1-1 | [App.tsx:399](../../src/interfaces/web/app/App.tsx#L399) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4b205198dc1e-1 | [App.tsx:428](../../src/interfaces/web/app/App.tsx#L428) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
 | a84d603e0083-1 | [AccountView.tsx:166](../../src/interfaces/web/features/account/AccountView.tsx#L166) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | d2c1f7c2e15c-1 | [AccountView.tsx:181](../../src/interfaces/web/features/account/AccountView.tsx#L181) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
 | 340a47c93acd-1 | [AccountView.tsx:206](../../src/interfaces/web/features/account/AccountView.tsx#L206) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
@@ -129,16 +129,16 @@ One row is a source template; a fund-link template can render many controls. All
 | 0a73764b8ca3-1 | [GetStarted.tsx:32](../../src/interfaces/web/features/account/GetStarted.tsx#L32) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 52ec4b541dc0-1 | [GetStarted.tsx:39](../../src/interfaces/web/features/account/GetStarted.tsx#L39) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 851794683e90-1 | [GetStarted.tsx:48](../../src/interfaces/web/features/account/GetStarted.tsx#L48) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 522a50999275-1 | [CheckpointsView.tsx:40](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L40) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
-| 79f13ef4e6d6-1 | [CheckpointsView.tsx:48](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L48) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
-| 65afc825e518-1 | [CheckpointsView.tsx:130](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L130) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
-| a5afba1766f8-1 | [CheckpointsView.tsx:135](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L135) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4da1de2122cf-1 | [CheckpointsView.tsx:138](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L138) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0aad0e693161-1 | [CheckpointsView.tsx:141](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L141) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3eedca29f5af-1 | [CheckpointsView.tsx:144](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L144) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
-| fcb77ba46365-1 | [CheckpointsView.tsx:164](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L164) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
-| 70ea2a57a459-1 | [CheckpointsView.tsx:165](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L165) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
-| a64093544c31-1 | [CheckpointsView.tsx:168](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L168) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| fcf2ca404a0b-1 | [CheckpointsView.tsx:50](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L50) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
+| 79f13ef4e6d6-1 | [CheckpointsView.tsx:58](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L58) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
+| 65afc825e518-1 | [CheckpointsView.tsx:141](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L141) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
+| a5afba1766f8-1 | [CheckpointsView.tsx:146](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L146) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4da1de2122cf-1 | [CheckpointsView.tsx:149](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L149) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0aad0e693161-1 | [CheckpointsView.tsx:152](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L152) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3eedca29f5af-1 | [CheckpointsView.tsx:155](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L155) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
+| fcb77ba46365-1 | [CheckpointsView.tsx:175](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L175) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
+| 70ea2a57a459-1 | [CheckpointsView.tsx:176](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L176) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
+| a64093544c31-1 | [CheckpointsView.tsx:179](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L179) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 193bcc8c5185-1 | [ExpenseDataTools.tsx:84](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L84) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | fe9391cd1caf-1 | [ExpenseDataTools.tsx:86](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L86) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
 | 4dc4fbc5afa8-1 | [ExpenseDataTools.tsx:87](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L87) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |

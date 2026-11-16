@@ -33,6 +33,8 @@ export interface CheckpointSessionState {
   readonly preserved: readonly PreservedCheckpoints[];
   readonly message: string;
   readonly cached: boolean;
+  /** Changes whenever this device is forgotten, so a screen can discard private drafts with it. */
+  readonly generation: number;
 }
 
 export type CheckpointWriteResult =
@@ -41,7 +43,7 @@ export type CheckpointWriteResult =
   | { readonly status: "refused" | "not-saved"; readonly message: string }
   | { readonly status: "unknown"; readonly message: string };
 
-const EMPTY: CheckpointSessionState = { ready: false, initialized: false, commands: [], active: [], pending: [], receiptsUnreadable: false, suspect: false, preserved: [], message: "", cached: false };
+const EMPTY: CheckpointSessionState = { ready: false, initialized: false, commands: [], active: [], pending: [], receiptsUnreadable: false, suspect: false, preserved: [], message: "", cached: false, generation: 0 };
 const UNREADABLE = "This device's record of a checkpoint save in progress could not be read, so nothing can be saved. It was left untouched. Reload, or use Forget this device only if you accept losing it.";
 
 /** Every command the device knows must still be in the other list, with the same content. */
@@ -74,7 +76,7 @@ export class CheckpointSession {
 
   get state(): CheckpointSessionState { return this.current; }
   subscribe(listener: () => void): () => void { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
-  private set(next: CheckpointSessionState): void { this.current = next; for (const listener of this.listeners) listener(); }
+  private set(next: CheckpointSessionState): void { this.current = { ...next, generation: this.epoch }; for (const listener of this.listeners) listener(); }
 
   /** What the device holds for one workbook. Unreadable is reported, never mistaken for empty. */
   private receiptsOf(id: string): { readonly receipts: readonly CheckpointReceipt[]; readonly unreadable: boolean } {
@@ -189,11 +191,18 @@ export class CheckpointSession {
       const own = this.receiptsOf(id);
       this.set({ ...this.current, ready: true, suspect: false, initialized: true, commands: result.commands, active: activeCheckpoints(result.commands), cached: false, pending: own.receipts.map((receipt) => receipt.command), receiptsUnreadable: own.unreadable, message: own.unreadable ? UNREADABLE : persisted === "failed" ? "This device could not keep a local copy of your checkpoints. They are safe in Google." : "" });
     } else if (result.status === "absent") {
+      // An empty answer is still an answer about history: it must not hide checkpoints this device already knows,
+      // including ones another window saved after this refresh began.
+      const stored = this.deps.store.loadCopy(id);
+      if (this.knownCommands(id).length > 0 || stored?.initialized === true) {
+        this.set({ ...this.current, ready: false, suspect: true, message: "Google shows no checkpoint log, but this device knows of checkpoints. Your copy was kept. Review the workbook before saving another checkpoint." });
+        return;
+      }
       const own = this.receiptsOf(id);
       this.set({ ...this.current, ready: true, suspect: false, initialized: false, commands: [], active: [], cached: false, pending: own.receipts.map((receipt) => receipt.command), receiptsUnreadable: own.unreadable, message: own.unreadable ? UNREADABLE : "" });
     } else {
-      // Altered or missing records stop the markers; an unreachable Google keeps showing the device copy.
-      this.set({ ...this.current, ready: false, suspect: result.status === "damaged" ? true : this.current.suspect, message: result.message });
+      // Any unsuccessful read stops the markers; the device copy stays listed on the screen with the explanation.
+      this.set({ ...this.current, ready: false, suspect: true, message: result.message });
     }
   }
 
@@ -289,6 +298,12 @@ export class CheckpointSession {
       this.set({ ...this.current, message: outcome.message });
       return { status: "unknown", message: outcome.message };
     }
+    if (outcome.status === "conflict") {
+      // The command exists with different content: never evidence that nothing was sent. Keep the receipt and the known history.
+      this.refreshPending();
+      this.set({ ...this.current, ready: false, suspect: true, message: outcome.message });
+      return { status: "unknown", message: outcome.message };
+    }
     const known = this.knownCommands(id);
     if (outcome.status !== "saved" && receipt.phase !== "not-submitted") {
       if (!this.deps.store.saveReceipts(id, [{ command: receipt.command, phase: "not-submitted" }])) {
@@ -375,7 +390,11 @@ export class CheckpointSession {
   preservedText(workbookId: string, masked = false): string {
     const entry = this.current.preserved.find((item) => item.workbookId === workbookId);
     if (entry === undefined) return "";
-    return entry.active.map((item) => `${item.date}\t${masked ? "hidden" : (item.cents / 100).toFixed(2)}\t${item.note}`).join("\n");
+    const amount = (cents: number): string => (masked ? "hidden" : (cents / 100).toFixed(2));
+    const confirmed = entry.active.map((item) => `${item.date}\t${amount(item.cents)}\t${item.note}`);
+    // A save whose outcome was never confirmed may be the only record of that observation, so it is exported, labelled.
+    const unconfirmed = entry.pending.map((command) => command.kind === "add" ? `UNCONFIRMED\t${command.date}\t${amount(command.cents)}\t${command.note}` : `UNCONFIRMED\twithdraw checkpoint ${command.target}`);
+    return [...confirmed, ...unconfirmed].join("\n");
   }
 }
 
