@@ -147,14 +147,14 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await call("Input.dispatchKeyEvent", { type: "keyUp", key: "Home", code: "Home" });
   await delay(40);
   await check("document.activeElement.textContent==='3M'", "Home selects 3M");
-  await evaluate("window.auditSelector.querySelectorAll('button')[3].click()");
+  await evaluate("[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='All').click()");
   await delay(50);
-  await evaluate("window.auditSelector.querySelectorAll('button')[1].click()");
+  await evaluate("[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='6M').click()");
   await delay(40);
-  await evaluate("window.auditSelector.querySelectorAll('button')[2].click()");
+  await evaluate("[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='3M').click()");
   await delay(280);
-  await check("window.auditSelector===document.querySelector('.range-selector') && window.auditSelector.querySelector('[aria-pressed=true]').textContent==='1Y'", "rapid range changes settle on the latest period");
-  await evaluate("window.auditSelector.querySelectorAll('button')[3].focus()");
+  await check("window.auditSelector===document.querySelector('.range-selector') && window.auditSelector.querySelector('[aria-pressed=true]').textContent==='3M'", "rapid range changes settle on the latest period");
+  await evaluate("[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='All').focus()");
   await call("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, text: "\r", unmodifiedText: "\r" });
   await call("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
   await delay(50);
@@ -183,7 +183,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await check("(()=>{const s=getComputedStyle(window.auditOption);return (s.scale==='none'||s.scale==='1')&&(s.translate==='none'||/^0px(?: 0px)?$/.test(s.translate))})()", "reduced-motion press stays geometrically still");
   await call("CSS.forcePseudoState", { nodeId: reducedOption["nodeId"], forcedPseudoClasses: [] });
   await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
-  await evaluate("document.querySelector('.privacy-toggle').click();window.auditSelector.querySelectorAll('button')[1].click()");
+  await evaluate("document.querySelector('.privacy-toggle').click();[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='6M').click()");
   await delay(60);
   await check("document.querySelector('.privacy-toggle').getAttribute('aria-pressed')==='true' && window.auditChart.querySelector('.chart-svg').getAnimations().some(a=>a.playState==='running') && !window.auditChart.querySelector('[data-value]')", "hidden-amount range changes retain motion without exposing values");
   await evaluate("document.querySelector('.privacy-toggle').click()");

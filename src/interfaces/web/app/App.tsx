@@ -20,7 +20,7 @@ import { armGestureRenewal } from "../../../adapters/browser/GestureRenewal";
 import { prepareGoogleIdentity } from "../../../adapters/browser/GoogleIdentity";
 import { createBrowserSession, watchOtherWindows } from "./browserSession";
 import { DRIVE_FILE_SCOPE } from "./session";
-import type { ChartRange } from "../features/overview/chartRange";
+import { type ChartRange, resolveRange } from "../features/overview/chartRange";
 import { rememberClientId, resolveClientId } from "../../../adapters/browser/ClientId";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
 import { memoizeLast } from "../shared/ui/memo";
@@ -331,7 +331,7 @@ export function App(): JSX.Element {
                   }}
                 />
               )}
-              {route.name === "overview" && <OverviewView model={model} range={range} onRangeChange={setRange} />}
+              {route.name === "overview" && <OverviewView model={model} range={resolveRange(range, model.dates)} onRangeChange={setRange} />}
               {route.name === "expenses" && <ExpensesView
                 days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
                 conflicts={data.mode === "signed-out" ? [] : expenseData.conflicts}
@@ -380,7 +380,7 @@ export function App(): JSX.Element {
               )}
 
               {route.name === "months" && <MonthsView model={model} />}
-              {route.name === "fund" && <FundView model={model} isin={route.isin} range={range} onRangeChange={setRange} />}
+              {route.name === "fund" && <FundView model={model} isin={route.isin} range={resolveRange(range, model.dates)} onRangeChange={setRange} />}
               {route.name === "import" && (
                 <div inert={jsonImportLocked}>
                 <ImportView
