@@ -68,6 +68,9 @@
 .mover-figures { display: grid; justify-items: end; gap: var(--space-1); font-size: var(--text-small); font-variant-numeric: tabular-nums; }
 .mover > svg { color: var(--color-muted); }
 
+.holdings-table tfoot th, .holdings-table tfoot td { border-top: 2px solid var(--color-border); border-bottom: 0; font-weight: var(--weight-semibold); }
+.holdings-table tfoot td[colspan] { color: var(--color-muted); font-weight: var(--weight-regular); text-align: left; }
+
 /* ---------- Fund: the figures strip across the top, then the chart, then the statement history ---------- */
 .fund-figures { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(4, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); margin: var(--space-3) 0 0; padding-top: var(--space-3); border-top: 1px solid var(--hero-rule); }
 .fund-figure { min-width: 0; }
