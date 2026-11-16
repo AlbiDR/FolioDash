@@ -5,8 +5,9 @@ import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync 
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pngContent } from "./png-content.ts";
+import { MOBILE_IMAGES, README_IMAGES } from "./readmeViews.ts";
 
-export const README_IMAGES = ["hero-light.png", "hero-dark.png", "expenses-light.png", "expenses-dark.png", "portfolio-mobile.png"] as const;
+export { README_IMAGES };
 const RECEIPT = "screenshots.json";
 const HEX = /^[a-f0-9]{64}$/u;
 
@@ -47,7 +48,7 @@ function keys(value: Record<string, unknown>, expected: readonly string[]): void
 function images(root: string): { name: string; sha256: string; width: number; height: number }[] {
   if (!lstatSync(root).isDirectory()) throw new Error("Screenshot root must be an ordinary directory.");
   const names = readdirSync(root).sort();
-  if (JSON.stringify(names.filter(name => name !== RECEIPT)) !== JSON.stringify([...README_IMAGES].sort())) throw new Error("Expected exactly five README PNG files.");
+  if (JSON.stringify(names.filter(name => name !== RECEIPT)) !== JSON.stringify([...README_IMAGES].sort())) throw new Error("Screenshot folder does not hold exactly the images in scripts/readmeViews.ts.");
   const result = README_IMAGES.map(name => {
     const file = join(root, name);
     const stat = lstatSync(file);
@@ -56,7 +57,7 @@ function images(root: string): { name: string; sha256: string; width: number; he
     if (bytes.length < 33 || bytes.toString("ascii", 12, 16) !== "IHDR" || bytes.readUInt32BE(8) !== 13) throw new Error("Missing PNG image header.");
     const width = bytes.readUInt32BE(16);
     const height = bytes.readUInt32BE(20);
-    if (name === "portfolio-mobile.png" ? width !== 780 || height !== 1688 : width !== 2880 || height < 1200 || height > 3200 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
+    if (MOBILE_IMAGES.has(name) ? width !== 780 || height !== 1688 : width !== 2880 || height < 1200 || height > 3200 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
     const channels = bytes[25] === 2 ? 3 : bytes[25] === 6 ? 4 : 0;
     if (bytes[24] !== 8 || channels === 0 || bytes[26] !== 0 || bytes[27] !== 0 || bytes[28] !== 0) throw new Error("Unsupported screenshot PNG encoding.");
     const content = pngContent(bytes);
@@ -72,7 +73,10 @@ function images(root: string): { name: string; sha256: string; width: number; he
     for (let row = 0; row < height; row++) if ((pixels[row * rowSize] ?? 255) > 4) throw new Error("Invalid screenshot row filter.");
     return { name, sha256: sha256(bytes), width, height };
   });
-  if (result[0]?.height !== result[1]?.height || result[2]?.height !== result[3]?.height) throw new Error("Light and dark screenshot framing must match.");
+  for (const light of result.filter(image => image.name.endsWith("-light.png"))) {
+    const dark = result.find(image => image.name === light.name.replace("-light.png", "-dark.png"));
+    if (dark?.height !== light.height) throw new Error("Light and dark screenshot framing must match.");
+  }
   return result;
 }
 
@@ -112,7 +116,7 @@ export function preparePages(app: string, screenshots: string, output: string, r
   const copied = readFiles(output);
   if (copied.size !== expected.size || [...expected].some(([name, bytes]) => !copied.get(name)?.equals(bytes))) throw new Error("Pages composition changed a checked file or introduced an extra file.");
   if (treeDigest(readFiles(app)) !== receipt["appSha256"]) throw new Error("The checked app changed during Pages composition.");
-  console.log(`Prepared Pages: ${String(appFiles.size)} byte-identical app files, five verified synthetic PNGs and their capture receipt.`);
+  console.log(`Prepared Pages: ${String(appFiles.size)} byte-identical app files, ${String(README_IMAGES.length)} verified synthetic PNGs and their capture receipt.`);
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

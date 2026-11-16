@@ -47,7 +47,7 @@ function fixture(): { app: string; screenshots: string; output: string } {
 }
 
 void describe("checked Pages composition", () => {
-  void it("preserves every app byte and adds only the five images and their receipt", () => {
+  void it("preserves every app byte and adds only the manifest images and their receipt", () => {
     const { app, screenshots, output } = fixture();
     const before = treeDigest(readFiles(app));
     preparePages(app, screenshots, output, REVISION);
@@ -60,7 +60,7 @@ void describe("checked Pages composition", () => {
   for (const name of ["unexpected.js", "unexpected.html"]) void it(`rejects an unexpected presentation file: ${name}`, () => {
     const { app, screenshots, output } = fixture();
     writeFileSync(join(screenshots, name), "Synthetic extra file");
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /exactly five/u);
+    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /exactly the images/u);
   });
 
   void it("rejects app mutation after capture and leaves the last composed artifact intact", () => {
