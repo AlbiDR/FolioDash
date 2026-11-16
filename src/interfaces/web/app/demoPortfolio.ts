@@ -11,13 +11,14 @@ import { overviewFromLedger } from "./overviewFromLedger";
  * the real ledger rules and shown through the real metrics, so the demo uses the
  * same path as a user's data. It holds no real names, amounts or identifiers.
  */
-export type DemoVariant = "typical" | "single" | "many" | "different" | "empty";
+export type DemoVariant = "typical" | "single" | "many" | "different" | "long" | "empty";
 
 export const DEMO_VARIANTS: readonly { readonly id: DemoVariant; readonly label: string }[] = [
   { id: "typical", label: "Typical, funds added and closed" },
   { id: "single", label: "One fund" },
   { id: "many", label: "Twelve funds" },
   { id: "different", label: "A completely different set" },
+  { id: "long", label: "Three years of history" },
   { id: "empty", label: "No statements yet" },
 ];
 
@@ -30,6 +31,8 @@ interface DemoFundSpec {
   readonly startValue: number;
   readonly monthlyGrowth: number;
   readonly invested: number;
+  /** A repeating rise and fall around the steady growth, so a long history has months of different sizes and signs. */
+  readonly swing?: number;
 }
 
 function cents(value: number): EuroCents {
@@ -57,7 +60,7 @@ function statementDates(count: number): IsoDate[] {
 }
 
 function valueAt(spec: DemoFundSpec, index: number): number {
-  return spec.startValue * (1 + spec.monthlyGrowth) ** (index - spec.startIndex);
+  return spec.startValue * (1 + spec.monthlyGrowth) ** (index - spec.startIndex) * (1 + (spec.swing ?? 0) * Math.sin(index * 1.7));
 }
 
 function ledgerFor(specs: readonly DemoFundSpec[], count: number): LedgerState {
@@ -106,6 +109,12 @@ const TYPICAL: readonly DemoFundSpec[] = [
   { name: "Demo Tech Growth", code: "DEMOTC", startIndex: 0, endIndex: 4, startValue: 5000, monthlyGrowth: 0.015, invested: 4500 },
 ];
 
+const LONG: readonly DemoFundSpec[] = [
+  { name: "Demo Global Equity", code: "DEMOEQ", startIndex: 0, endIndex: null, startValue: 12000, monthlyGrowth: 0.006, invested: 11000, swing: 0.03 },
+  { name: "Demo Euro Bonds", code: "DEMOBD", startIndex: 0, endIndex: null, startValue: 8000, monthlyGrowth: 0.002, invested: 8000, swing: 0.008 },
+  { name: "Demo Small Caps", code: "DEMOSC", startIndex: 14, endIndex: null, startValue: 4000, monthlyGrowth: 0.004, invested: 3800, swing: 0.045 },
+];
+
 const DIFFERENT: readonly DemoFundSpec[] = [
   { name: "Example Property Income", code: "EXPRO", startIndex: 0, endIndex: null, startValue: 30000, monthlyGrowth: 0.004, invested: 28000 },
   { name: "Example Emerging Markets", code: "EXEMK", startIndex: 1, endIndex: 3, startValue: 9000, monthlyGrowth: -0.006, invested: 9500 },
@@ -134,6 +143,8 @@ export function demoLedger(variant: DemoVariant): LedgerState {
       return ledgerFor(MANY, 10);
     case "different":
       return ledgerFor(DIFFERENT, 9);
+    case "long":
+      return ledgerFor(LONG, 30);
     case "empty":
       return EMPTY_LEDGER;
   }

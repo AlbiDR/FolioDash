@@ -76,6 +76,18 @@
 .holdings-table tfoot th, .holdings-table tfoot td { border-top: 2px solid var(--color-border); border-bottom: 0; font-weight: var(--weight-semibold); }
 .holdings-table tfoot td[colspan] { color: var(--color-muted); font-weight: var(--weight-regular); text-align: left; }
 
+/* ---------- Needs attention, and monthly returns by year ---------- */
+.attention { display: grid; gap: var(--space-2); }
+.attention > .notice { margin: 0; }
+.returns-table { width: 100%; border-collapse: separate; border-spacing: 2px; font-size: var(--text-small); font-variant-numeric: tabular-nums; }
+.returns-table th { color: var(--color-muted); font-size: var(--text-caption); font-weight: var(--weight-semibold); text-align: center; padding: var(--space-1); }
+.returns-table th.returns-year { text-align: left; position: sticky; left: 0; z-index: 1; background: var(--color-surface); padding-inline-end: var(--space-2); }
+.returns-table tbody th.returns-year { color: var(--color-text); font-size: var(--text-small); }
+.returns-cell { min-width: 4.25rem; padding: var(--space-2) var(--space-1); border-radius: var(--shape-xs); text-align: center; white-space: nowrap; background: var(--color-surface-2); }
+.returns-cell[data-tone="gain"] { background: color-mix(in srgb, var(--color-gain) calc(var(--heat, 0) * 42%), var(--color-surface-2)); }
+.returns-cell[data-tone="loss"] { background: color-mix(in srgb, var(--color-loss) calc(var(--heat, 0) * 42%), var(--color-surface-2)); }
+.returns-cell .empty { color: var(--color-muted); }
+
 /* ---------- Fund: the figures strip across the top, then the chart, then the statement history ---------- */
 .fund-figures { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(4, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); margin: var(--space-3) 0 0; padding-top: var(--space-3); border-top: 1px solid var(--hero-rule); }
 .fund-figure { min-width: 0; }

@@ -244,6 +244,16 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await evaluate("document.querySelector('.group-toggle').click()");
   await delay(300);
   await check("document.querySelector('.group-toggle').getAttribute('aria-expanded')==='true'&&document.querySelectorAll('#holdings-closed-rows tr:not(.holdings-group)').length>0", "opening the closed funds shows them again");
+  // Short histories have no returns grid; three years of demo history show it, with no reminder (the demo's dates are invented), and its figures are the Month by month matrix's own.
+  await check("!document.querySelector('.returns-card') && !document.querySelector('.attention')", "a history within one calendar year has no returns grid and demo data asks for nothing");
+  await visit("overview", 1440, "long");
+  await openDetails();
+  await check("(()=>{const rows=[...document.querySelectorAll('.returns-table tbody tr')];return rows.length===3&&rows.every(row=>row.querySelectorAll('td').length===12)&&!document.querySelector('.attention')&&document.querySelector('.returns-card').getBoundingClientRect().width>600})()", "three years of demo history show the monthly returns grid and no reminder");
+  await survey("Portfolio / three years / monthly returns");
+  await evaluate("window.auditGridValues=[...document.querySelectorAll('.returns-cell')].map(cell=>cell.textContent.trim()).filter(text=>text!=='-')");
+  await evaluate("location.hash='#months'");
+  await waitFor(async () => await evaluate("!!document.querySelector('.matrix.totals')") === true, "month matrix for the long history");
+  await check("(()=>{const rows=[...document.querySelectorAll('.matrix.totals tbody tr')];const at=rows.findIndex(row=>row.textContent.includes('Growth from previous month'));const cells=[...rows[at+1].querySelectorAll('td')].map(cell=>cell.textContent.trim()).filter(text=>text!=='-');return cells.length===window.auditGridValues.length&&cells.every((text,index)=>text===window.auditGridValues[index])})()", "the returns grid shows exactly the month-on-month percentages of the Month by month matrix, in order");
   await visit("expenses");
   await openDetails();
   // A long record uses the wide card's width (two columns, still newest first) without overflowing; the phone keeps one column.

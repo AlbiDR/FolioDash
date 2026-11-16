@@ -95,6 +95,7 @@ jobs:
           npm run audit:expense-restore
           npm run audit:sale-closure
           npm run audit:account-outcomes
+          npm run audit:overview-signals
           npm run audit:checkpoints
 
       - name: Capture current README views
