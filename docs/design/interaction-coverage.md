@@ -85,52 +85,54 @@ One row is a source template; a fund-link template can render many controls. All
 
 | ID | Source | Element / family | Control or context | State review |
 |---|---|---|---|---|
-| 86bb83f78abe-1 | [App.tsx:234](../../src/interfaces/web/app/App.tsx#L234) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
-| 3bfe6fff2b29-1 | [App.tsx:243](../../src/interfaces/web/app/App.tsx#L243) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
-| da009fee0732-1 | [App.tsx:256](../../src/interfaces/web/app/App.tsx#L256) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
-| 6575b250d5c3-1 | [App.tsx:270](../../src/interfaces/web/app/App.tsx#L270) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
-| a10fd3f7a2ba-1 | [App.tsx:279](../../src/interfaces/web/app/App.tsx#L279) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 4fadac329f30-1 | [App.tsx:284](../../src/interfaces/web/app/App.tsx#L284) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| e9f1737c87e0-1 | [App.tsx:300](../../src/interfaces/web/app/App.tsx#L300) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
-| cc8374a68917-1 | [App.tsx:312](../../src/interfaces/web/app/App.tsx#L312) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
-| 0ae4a332d365-1 | [App.tsx:319](../../src/interfaces/web/app/App.tsx#L319) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
-| 7830fcf45616-1 | [App.tsx:322](../../src/interfaces/web/app/App.tsx#L322) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| d1b5caf7a0bd-1 | [App.tsx:389](../../src/interfaces/web/app/App.tsx#L389) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
-| ff1efa7f6ad1-1 | [App.tsx:395](../../src/interfaces/web/app/App.tsx#L395) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4b205198dc1e-1 | [App.tsx:424](../../src/interfaces/web/app/App.tsx#L424) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
-| a84d603e0083-1 | [AccountView.tsx:161](../../src/interfaces/web/features/account/AccountView.tsx#L161) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| d2c1f7c2e15c-1 | [AccountView.tsx:176](../../src/interfaces/web/features/account/AccountView.tsx#L176) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
-| 340a47c93acd-1 | [AccountView.tsx:201](../../src/interfaces/web/features/account/AccountView.tsx#L201) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| f9f02dcf602a-1 | [AccountView.tsx:208](../../src/interfaces/web/features/account/AccountView.tsx#L208) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 001918fc3d37-1 | [AccountView.tsx:209](../../src/interfaces/web/features/account/AccountView.tsx#L209) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
-| 478e32bcf11d-1 | [AccountView.tsx:217](../../src/interfaces/web/features/account/AccountView.tsx#L217) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0fb07aa1aedf-1 | [AccountView.tsx:218](../../src/interfaces/web/features/account/AccountView.tsx#L218) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 33fdd4741ec0-1 | [AccountView.tsx:219](../../src/interfaces/web/features/account/AccountView.tsx#L219) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| fc05a936c8c9-1 | [AccountView.tsx:227](../../src/interfaces/web/features/account/AccountView.tsx#L227) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 383c3dfd904e-1 | [AccountView.tsx:240](../../src/interfaces/web/features/account/AccountView.tsx#L240) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 1cb2b8595051-1 | [AccountView.tsx:258](../../src/interfaces/web/features/account/AccountView.tsx#L258) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 63597cc1fbdf-1 | [AccountView.tsx:268](../../src/interfaces/web/features/account/AccountView.tsx#L268) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 3cf4f25191b0-1 | [AccountView.tsx:295](../../src/interfaces/web/features/account/AccountView.tsx#L295) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 161f99a4773d-1 | [AccountView.tsx:307](../../src/interfaces/web/features/account/AccountView.tsx#L307) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
-| 60e960948fc2-1 | [AccountView.tsx:320](../../src/interfaces/web/features/account/AccountView.tsx#L320) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 89aba6e5ab63-1 | [AccountView.tsx:334](../../src/interfaces/web/features/account/AccountView.tsx#L334) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
-| 40b02da8f303-1 | [AccountView.tsx:334](../../src/interfaces/web/features/account/AccountView.tsx#L334) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 82a0cea1caa2-1 | [AccountView.tsx:339](../../src/interfaces/web/features/account/AccountView.tsx#L339) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
-| b17867e45ea1-1 | [AccountView.tsx:346](../../src/interfaces/web/features/account/AccountView.tsx#L346) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
-| e9abdd4e5d5a-1 | [AccountView.tsx:362](../../src/interfaces/web/features/account/AccountView.tsx#L362) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
+| 86bb83f78abe-1 | [App.tsx:236](../../src/interfaces/web/app/App.tsx#L236) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
+| 3bfe6fff2b29-1 | [App.tsx:245](../../src/interfaces/web/app/App.tsx#L245) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
+| da009fee0732-1 | [App.tsx:258](../../src/interfaces/web/app/App.tsx#L258) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
+| 6575b250d5c3-1 | [App.tsx:272](../../src/interfaces/web/app/App.tsx#L272) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
+| a10fd3f7a2ba-1 | [App.tsx:281](../../src/interfaces/web/app/App.tsx#L281) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 4fadac329f30-1 | [App.tsx:286](../../src/interfaces/web/app/App.tsx#L286) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| e9f1737c87e0-1 | [App.tsx:302](../../src/interfaces/web/app/App.tsx#L302) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
+| cc8374a68917-1 | [App.tsx:314](../../src/interfaces/web/app/App.tsx#L314) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
+| 0ae4a332d365-1 | [App.tsx:321](../../src/interfaces/web/app/App.tsx#L321) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
+| 7830fcf45616-1 | [App.tsx:324](../../src/interfaces/web/app/App.tsx#L324) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d1b5caf7a0bd-1 | [App.tsx:392](../../src/interfaces/web/app/App.tsx#L392) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
+| ff1efa7f6ad1-1 | [App.tsx:398](../../src/interfaces/web/app/App.tsx#L398) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4b205198dc1e-1 | [App.tsx:427](../../src/interfaces/web/app/App.tsx#L427) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
+| a84d603e0083-1 | [AccountView.tsx:166](../../src/interfaces/web/features/account/AccountView.tsx#L166) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| d2c1f7c2e15c-1 | [AccountView.tsx:181](../../src/interfaces/web/features/account/AccountView.tsx#L181) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
+| 340a47c93acd-1 | [AccountView.tsx:206](../../src/interfaces/web/features/account/AccountView.tsx#L206) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| f9f02dcf602a-1 | [AccountView.tsx:213](../../src/interfaces/web/features/account/AccountView.tsx#L213) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 001918fc3d37-1 | [AccountView.tsx:214](../../src/interfaces/web/features/account/AccountView.tsx#L214) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
+| 478e32bcf11d-1 | [AccountView.tsx:222](../../src/interfaces/web/features/account/AccountView.tsx#L222) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0fb07aa1aedf-1 | [AccountView.tsx:223](../../src/interfaces/web/features/account/AccountView.tsx#L223) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 33fdd4741ec0-1 | [AccountView.tsx:224](../../src/interfaces/web/features/account/AccountView.tsx#L224) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| fc05a936c8c9-1 | [AccountView.tsx:232](../../src/interfaces/web/features/account/AccountView.tsx#L232) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 383c3dfd904e-1 | [AccountView.tsx:245](../../src/interfaces/web/features/account/AccountView.tsx#L245) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 82f17080f033-1 | [AccountView.tsx:260](../../src/interfaces/web/features/account/AccountView.tsx#L260) | a / action | Checkpoints screen | SOURCE CLASSIFIED; STATES OPEN |
+| 1cb2b8595051-1 | [AccountView.tsx:263](../../src/interfaces/web/features/account/AccountView.tsx#L263) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 63597cc1fbdf-1 | [AccountView.tsx:273](../../src/interfaces/web/features/account/AccountView.tsx#L273) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 4938af9c79d8-1 | [AccountView.tsx:281](../../src/interfaces/web/features/account/AccountView.tsx#L281) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 3cf4f25191b0-1 | [AccountView.tsx:301](../../src/interfaces/web/features/account/AccountView.tsx#L301) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 161f99a4773d-1 | [AccountView.tsx:313](../../src/interfaces/web/features/account/AccountView.tsx#L313) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
+| 60e960948fc2-1 | [AccountView.tsx:326](../../src/interfaces/web/features/account/AccountView.tsx#L326) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 89aba6e5ab63-1 | [AccountView.tsx:340](../../src/interfaces/web/features/account/AccountView.tsx#L340) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
+| 40b02da8f303-1 | [AccountView.tsx:340](../../src/interfaces/web/features/account/AccountView.tsx#L340) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 82a0cea1caa2-1 | [AccountView.tsx:345](../../src/interfaces/web/features/account/AccountView.tsx#L345) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
+| b17867e45ea1-1 | [AccountView.tsx:352](../../src/interfaces/web/features/account/AccountView.tsx#L352) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
+| e9abdd4e5d5a-1 | [AccountView.tsx:368](../../src/interfaces/web/features/account/AccountView.tsx#L368) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
 | 0a73764b8ca3-1 | [GetStarted.tsx:32](../../src/interfaces/web/features/account/GetStarted.tsx#L32) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 52ec4b541dc0-1 | [GetStarted.tsx:39](../../src/interfaces/web/features/account/GetStarted.tsx#L39) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 851794683e90-1 | [GetStarted.tsx:48](../../src/interfaces/web/features/account/GetStarted.tsx#L48) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 37bf95b07e37-1 | [CheckpointsView.tsx:35](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L35) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
-| 62efdad0a84f-1 | [CheckpointsView.tsx:43](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L43) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
-| 65afc825e518-1 | [CheckpointsView.tsx:125](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L125) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
-| a5afba1766f8-1 | [CheckpointsView.tsx:130](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L130) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4da1de2122cf-1 | [CheckpointsView.tsx:133](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L133) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0aad0e693161-1 | [CheckpointsView.tsx:136](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L136) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3eedca29f5af-1 | [CheckpointsView.tsx:139](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L139) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
-| fcb77ba46365-1 | [CheckpointsView.tsx:159](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L159) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
-| 70ea2a57a459-1 | [CheckpointsView.tsx:160](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L160) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
-| a64093544c31-1 | [CheckpointsView.tsx:163](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L163) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 522a50999275-1 | [CheckpointsView.tsx:40](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L40) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
+| 79f13ef4e6d6-1 | [CheckpointsView.tsx:48](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L48) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
+| 65afc825e518-1 | [CheckpointsView.tsx:130](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L130) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
+| a5afba1766f8-1 | [CheckpointsView.tsx:135](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L135) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4da1de2122cf-1 | [CheckpointsView.tsx:138](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L138) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0aad0e693161-1 | [CheckpointsView.tsx:141](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L141) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3eedca29f5af-1 | [CheckpointsView.tsx:144](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L144) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
+| fcb77ba46365-1 | [CheckpointsView.tsx:164](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L164) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
+| 70ea2a57a459-1 | [CheckpointsView.tsx:165](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L165) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
+| a64093544c31-1 | [CheckpointsView.tsx:168](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L168) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 193bcc8c5185-1 | [ExpenseDataTools.tsx:84](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L84) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | fe9391cd1caf-1 | [ExpenseDataTools.tsx:86](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L86) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
 | 4dc4fbc5afa8-1 | [ExpenseDataTools.tsx:87](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L87) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |
@@ -258,21 +260,22 @@ One row is a source template; a fund-link template can render many controls. All
 | 92469252387d-1 | [OverviewView.tsx:107](../../src/interfaces/web/features/overview/OverviewView.tsx#L107) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
 | 51654294e7ec-1 | [OverviewView.tsx:149](../../src/interfaces/web/features/overview/OverviewView.tsx#L149) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 3a42ecb00d5f-1 | [OverviewView.tsx:192](../../src/interfaces/web/features/overview/OverviewView.tsx#L192) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
-| 76c9a563859d-1 | [OverviewView.tsx:220](../../src/interfaces/web/features/overview/OverviewView.tsx#L220) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| 4417eda446f6-1 | [OverviewView.tsx:276](../../src/interfaces/web/features/overview/OverviewView.tsx#L276) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| c3e3ef456517-1 | [OverviewView.tsx:277](../../src/interfaces/web/features/overview/OverviewView.tsx#L277) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| a3b42fb80947-1 | [OverviewView.tsx:287](../../src/interfaces/web/features/overview/OverviewView.tsx#L287) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| 8ab71703e9f5-1 | [OverviewView.tsx:294](../../src/interfaces/web/features/overview/OverviewView.tsx#L294) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| 41605d22baeb-1 | [OverviewView.tsx:300](../../src/interfaces/web/features/overview/OverviewView.tsx#L300) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
-| 51cfdce2064c-1 | [OverviewView.tsx:313](../../src/interfaces/web/features/overview/OverviewView.tsx#L313) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
-| 368021e05e74-1 | [OverviewView.tsx:335](../../src/interfaces/web/features/overview/OverviewView.tsx#L335) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 5b859cc7acfb-1 | [OverviewView.tsx:340](../../src/interfaces/web/features/overview/OverviewView.tsx#L340) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
-| 8d0da27501ab-1 | [OverviewView.tsx:348](../../src/interfaces/web/features/overview/OverviewView.tsx#L348) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| f64086d86778-1 | [OverviewView.tsx:364](../../src/interfaces/web/features/overview/OverviewView.tsx#L364) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e865359a5236-1 | [OverviewView.tsx:367](../../src/interfaces/web/features/overview/OverviewView.tsx#L367) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| 78da3e9f8679-1 | [OverviewView.tsx:377](../../src/interfaces/web/features/overview/OverviewView.tsx#L377) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| f4734e648b87-1 | [OverviewView.tsx:451](../../src/interfaces/web/features/overview/OverviewView.tsx#L451) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 47bc7d2ce3b3-1 | [OverviewView.tsx:462](../../src/interfaces/web/features/overview/OverviewView.tsx#L462) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| 6cd84b1d35e4-1 | [OverviewView.tsx:194](../../src/interfaces/web/features/overview/OverviewView.tsx#L194) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 76c9a563859d-1 | [OverviewView.tsx:221](../../src/interfaces/web/features/overview/OverviewView.tsx#L221) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
+| 4417eda446f6-1 | [OverviewView.tsx:277](../../src/interfaces/web/features/overview/OverviewView.tsx#L277) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| c3e3ef456517-1 | [OverviewView.tsx:278](../../src/interfaces/web/features/overview/OverviewView.tsx#L278) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| a3b42fb80947-1 | [OverviewView.tsx:288](../../src/interfaces/web/features/overview/OverviewView.tsx#L288) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 8ab71703e9f5-1 | [OverviewView.tsx:295](../../src/interfaces/web/features/overview/OverviewView.tsx#L295) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| 41605d22baeb-1 | [OverviewView.tsx:301](../../src/interfaces/web/features/overview/OverviewView.tsx#L301) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
+| 51cfdce2064c-1 | [OverviewView.tsx:314](../../src/interfaces/web/features/overview/OverviewView.tsx#L314) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
+| 368021e05e74-1 | [OverviewView.tsx:336](../../src/interfaces/web/features/overview/OverviewView.tsx#L336) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 5b859cc7acfb-1 | [OverviewView.tsx:341](../../src/interfaces/web/features/overview/OverviewView.tsx#L341) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
+| 8d0da27501ab-1 | [OverviewView.tsx:349](../../src/interfaces/web/features/overview/OverviewView.tsx#L349) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| f64086d86778-1 | [OverviewView.tsx:365](../../src/interfaces/web/features/overview/OverviewView.tsx#L365) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e865359a5236-1 | [OverviewView.tsx:368](../../src/interfaces/web/features/overview/OverviewView.tsx#L368) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 78da3e9f8679-1 | [OverviewView.tsx:378](../../src/interfaces/web/features/overview/OverviewView.tsx#L378) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| f4734e648b87-1 | [OverviewView.tsx:452](../../src/interfaces/web/features/overview/OverviewView.tsx#L452) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 47bc7d2ce3b3-1 | [OverviewView.tsx:463](../../src/interfaces/web/features/overview/OverviewView.tsx#L463) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | ba730a52b26d-1 | [Donut.tsx:45](../../src/interfaces/web/presentation/charts/Donut.tsx#L45) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | 6e6b02976852-1 | [LineChart.tsx:210](../../src/interfaces/web/presentation/charts/LineChart.tsx#L210) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
 | cf2b0b91a045-1 | [LineChart.tsx:271](../../src/interfaces/web/presentation/charts/LineChart.tsx#L271) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |

@@ -14,6 +14,8 @@ export const MAX_NOTE_LENGTH = 120;
 export const ADD_ADMISSION_LIMIT = 5_000;
 /** A log is readable up to this many physical commands; it absorbs concurrent overflow and duplicate rows. */
 export const READ_SAFE_LIMIT = 20_000;
+/** A separate guard on how many physical rows are examined at all, so a huge sheet cannot exhaust the device. */
+export const MAX_PHYSICAL_ROWS = 200_000;
 /** One hundred billion euro, far beyond any real portfolio and far inside exact integer range. */
 export const MAX_CHECKPOINT_CENTS = 10_000_000_000_000;
 
@@ -85,10 +87,11 @@ export interface CheckpointHistory {
  * Validates a whole log read from outside. The same id with an identical payload
  * counts once (a retried append cannot duplicate); the same id with a different
  * payload makes the log damaged. A void of an unknown target is ignored, not
- * damaging. Beyond the read-safe limit the log is refused.
+ * damaging. The read-safe limit applies to distinct commands, after identical repeats are collapsed;
+ * a separate, larger bound guards how many physical rows are examined.
  */
 export function parseCheckpointHistory(value: unknown): CheckpointHistory | null {
-  if (!Array.isArray(value) || value.length > READ_SAFE_LIMIT) return null;
+  if (!Array.isArray(value) || value.length > MAX_PHYSICAL_ROWS) return null;
   const seen = new Map<string, string>();
   const commands: CheckpointCommand[] = [];
   for (const raw of value as unknown[]) {
@@ -102,6 +105,7 @@ export function parseCheckpointHistory(value: unknown): CheckpointHistory | null
     }
     seen.set(command.id, text);
     commands.push(command);
+    if (commands.length > READ_SAFE_LIMIT) return null;
   }
   return { commands };
 }

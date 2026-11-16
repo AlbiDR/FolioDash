@@ -191,6 +191,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           <p>Import your latest bank statement, or bring your existing history. You check the dates, opening amounts and money movements before anything is saved.</p>
           <a class="primary link-button" href="#import">Add your first statement <Icon name="chevron" size={18} /></a>
           <p class="hint">Your figures appear here after your first confirmed import.</p>
+          <a class="row-link plain" href="#checkpoints"><span>Record a value-only checkpoint instead</span><Icon name="chevron" size={18} /></a>
         </div>
       </section>
     );

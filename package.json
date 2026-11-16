@@ -34,7 +34,8 @@
     "audit:expense-recovery": "node scripts/audit-expense-recovery.ts",
     "audit:expense-restore": "node scripts/audit-expense-restore.ts",
     "audit:sale-closure": "node scripts/audit-sale-closure.ts",
-    "audit:account-outcomes": "node scripts/audit-account-outcomes.ts"
+    "audit:account-outcomes": "node scripts/audit-account-outcomes.ts",
+    "audit:checkpoints": "node scripts/audit-checkpoints.ts"
   },
   "engines": {
     "node": ">=22.18.0"

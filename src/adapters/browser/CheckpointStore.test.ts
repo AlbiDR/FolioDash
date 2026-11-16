@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { type CheckpointCommand } from "../../core/Checkpoints";
 import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { toEuroCents } from "../../core/Money";
-import { createCheckpointLock, createCheckpointStore } from "./CheckpointStore";
+import { type CheckpointReceipt, createCheckpointLock, createCheckpointStore } from "./CheckpointStore";
 import type { KeyValueStore } from "./LedgerCache";
 
 // Synthetic data only.
@@ -12,6 +12,8 @@ function required<T>(value: T | null | undefined): T {
 }
 const date = (text: string): IsoDate => required(parseIsoDate(text));
 const add = (name: string): CheckpointCommand => ({ id: `${name}-0000000`.slice(0, 12), kind: "add", date: date("2026-11-14"), cents: required(toEuroCents(100_000)), note: "" });
+
+const receipt = (name: string, phase: CheckpointReceipt["phase"] = "sent"): CheckpointReceipt => ({ command: add(name), phase });
 
 function memory(): KeyValueStore & { readonly data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -23,23 +25,23 @@ describe("checkpoint store", () => {
     const kv = memory();
     const store = createCheckpointStore(() => kv, "foliodash.");
     expect(store.saveCopy({ workbookId: "wb-1", commands: [add("a1")], initialized: true })).toBe(true);
-    expect(store.saveReceipts("wb-1", [add("p1")])).toBe(true);
+    expect(store.saveReceipts("wb-1", [receipt("p1")])).toBe(true);
     expect(store.workbooks()).toEqual(["wb-1"]);
     expect(store.loadCopy("wb-1")?.commands).toEqual([add("a1")]);
-    expect(store.loadReceipts("wb-1")).toEqual([add("p1")]);
+    expect(store.loadReceipts("wb-1")).toEqual({ status: "present", receipts: [receipt("p1")] });
     expect(store.loadCopy("wb-2")).toBeNull();
   });
 
   it("B1a reports a write that storage refuses, instead of believing it", () => {
     const full: KeyValueStore = { getItem: () => null, setItem: () => { throw new Error("QuotaExceededError"); }, removeItem: () => undefined };
     const store = createCheckpointStore(() => full, "foliodash.");
-    expect(store.saveReceipts("wb-1", [add("p1")])).toBe(false);
+    expect(store.saveReceipts("wb-1", [receipt("p1")])).toBe(false);
     expect(store.saveCopy({ workbookId: "wb-1", commands: [], initialized: true })).toBe(false);
   });
 
   it("B1a reports a write that does not read back identically", () => {
     const lossy: KeyValueStore = { getItem: () => "not what was written", setItem: () => undefined, removeItem: () => undefined };
-    expect(createCheckpointStore(() => lossy, "foliodash.").saveReceipts("wb-1", [add("p1")])).toBe(false);
+    expect(createCheckpointStore(() => lossy, "foliodash.").saveReceipts("wb-1", [receipt("p1")])).toBe(false);
   });
 
   it("refuses an oversized copy rather than crowding out the browser's storage", () => {
@@ -52,9 +54,9 @@ describe("checkpoint store", () => {
     const kv = memory();
     const stuck: KeyValueStore = { ...kv, removeItem: () => { throw new Error("blocked"); } };
     const store = createCheckpointStore(() => stuck, "foliodash.");
-    expect(store.saveReceipts("wb-1", [add("p1")])).toBe(true);
+    expect(store.saveReceipts("wb-1", [receipt("p1")])).toBe(true);
     expect(store.saveReceipts("wb-1", [])).toBe(false);
-    expect(store.loadReceipts("wb-1")).toEqual([add("p1")]);
+    expect(store.loadReceipts("wb-1")).toEqual({ status: "present", receipts: [receipt("p1")] });
   });
 
   it("B6 keeps the normal and synthetic-acceptance namespaces disjoint, including Forget", () => {
@@ -62,28 +64,49 @@ describe("checkpoint store", () => {
     const normal = createCheckpointStore(() => kv, "foliodash.");
     const synthetic = createCheckpointStore(() => kv, "foliodash.synthetic-acceptance.");
     normal.saveCopy({ workbookId: "real-wb", commands: [add("a1")], initialized: true });
-    normal.saveReceipts("real-wb", [add("p1")]);
+    normal.saveReceipts("real-wb", [receipt("p1")]);
     expect(synthetic.workbooks()).toEqual([]);
     expect(synthetic.loadCopy("real-wb")).toBeNull();
-    expect(synthetic.loadReceipts("real-wb")).toEqual([]);
+    expect(synthetic.loadReceipts("real-wb")).toEqual({ status: "none" });
     synthetic.saveCopy({ workbookId: "synthetic-wb", commands: [], initialized: true });
     synthetic.clearAll();
     expect(normal.loadCopy("real-wb")?.commands).toHaveLength(1);
-    expect(normal.loadReceipts("real-wb")).toHaveLength(1);
+    expect(normal.loadReceipts("real-wb").status).toBe("present");
     expect(synthetic.workbooks()).toEqual([]);
     normal.clearAll();
     expect(normal.workbooks()).toEqual([]);
-    expect(normal.loadReceipts("real-wb")).toEqual([]);
+    expect(normal.loadReceipts("real-wb")).toEqual({ status: "none" });
   });
 
-  it("ignores a damaged or foreign record instead of trusting it", () => {
+  it("CP-003 reports a damaged, foreign or unreadable receipt as unreadable, never as empty, and leaves it untouched", () => {
+    const kv = memory();
+    const store = createCheckpointStore(() => kv, "foliodash.");
+    store.saveReceipts("wb-1", [receipt("p1")]);
+    const key = "foliodash.checkpoints.pending.v1:wb-1";
+    const good = kv.data.get(key) ?? "";
+    expect(store.loadReceipts("wb-2")).toEqual({ status: "none" });
+    for (const broken of ["nonsense", "{\"version\":1}", "{\"version\":2,\"workbookId\":\"wb-1\",\"receipts\":[]}", good.replace("wb-1", "other-workbook"), "[]"]) {
+      kv.data.set(key, broken);
+      expect(store.loadReceipts("wb-1")).toEqual({ status: "unreadable" });
+      expect(kv.data.get(key)).toBe(broken);
+    }
+    const throwing: KeyValueStore = { getItem: () => { throw new Error("blocked"); }, setItem: () => undefined, removeItem: () => undefined };
+    expect(createCheckpointStore(() => throwing, "foliodash.").loadReceipts("wb-1")).toEqual({ status: "unreadable" });
+  });
+
+  it("CP-004 keeps the phase of a receipt", () => {
+    const kv = memory();
+    const store = createCheckpointStore(() => kv, "foliodash.");
+    store.saveReceipts("wb-1", [receipt("p1", "not-submitted")]);
+    expect(store.loadReceipts("wb-1")).toEqual({ status: "present", receipts: [receipt("p1", "not-submitted")] });
+  });
+
+  it("ignores a damaged copy instead of trusting it", () => {
     const kv = memory();
     const store = createCheckpointStore(() => kv, "foliodash.");
     store.saveCopy({ workbookId: "wb-1", commands: [add("a1")], initialized: true });
     kv.data.set("foliodash.checkpoints.copy.v1:wb-1", "{\"version\":1}");
     expect(store.loadCopy("wb-1")).toBeNull();
-    kv.data.set("foliodash.checkpoints.pending.v1:wb-1", "nonsense");
-    expect(store.loadReceipts("wb-1")).toEqual([]);
   });
 });
 
