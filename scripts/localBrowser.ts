@@ -14,7 +14,7 @@ export interface LocalBrowser {
 
 /** Fresh signed-out browser, production preview, service-worker bypass and local-only network.
  * Shared by README capture and the interaction audit; never attaches to a person's browser. */
-export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<void>, APP_PORT = 4197): Promise<void> {
+export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<void>, APP_PORT = 4197, previewConfig = "config/vite.config.ts"): Promise<void> {
   const ORIGIN = `http://127.0.0.1:${String(APP_PORT)}`;
   const chromePath = process.env["CHROME_PATH"] ?? (process.platform === "darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" : "google-chrome");
   const profile = mkdtempSync(join(tmpdir(), "foliodash-readme-"));
@@ -132,7 +132,7 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
   }
 
   try {
-    preview = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--config", "config/vite.config.ts", "--host", "127.0.0.1", "--port", String(APP_PORT), "--strictPort"], { stdio: ["ignore", "pipe", "ignore"] });
+    preview = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--config", previewConfig, "--host", "127.0.0.1", "--port", String(APP_PORT), "--strictPort"], { stdio: ["ignore", "pipe", "ignore"] });
     preview.stdout?.on("data", (chunk: Buffer) => {
       previewOutput += stripVTControlCharacters(chunk.toString());
       if (previewOutput.includes(ORIGIN)) previewReady = true;
