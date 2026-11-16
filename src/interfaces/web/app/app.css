@@ -957,17 +957,18 @@ table {
 
 .holdings-table th:first-child {
   /* Columns get the width of what they hold: the three amount columns reserve an amount's width so hiding amounts never moves them, the share and the percentage need less. */
-  width: 24.5%;
+  width: 21%;
   text-align: left;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
 .holdings-table thead th:nth-child(2),
-.holdings-table thead th:nth-child(5),
 .holdings-table thead th:nth-child(6) { width: 16.5%; }
 .holdings-table thead th:nth-child(3) { width: 11.5%; }
-.holdings-table thead th:nth-child(4) { width: 14%; }
+/* The gain figures carry a sign and a currency or percent mark, so they need the most room when text renders wider than the design font. */
+.holdings-table thead th:nth-child(4) { width: 15.5%; }
+.holdings-table thead th:nth-child(5) { width: 18%; }
 
 .holdings-table tbody th {
   position: relative;
