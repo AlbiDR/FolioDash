@@ -184,7 +184,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 7aa13e49b859-1 | [ManualEntry.tsx:112](../../src/interfaces/web/features/import/ManualEntry.tsx#L112) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
 | cbc079dfb4c6-1 | [FundView.tsx:55](../../src/interfaces/web/features/overview/FundView.tsx#L55) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
 | 6cfdf75175ef-1 | [FundView.tsx:89](../../src/interfaces/web/features/overview/FundView.tsx#L89) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 5faf1658723d-1 | [MonthsView.tsx:25](../../src/interfaces/web/features/overview/MonthsView.tsx#L25) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
+| ba05b1ea97a6-1 | [MonthsView.tsx:25](../../src/interfaces/web/features/overview/MonthsView.tsx#L25) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
 | 4c3e5c77b65b-1 | [MonthsView.tsx:69](../../src/interfaces/web/features/overview/MonthsView.tsx#L69) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
 | 4880f829e8f5-1 | [MonthsView.tsx:104](../../src/interfaces/web/features/overview/MonthsView.tsx#L104) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | e44a2558bb28-1 | [MonthsView.tsx:109](../../src/interfaces/web/features/overview/MonthsView.tsx#L109) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |

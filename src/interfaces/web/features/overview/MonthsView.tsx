@@ -43,14 +43,14 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 </tr>
                 {(
                   [
-                    ["Growth from investment", "gain", "gainPercent"],
-                    ["Growth from previous month", "monthlyGain", "monthlyGainPercent"],
-                    ["Growth from current year", "yearToDateGain", "yearToDatePercent"],
-                    ["Growth from previous year", "yearOverYearGain", "yearOverYearPercent"],
+                    ["investment", "gain", "gainPercent"],
+                    ["previous month", "monthlyGain", "monthlyGainPercent"],
+                    ["current year", "yearToDateGain", "yearToDatePercent"],
+                    ["previous year", "yearOverYearGain", "yearOverYearPercent"],
                   ] as const
                 ).flatMap(([label, amountKey, percentKey]) => [
                   <tr key={`${label}-currency`} class="matrix-first">
-                    <th scope="row" rowSpan={2} class="matrix-label">{label}</th>
+                    <th scope="row" rowSpan={2} class="matrix-label" style={{ whiteSpace: "nowrap" }}>Growth from<br />{label}</th>
                     <th scope="row">Currency</th>
                     {months.map((month) => (
                       <td key={month.date}><Signed cents={month[amountKey]} /></td>
