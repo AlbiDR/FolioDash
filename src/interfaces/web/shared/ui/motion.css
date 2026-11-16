@@ -257,7 +257,7 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
 
 /* Inspection is an opacity/stroke treatment; allocation angles never change. */
 .donut-centre { pointer-events: none; }
-.donut[data-inspecting="true"] .donut-number { font-size: min(1.5rem, 13cqi); }
+.donut[data-inspecting="true"] .donut-number { font-size: max(var(--text-body), min(1.5rem, 13cqi)); }
 .donut-slice {
   stroke: var(--color-surface);
   stroke-width: 0;
