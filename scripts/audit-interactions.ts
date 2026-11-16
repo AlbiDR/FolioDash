@@ -311,6 +311,9 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   const ledger = { revision: "synthetic-revision", funds, snapshots: [{ date: "2026-01-31", fundsSubtotal: 200000, holdings: holdings("Start") }, { date: "2026-02-28", fundsSubtotal: 200000, holdings: holdings("Keep") }] };
   const syntheticCopy = { version: 1, workbook: { id: "synthetic-audit", url: "https://example.invalid/synthetic-audit" }, ledger, syncedAt: 1 };
   await evaluate(`localStorage.setItem('foliodash.ledger.v1',${JSON.stringify(JSON.stringify(syntheticCopy))})`);
+  // A release build has a Google client ID and prepares sign-in for a remembered
+  // workbook. This offline fixture never signs in or saves to Google.
+  await call("Page.addScriptToEvaluateOnNewDocument", { source: "window.google={accounts:{oauth2:{initTokenClient:()=>({requestAccessToken:()=>{throw new Error('Synthetic audit must not sign in')}})}}}" });
   await call("Page.reload", { ignoreCache: true });
   await waitFor(async () => await evaluate("[...document.querySelectorAll('button')].some(b=>b.textContent==='Add earlier history')") === true, "earlier history entry");
   await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Add earlier history').click()");
