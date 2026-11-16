@@ -32,7 +32,8 @@ export async function runSyntheticJourney(journey: SyntheticJourney): Promise<nu
     await withLocalBrowser(async (browser) => {
       const { origin, call, evaluate, waitFor } = browser;
       await call("Page.navigate", { url: `${origin}/` });
-      await waitFor(async () => await evaluate(`!!document.querySelector(${JSON.stringify(journey.readySelector)}) || document.body.innerText.includes('Synthetic setup error:')`) === true, `synthetic ${journey.name} harness`);
+      // A slow machine may still be loading the page: an evaluation that fails then is not ready yet, not a failed journey.
+      await waitFor(async () => { try { return await evaluate(`!!document.querySelector(${JSON.stringify(journey.readySelector)}) || document.body?.innerText?.includes('Synthetic setup error:') === true`) === true; } catch { return false; } }, `synthetic ${journey.name} harness`);
       const setupError = await evaluate("document.body.innerText.includes('Synthetic setup error:') ? document.body.innerText : ''");
       if (typeof setupError === "string" && setupError !== "") throw new Error(setupError);
       const check = async (expression: string, label: string): Promise<void> => {
@@ -44,7 +45,8 @@ export async function runSyntheticJourney(journey: SyntheticJourney): Promise<nu
         await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent.trim()===${JSON.stringify(label)}).click()`);
       };
       const waitForWithPage: LocalBrowser["waitFor"] = async (condition, description) => {
-        try { await waitFor(condition, description); } catch (error) {
+        const tolerant = async (): Promise<boolean> => { try { return await condition(); } catch { return false; } };
+        try { await waitFor(tolerant, description); } catch (error) {
           // A stalled wait names what the synthetic page showed instead, which is the first thing to know.
           throw new Error(`${error instanceof Error ? error.message : "Timed out."} Page showed: ${String(await evaluate("document.body.innerText.replace(/\\s+/g,' ').slice(0,700)"))}`, { cause: error });
         }
