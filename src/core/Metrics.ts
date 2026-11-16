@@ -45,6 +45,10 @@ export interface StatementMetrics {
   readonly gainPercent: number | null;
   /** True when the previous statement is in the immediately preceding calendar month. */
   readonly consecutive: boolean;
+  /** The date of the statement the figures below were compared with. Names the baseline only; it changes no figure. */
+  readonly previousDate: IsoDate | null;
+  readonly yearToDateFrom: IsoDate | null;
+  readonly yearOverYearFrom: IsoDate | null;
   /** Change in gain since the previous statement, across any gap. */
   readonly periodGain: EuroCents | null;
   readonly monthlyGain: EuroCents | null;
@@ -110,11 +114,11 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
 
     const january = firstByMonth.get(Math.floor(month / 12) * 12) ?? -1;
     const lastYear = firstByMonth.get(month - 12) ?? -1;
-    const change = (baseline: number): { gain: EuroCents; base: number } | null => {
+    const change = (baseline: number): { gain: EuroCents; base: number; from: IsoDate } | null => {
       const baselineGain = baseline >= 0 ? gains[baseline] : undefined;
       const baselineSnapshot = baseline >= 0 ? state.snapshots[baseline] : undefined;
       if (baselineGain === undefined || baselineSnapshot === undefined) return null;
-      return { gain: exact(subtractCents(gain, baselineGain)), base: baselineSnapshot.fundsSubtotal };
+      return { gain: exact(subtractCents(gain, baselineGain)), base: baselineSnapshot.fundsSubtotal, from: baselineSnapshot.date };
     };
     const yearToDate = change(january);
     const yearOverYear = change(lastYear);
@@ -150,6 +154,9 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
       gain,
       gainPercent: ratio(gain, netInvested),
       consecutive,
+      previousDate: previous?.date ?? null,
+      yearToDateFrom: yearToDate?.from ?? null,
+      yearOverYearFrom: yearOverYear?.from ?? null,
       periodGain,
       monthlyGain,
       monthlyGainPercent: consecutive ? ratio(monthlyGain, monthlyDenominator) : null,

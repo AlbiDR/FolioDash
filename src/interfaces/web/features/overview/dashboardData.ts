@@ -109,7 +109,10 @@ export function computeDashboard(model: OverviewModel, range: ChartRange): Dashb
     ],
     slices: allocation(model),
     ranking: fundRanking(model),
-    bars: metricSeries(months, start, "monthlyGain").map((entry) => ({ key: entry.date, label: formatMonthShort(entry.date), value: entry.value })),
+    bars: metricSeries(months, start, "monthlyGain").map((entry, index) => {
+      const name = model.labels[start + index];
+      return { key: entry.date, label: name?.short ?? formatMonthShort(entry.date), detail: name?.detail ?? null, value: entry.value };
+    }),
     heroTrend: shown.map((_, index) => euros(totals[start + index]?.value ?? null)),
     metricTrends: {
       gain: metricTrend("gain"),

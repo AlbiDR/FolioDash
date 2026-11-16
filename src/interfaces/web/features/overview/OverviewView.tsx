@@ -14,7 +14,7 @@ import { PerformanceBars } from "../../presentation/charts/PerformanceBars";
 import { Sparkline } from "../../presentation/charts/Sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import { euroLabel, monthLabel } from "./chartData";
+import { euroLabel, monthLabel, observationLabel } from "./chartData";
 import type { OverviewKpi, OverviewModel } from "./OverviewModel";
 import { Percent, Pill, Signed, tone } from "./parts";
 import { type HoldingsSort, type HoldingsSortKey, SORT_LABELS, describeSort, nextSort, sortHoldings } from "./holdingsSort";
@@ -40,7 +40,7 @@ function StatCard(props: {
       ) : (
         <>
           {kpi.signed && kpi.percent !== null ? <Pill ratio={kpi.percent} signed /> : <span class="pill">-</span>}
-          <p class="stat-caption">{props.caption}</p>
+          <p class="stat-caption">{kpi.comparedWith === undefined || kpi.comparedWith === null ? props.caption : `Since the statement of ${formatDateLong(kpi.comparedWith)}.`}</p>
         </>
       )}
       <Sparkline times={props.trend.times} values={props.trend.values} tone={kpi.signed ? tone(kpi.amount) : ""} width={220} height={52} area />
@@ -211,6 +211,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           series={d.totalSeries}
           fillFirst
           formatTime={monthLabel}
+          formatObservation={observationLabel(props.model.dates, props.model.labels)}
           formatValue={euroLabel}
           emptyMessage="There is nothing to plot yet."
         />
@@ -362,6 +363,7 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
           description="One solid line per fund showing its value over time, and a faint dotted line in the same colour for the money invested in it. A fund that was not held leaves a gap."
           series={d.fundSeries}
           formatTime={monthLabel}
+          formatObservation={observationLabel(props.model.dates, props.model.labels)}
           formatValue={euroLabel}
           emptyMessage="No fund has a value to plot yet."
         />

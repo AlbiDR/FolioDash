@@ -7,8 +7,15 @@ import { maskNumbers } from "../privacy/privacyChoice";
 export interface Bar {
   readonly key: string;
   readonly label: string;
+  /** The exact date where the label does not carry it, for example `exported 1 Nov 2026`. Shown beside the label and read out with it. */
+  readonly detail?: string | null;
   /** Null is a month with no figure: no bar, never a zero bar. */
   readonly value: number | null;
+}
+
+/** The label with its detail, for anything read aloud or listed in a table. */
+function named(bar: Bar): string {
+  return bar.detail === undefined || bar.detail === null ? bar.label : `${bar.label}, ${bar.detail}`;
 }
 
 const WIDTH = 360;
@@ -71,7 +78,7 @@ export function MonthlyBars(props: {
       resetInspection();
     }}>
       <p class="bars-readout" aria-hidden="true">
-        <span key={shown?.key} class="bars-readout-month">{shown?.label ?? ""}</span>
+        <span key={shown?.key} class="bars-readout-month">{shown === undefined ? "" : named(shown)}</span>
         <span class={`bars-readout-value ${shown?.value === undefined || shown.value === null ? "" : shown.value >= 0 ? "gain" : "loss"}`}>
           {shown?.value === undefined || shown.value === null ? "-" : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
         </span>
@@ -89,7 +96,7 @@ export function MonthlyBars(props: {
               class={`bars-item${bar.key === shown?.key ? " is-active" : ""}`}
               role="button"
               tabIndex={bar.key === tabStop ? 0 : -1}
-              aria-label={`${bar.label}: ${value === null ? "Unavailable" : show(value)}`}
+              aria-label={`${named(bar)}: ${value === null ? "Unavailable" : show(value)}`}
               aria-pressed={pinned === bar.key}
               onClick={() => { setPinned(current => current === bar.key ? null : bar.key); }}
               onKeyDown={(event) => {
@@ -120,7 +127,7 @@ export function MonthlyBars(props: {
               <rect class="bars-hit" x={PAD.side + band * index} y={0} width={band} height={HEIGHT} />
               {value !== null && (
                 <rect class={value >= 0 ? "bar gain" : "bar loss"} x={x} y={y} width={barWidth} height={Math.max(height, 1.5)} rx={Math.min(6, barWidth / 3)}>
-                  <title>{`${bar.label}: ${show(value)}`}</title>
+                  <title>{`${named(bar)}: ${show(value)}`}</title>
                 </rect>
               )}
 
@@ -143,11 +150,11 @@ export function MonthlyBars(props: {
           disabled={props.bars.length < 2}
           aria-label={`${props.title}: month`}
           aria-describedby={`${props.id}-inspection-help`}
-          aria-valuetext={shown === undefined ? "No observation" : `${shown.label}: ${shown.value === null ? "Unavailable" : show(shown.value)}`}
+          aria-valuetext={shown === undefined ? "No observation" : `${named(shown)}: ${shown.value === null ? "Unavailable" : show(shown.value)}`}
           onFocus={() => { setHovered(null); setFocused(null); }}
           onInput={(event) => { setHovered(null); setFocused(null); setPinned(props.bars[Number(event.currentTarget.value)]?.key ?? null); }}
         />
-        <span aria-hidden="true">{shown?.label ?? ""}</span>
+        <span aria-hidden="true">{shown === undefined ? "" : named(shown)}</span>
       </label>
       <div class="chart-inspection-actions">
         <button class="quiet-action chart-reset" type="button" disabled={selected === undefined && hovered === null && focused === null} onClick={resetInspection}>Show latest month</button>
@@ -166,7 +173,7 @@ export function MonthlyBars(props: {
           <tbody>
             {props.bars.map((bar) => (
               <tr key={bar.key}>
-                <th scope="row">{bar.label}</th>
+                <th scope="row">{named(bar)}</th>
                 <td>{bar.value === null ? "-" : show(bar.value)}</td>
               </tr>
             ))}

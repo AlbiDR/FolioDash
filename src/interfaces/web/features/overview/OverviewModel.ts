@@ -1,6 +1,7 @@
 import type { IsoDate } from "../../../../core/IsoDate";
 import type { HoldingStatus } from "../../../../core/Ledger";
 import type { EuroCents } from "../../../../core/Money";
+import type { StatementLabel } from "../../../../core/StatementLabels";
 
 /**
  * What the overview shows. The application layer produces it from the ledger
@@ -13,6 +14,8 @@ export interface OverviewKpi {
   /** Whether `amount` is a gain or loss and so shown with a sign. */
   readonly signed: boolean;
   readonly note: string;
+  /** The statement this change was measured against, or null when the figure is unavailable. */
+  readonly comparedWith?: IsoDate | null;
 }
 
 export interface OverviewFundLatest {
@@ -48,12 +51,18 @@ export interface OverviewMonth {
   readonly yearToDatePercent: number | null;
   readonly yearOverYearGain: EuroCents | null;
   readonly yearOverYearPercent: number | null;
+  /** The statements the comparisons above were made against. Names the baseline only. */
+  readonly previousDate: IsoDate | null;
+  readonly yearToDateFrom: IsoDate | null;
+  readonly yearOverYearFrom: IsoDate | null;
 }
 
 export interface OverviewModel {
   /** Whether the figures come from invented demo data or from statements the user recorded. */
   readonly source: "demo" | "recorded";
   readonly dates: readonly IsoDate[];
+  /** How each statement is named on screen, aligned with `dates`. Display only. */
+  readonly labels: readonly StatementLabel[];
   readonly funds: readonly OverviewFund[];
   /** Portfolio value and net invested per statement date, aligned with `dates`. */
   readonly totals: readonly { readonly value: EuroCents; readonly invested: EuroCents }[];

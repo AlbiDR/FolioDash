@@ -1,14 +1,31 @@
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { formatDateLong, formatMonthShort } from "../../../../core/IsoDate";
+import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
+import type { StatementLabel } from "../../../../core/StatementLabels";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import type { OverviewModel } from "./OverviewModel";
 import { Percent, Signed } from "./parts";
 
+/** A column heading: the short name, with the exact export date for anyone who cannot see it. */
+function StatementHeading(props: { readonly label: StatementLabel | undefined; readonly date: IsoDate }): JSX.Element {
+  const { label } = props;
+  return label === undefined ? <>{props.date}</> : <>{label.short}{label.detail !== null && <span class="visually-hidden">, {label.detail}</span>}</>;
+}
+
+/** Names the statements the comparisons were made against. Calculations follow the actual dates, so say which. */
+function comparisonNote(month: OverviewModel["months"][number]): string | null {
+  const parts = [
+    month.monthlyGain !== null && month.previousDate !== null ? `${formatDateLong(month.previousDate)} (month on month)` : null,
+    month.yearToDateGain !== null && month.yearToDateFrom !== null ? `${formatDateLong(month.yearToDateFrom)} (year to date)` : null,
+    month.yearOverYearGain !== null && month.yearOverYearFrom !== null ? `${formatDateLong(month.yearOverYearFrom)} (year on year)` : null,
+  ].filter((part): part is string => part !== null);
+  return parts.length === 0 ? null : `Compared with the statements dated ${parts.join(", ")}.`;
+}
+
 /** The earlier spreadsheet's month-by-month matrix, kept whole, on its own screen. */
 export function MonthsView(props: { readonly model: OverviewModel }): JSX.Element {
-  const { dates, funds, months } = props.model;
+  const { dates, funds, months, labels } = props.model;
   const [selected, setSelected] = useState("");
   const date = dates.find((entry) => entry === selected) ?? dates[dates.length - 1];
   const index = dates.findIndex((entry) => entry === date);
@@ -28,8 +45,8 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 <tr>
                   <th scope="col" class="matrix-label">Portfolio</th>
                   <th scope="col">Measure</th>
-                  {dates.map((date) => (
-                    <th key={date} scope="col">{formatMonthShort(date)}</th>
+                  {dates.map((date, position) => (
+                    <th key={date} scope="col"><StatementHeading label={labels[position]} date={date} /></th>
                   ))}
                 </tr>
               </thead>
@@ -72,8 +89,8 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 <tr>
                   <th scope="col">Fund</th>
                   <th scope="col">Measure</th>
-                  {dates.map((date) => (
-                    <th key={date} scope="col">{formatMonthShort(date)}</th>
+                  {dates.map((date, position) => (
+                    <th key={date} scope="col"><StatementHeading label={labels[position]} date={date} /></th>
                   ))}
                 </tr>
               </thead>
@@ -102,7 +119,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
           <div class="mobile-months">
             <label class="field">Statement date
               <select value={date} onChange={(event) => { setSelected(event.currentTarget.value); }}>
-                {[...dates].reverse().map((entry) => <option key={entry} value={entry}>{formatDateLong(entry)}</option>)}
+                {dates.map((entry, position) => <option key={entry} value={entry}>{labels[position]?.long ?? formatDateLong(entry)}</option>).reverse()}
               </select>
             </label>
             <div class="month-actions" role="group" aria-label="Browse statement months">
@@ -110,9 +127,9 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               <button type="button" class="month-step next" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates[index + 1] ?? ""); }}>Next<Icon name="chevron" size={16} /></button>
               <button type="button" disabled={index >= dates.length - 1} onClick={() => { setSelected(dates.at(-1) ?? ""); }}>Latest</button>
             </div>
-            <p class="statement-position" role="status" aria-atomic="true">Statement {index + 1} of {dates.length}{date === undefined ? "" : ` · ${formatDateLong(date)}`}</p>
+            <p class="statement-position" role="status" aria-atomic="true">Statement {index + 1} of {dates.length}{date === undefined ? "" : ` · ${labels[index]?.long ?? formatDateLong(date)}`}</p>
             {month !== undefined && <div class="card month-summary" key={month.date}>
-              <h2 class="card-title"><time dateTime={month.date}>{formatDateLong(month.date)}</time></h2>
+              <h2 class="card-title"><time dateTime={month.date}>{labels[index]?.long ?? formatDateLong(month.date)}</time></h2>
               <dl class="facts stacked">
                 <div><dt>Fund value</dt><dd><Amount cents={month.value} /></dd></div>
                 <div><dt>Gain since invested</dt><dd><Signed cents={month.gain} /></dd></div>
@@ -120,6 +137,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 <div><dt>Year to date</dt><dd><Signed cents={month.yearToDateGain} /></dd></div>
                 <div><dt>Year on year</dt><dd><Signed cents={month.yearOverYearGain} /></dd></div>
               </dl>
+              {comparisonNote(month) !== null && <p class="card-subtitle">{comparisonNote(month)}</p>}
               <h3 class="month-funds-heading">Funds</h3>
               <ul class="month-funds">
                 {funds.map((fund) => <li key={fund.isin}>

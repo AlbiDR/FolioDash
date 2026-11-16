@@ -20,7 +20,10 @@ export interface LineChartProps {
   /** A control that governs only this chart, shown beside its title. */
   readonly controls?: ComponentChildren;
   readonly series: readonly ChartSeries[];
+  /** Names a position on the time axis. Generated ticks are calendar positions, so this must describe a date, not a statement. */
   readonly formatTime: (time: number) => string;
+  /** Names an actual observation in the readout, the spoken value and the table. Defaults to `formatTime`. */
+  readonly formatObservation?: (time: number) => string;
   readonly formatValue: (value: number) => string;
   /** Extend the value axis to zero. Off by default: the axis fits the data. */
   readonly includeZero?: boolean;
@@ -182,6 +185,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const activeX = activeTime === undefined ? undefined : xByTime.get(activeTime);
   const baseline = geometry.plot.top + geometry.plot.height;
   const show = (value: number): string => (hidden ? maskNumbers(props.formatValue(value)) : props.formatValue(value));
+  const observation = props.formatObservation ?? props.formatTime;
   const valueSummary = geometry.series.filter(entry => !entry.muted).map(entry => {
     const point = entry.points.find(candidate => candidate.time === activeTime);
     return `${entry.label}: ${point === undefined ? "Unavailable" : show(point.value)}`;
@@ -243,7 +247,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
       {props.controls !== undefined && <div class="chart-controls">{props.controls}</div>}
       {props.subtitle !== undefined && <p class="chart-subtitle">{props.subtitle}</p>}
       <div class="chart-readout" aria-hidden="true">
-        <span class="chart-readout-date">{activeTime === undefined ? "" : props.formatTime(activeTime)}</span>
+        <span class="chart-readout-date">{activeTime === undefined ? "" : observation(activeTime)}</span>
         {geometry.series.map((entry, index) => {
           if (entry.muted) return null;
           const point = entry.points.find((candidate) => candidate.time === activeTime);
@@ -337,7 +341,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
           disabled={times.length < 2}
           aria-label={`${props.title}: observation date`}
           aria-describedby={`${props.id}-inspection-help`}
-          aria-valuetext={activeTime === undefined ? "No observation" : `${props.formatTime(activeTime)}. ${valueSummary}`}
+          aria-valuetext={activeTime === undefined ? "No observation" : `${observation(activeTime)}. ${valueSummary}`}
           onFocus={() => { setHovered(null); }}
           onInput={(event) => { setHovered(null); setScrubbed(times[Number(event.currentTarget.value)] ?? null); }}
         />
@@ -373,7 +377,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
           <tbody>
             {times.map((time) => (
               <tr key={time}>
-                <th scope="row">{props.formatTime(time)}</th>
+                <th scope="row">{observation(time)}</th>
                 {props.series.map((entry) => {
                   const point = entry.points.find((candidate) => candidate.time === time);
                   return <td key={entry.id}>{point?.value === undefined || point.value === null ? "-" : show(point.value)}</td>;
