@@ -233,13 +233,13 @@ One row is a source template; a fund-link template can render many controls. All
 | cbc079dfb4c6-1 | [FundView.tsx:76](../../src/interfaces/web/features/overview/FundView.tsx#L76) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
 | bca560046e0d-1 | [FundView.tsx:109](../../src/interfaces/web/features/overview/FundView.tsx#L109) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
 | 9a511ed8cab6-1 | [FundView.tsx:111](../../src/interfaces/web/features/overview/FundView.tsx#L111) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| dde414481ee1-1 | [MonthsView.tsx:71](../../src/interfaces/web/features/overview/MonthsView.tsx#L71) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
-| 43ad8d01ddf1-1 | [MonthsView.tsx:115](../../src/interfaces/web/features/overview/MonthsView.tsx#L115) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
-| 464ffb4eecd9-1 | [MonthsView.tsx:151](../../src/interfaces/web/features/overview/MonthsView.tsx#L151) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e44a2558bb28-1 | [MonthsView.tsx:156](../../src/interfaces/web/features/overview/MonthsView.tsx#L156) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
-| d09ffa79803b-1 | [MonthsView.tsx:157](../../src/interfaces/web/features/overview/MonthsView.tsx#L157) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
-| 001cc06d600a-1 | [MonthsView.tsx:158](../../src/interfaces/web/features/overview/MonthsView.tsx#L158) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
-| c34889ea07d3-1 | [MonthsView.tsx:174](../../src/interfaces/web/features/overview/MonthsView.tsx#L174) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
+| dde414481ee1-1 | [MonthsView.tsx:79](../../src/interfaces/web/features/overview/MonthsView.tsx#L79) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
+| 43ad8d01ddf1-1 | [MonthsView.tsx:123](../../src/interfaces/web/features/overview/MonthsView.tsx#L123) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
+| 464ffb4eecd9-1 | [MonthsView.tsx:159](../../src/interfaces/web/features/overview/MonthsView.tsx#L159) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e44a2558bb28-1 | [MonthsView.tsx:164](../../src/interfaces/web/features/overview/MonthsView.tsx#L164) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
+| d09ffa79803b-1 | [MonthsView.tsx:165](../../src/interfaces/web/features/overview/MonthsView.tsx#L165) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
+| 001cc06d600a-1 | [MonthsView.tsx:166](../../src/interfaces/web/features/overview/MonthsView.tsx#L166) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
+| c34889ea07d3-1 | [MonthsView.tsx:182](../../src/interfaces/web/features/overview/MonthsView.tsx#L182) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
 | 51654294e7ec-1 | [OverviewView.tsx:116](../../src/interfaces/web/features/overview/OverviewView.tsx#L116) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 3a42ecb00d5f-1 | [OverviewView.tsx:159](../../src/interfaces/web/features/overview/OverviewView.tsx#L159) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
 | 76c9a563859d-1 | [OverviewView.tsx:179](../../src/interfaces/web/features/overview/OverviewView.tsx#L179) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |

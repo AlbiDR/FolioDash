@@ -307,7 +307,13 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     await visit(route, 390);
     if (route === "months") {
       // Opening state: both tables open on the newest statement, which is tinted, and they line up column for column.
-      await check("[...document.querySelectorAll('.month-matrices .table-scroll')].every(region=>region.scrollLeft>=region.scrollWidth-region.clientWidth-2)", "both month tables open on the newest statement");
+      // The tables keep following the end while layout settles (fonts, scrollbars), so wait for that rather than asserting at the first paint.
+      const atNewest = "[...document.querySelectorAll('.month-matrices .table-scroll')].every(region=>region.scrollLeft>=region.scrollWidth-region.clientWidth-2)";
+      try { await waitFor(async () => await evaluate(atNewest) === true, "both month tables open on the newest statement"); assertions++; }
+      catch (error) {
+        console.log(`Month tables geometry: ${String(await evaluate("JSON.stringify([...document.querySelectorAll('.month-matrices .table-scroll')].map(region=>({left:region.scrollLeft,width:region.scrollWidth,client:region.clientWidth})))"))}`);
+        throw error;
+      }
       await check("(()=>{const heads=[...document.querySelectorAll('.month-matrices thead')].map(head=>[...head.querySelectorAll('th')].slice(2));const tinted=heads.map(row=>row.filter(th=>th.classList.contains('matrix-selected')));return tinted.every(row=>row.length===1&&row[0]===[...row[0].parentElement.children].at(-1))&&heads[0].every((th,i)=>Math.abs(th.getBoundingClientRect().left-heads[1][i].getBoundingClientRect().left)<=2)})()", "the newest column is tinted and both tables share column positions");
       // Linked scrolling and frozen names, in both tables.
       await evaluate("(()=>{const regions=document.querySelectorAll('.month-matrices .table-scroll');window.auditFundNameLeft=regions[1].querySelector('tbody th.matrix-label').getBoundingClientRect().left;regions[1].scrollLeft=Math.max(0,regions[1].scrollLeft-200)})()");
