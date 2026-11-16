@@ -304,6 +304,19 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   for (const route of ["overview", "expenses", "months", "import", "connection"]) {
     await visit(route, 390);
     if (route === "months") {
+      // Opening state: both tables open on the newest statement, which is tinted, and they line up column for column.
+      await check("[...document.querySelectorAll('.month-matrices .table-scroll')].every(region=>region.scrollLeft>=region.scrollWidth-region.clientWidth-2)", "both month tables open on the newest statement");
+      await check("(()=>{const heads=[...document.querySelectorAll('.month-matrices thead')].map(head=>[...head.querySelectorAll('th')].slice(2));const tinted=heads.map(row=>row.filter(th=>th.classList.contains('matrix-selected')));return tinted.every(row=>row.length===1&&row[0]===[...row[0].parentElement.children].at(-1))&&heads[0].every((th,i)=>Math.abs(th.getBoundingClientRect().left-heads[1][i].getBoundingClientRect().left)<=2)})()", "the newest column is tinted and both tables share column positions");
+      // Linked scrolling and frozen names, in both tables.
+      await evaluate("(()=>{const regions=document.querySelectorAll('.month-matrices .table-scroll');window.auditFundNameLeft=regions[1].querySelector('tbody th.matrix-label').getBoundingClientRect().left;regions[1].scrollLeft=Math.max(0,regions[1].scrollLeft-200)})()");
+      await delay(300);
+      await check("(()=>{const regions=[...document.querySelectorAll('.month-matrices .table-scroll')];return Math.abs(regions[0].scrollLeft-regions[1].scrollLeft)<=1&&regions[1].scrollLeft<regions[1].scrollWidth-regions[1].clientWidth-50&&Math.abs(regions[1].querySelector('tbody th.matrix-label').getBoundingClientRect().left-window.auditFundNameLeft)<2})()", "scrolling either month table moves both, and fund names stay frozen");
+      // The statement picker drives the tint.
+      await evaluate("(()=>{const select=document.querySelector('.mobile-months select');select.value=select.options[select.options.length-1].value;select.dispatchEvent(new Event('change',{bubbles:true}))})()");
+      await delay(300);
+      await check("(()=>{const heads=[...document.querySelectorAll('.month-matrices thead')].map(head=>[...head.querySelectorAll('th')].slice(2));return heads.every(row=>row.filter(th=>th.classList.contains('matrix-selected')).length===1&&row[0].classList.contains('matrix-selected'))})()", "choosing an earlier statement moves the tint to its column in both tables");
+      await evaluate("(()=>{const select=document.querySelector('.mobile-months select');select.value=select.options[0].value;select.dispatchEvent(new Event('change',{bubbles:true}))})()");
+      await delay(300);
       await check("!!document.querySelector('.month-matrices .totals') && !document.querySelector('.month-matrices')?.closest('details:not([open])')", "month comparison is visible without expansion on phone");
       await evaluate("window.auditTotalsScroll=document.querySelector('[aria-label=\"Portfolio totals by month\"].table-scroll');window.auditTotalsScroll.scrollLeft=0;window.auditLabels=[...window.auditTotalsScroll.querySelectorAll('.matrix-label')];window.auditLefts=window.auditLabels.map(label=>label.getBoundingClientRect().left);window.auditFirstValue=window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left;window.auditTotalsScroll.scrollLeft=200");
       await check("window.auditTotalsScroll.scrollLeft>0 && window.auditLabels.length===6 && window.auditLabels.every((label,index)=>Math.abs(label.getBoundingClientRect().left-window.auditLefts[index])<2) && window.auditTotalsScroll.querySelector('tbody td').getBoundingClientRect().left<window.auditFirstValue-10", "portfolio row labels stay pinned while statement values scroll");

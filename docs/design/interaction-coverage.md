@@ -67,6 +67,8 @@ Incremental expense follow-up, 2026-11-15: the local production Chrome audit pas
 
 2026-11-16, hero and holdings: the local Chrome synthetic-demo audit passed 89 journey assertions and 760 control samples across 24 states. New assertions check the month change beside the headline total; that a Holdings column header sorts high to low with aria-sort, keeps sold funds last and announces the order; that choosing it again reverses and a third time restores the saved order; and that on a phone one sort list replaces the headers, reorders the list and restores the default. Source inventory now classifies 200 templates, adding the column sort buttons and the phone sort list as STATES OPEN; rendered sampling reached them in the typical and phone states, but sorted-header press, focus and many-fund states have no individual evidence. Physical devices, other engines and screen readers remain unverified.
 
+2026-11-16, Month by month: the local Chrome synthetic-demo audit passed 93 journey assertions and 755 control samples across 24 states. New assertions check that both tables open on the newest statement and share column positions, that scrolling either moves both while fund names stay frozen, and that the statement picker moves the tint to its column in both tables. The earlier portfolio-label assertion now starts from the oldest scroll position. No control was added or changed; the tint, year rule and muted figures are non-interactive and have no hover or press states. Physical devices, other engines and screen readers remain unverified.
+
 Money-movement review follow-up, 2026-11-15: source inventory includes the explicit per-fund No money moved action. The synthetic three-month preview exercises opening balances, money-added/received fields, blank-answer refusal, explicit zeroes, canonical preview totals, retained drafts and global No/Yes transitions. Shared control sampling covers the revealed group on desktop and phone; separate assertions cover 200% text and reduced motion. Full sale, zero-value closure and reopening conditional branches remain OPEN for their own rendered evidence. Financial submission, provider failure/recovery, physical-device and screen-reader acceptance are not closed by this preview-only check.
 
 ## Source inventory
@@ -229,13 +231,13 @@ One row is a source template; a fund-link template can render many controls. All
 | cbc079dfb4c6-1 | [FundView.tsx:76](../../src/interfaces/web/features/overview/FundView.tsx#L76) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
 | bca560046e0d-1 | [FundView.tsx:109](../../src/interfaces/web/features/overview/FundView.tsx#L109) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
 | 9a511ed8cab6-1 | [FundView.tsx:111](../../src/interfaces/web/features/overview/FundView.tsx#L111) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 8c3e912632c7-1 | [MonthsView.tsx:42](../../src/interfaces/web/features/overview/MonthsView.tsx#L42) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
-| 6c151059e858-1 | [MonthsView.tsx:86](../../src/interfaces/web/features/overview/MonthsView.tsx#L86) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
-| 464ffb4eecd9-1 | [MonthsView.tsx:121](../../src/interfaces/web/features/overview/MonthsView.tsx#L121) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e44a2558bb28-1 | [MonthsView.tsx:126](../../src/interfaces/web/features/overview/MonthsView.tsx#L126) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
-| d09ffa79803b-1 | [MonthsView.tsx:127](../../src/interfaces/web/features/overview/MonthsView.tsx#L127) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
-| 001cc06d600a-1 | [MonthsView.tsx:128](../../src/interfaces/web/features/overview/MonthsView.tsx#L128) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
-| c34889ea07d3-1 | [MonthsView.tsx:144](../../src/interfaces/web/features/overview/MonthsView.tsx#L144) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
+| dde414481ee1-1 | [MonthsView.tsx:71](../../src/interfaces/web/features/overview/MonthsView.tsx#L71) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
+| 43ad8d01ddf1-1 | [MonthsView.tsx:115](../../src/interfaces/web/features/overview/MonthsView.tsx#L115) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
+| 464ffb4eecd9-1 | [MonthsView.tsx:151](../../src/interfaces/web/features/overview/MonthsView.tsx#L151) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e44a2558bb28-1 | [MonthsView.tsx:156](../../src/interfaces/web/features/overview/MonthsView.tsx#L156) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
+| d09ffa79803b-1 | [MonthsView.tsx:157](../../src/interfaces/web/features/overview/MonthsView.tsx#L157) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
+| 001cc06d600a-1 | [MonthsView.tsx:158](../../src/interfaces/web/features/overview/MonthsView.tsx#L158) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
+| c34889ea07d3-1 | [MonthsView.tsx:174](../../src/interfaces/web/features/overview/MonthsView.tsx#L174) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
 | 51654294e7ec-1 | [OverviewView.tsx:116](../../src/interfaces/web/features/overview/OverviewView.tsx#L116) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 3a42ecb00d5f-1 | [OverviewView.tsx:159](../../src/interfaces/web/features/overview/OverviewView.tsx#L159) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
 | 76c9a563859d-1 | [OverviewView.tsx:179](../../src/interfaces/web/features/overview/OverviewView.tsx#L179) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
