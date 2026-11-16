@@ -1098,15 +1098,32 @@ table {
   font-weight: var(--weight-semibold);
 }
 
-/* Keep portfolio row names visible while the statement columns scroll. */
-.matrix.totals .matrix-label {
+/* Keep row names visible while the statement columns scroll, in both tables. */
+.matrix .matrix-label {
   position: sticky;
   left: 0;
   z-index: 1;
-  min-width: 9rem;
-  max-width: 12rem;
   white-space: normal;
   background: var(--color-surface);
+}
+
+/* The two tables share their statement columns and scroll together, so their columns must be the same width. */
+.matrix .matrix-label { width: 9rem; min-width: 9rem; max-width: 9rem; }
+.matrix thead th:nth-child(2) { width: 6.5rem; min-width: 6.5rem; }
+.matrix thead th:nth-child(n + 3) { width: 7.75rem; min-width: 7.75rem; }
+
+/* Reading cues: the headline row leads, a missing figure recedes, a new year starts with a rule, the chosen statement is tinted. */
+.matrix tr.matrix-headline > td { font-weight: var(--weight-semibold); }
+.matrix td .empty { color: var(--color-muted); }
+/* A fund's net invested is the reference under its value: still readable, never mistaken for it once the Measure column has scrolled away. */
+.matrix tr.matrix-secondary > td { color: var(--color-muted); }
+.matrix .matrix-year-start { box-shadow: inset 2px 0 0 var(--color-border); }
+.matrix .matrix-selected { background: var(--color-accent-soft); }
+.matrix thead th.matrix-selected { color: var(--color-text); }
+@media (max-width: 47.5rem) {
+  /* Less of a phone's width goes to the frozen names, so more of the statements show beside them. */
+  .matrix .matrix-label { width: 7rem; min-width: 7rem; max-width: 7rem; }
+  .matrix thead th:nth-child(2) { width: 6rem; min-width: 6rem; }
 }
 
 .matrix tbody th[scope="row"]:not([rowspan]) {
