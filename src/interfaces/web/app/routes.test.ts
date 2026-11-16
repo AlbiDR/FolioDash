@@ -32,3 +32,10 @@ describe("navEntryOf", () => {
     expect(navEntryOf({ name: "connection" })).toBe("connection");
   });
 });
+
+describe("checkpoints route", () => {
+  it("reads the checkpoints screen and files it under the portfolio", () => {
+    expect(routeFrom("#checkpoints")).toEqual({ name: "checkpoints" });
+    expect(navEntryOf({ name: "checkpoints" })).toBe("overview");
+  });
+});

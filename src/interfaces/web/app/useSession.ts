@@ -2,12 +2,22 @@ import type { SessionState } from "../../../applications/SessionModel";
 import { useEffect, useState } from "preact/hooks";
 import type { Session } from "./session";
 import type { ExpenseSessionState } from "./expenseSession";
+import type { CheckpointSessionState } from "./checkpointSession";
 
 export function useExpenses(session: Session): ExpenseSessionState {
   const [state, setState] = useState(session.expenses.state);
   useEffect(() => {
     setState(session.expenses.state);
     return session.expenses.subscribe(() => { setState(session.expenses.state); });
+  }, [session]);
+  return state;
+}
+
+export function useCheckpoints(session: Session): CheckpointSessionState {
+  const [state, setState] = useState(session.checkpoints.state);
+  useEffect(() => {
+    setState(session.checkpoints.state);
+    return session.checkpoints.subscribe(() => { setState(session.checkpoints.state); });
   }, [session]);
   return state;
 }

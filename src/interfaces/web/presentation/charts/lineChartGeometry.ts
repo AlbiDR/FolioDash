@@ -6,6 +6,8 @@ export interface ChartPoint {
   readonly time: number;
   /** Null is a gap (no observation). Zero is a real value. */
   readonly value: number | null;
+  /** A short note shown beside the value, for example how many observations share this time. */
+  readonly detail?: string;
 }
 
 export interface ChartSeries {
@@ -17,6 +19,8 @@ export interface ChartSeries {
   readonly slot?: number;
   /** A quiet companion line (dotted, faded) in the colour of its slot. It is left out of the legend and the readout. */
   readonly muted?: boolean;
+  /** Observations to read, not a line to follow: drawn as separate markers, never joined, and left out of the inline legend. */
+  readonly markers?: boolean;
   readonly points: readonly ChartPoint[];
 }
 
@@ -32,6 +36,7 @@ export interface PlottedPoint {
   readonly seriesId: string;
   readonly time: number;
   readonly value: number;
+  readonly detail: string | null;
   readonly x: number;
   readonly y: number;
 }
@@ -42,6 +47,7 @@ export interface PlottedSeries {
   readonly dashed: boolean;
   readonly slot: number | null;
   readonly muted: boolean;
+  readonly markers: boolean;
   /** One path per unbroken run of two or more points. A gap always splits the line. */
   readonly paths: readonly string[];
   /** The filled shape under each run, down to the bottom of the plot. */
@@ -135,7 +141,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
     const base = round(plot.top + plot.height);
     let run: PlottedPoint[] = [];
     const flush = (): void => {
-      const drawn = run.length >= 2 ? path(run) : null;
+      const drawn = run.length >= 2 && entry.markers !== true ? path(run) : null;
       const first = run[0];
       const last = run[run.length - 1];
       if (drawn !== null && first !== undefined && last !== undefined) {
@@ -153,6 +159,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
         seriesId: entry.id,
         time: point.time,
         value: point.value,
+        detail: point.detail ?? null,
         x: round(xScale(new Date(point.time))),
         y: round(yScale(point.value)),
       };
@@ -160,7 +167,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       run.push(placed);
     }
     flush();
-    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, slot: entry.slot ?? null, muted: entry.muted === true, paths, areas, points };
+    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, slot: entry.slot ?? null, muted: entry.muted === true, markers: entry.markers === true, paths, areas, points };
   });
 
   return {

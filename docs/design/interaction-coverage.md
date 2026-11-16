@@ -83,19 +83,19 @@ One row is a source template; a fund-link template can render many controls. All
 
 | ID | Source | Element / family | Control or context | State review |
 |---|---|---|---|---|
-| 86bb83f78abe-1 | [App.tsx:226](../../src/interfaces/web/app/App.tsx#L226) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
-| 3bfe6fff2b29-1 | [App.tsx:235](../../src/interfaces/web/app/App.tsx#L235) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
-| da009fee0732-1 | [App.tsx:248](../../src/interfaces/web/app/App.tsx#L248) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
-| 6575b250d5c3-1 | [App.tsx:262](../../src/interfaces/web/app/App.tsx#L262) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
-| a10fd3f7a2ba-1 | [App.tsx:271](../../src/interfaces/web/app/App.tsx#L271) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 4fadac329f30-1 | [App.tsx:276](../../src/interfaces/web/app/App.tsx#L276) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| e9f1737c87e0-1 | [App.tsx:292](../../src/interfaces/web/app/App.tsx#L292) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
-| cc8374a68917-1 | [App.tsx:304](../../src/interfaces/web/app/App.tsx#L304) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
-| 0ae4a332d365-1 | [App.tsx:311](../../src/interfaces/web/app/App.tsx#L311) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
-| 7830fcf45616-1 | [App.tsx:314](../../src/interfaces/web/app/App.tsx#L314) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| d1b5caf7a0bd-1 | [App.tsx:366](../../src/interfaces/web/app/App.tsx#L366) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
-| ff1efa7f6ad1-1 | [App.tsx:372](../../src/interfaces/web/app/App.tsx#L372) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4b205198dc1e-1 | [App.tsx:401](../../src/interfaces/web/app/App.tsx#L401) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
+| 86bb83f78abe-1 | [App.tsx:234](../../src/interfaces/web/app/App.tsx#L234) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
+| 3bfe6fff2b29-1 | [App.tsx:243](../../src/interfaces/web/app/App.tsx#L243) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
+| da009fee0732-1 | [App.tsx:256](../../src/interfaces/web/app/App.tsx#L256) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
+| 6575b250d5c3-1 | [App.tsx:270](../../src/interfaces/web/app/App.tsx#L270) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
+| a10fd3f7a2ba-1 | [App.tsx:279](../../src/interfaces/web/app/App.tsx#L279) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 4fadac329f30-1 | [App.tsx:284](../../src/interfaces/web/app/App.tsx#L284) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| e9f1737c87e0-1 | [App.tsx:300](../../src/interfaces/web/app/App.tsx#L300) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
+| cc8374a68917-1 | [App.tsx:312](../../src/interfaces/web/app/App.tsx#L312) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
+| 0ae4a332d365-1 | [App.tsx:319](../../src/interfaces/web/app/App.tsx#L319) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
+| 7830fcf45616-1 | [App.tsx:322](../../src/interfaces/web/app/App.tsx#L322) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d1b5caf7a0bd-1 | [App.tsx:389](../../src/interfaces/web/app/App.tsx#L389) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
+| ff1efa7f6ad1-1 | [App.tsx:395](../../src/interfaces/web/app/App.tsx#L395) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4b205198dc1e-1 | [App.tsx:424](../../src/interfaces/web/app/App.tsx#L424) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
 | a84d603e0083-1 | [AccountView.tsx:161](../../src/interfaces/web/features/account/AccountView.tsx#L161) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | d2c1f7c2e15c-1 | [AccountView.tsx:176](../../src/interfaces/web/features/account/AccountView.tsx#L176) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
 | 340a47c93acd-1 | [AccountView.tsx:201](../../src/interfaces/web/features/account/AccountView.tsx#L201) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
@@ -119,6 +119,16 @@ One row is a source template; a fund-link template can render many controls. All
 | 0a73764b8ca3-1 | [GetStarted.tsx:32](../../src/interfaces/web/features/account/GetStarted.tsx#L32) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 52ec4b541dc0-1 | [GetStarted.tsx:39](../../src/interfaces/web/features/account/GetStarted.tsx#L39) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 851794683e90-1 | [GetStarted.tsx:48](../../src/interfaces/web/features/account/GetStarted.tsx#L48) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 37bf95b07e37-1 | [CheckpointsView.tsx:35](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L35) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
+| 62efdad0a84f-1 | [CheckpointsView.tsx:43](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L43) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
+| 65afc825e518-1 | [CheckpointsView.tsx:125](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L125) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
+| a5afba1766f8-1 | [CheckpointsView.tsx:130](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L130) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4da1de2122cf-1 | [CheckpointsView.tsx:133](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L133) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0aad0e693161-1 | [CheckpointsView.tsx:136](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L136) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3eedca29f5af-1 | [CheckpointsView.tsx:139](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L139) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
+| fcb77ba46365-1 | [CheckpointsView.tsx:159](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L159) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
+| 70ea2a57a459-1 | [CheckpointsView.tsx:160](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L160) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
+| a64093544c31-1 | [CheckpointsView.tsx:163](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L163) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 193bcc8c5185-1 | [ExpenseDataTools.tsx:84](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L84) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | fe9391cd1caf-1 | [ExpenseDataTools.tsx:86](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L86) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
 | 4dc4fbc5afa8-1 | [ExpenseDataTools.tsx:87](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L87) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |
@@ -243,29 +253,30 @@ One row is a source template; a fund-link template can render many controls. All
 | d09ffa79803b-1 | [MonthsView.tsx:165](../../src/interfaces/web/features/overview/MonthsView.tsx#L165) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
 | 001cc06d600a-1 | [MonthsView.tsx:166](../../src/interfaces/web/features/overview/MonthsView.tsx#L166) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
 | c34889ea07d3-1 | [MonthsView.tsx:182](../../src/interfaces/web/features/overview/MonthsView.tsx#L182) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
-| 51654294e7ec-1 | [OverviewView.tsx:116](../../src/interfaces/web/features/overview/OverviewView.tsx#L116) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3a42ecb00d5f-1 | [OverviewView.tsx:159](../../src/interfaces/web/features/overview/OverviewView.tsx#L159) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
-| 76c9a563859d-1 | [OverviewView.tsx:179](../../src/interfaces/web/features/overview/OverviewView.tsx#L179) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| 4417eda446f6-1 | [OverviewView.tsx:234](../../src/interfaces/web/features/overview/OverviewView.tsx#L234) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| a3b42fb80947-1 | [OverviewView.tsx:243](../../src/interfaces/web/features/overview/OverviewView.tsx#L243) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| 8ab71703e9f5-1 | [OverviewView.tsx:250](../../src/interfaces/web/features/overview/OverviewView.tsx#L250) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| 41605d22baeb-1 | [OverviewView.tsx:256](../../src/interfaces/web/features/overview/OverviewView.tsx#L256) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
-| 51cfdce2064c-1 | [OverviewView.tsx:269](../../src/interfaces/web/features/overview/OverviewView.tsx#L269) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
-| 91ff6d17a5e0-1 | [OverviewView.tsx:291](../../src/interfaces/web/features/overview/OverviewView.tsx#L291) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 5b859cc7acfb-1 | [OverviewView.tsx:296](../../src/interfaces/web/features/overview/OverviewView.tsx#L296) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
-| 8d0da27501ab-1 | [OverviewView.tsx:304](../../src/interfaces/web/features/overview/OverviewView.tsx#L304) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| f64086d86778-1 | [OverviewView.tsx:320](../../src/interfaces/web/features/overview/OverviewView.tsx#L320) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e865359a5236-1 | [OverviewView.tsx:323](../../src/interfaces/web/features/overview/OverviewView.tsx#L323) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| 78da3e9f8679-1 | [OverviewView.tsx:333](../../src/interfaces/web/features/overview/OverviewView.tsx#L333) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| f4734e648b87-1 | [OverviewView.tsx:404](../../src/interfaces/web/features/overview/OverviewView.tsx#L404) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 47bc7d2ce3b3-1 | [OverviewView.tsx:415](../../src/interfaces/web/features/overview/OverviewView.tsx#L415) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| 51654294e7ec-1 | [OverviewView.tsx:117](../../src/interfaces/web/features/overview/OverviewView.tsx#L117) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3a42ecb00d5f-1 | [OverviewView.tsx:160](../../src/interfaces/web/features/overview/OverviewView.tsx#L160) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
+| 76c9a563859d-1 | [OverviewView.tsx:181](../../src/interfaces/web/features/overview/OverviewView.tsx#L181) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
+| 4417eda446f6-1 | [OverviewView.tsx:237](../../src/interfaces/web/features/overview/OverviewView.tsx#L237) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| c3e3ef456517-1 | [OverviewView.tsx:238](../../src/interfaces/web/features/overview/OverviewView.tsx#L238) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| a3b42fb80947-1 | [OverviewView.tsx:248](../../src/interfaces/web/features/overview/OverviewView.tsx#L248) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 8ab71703e9f5-1 | [OverviewView.tsx:255](../../src/interfaces/web/features/overview/OverviewView.tsx#L255) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| 41605d22baeb-1 | [OverviewView.tsx:261](../../src/interfaces/web/features/overview/OverviewView.tsx#L261) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
+| 51cfdce2064c-1 | [OverviewView.tsx:274](../../src/interfaces/web/features/overview/OverviewView.tsx#L274) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
+| 91ff6d17a5e0-1 | [OverviewView.tsx:296](../../src/interfaces/web/features/overview/OverviewView.tsx#L296) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 5b859cc7acfb-1 | [OverviewView.tsx:301](../../src/interfaces/web/features/overview/OverviewView.tsx#L301) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
+| 8d0da27501ab-1 | [OverviewView.tsx:309](../../src/interfaces/web/features/overview/OverviewView.tsx#L309) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| f64086d86778-1 | [OverviewView.tsx:325](../../src/interfaces/web/features/overview/OverviewView.tsx#L325) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e865359a5236-1 | [OverviewView.tsx:328](../../src/interfaces/web/features/overview/OverviewView.tsx#L328) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 78da3e9f8679-1 | [OverviewView.tsx:338](../../src/interfaces/web/features/overview/OverviewView.tsx#L338) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| f4734e648b87-1 | [OverviewView.tsx:409](../../src/interfaces/web/features/overview/OverviewView.tsx#L409) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 47bc7d2ce3b3-1 | [OverviewView.tsx:420](../../src/interfaces/web/features/overview/OverviewView.tsx#L420) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | ba730a52b26d-1 | [Donut.tsx:45](../../src/interfaces/web/presentation/charts/Donut.tsx#L45) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
-| e3ffcd3f4bfd-1 | [LineChart.tsx:208](../../src/interfaces/web/presentation/charts/LineChart.tsx#L208) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 2a0fe4571f5f-1 | [LineChart.tsx:267](../../src/interfaces/web/presentation/charts/LineChart.tsx#L267) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| db78101e8509-1 | [LineChart.tsx:334](../../src/interfaces/web/presentation/charts/LineChart.tsx#L334) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 37279bf88696-1 | [LineChart.tsx:351](../../src/interfaces/web/presentation/charts/LineChart.tsx#L351) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| ab1b1472a492-1 | [LineChart.tsx:355](../../src/interfaces/web/presentation/charts/LineChart.tsx#L355) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
-| 9750ecb42cbc-1 | [LineChart.tsx:365](../../src/interfaces/web/presentation/charts/LineChart.tsx#L365) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| 6e6b02976852-1 | [LineChart.tsx:210](../../src/interfaces/web/presentation/charts/LineChart.tsx#L210) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| cf2b0b91a045-1 | [LineChart.tsx:271](../../src/interfaces/web/presentation/charts/LineChart.tsx#L271) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| db78101e8509-1 | [LineChart.tsx:351](../../src/interfaces/web/presentation/charts/LineChart.tsx#L351) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 37279bf88696-1 | [LineChart.tsx:368](../../src/interfaces/web/presentation/charts/LineChart.tsx#L368) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| ab1b1472a492-1 | [LineChart.tsx:372](../../src/interfaces/web/presentation/charts/LineChart.tsx#L372) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 9750ecb42cbc-1 | [LineChart.tsx:382](../../src/interfaces/web/presentation/charts/LineChart.tsx#L382) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
 | 1365033edfbd-1 | [MonthlyBars.tsx:94](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L94) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 99315b52d0d4-1 | [MonthlyBars.tsx:143](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L143) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | 044cda0e76bf-1 | [MonthlyBars.tsx:160](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L160) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |

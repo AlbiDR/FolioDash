@@ -178,7 +178,9 @@ export function LineChart(props: LineChartProps): JSX.Element {
   }
 
   const xByTime = new Map(geometry.series.flatMap((entry) => entry.points.map((point) => [point.time, point.x] as const)));
-  const lastTime = times[times.length - 1];
+  // The chart opens on the latest line observation, not on a checkpoint that happens to be newer.
+  const lineTimes = new Set(props.series.filter((entry) => entry.markers !== true).flatMap((entry) => entry.points.map((point) => point.time)));
+  const lastTime = [...times].reverse().find((time) => lineTimes.has(time)) ?? times[times.length - 1];
   const selectedTime = scrubbed !== null && times.includes(scrubbed) ? scrubbed : null;
   const hoveredTime = hovered !== null && times.includes(hovered) ? hovered : null;
   const activeTime = hoveredTime ?? selectedTime ?? lastTime;
@@ -188,7 +190,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const observation = props.formatObservation ?? props.formatTime;
   const valueSummary = geometry.series.filter(entry => !entry.muted).map(entry => {
     const point = entry.points.find(candidate => candidate.time === activeTime);
-    return `${entry.label}: ${point === undefined ? "Unavailable" : show(point.value)}`;
+    return `${entry.label}: ${point === undefined ? "Unavailable" : show(point.value)}${point?.detail == null ? "" : ` (${point.detail})`}`;
   }).join("; ");
 
   function resetInspection(): void {
@@ -199,7 +201,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
 
   // With two lines the readout above already names them. The highlight buttons stay inline only where a legend is
   // the way to tell many lines apart; otherwise they live with the chart tools.
-  const legendInline = geometry.series.filter(entry => !entry.muted).length > 2;
+  const legendInline = geometry.series.filter(entry => !entry.muted && !entry.markers).length > 2;
   const legend = (
     <ul class="chart-legend">
       {geometry.series.map((entry, index) =>
@@ -209,7 +211,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
               setHighlighted(current => current === entry.id ? null : entry.id);
             }}>
               <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
-                <line x1="0" x2="32" y1="4" y2="4" />
+                {entry.markers ? <rect class="checkpoint-swatch" x="12" y="0" width="8" height="8" transform="rotate(45 16 4)" /> : <line x1="0" x2="32" y1="4" y2="4" />}
               </svg>
               {entry.label}
             </button>
@@ -251,15 +253,17 @@ export function LineChart(props: LineChartProps): JSX.Element {
         {geometry.series.map((entry, index) => {
           if (entry.muted) return null;
           const point = entry.points.find((candidate) => candidate.time === activeTime);
+          // Markers appear in the readout only where there is one, so a chart without a checkpoint keeps its two items.
+          if (entry.markers && point === undefined) return null;
           return (
             <span key={entry.id} data-highlighted={highlight === entry.id} class={`chart-readout-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}>
               <span class="chart-readout-label">
                 <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
-                  <line x1="0" x2="32" y1="4" y2="4" />
+                  {entry.markers ? <rect class="checkpoint-swatch" x="12" y="0" width="8" height="8" transform="rotate(45 16 4)" /> : <line x1="0" x2="32" y1="4" y2="4" />}
                 </svg>
                 {entry.label}
               </span>
-              <span class="chart-readout-value">{point === undefined ? "-" : show(point.value)}</span>
+              <span class="chart-readout-value">{point === undefined ? "-" : show(point.value)}{point?.detail == null ? "" : ` (${point.detail})`}</span>
             </span>
           );
         })}
@@ -315,7 +319,20 @@ export function LineChart(props: LineChartProps): JSX.Element {
             {entry.paths.map((path) => (
               <path key={path} class="line" d={path} fill="none" />
             ))}
-            {(entry.muted ? [] : entry.points).map((point) => (
+            {entry.markers && entry.points.map((point) => (
+              <rect
+                key={point.time}
+                class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
+                x={point.x - 5}
+                y={point.y - 5}
+                width={10}
+                height={10}
+                transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                data-time={point.time}
+                {...(hidden ? {} : { "data-value": point.value })}
+              />
+            ))}
+            {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
               <circle
                 key={point.time}
                 class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}

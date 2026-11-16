@@ -23,19 +23,22 @@ import { DRIVE_FILE_SCOPE } from "./session";
 import { type ChartRange, resolveRange } from "../features/overview/chartRange";
 import { rememberClientId, resolveClientId } from "../../../adapters/browser/ClientId";
 import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demoPortfolio";
+import { demoCheckpoints } from "./demoCheckpoints";
+import { type Checkpoint, chartMarkers } from "../../../core/Checkpoints";
 import { memoizeLast } from "../shared/ui/memo";
 import { overviewFromLedger } from "./overviewFromLedger";
 import { type Route, navEntryOf, routeFrom } from "./routes";
 import { watchForUpdate } from "./serviceWorker";
 import { describeAge } from "../features/account/timeAgo";
 import { describeConnect } from "../features/account/accountText";
-import { useExpenses, useNow, useSession } from "./useSession";
+import { useCheckpoints, useExpenses, useNow, useSession } from "./useSession";
 import { toIsoDate } from "../../../core/IsoDate";
 import type { ExpenseCommand, ExpenseDay } from "../../../core/WorkExpenses";
 import { demoExpenses } from "./demoExpenses";
 
-const TITLES = { overview: "Portfolio", expenses: "Work expenses", months: "Month by month", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
+const TITLES = { overview: "Portfolio", expenses: "Work expenses", months: "Month by month", checkpoints: "Checkpoints", import: "Update your portfolio", history: "Import a whole history", connection: "Your data" } as const;
 const ExpensesView = lazy(async () => ({ default: (await import("../features/expenses/ExpensesView")).ExpensesView }));
+const CheckpointsView = lazy(async () => ({ default: (await import("../features/checkpoints/CheckpointsView")).CheckpointsView }));
 const ExpenseDataTools = lazy(async () => ({ default: (await import("../features/expenses/ExpenseDataTools")).ExpenseDataTools }));
 const AccountView = lazy(async () => ({ default: (await import("../features/account/AccountView")).AccountView }));
 const HistoryView = lazy(async () => ({ default: (await import("../features/history/HistoryView")).HistoryView }));
@@ -55,6 +58,8 @@ function titleOf(route: Route, model: OverviewModel): string {
 
 // The model is redone only when the ledger itself changes, not on a toggle, a range change or a resize.
 const overviewFor = memoizeLast(overviewFromLedger);
+const markersFor = memoizeLast((active: readonly Checkpoint[]) => chartMarkers(active));
+const demoCheckpointsFor = memoizeLast(demoCheckpoints);
 const demoFor = memoizeLast(demoPortfolio);
 
 const browserPrivacyStorage = (): Storage => window.localStorage;
@@ -93,6 +98,7 @@ export function App(): JSX.Element {
   const session = useMemo(() => createBrowserSession(clientId), [clientId]);
   const data = useSession(session);
   const expenseData = useExpenses(session);
+  const checkpointData = useCheckpoints(session);
   useEffect(() => watchGoogleFreshness(() => session.refreshIfNeeded(), () => importLocked || expenseLocked), [session, importLocked, expenseLocked]);
   // A remembered connection loads Google's script and builds its token client ahead of time, so the first
   // renewal can start inside a click. The signed-out demo never loads it.
@@ -117,7 +123,7 @@ export function App(): JSX.Element {
     forgotten: () => { session.forgetFromElsewhere(); },
   }), [session, importLocked, expenseLocked]);
   useEffect(() => {
-    if (data.mode === "online" && data.sheet === "ok") void session.expenses.refresh();
+    if (data.mode === "online" && data.sheet === "ok") { void session.expenses.refresh(); void session.checkpoints.refresh(); }
   }, [session, data.mode, data.sheet, data.workbook?.id, data.syncedAt]);
   async function connectForImport(): Promise<void> {
     setImportConnecting(true);
@@ -184,6 +190,8 @@ export function App(): JSX.Element {
   }, [sidebarCollapsed]);
   const variant = demoVariantFrom(window.location.search);
   const model = data.mode === "signed-out" ? demoFor(variant) : overviewFor(data.ledger, "recorded");
+  const shownCheckpoints = data.mode === "signed-out" ? demoCheckpointsFor(model) : checkpointData.active;
+  const checkpointMarkers = markersFor(shownCheckpoints);
   const current = navEntryOf(route);
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
@@ -331,7 +339,22 @@ export function App(): JSX.Element {
                   }}
                 />
               )}
-              {route.name === "overview" && <OverviewView model={model} range={resolveRange(range, model.dates)} onRangeChange={setRange} />}
+              {route.name === "overview" && <OverviewView model={model} range={resolveRange(range, model.dates)} onRangeChange={setRange} checkpoints={checkpointMarkers} />}
+              {route.name === "checkpoints" && <CheckpointsView
+                signedOut={data.mode === "signed-out"}
+                state={{
+                  ready: data.mode === "signed-out" || checkpointData.ready,
+                  active: shownCheckpoints,
+                  pending: data.mode !== "signed-out" && checkpointData.pending.length > 0,
+                  message: data.mode === "signed-out" ? "" : checkpointData.message,
+                  preserved: data.mode === "signed-out" ? [] : checkpointData.preserved.map((entry) => ({ workbookId: entry.workbookId, active: entry.active, pending: entry.pending.length > 0 })),
+                }}
+                today={today}
+                onAdd={(request) => session.checkpoints.add(request)}
+                onVoid={(id) => session.checkpoints.void(id)}
+                onCheck={() => session.checkpoints.checkPending()}
+                preservedText={(id) => session.checkpoints.preservedText(id)}
+              />}
               {route.name === "expenses" && <ExpensesView
                 days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
                 conflicts={data.mode === "signed-out" ? [] : expenseData.conflicts}

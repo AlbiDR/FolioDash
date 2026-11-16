@@ -36,6 +36,9 @@ import type { LedgerCache } from "../../../adapters/browser/LedgerCache";
 import type { ExpenseCache } from "../../../adapters/browser/ExpenseCache";
 import type { RevisionPendingStore } from "../../../adapters/browser/RevisionPending";
 import { ExpenseSession } from "./expenseSession";
+import { CheckpointSession } from "./checkpointSession";
+import { type CheckpointLock, type CheckpointStore, createCheckpointStore } from "../../../adapters/browser/CheckpointStore";
+import type { KeyValueStore } from "../../../adapters/browser/LedgerCache";
 
 /** The narrow permission: only files this app creates or the person opens with it. */
 export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
@@ -57,6 +60,10 @@ export interface SessionDeps {
   readonly rest: RestClient;
   readonly cache: LedgerCache;
   readonly expenseCache?: ExpenseCache;
+  /** Where this build keeps its value-only checkpoint copies and unsent commands. Without it they live only in memory. */
+  readonly checkpointStore?: CheckpointStore;
+  /** Keeps two windows from saving a checkpoint at once. Without it checkpoints can be read but not saved. */
+  readonly checkpointLock?: CheckpointLock;
   readonly revisionPending?: RevisionPendingStore;
   readonly now: () => number;
   readonly newId: () => string;
@@ -89,8 +96,16 @@ const NEEDS: Readonly<Record<Exclude<SheetStatus, "unchecked" | "ok">, string>> 
  * person's next click, naming the remembered account, so the connection outlasts
  * Google's one-hour token without asking them to sign in again.
  */
+/** A throwaway store for a session built without one (tests, previews): nothing survives it. */
+function memoryCheckpointStore(): CheckpointStore {
+  const data = new Map<string, string>();
+  const held: KeyValueStore = { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); }, removeItem: (key) => { data.delete(key); } };
+  return createCheckpointStore(() => held, "memory.");
+}
+
 export class Session {
   readonly expenses: ExpenseSession;
+  readonly checkpoints: CheckpointSession;
   private readonly deps: SessionDeps;
   private current: SessionState;
   private token: { readonly accessToken: string; readonly validUntil: number } | null = null;
@@ -149,19 +164,44 @@ export class Session {
       const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
       if (today === null) throw new Error("The device date is outside the supported range.");
       return today;
-    }, ...(deps.expenseCache === undefined ? {} : { cache: deps.expenseCache }), access: async (purpose) => {
-      if (this.current.workbook === null) return { ok: false, message: "Continue with Google first to create or find your private FolioDash workbook." };
-      // The expenses tab can be opened before the portfolio was checked on this visit. A read checks the workbook
-      // itself, as the portfolio does, so Check records works without sending the person to another tab. A write
-      // still needs a check that has succeeded.
-      if (this.current.sheet !== "ok" && purpose === "read") {
-        const outcome = await this.refresh();
-        if (outcome.status === "sign-in-failed") return { ok: false, message: SIGN_IN_TEXT[outcome.reason] };
-      }
-      if (this.current.sheet !== "ok") return { ok: false, message: this.expenseBlockedMessage(purpose) };
-      const signed = await this.accessToken(purpose === "write" ? WRITE_MINIMUM_MILLISECONDS : 0);
-      return signed.ok ? { ok: true, token: signed.token, workbook: this.current.workbook } : { ok: false, message: SIGN_IN_TEXT[signed.reason] };
-    } });
+    }, ...(deps.expenseCache === undefined ? {} : { cache: deps.expenseCache }), access: (purpose) => this.featureAccess(purpose, (blocked) => this.expenseBlockedMessage(blocked)) });
+    this.checkpoints = new CheckpointSession({
+      rest: this.deps.rest,
+      store: deps.checkpointStore ?? memoryCheckpointStore(),
+      lock: deps.checkpointLock ?? { run: () => Promise.resolve({ status: "unsupported" as const }) },
+      newId: deps.newId,
+      workbookId: this.current.workbook?.id ?? null,
+      today: () => {
+        const now = new Date(deps.now());
+        const today = toIsoDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+        if (today === null) throw new Error("The device date is outside the supported range.");
+        return today;
+      },
+      access: (purpose) => this.featureAccess(purpose, (blocked) => this.checkpointBlockedMessage(blocked)),
+    });
+  }
+
+  /**
+   * The signed-in access a feature needs, in the same terms for every feature. The tab can be opened before the
+   * portfolio was checked on this visit, so a read checks the workbook itself; a write still needs a check that has succeeded.
+   */
+  private async featureAccess(purpose: "read" | "write", blocked: (purpose: "read" | "write") => string): Promise<{ readonly ok: true; readonly token: string; readonly workbook: Workbook } | { readonly ok: false; readonly message: string }> {
+    if (this.current.workbook === null) return { ok: false, message: "Continue with Google first to create or find your private FolioDash workbook." };
+    if (this.current.sheet !== "ok" && purpose === "read") {
+      const outcome = await this.refresh();
+      if (outcome.status === "sign-in-failed") return { ok: false, message: SIGN_IN_TEXT[outcome.reason] };
+    }
+    if (this.current.sheet !== "ok") return { ok: false, message: blocked(purpose) };
+    const signed = await this.accessToken(purpose === "write" ? WRITE_MINIMUM_MILLISECONDS : 0);
+    return signed.ok ? { ok: true, token: signed.token, workbook: this.current.workbook } : { ok: false, message: SIGN_IN_TEXT[signed.reason] };
+  }
+
+  /** Why checkpoints cannot be read or changed now. */
+  private checkpointBlockedMessage(purpose: "read" | "write"): string {
+    const { sheet } = this.current;
+    if (sheet !== "ok" && sheet !== "unchecked") return NEEDS[sheet];
+    if (purpose === "read") return "Google could not check your workbook, so your saved checkpoint copy was kept. Check again shortly.";
+    return "Sync and check your Google workbook in Your data before saving a checkpoint.";
   }
 
   /** Resolves when the readable tabs written after a save have finished. They never delay a save and never affect it. */
@@ -540,7 +580,7 @@ export class Session {
     if (token === null) return Promise.resolve();
     this.set({ ...this.current, connection: "checking" });
     const work = this.load(workbook, token, false, generation).then(async (outcome) => {
-      if (generation === this.generation && outcome.status === "connected") await this.expenses.refresh();
+      if (generation === this.generation && outcome.status === "connected") await Promise.all([this.expenses.refresh(), this.checkpoints.refresh()]);
     }).catch(() => {
       if (generation === this.generation) this.set({ ...this.current, connection: "offline" });
     });
@@ -728,6 +768,7 @@ export class Session {
     this.signingIn = null;
     this.connecting = null;
     this.expenses.forget();
+    this.checkpoints.forget();
     this.deps.cache.clear();
     if (this.token !== null && announce && revoke) this.deps.revoke?.(this.token.accessToken);
     this.token = null;

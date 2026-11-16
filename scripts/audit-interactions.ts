@@ -27,7 +27,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     await call("Emulation.setTouchEmulationEnabled", { enabled: width < 600 });
     await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }, { name: "prefers-reduced-motion", value: "no-preference" }] });
     const url = `${origin}/?demo=${variant}#${route}`;
-    const title = ({overview:"Portfolio",expenses:"Work expenses",months:"Month by month",import:"Update your portfolio",history:"Import a whole history",connection:"Your data"} as Readonly<Record<string,string>>)[route];
+    const title = ({overview:"Portfolio",expenses:"Work expenses",months:"Month by month",checkpoints:"Checkpoints",import:"Update your portfolio",history:"Import a whole history",connection:"Your data"} as Readonly<Record<string,string>>)[route];
     await call("Page.navigate", { url });
     await waitFor(async () => await evaluate(`location.href===${JSON.stringify(url)} && document.readyState==='complete' && !!document.querySelector('.privacy-toggle') && !!document.querySelector('#main-content')?.children.length && !document.querySelector('#main-content .notice[data-busy=true]') && ${title === undefined ? "!!document.querySelector('#fund-chart-title')" : `document.querySelector('h1')?.textContent===${JSON.stringify(title)}`}`) === true, route);
     await evaluate("if(document.querySelector('.privacy-toggle').getAttribute('aria-pressed')==='true')document.querySelector('.privacy-toggle').click()");
@@ -209,6 +209,13 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await visit("months");
   await openDetails();
   await survey("Months / desktop / disclosures open");
+  // Checkpoints: the sample chart draws value-only markers (never joined), and the screen lists them with the form switched off while signed out.
+  await visit("overview");
+  await waitFor(async () => await evaluate("document.querySelectorAll('.portfolio-trend .checkpoint-marker').length>=1") === true, "sample checkpoint markers on the Performance chart");
+  await check("[...document.querySelectorAll('.portfolio-trend .chart-series')].filter(g=>g.querySelector('.checkpoint-marker')).every(g=>!g.querySelector('path.line'))", "checkpoint markers are never joined by a line");
+  await visit("checkpoints");
+  await survey("Checkpoints / desktop / signed out");
+  await check("document.querySelectorAll('.checkpoint-list > li').length===2 && !!document.querySelector('.checkpoint-form button[type=submit]').disabled", "the sample checkpoints are listed and saving is switched off while signed out");
   await visit("overview", 1440, "many");
   await openDetails();
   await survey("Portfolio / twelve funds / search and disclosures");
@@ -313,7 +320,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   await visit("connection");
   await openDetails();
   await survey("Your data / signed out / advanced controls");
-  for (const route of ["overview", "expenses", "months", "import", "connection"]) {
+  for (const route of ["overview", "expenses", "months", "checkpoints", "import", "connection"]) {
     await visit(route, 390);
     if (route === "months") {
       // Opening state: both tables open on the newest statement, which is tinted, and they line up column for column.

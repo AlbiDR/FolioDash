@@ -10,6 +10,7 @@ import { createRevisionPendingStore } from "../../../adapters/browser/RevisionPe
 import { createAccountHintStore } from "../../../adapters/browser/ConnectionMemory";
 import { createDurableStore } from "../../../adapters/browser/DurableStore";
 import { type SharedConnectionHandlers, createSharedConnection } from "../../../adapters/browser/TabCoordination";
+import { createCheckpointLock, createCheckpointStore } from "../../../adapters/browser/CheckpointStore";
 
 const GOOGLE_REQUEST_TIMEOUT_MILLISECONDS = 30_000;
 
@@ -59,6 +60,9 @@ export function createBrowserSession(clientId: string): Session {
     rest: browserRest,
     cache: __SYNTHETIC_ACCEPTANCE__ ? createLedgerCache(() => window.localStorage, "foliodash.synthetic-acceptance.ledger.v1") : browserLedgerCache,
     revisionPending: createRevisionPendingStore(() => window.localStorage, `${PREFIX}revision-pending.v1.`),
+    // Checkpoint copies, receipts and the cross-window lock all carry the build prefix, so the synthetic build never meets real ones.
+    checkpointStore: createCheckpointStore(() => window.localStorage, PREFIX),
+    checkpointLock: createCheckpointLock(`${PREFIX}checkpoints`, typeof navigator === "undefined" ? undefined : navigator.locks),
     expenseCache: createExpenseCache(() => window.localStorage, __SYNTHETIC_ACCEPTANCE__ ? "foliodash.synthetic-acceptance.expenses.v1" : "foliodash.expenses.v1"),
     ...(__SYNTHETIC_ACCEPTANCE__ ? { workbookIdentity: { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" } } : {}),
     now: () => Date.now(),
