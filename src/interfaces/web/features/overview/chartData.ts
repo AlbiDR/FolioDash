@@ -1,5 +1,6 @@
 import { type IsoDate, formatMonthShort, toIsoDate } from "../../../../core/IsoDate";
 import { type EuroCents, formatEuro, toEuroCents } from "../../../../core/Money";
+import type { StatementLabel } from "../../../../core/StatementLabels";
 
 export function utcTime(date: IsoDate): number {
   return Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10)));
@@ -18,4 +19,18 @@ export function euroLabel(value: number): string {
 
 export function euros(cents: EuroCents | null): number | null {
   return cents === null ? null : cents / 100;
+}
+
+/**
+ * Names an actual statement on a chart: its short label, with the exact export
+ * date when the label is not simply its own month. A position that is not a
+ * statement keeps its calendar label, so axis ticks are never renamed.
+ */
+export function observationLabel(dates: readonly IsoDate[], labels: readonly StatementLabel[]): (time: number) => string {
+  const byTime = new Map(dates.map((date, index) => [utcTime(date), labels[index]] as const));
+  return (time) => {
+    const label = byTime.get(time);
+    if (label === undefined) return monthLabel(time);
+    return label.detail === null ? label.short : `${label.short}, ${label.detail}`;
+  };
 }

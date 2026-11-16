@@ -1,5 +1,6 @@
 import type { LedgerState } from "../../../core/Ledger";
 import { computeMetrics } from "../../../core/Metrics";
+import { statementLabels } from "../../../core/StatementLabels";
 import type { OverviewFund, OverviewKpi, OverviewModel } from "../features/overview/OverviewModel";
 
 /**
@@ -49,14 +50,15 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
           { label: "Fund value", amount: latest.total, percent: null, signed: false, note: "The bank's funds-only total. Account cash is not included." },
           { label: "Net invested", amount: latest.invested, percent: null, signed: false, note: "Cash paid in minus full proceeds received, including funds you have sold." },
           { label: "Current gain", amount: latest.gain, percent: latest.gainPercent, signed: true, note: "Value minus net invested. Includes results already realised from sold funds. The percentage is on net invested; it is not annualised." },
-          { label: "Month on month", amount: latest.monthlyGain, percent: latest.monthlyGainPercent, signed: true, note: "Change in gain since the previous statement, only when that was the month before. Cash you moved is excluded." },
-          { label: "Year to date", amount: latest.yearToDateGain, percent: latest.yearToDatePercent, signed: true, note: "Change in gain since this year's January statement. This is not a return since 1 January." },
-          { label: "Year on year", amount: latest.yearOverYearGain, percent: latest.yearOverYearPercent, signed: true, note: "Change in gain against the statement from the same month last year." },
+          { label: "Month on month", amount: latest.monthlyGain, percent: latest.monthlyGainPercent, signed: true, note: "Change in gain since the previous statement, only when that was the month before. Cash you moved is excluded.", comparedWith: latest.monthlyGain === null ? null : latest.previousDate },
+          { label: "Year to date", amount: latest.yearToDateGain, percent: latest.yearToDatePercent, signed: true, note: "Change in gain since this year's January statement. This is not a return since 1 January.", comparedWith: latest.yearToDateFrom },
+          { label: "Year on year", amount: latest.yearOverYearGain, percent: latest.yearOverYearPercent, signed: true, note: "Change in gain against the statement from the same month last year.", comparedWith: latest.yearOverYearFrom },
         ];
 
   return {
     source,
     dates,
+    labels: statementLabels(dates),
     funds,
     totals: metrics.map((entry) => ({ value: entry.total, invested: entry.invested })),
     kpis,
@@ -71,6 +73,9 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
       yearToDatePercent: entry.yearToDatePercent,
       yearOverYearGain: entry.yearOverYearGain,
       yearOverYearPercent: entry.yearOverYearPercent,
+      previousDate: entry.previousDate,
+      yearToDateFrom: entry.yearToDateFrom,
+      yearOverYearFrom: entry.yearOverYearFrom,
     })),
     estimated: metrics.some((entry) => entry.estimated),
   };

@@ -148,6 +148,21 @@ describe("computeMetrics", () => {
     expect(march?.funds[B]?.monthlyGainPercent).toBeNull();
   });
 
+  it("names the statement each comparison was made against, without changing any figure", () => {
+    let state = twoMonths();
+    state = record(state, "2027-01-20", [[A, 1300], [B, 600]], [command(A, "Keep"), command(B, "Keep")]);
+    state = record(state, "2027-02-18", [[A, 1350], [B, 610]], [command(A, "Keep"), command(B, "Keep")]);
+    const [january2026, february2026, january2027, february2027] = computeMetrics(state);
+    expect(january2026).toMatchObject({ previousDate: null, yearToDateFrom: null, yearOverYearFrom: null });
+    expect(february2026).toMatchObject({ previousDate: date("2026-01-15"), yearToDateFrom: date("2026-01-15"), yearOverYearFrom: null });
+    // The January 2027 statement is its own year's first, so there is no year-to-date baseline.
+    expect(january2027).toMatchObject({ previousDate: date("2026-02-14"), yearToDateFrom: null, yearOverYearFrom: date("2026-01-15") });
+    expect(february2027).toMatchObject({ previousDate: date("2027-01-20"), yearToDateFrom: date("2027-01-20"), yearOverYearFrom: date("2026-02-14") });
+    // The figures beside those dates are the ones asserted above.
+    expect(february2027?.yearOverYearGain).toBe(euros(340));
+    expect(february2027?.yearToDateGain).toBe(euros(60));
+  });
+
   it("is deterministic and does not modify the ledger", () => {
     const state = twoMonths();
     const before = JSON.stringify(state);
