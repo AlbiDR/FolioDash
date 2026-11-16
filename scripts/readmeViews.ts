@@ -26,7 +26,7 @@ export type ViewEntry = CapturedView | { readonly skip: string };
 
 /** Keyed by every route name, so TypeScript rejects a route without an entry. */
 export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
-  overview: { hash: "#overview", heading: "Portfolio", file: "hero", frame: ".hero,.portfolio-trend", mobile: "portfolio-mobile.png" },
+  overview: { hash: "#overview", heading: "Portfolio", file: "hero", frame: ".hero,.portfolio-trend,.portfolio-holdings,.movers-card", mobile: "portfolio-mobile.png" },
   expenses: { hash: "#expenses", heading: "Work expenses", file: "expenses", frame: ".expense-entry,.expense-week" },
   months: {
     hash: "#months", heading: "Month by month", file: "months",
