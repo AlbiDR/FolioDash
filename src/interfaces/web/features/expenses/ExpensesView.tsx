@@ -144,7 +144,8 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
   }, [locked, props.onDirtyChange]);
 
   useEffect(() => {
-    if (!locked) setEditor(current => editorFor(current.date, props.days));
+    // Effects run after paint: never let a refresh overwrite a resolution or draft started since this render.
+    if (!locked) setEditor(current => current.resolving || expenseDraftChanged(current.draft, current.original) ? current : editorFor(current.date, props.days));
   }, [props.days, locked]);
 
   useEffect(() => {
