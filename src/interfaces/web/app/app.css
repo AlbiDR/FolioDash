@@ -1484,6 +1484,21 @@ button:disabled {
   justify-self: start;
 }
 
+/* Settings rows: on a wide screen the label and its explanation sit on the left and the one action on the right, so an action is a control, not a bar across the page. A phone keeps the stacked, full-width action. */
+@media (min-width: 47.501rem) {
+  .account-section > button { justify-self: start; }
+  .account-health,
+  .account-maintenance { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-4); align-items: start; }
+  .account-health > *,
+  .account-maintenance > * { grid-column: 1 / -1; }
+  .account-health > .card-title,
+  .account-maintenance > .card-title { grid-column: 1; grid-row: 1; }
+  .account-health > .card-subtitle,
+  .account-maintenance > .card-subtitle { grid-column: 1; grid-row: 2; }
+  .account-health > button,
+  .account-maintenance > button { grid-column: 2; grid-row: 1 / span 2; align-self: center; justify-self: end; }
+}
+
 .plain-list {
   display: grid;
   gap: 0.6rem;
