@@ -1,11 +1,12 @@
 import { Presence } from "../../shared/ui/Presence";
 import type { JSX } from "preact";
-import { useEffect, useId, useRef, useState } from "preact/hooks";
+import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
 import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/ImportPlan";
 import type { StatementSource } from "../../../../applications/LedgerService";
 import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../../applications/ImportModel";
 import { type IsoDate, formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
+import { computeMetrics } from "../../../../core/Metrics";
 import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/Money";
 import { Amount } from "../../presentation/privacy/privacy";
 import type { ReviewStatement } from "../../../../applications/ImportModel";
@@ -272,8 +273,28 @@ export function CashQuestions(props: {
     if (final.ok) props.onRecord(final.state);
   }
 
+  /** Where the portfolio stands before this statement, from the same metrics Month by month uses. */
+  const before = useMemo(() => (props.ledger.snapshots.length === 0 ? undefined : computeMetrics(props.ledger).at(-1)), [props.ledger]);
+  /** And as it would stand once these answers are recorded; only known when every fund is answered and the result is valid. */
+  const after = result?.ok === true ? computeMetrics(result.state).at(-1) : undefined;
+  const unanswered = Object.keys(built.errors).length;
+  const answered = Math.max(0, rows.length - unanswered);
+
   return (
     <section ref={questions} class="questions" aria-labelledby={`${prefix}-questions-heading`}>
+      <aside class="questions-rail" aria-labelledby={`${prefix}-rail-heading`}>
+        <h4 id={`${prefix}-rail-heading`}>Your statement so far</h4>
+        <p class="rail-date">{formatDateLong(props.date)}</p>
+        {rows.length > 0 && <progress class="rail-progress" value={answered} max={rows.length} aria-label="Funds answered">{answered} of {rows.length}</progress>}
+        <p class="rail-status" role="status" aria-atomic="true">{result?.ok === true ? "Every fund is answered. Ready to continue." : rows.length === 0 ? "No funds to answer." : `${String(answered)} of ${String(rows.length)} ${rows.length === 1 ? "fund" : "funds"} answered.`}</p>
+        <dl class="facts stacked">
+          <div><dt>Funds in this statement</dt><dd>{props.statement.funds.length}</dd></div>
+          <div><dt>Funds subtotal</dt><dd><Amount cents={props.statement.fundsSubtotal} /></dd></div>
+          <div><dt>Net invested before</dt><dd>{before === undefined ? "-" : <Amount cents={before.invested} />}</dd></div>
+          <div><dt>Net invested after</dt><dd>{after === undefined ? <span class="rail-waiting">After every fund is answered</span> : <Amount cents={after.invested} />}</dd></div>
+        </dl>
+      </aside>
+      <div class="questions-body">
       <h4 id={`${prefix}-questions-heading`} tabIndex={-1}>{latest === undefined ? "Set your starting balances" : "Review money in and out"}</h4>
       {latest === undefined ? (
         <p id={`${prefix}-opening-help`}>
@@ -475,6 +496,7 @@ export function CashQuestions(props: {
           </button>
         </div>
       )}
+      </div>
     </section>
   );
 }

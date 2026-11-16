@@ -61,6 +61,11 @@ function start(): void {
       const holdings = recorded?.snapshots.find(snapshot => snapshot.date === "2026-03-31")?.holdings;
       return holdings === undefined ? null : Object.fromEntries(Object.entries(holdings).map(([isin, holding]) => [isin, { action: holding.action, status: holding.status, value: Number(holding.value), moneyOut: Number(holding.moneyOut), moneyIn: Number(holding.moneyIn) }]));
     },
+    /** What the recorded statement holds in total, summed independently of the screen, for checking the running summary against it. */
+    marchInvested: () => {
+      const holdings = recorded?.snapshots.find(snapshot => snapshot.date === "2026-03-31")?.holdings;
+      return holdings === undefined ? null : Object.values(holdings).reduce((sum, holding) => sum + Number(holding.netInvested), 0);
+    },
     isins: { A, B, C, E },
     snapshots: () => recorded?.snapshots.length ?? ledger.snapshots.length,
   } });
