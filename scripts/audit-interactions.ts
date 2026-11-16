@@ -92,6 +92,9 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
   // Portfolio: inspect the complete range-to-chart journey, not only selector declarations.
   await visit("overview");
   await survey("Portfolio / desktop / initial");
+  // The wide Performance card spans the hero and Changes rows: its plot uses the spare height instead of leaving a void.
+  await waitFor(async () => await evaluate("(()=>{const card=document.querySelector('.portfolio-trend .chart');const last=card.lastElementChild.getBoundingClientRect();return card.getBoundingClientRect().bottom-last.bottom<=40&&document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect().height>300})()") === true, "wide Performance plot filling its card");
+  await check("(()=>{const svg=document.querySelector('.portfolio-trend .chart-svg');const box=svg.getBoundingClientRect();return box.height<=box.width*0.8+1&&box.height<=560})()", "filled Performance plot stays a wide, bounded shape");
   await evaluate("[...document.querySelectorAll('.portfolio-explore .page-nav button')].find(button=>button.textContent==='Holdings').click()");
   await check("document.activeElement?.id==='holdings-heading' && location.hash==='#overview'", "portfolio orientation moves focus to holdings without changing route");
   await evaluate("[...document.querySelectorAll('.portfolio-explore .page-nav button')].find(button=>button.textContent==='Trends and comparisons').click()");
@@ -286,6 +289,7 @@ await withLocalBrowser(async ({ origin, call, evaluate, waitFor }) => {
     }
     await openDetails();
     await survey(`${route} / phone / disclosures open`);
+    if (route === "overview") await check("Math.round(document.querySelector('.portfolio-trend .chart-svg').getBoundingClientRect().height)===200", "phone Performance plot keeps its compact height");
     if (route === "overview") {
       const point = await evaluate("(()=>{const n=document.querySelector('.chart-svg');n.scrollIntoView({block:'center'});const r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()") as { x: number; y: number };
       await call("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [point] });
