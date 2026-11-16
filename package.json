@@ -29,7 +29,8 @@
     "verify:pages": "node --test scripts/prepare-pages.test.ts",
     "inventory:interactions": "node scripts/verify-interactions.ts --write",
     "verify:interactions": "node scripts/verify-interactions.ts",
-    "audit:interactions": "node scripts/audit-interactions.ts"
+    "audit:interactions": "node scripts/audit-interactions.ts",
+    "audit:backfill-recovery": "node scripts/audit-backfill-recovery.ts"
   },
   "engines": {
     "node": ">=22.18.0"
