@@ -88,11 +88,10 @@
 }
 
 /* ---------- Holdings: a row per fund ---------- */
-.portfolio-explore { padding: var(--card-padding); border: 1px solid var(--glass-edge); border-radius: var(--shape-lg); background: var(--glass); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-shadow); }
-.portfolio-explore-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-2) var(--space-3); }
-.portfolio-explore-heading > div { min-width: 0; }
-.portfolio-explore-heading .card-subtitle { margin-bottom: 0; }
-.portfolio-explore .page-nav { margin-top: var(--space-2); }
+.portfolio-explore { padding: var(--space-2) var(--card-padding); border: 1px solid var(--glass-edge); border-radius: var(--shape-lg); background: var(--glass); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-shadow); }
+/* One row: where to jump on the left, the month-by-month comparison on the right. Holdings follow directly, so this stays slim. */
+.portfolio-explore-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-2) var(--space-3); }
+.portfolio-explore-row > .page-nav { min-width: 0; }
 .portfolio-history-link { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: var(--touch-target); padding-inline: var(--space-3); border-radius: var(--shape-full); background: var(--primary-container); color: var(--on-primary-container); font-weight: var(--weight-semibold); text-decoration: none; }
 .portfolio-holdings { container: holdings / inline-size; align-self: start; }
 .fund-search { margin: var(--space-2) 0; gap: var(--space-1); }
@@ -146,6 +145,8 @@
 
 /* ---------- Reference rows: trends, definitions, the demo picker ---------- */
 .analysis-grid { margin-top: var(--space-3); }
+/* Cards size to their content: a short list beside a tall chart ends where its content ends instead of stretching into empty space. */
+.analysis-grid { align-items: start; }
 .glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: var(--space-3) var(--space-4); margin: var(--space-2) 0 0; }
 .glossary dt { font-weight: var(--weight-semibold); }
 .glossary dd { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-small); line-height: var(--leading-body); }
