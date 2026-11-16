@@ -1133,6 +1133,14 @@ table {
 .matrix .matrix-year-start { box-shadow: inset 2px 0 0 var(--color-border); }
 .matrix .matrix-selected { background: var(--color-accent-soft); }
 .matrix thead th.matrix-selected { color: var(--color-text); }
+/* Best and worst in a row, when asked for: a rule under the cell and a small marker in the free space beside a right-aligned figure, so no column changes width. The marker is always accompanied by text for assistive technology. */
+.matrix td.matrix-best, .matrix td.matrix-worst { position: relative; background-repeat: no-repeat; background-size: 100% 2px; background-position: bottom; }
+.matrix td.matrix-best { background-image: linear-gradient(var(--color-gain), var(--color-gain)); }
+.matrix td.matrix-worst { background-image: linear-gradient(var(--color-loss), var(--color-loss)); }
+.matrix-mark { position: absolute; inset-inline-start: 0.4rem; top: 50%; transform: translateY(-50%); font-size: var(--text-caption); line-height: 1; }
+.matrix-best .matrix-mark { color: var(--color-gain); }
+.matrix-worst .matrix-mark { color: var(--color-loss); }
+.matrix-marks-toggle { margin: var(--space-1) 0; min-height: var(--touch-target); }
 @media (max-width: 47.5rem) {
   /* Less of a phone's width goes to the frozen names, so more of the statements show beside them. */
   .matrix .matrix-label { width: 7rem; min-width: 7rem; max-width: 7rem; }

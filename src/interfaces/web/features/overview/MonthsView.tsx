@@ -7,6 +7,7 @@ import { Icon } from "../../shared/ui/icons";
 import type { OverviewModel } from "./OverviewModel";
 import { Percent, Signed } from "./parts";
 import { columnClass } from "./monthColumns";
+import { type RowMarks, displayedHundredths, rowMarks } from "./rowMarks";
 
 /** A column heading: the short name, with the exact export date for anyone who cannot see it. */
 function StatementHeading(props: { readonly label: StatementLabel | undefined; readonly date: IsoDate }): JSX.Element {
@@ -28,6 +29,7 @@ function comparisonNote(month: OverviewModel["months"][number]): string | null {
 export function MonthsView(props: { readonly model: OverviewModel }): JSX.Element {
   const { dates, funds, months, labels } = props.model;
   const [selected, setSelected] = useState("");
+  const [marked, setMarked] = useState(false);
   const totalsScroll = useRef<HTMLDivElement>(null);
   const fundsScroll = useRef<HTMLDivElement>(null);
   // The newest statement is the one most often wanted, and it is the last column: open on it, as the sheet's last column is.
@@ -64,6 +66,15 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
     const position = atEnd ? Math.max(0, target.scrollWidth - target.clientWidth) : source.scrollLeft;
     if (Math.abs(target.scrollLeft - position) >= 1) target.scrollLeft = position;
   };
+  /** The class and the best or worst mark for one cell of a portfolio row, when marks are on. The text is for assistive technology; the glyph is only decoration. */
+  const marksFor = (marks: RowMarks, position: number): { readonly cls: string; readonly mark: JSX.Element | null } => {
+    if (!marked) return { cls: "", mark: null };
+    const best = marks.best.has(position);
+    const worst = marks.worst.has(position);
+    if (!best && !worst) return { cls: "", mark: null };
+    return { cls: best ? " matrix-best" : " matrix-worst", mark: <><span class="matrix-mark" aria-hidden="true">{best ? "▲" : "▼"}</span><span class="visually-hidden">{best ? " Best in row" : " Worst in row"}</span></> };
+  };
+  const valueMarks = rowMarks(months.map((entry) => Number(entry.value)));
   const date = dates.find((entry) => entry === selected) ?? dates[dates.length - 1];
   const index = dates.findIndex((entry) => entry === date);
   const month = months[index];
@@ -76,6 +87,7 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
           <section class="month-matrices" aria-labelledby="month-comparison-heading">
             <h2 id="month-comparison-heading" class="card-title">Compare all months</h2>
             <p class="card-subtitle">Scroll inside either table: they move together and open on the newest statement. The statement chosen below is tinted.</p>
+            <label class="check matrix-marks-toggle"><input type="checkbox" checked={marked} onChange={(event) => { setMarked(event.currentTarget.checked); }} /> Mark the best and worst month in each portfolio row</label>
           <div class="card"><div ref={totalsScroll} onScroll={follow(fundsScroll)} class="table-scroll flat" role="region" aria-label="Portfolio totals by month" tabIndex={0}>
             <table class="matrix totals" aria-label="Portfolio totals by month">
               <thead>
@@ -91,9 +103,10 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                 <tr class="matrix-first matrix-headline">
                   <th scope="row" class="matrix-label">Total fund value</th>
                   <th scope="row">Currency</th>
-                  {months.map((month, position) => (
-                    <td key={month.date} class={columnClass(dates, position, index)}><Amount cents={month.value} /></td>
-                  ))}
+                  {months.map((month, position) => {
+                    const { cls, mark } = marksFor(valueMarks, position);
+                    return <td key={month.date} class={`${columnClass(dates, position, index)}${cls}`}><Amount cents={month.value} />{mark}</td>;
+                  })}
                 </tr>
                 {(
                   [
@@ -102,21 +115,27 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
                     ["current year", "yearToDateGain", "yearToDatePercent"],
                     ["previous year", "yearOverYearGain", "yearOverYearPercent"],
                   ] as const
-                ).flatMap(([label, amountKey, percentKey]) => [
+                ).flatMap(([label, amountKey, percentKey]) => {
+                  const amountMarks = rowMarks(months.map((entry) => (entry[amountKey] === null ? null : Number(entry[amountKey]))));
+                  const percentMarks = rowMarks(months.map((entry) => displayedHundredths(entry[percentKey])));
+                  return [
                   <tr key={`${label}-currency`} class="matrix-first">
                     <th scope="row" rowSpan={2} class="matrix-label">Growth from {label}</th>
                     <th scope="row">Currency</th>
-                    {months.map((month, position) => (
-                      <td key={month.date} class={columnClass(dates, position, index)}><Signed cents={month[amountKey]} /></td>
-                    ))}
+                    {months.map((month, position) => {
+                      const { cls, mark } = marksFor(amountMarks, position);
+                      return <td key={month.date} class={`${columnClass(dates, position, index)}${cls}`}><Signed cents={month[amountKey]} />{mark}</td>;
+                    })}
                   </tr>,
                   <tr key={`${label}-percent`}>
                     <th scope="row">Percentage</th>
-                    {months.map((month, position) => (
-                      <td key={month.date} class={columnClass(dates, position, index)}><Percent ratio={month[percentKey]} signed /></td>
-                    ))}
+                    {months.map((month, position) => {
+                      const { cls, mark } = marksFor(percentMarks, position);
+                      return <td key={month.date} class={`${columnClass(dates, position, index)}${cls}`}><Percent ratio={month[percentKey]} signed />{mark}</td>;
+                    })}
                   </tr>,
-                ])}
+                  ];
+                })}
               </tbody>
             </table>
           </div></div>
