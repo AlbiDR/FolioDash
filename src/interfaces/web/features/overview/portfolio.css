@@ -136,8 +136,8 @@
   .allocation-card > :not(.donut):not(.legend) { grid-column: 1 / -1; }
   .allocation-card > .donut { grid-column: 1; width: 7rem; margin: 0; }
   .allocation-card > .legend { grid-column: 2; }
-  .allocation-card .donut-number { font-size: min(1.75rem, 16cqi); }
-  .allocation-card .donut[data-inspecting="true"] .donut-number { font-size: min(1.25rem, 13cqi); }
+  .allocation-card .donut-number { font-size: max(var(--text-lead), min(1.75rem, 16cqi)); }
+  .allocation-card .donut[data-inspecting="true"] .donut-number { font-size: max(var(--text-body), min(1.25rem, 13cqi)); }
   .allocation-card .legend a { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot name" "dot value"; column-gap: var(--space-2); row-gap: 0; align-items: center; }
   .allocation-card .legend .dot { grid-area: dot; }
   .allocation-card .legend-name { grid-area: name; }
