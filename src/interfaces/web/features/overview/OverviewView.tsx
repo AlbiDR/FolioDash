@@ -40,7 +40,7 @@ function StatCard(props: {
       ) : (
         <>
           {kpi.signed && kpi.percent !== null ? <Pill ratio={kpi.percent} signed /> : <span class="pill">-</span>}
-          <p class="stat-caption">{kpi.comparedWith === undefined || kpi.comparedWith === null ? props.caption : `Since the statement of ${formatDateLong(kpi.comparedWith)}.`}</p>
+          <p class="stat-caption">{kpi.comparedWith === undefined || kpi.comparedWith === null ? props.caption : `Since ${formatDateLong(kpi.comparedWith)}.`}</p>
         </>
       )}
       <Sparkline times={props.trend.times} values={props.trend.values} tone={kpi.signed ? tone(kpi.amount) : ""} width={220} height={52} area />
