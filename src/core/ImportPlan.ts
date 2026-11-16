@@ -148,7 +148,7 @@ export function applyImport(
   for (const row of plan) {
     const command = byIsin.get(row.isin);
     if (command === undefined) continue;
-    const holding = decide(row, command, add);
+    const holding = decide(row, command, statement.funds.some(fund => fund.isin === row.isin), add);
     if (holding === null) continue;
     holdings[row.isin] = holding;
     if (row.detected === "Opening" || row.detected === "New") {
@@ -173,13 +173,17 @@ export function applyImport(
 function decide(
   row: PlanRow,
   command: FundCommand,
+  listed: boolean,
   add: (code: LedgerIssue["code"], isin: string | null, message: string) => void,
 ): Holding | null {
   const fail = (message: string): null => {
     add("invalid-command", row.isin, `${row.name}: ${message}`);
     return null;
   };
-  if (!ALLOWED_ACTIONS[row.detected].includes(command.action)) {
+  // A listed zero-value holding can be explicitly reopened. A fund absent from
+  // the statement cannot be reopened from a zero value inferred by the plan.
+  const explicitZeroReopening = row.detected === "Closed" && listed && command.action === "Reopen";
+  if (!ALLOWED_ACTIONS[row.detected].includes(command.action) && !explicitZeroReopening) {
     const allowed = ALLOWED_ACTIONS[row.detected].join(" or ");
     return fail(
       row.detected === "Missing"

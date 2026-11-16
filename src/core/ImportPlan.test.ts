@@ -168,6 +168,14 @@ describe("a closed fund", () => {
     expect(next.snapshots[2]?.holdings[B]).toMatchObject({ status: "active", action: "Reopen", netInvested: euros(130) });
   });
 
+  it("permits an explicit reopening at zero only when the fund is listed", () => {
+    const listed = statement([[A, "Fund A", 1000], [B, "Fund B", 0]]);
+    const absent = statement([[A, "Fund A", 1000]]);
+    const next = applied(closedB(), listed, "2026-03-10", [command(A, "Keep"), command(B, "Reopen")]);
+    expect(next.snapshots[2]?.holdings[B]).toMatchObject({ status: "active", action: "Reopen", value: ZERO_CENTS });
+    expect(rejected(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Reopen")])).toHaveLength(1);
+  });
+
   it("takes no new money, and explains late proceeds", () => {
     const absent = statement([[A, "Fund A", 1000]]);
     expect(rejected(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Closed", { moneyIn: euros(1) })])).toHaveLength(1);
