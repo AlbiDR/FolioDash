@@ -94,6 +94,7 @@ jobs:
           npm run audit:expense-recovery
           npm run audit:expense-restore
           npm run audit:sale-closure
+          npm run audit:account-outcomes
 
       - name: Capture current README views
         if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')

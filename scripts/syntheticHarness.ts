@@ -43,7 +43,13 @@ export async function runSyntheticJourney(journey: SyntheticJourney): Promise<nu
         if (await evaluate(`[...document.querySelectorAll('button')].some(button=>button.textContent.trim()===${JSON.stringify(label)})`) !== true) throw new Error(`No button named "${label}"; found: ${String(await evaluate("[...document.querySelectorAll('button')].map(b=>b.textContent.trim()).join(' | ')"))}`);
         await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent.trim()===${JSON.stringify(label)}).click()`);
       };
-      await journey.run({ ...browser, check, click, text: (value) => `document.body.innerText.includes(${JSON.stringify(value)})` });
+      const waitForWithPage: LocalBrowser["waitFor"] = async (condition, description) => {
+        try { await waitFor(condition, description); } catch (error) {
+          // A stalled wait names what the synthetic page showed instead, which is the first thing to know.
+          throw new Error(`${error instanceof Error ? error.message : "Timed out."} Page showed: ${String(await evaluate("document.body.innerText.replace(/\\s+/g,' ').slice(0,700)"))}`, { cause: error });
+        }
+      };
+      await journey.run({ ...browser, waitFor: waitForWithPage, check, click, text: (value) => `document.body.innerText.includes(${JSON.stringify(value)})` });
     }, journey.port, journey.config);
     return assertions;
   } finally {
