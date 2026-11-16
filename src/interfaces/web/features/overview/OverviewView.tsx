@@ -357,6 +357,21 @@ export function OverviewView(props: { readonly model: OverviewModel; readonly ra
                   </tr>
                 ))}
               </tbody>
+              {/* The portfolio's own totals, the same figures as the headline, so the rows and the total can be checked against each other. A filter hides them rather than showing a sum of part of the list. */}
+              <tfoot>
+                {query === "" ? (
+                  <tr class="holdings-total">
+                    <th scope="row">Total<span class="holding-meta">All funds</span></th>
+                    <td><Amount cents={latestTotal.value} /></td>
+                    <td><Percent ratio={held.length > 0 ? 1 : null} /></td>
+                    <td><Pill ratio={gain?.percent ?? null} signed /></td>
+                    <td><Signed cents={gain?.amount ?? null} /></td>
+                    <td><Amount cents={latestTotal.invested} /></td>
+                  </tr>
+                ) : (
+                  <tr class="holdings-total"><td colSpan={6}>Totals cover every fund. Clear the search to see them.</td></tr>
+                )}
+              </tfoot>
             </table>
           </div>
         )}

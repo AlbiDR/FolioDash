@@ -935,12 +935,14 @@ table {
 .holdings-table {
   table-layout: fixed;
   width: 100%;
+  /* Dense figures use the small role, as the month matrix does, so five amount columns fit beside the fund name. */
+  font-size: var(--text-small);
   font-variant-numeric: tabular-nums;
 }
 
 .holdings-table th,
 .holdings-table td {
-  padding: 0.7rem 0.75rem;
+  padding: 0.7rem 0.5rem;
   border-bottom: 1px solid var(--color-border);
   text-align: right;
   white-space: nowrap;
@@ -954,11 +956,18 @@ table {
 }
 
 .holdings-table th:first-child {
-  width: 24%;
+  /* Columns get the width of what they hold: the three amount columns reserve an amount's width so hiding amounts never moves them, the share and the percentage need less. */
+  width: 24.5%;
   text-align: left;
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+.holdings-table thead th:nth-child(2),
+.holdings-table thead th:nth-child(5),
+.holdings-table thead th:nth-child(6) { width: 16.5%; }
+.holdings-table thead th:nth-child(3) { width: 11.5%; }
+.holdings-table thead th:nth-child(4) { width: 14%; }
 
 .holdings-table tbody th {
   position: relative;
