@@ -12,9 +12,9 @@ const presentation = "src/interfaces/web/presentation/privacy/privacy.tsx";
 
 describe("lean root and artifact policy", () => {
   it("accepts the current entry points and designated homes", () => {
-    expect(pathProblems(["README.md", "AGENTS.md", ".gitignore", "package.json", "package-lock.json", "config/tsconfig.json", "docs/README.md", core, "scripts/build.ts", "tests/fixtures/Synthetic.ts", ".github/workflows/verify.yml"])).toEqual([]);
+    expect(pathProblems(["README.md", "AGENTS.md", ".editorconfig", ".gitattributes", ".gitignore", ".nvmrc", "package.json", "package-lock.json", ".vscode/settings.json", "config/prettier.json", "config/tsconfig.json", "docs/README.md", core, "scripts/build.ts", "tests/fixtures/Synthetic.ts", ".github/workflows/verify.yml"])).toEqual([]);
   });
-  it.each(["NOTES.md", "tsconfig.json", "legacy/main.ts", "dist/app.js", "docs/export.xlsx", "tests/fixtures/account.csv", "config/.env.local", "src/.DS_Store", "config/.clasp.json", "docs/release.zip", "private/portfolio.json", ".Monthly Exports/note.txt"])("rejects %s", (file) => {
+  it.each([".prettierrc", ".eslintrc.json", "NOTES.md", "tsconfig.json", "legacy/main.ts", "dist/app.js", "docs/export.xlsx", "tests/fixtures/account.csv", "config/.env.local", "src/.DS_Store", "config/.clasp.json", "docs/release.zip", "private/portfolio.json", ".Monthly Exports/note.txt"])("rejects %s", (file) => {
     expect(pathProblems([file]).length).toBeGreaterThan(0);
   });
 });

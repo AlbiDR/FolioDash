@@ -1,7 +1,17 @@
 import ts from "typescript";
 
-const ROOT_FILES = new Set(["README.md", "AGENTS.md", ".gitignore", "package.json", "package-lock.json"]);
-const ROOT_DIRECTORIES = new Set([".github", "config", "docs", "scripts", "src", "tests"]);
+// Every entry here is a tool-discovery file: the named tool only looks for it at the repository root.
+const ROOT_FILES = new Set([
+  "README.md",
+  "AGENTS.md",
+  ".editorconfig",
+  ".gitattributes",
+  ".gitignore",
+  ".nvmrc",
+  "package.json",
+  "package-lock.json",
+]);
+const ROOT_DIRECTORIES = new Set([".github", ".vscode", "config", "docs", "scripts", "src", "tests"]);
 const GENERATED_OR_PRIVATE = /(?:^|\/)(?:node_modules|dist|build|coverage|private|local-data|backups|imports|\.Monthly Exports|\.cache|test-results|playwright-report)(?:\/|$)|(?:^|\/)\.env(?:\.|$)|\.(?:xlsx?|xlsm|csv|pdf|sqlite3?|db|log|zip|pem|key)$|(?:^|\/)(?:\.DS_Store|\.clasp(?:rc)?\.json)$/i;
 
 /** Tracked paths only: this cannot certify the contents of a file or ignored local data. */

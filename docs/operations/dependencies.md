@@ -20,3 +20,7 @@ Verification after this major-version override:
 - `npm ls minimatch` shows only 11.0.1 across the affected dependency chains.
 
 The lockfile also synchronises its root Node requirement with the existing `package.json` requirement of `>=22.18.0`; the declared supported version was not changed by this fix.
+
+## Formatter: Prettier
+
+Added 2026-11-17 for the organization standard. Prettier 3.9.10, MIT licence, development dependency only, exact-pinned. It is pinned exactly because formatter output changes between releases, and a drifting range would make the format check flaky. Release 3.9.10 was published on 2026-10-10; the newer 3.10.0 and 3.10.1 (2026-11-11 and 2026-11-12) were passed over until they have aged. It runs only at development time through `npm run format` and `npm run format:check`, with configuration in `config/prettier.json`, and ships nothing to the browser. It is installed with `--ignore-scripts` like every other dependency. Markdown, YAML and the public asset folder are outside its scope for now.

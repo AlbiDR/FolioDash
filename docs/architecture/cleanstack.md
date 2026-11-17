@@ -11,6 +11,8 @@ Scope: PWA, calculation kernel, import pipeline, private persistence, synchronis
 
 **2026-11-07 amendment - FD-022:** the owner's top-priority request that the Google connection stay on keeps short-lived access and the account's sign-in hint on the device (`localStorage`, falling back to `sessionStorage` and memory) and renews access quietly on the person's next click. This supersedes FD-021's tab-only storage; it adds no refresh token, server, scope or secret, and financial rules, consent and unknown-outcome recovery remain unchanged. See FD-022 and [Google setup](../operations/google-setup.md).
 
+**2026-11-17 amendment - organization standard, phase 1:** the owner asked for a behaviour-neutral reorganization of folders, names, formatting and enforcement, with every convention checked by a machine rather than described in prose. Phase 1 adds the editor, Git and Node baselines, a pinned formatter and a built-output oracle (`npm run oracle`) that proves a restructure changes no built byte. It adds no feature, layer or financial rule. Later phases amend this document as they land; see [Repository policy](../operations/repository-policy.md).
+
 ## 1. Purpose and authority
 
 FolioDash turns dated fund valuations and explicitly recorded cash movements into a clear personal portfolio history. It is a proposed successor to the working Google Sheets application, not a destructive rewrite of that application.
@@ -133,13 +135,18 @@ Queries do not perform hidden financial mutations. Commands are explicit and may
 
 The repository root is the project's entry/control surface, not a general storage directory. A file does not belong there merely because it affects the whole application. The owner's root-minimality direction is recorded in FD-015; the concrete allowlist below is a proposed implementation contract.
 
-**Present foundation:** `README.md`, `AGENTS.md`, `.gitignore` and `docs/`. Create other paths only when they contain a current, justified responsibility.
+**Present foundation:** `README.md`, `AGENTS.md`, `.gitignore`, the package manifest and lockfile, the tool-discovery files listed below, and the designated folders. Create other paths only when they contain a current, justified responsibility.
 
 | Content | Canonical home | Root rule |
 |---|---|---|
 | Project introduction and contribution/architecture pointers | `README.md` | Keep short; do not duplicate architecture documents |
 | Agent working agreement | `AGENTS.md` | Root discovery entry; point to canonical policy |
 | Repository ignore policy | `.gitignore` | Root discovery entry; not a security guarantee |
+| Editor whitespace, encoding and line-ending baseline | `.editorconfig` | Root discovery entry; editors only look for it upward from the file |
+| Line-ending and binary-file policy for Git | `.gitattributes` | Root discovery entry; Git reads it from the working tree root |
+| Node version for version managers | `.nvmrc` | Root discovery entry; it names the newest Node release in the CI matrix, while `engines` states the minimum |
+| Shared editor settings and extension recommendations | `.vscode/` | Settings that make the editor follow the formatter configuration; no personal preferences |
+| Formatter configuration | `config/prettier.json` | Explicit path in the `format` scripts; no root dotfile |
 | Product, architecture, decisions and operations documents | `docs/` | No additional root-level planning/audit/design Markdown files |
 | Financial/application/UI/server source | `src/` layers | No loose `.ts`, `.js`, `.gs` or parallel legacy source trees at root |
 | Cross-layer tests and synthetic fixtures | `tests/` | Unit tests remain adjacent to their subject under the naming contract |
