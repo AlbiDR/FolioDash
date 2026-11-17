@@ -144,7 +144,7 @@ The repository root is the project's entry/control surface, not a general storag
 | Repository ignore policy | `.gitignore` | Root discovery entry; not a security guarantee |
 | Editor whitespace, encoding and line-ending baseline | `.editorconfig` | Root discovery entry; editors only look for it upward from the file |
 | Line-ending and binary-file policy for Git | `.gitattributes` | Root discovery entry; Git reads it from the working tree root |
-| Node version for version managers | `.nvmrc` | Root discovery entry; it names the newest Node release in the CI matrix, while `engines` states the minimum |
+| Node version for version managers | `.nvmrc` | Root discovery entry; it names the Node release CI runs, while `engines` states the minimum |
 | Shared editor settings and extension recommendations | `.vscode/` | Settings that make the editor follow the formatter configuration; no personal preferences |
 | Formatter configuration | `config/prettier.json` | Explicit path in the `format` scripts; no root dotfile |
 | Product, architecture, decisions and operations documents | `docs/` | No additional root-level planning/audit/design Markdown files |

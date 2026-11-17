@@ -63,7 +63,7 @@ Phase 1 of the organization standard added the baselines every contributor and t
 |---|---|
 | `.editorconfig` | Editors resolve it upward from the edited file. It fixes UTF-8, LF, two-space indentation, a final newline and trimmed trailing whitespace, except in Markdown where two trailing spaces are a hard line break. |
 | `.gitattributes` | Git reads it from the working-tree root. It normalises text to LF, marks images as binary and marks the lockfile as generated. |
-| `.nvmrc` | Version managers read it from the root. It names the newest Node release in the CI matrix; `engines` in `package.json` remains the minimum. |
+| `.nvmrc` | Version managers read it from the root. It names the Node release CI runs; `engines` in `package.json` remains the minimum. |
 | `.vscode/` | Shared editor settings that apply the formatter and recommend three extensions. It holds no personal preferences. |
 
 The root allowlist in `scripts/repositoryPolicy.ts` lists exactly these entries and its test covers them and a rejected look-alike (`.prettierrc`). The formatter configuration lives in `config/prettier.json` and is passed explicitly, so it needs no root dotfile.
