@@ -194,7 +194,7 @@ An optional account-scoped offline cache remains a convenience copy. Writes and 
 - Apps Script/Google APIs have quotas, runtimes and concurrent-execution limits. No promise of unlimited free access, instantaneous imports or a production SLA follows from avoiding a separate database. [Google quotas](https://developers.google.com/apps-script/guides/services/quotas)
 - Google version history and a live workbook are not a complete independently tested backup policy. Preserve portable export/restore, evidence coverage and deletion limits from the parent ADR.
 
-The user's local `.Montly Exports` folder is private material outside the application/repository artifact contract. Its spelling/location is preserved; ignore rules guard against accidental inclusion and do not make the folder private by themselves.
+The user's local `.Monthly Exports` folder is private material outside the application/repository artifact contract. Ignore rules guard against accidental inclusion and do not make the folder private by themselves.
 
 ## 10. Feasibility and release gates
 

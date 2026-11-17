@@ -89,7 +89,7 @@ These requirements were recorded before publication. The repository is now publi
 1b. The history still contains a few real example values (amounts, a quantity and account-opening dates) in tests and comments committed before 2026-11-01 16:35. They were removed from the current files, but not from earlier commits. Rewrite or squash the history, and recreate the repository if needed, before it becomes public.
 1a. Every commit uses the approved GitHub no-reply author address. The first commit used a personal address and must be rewritten before the switch.
 2. Full history and current files scanned with a secret scanner, plus a manual check for real portfolio data, account identifiers and personal context.
-3. `App Scripts/`, `.Montly Exports/` and other private folders confirmed absent from history.
+3. `.Monthly Exports/` and other private folders confirmed absent from history.
 4. Secret scanning and push protection enabled immediately after the switch.
 5. Branch protection or a ruleset on `main`, the `apps-script-deploy` environment and fork-approval settings configured and checked.
 6. Pages source, origin and plan decisions reviewed (FD-008).

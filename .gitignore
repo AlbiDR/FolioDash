@@ -22,7 +22,6 @@ private/
 local-data/
 backups/
 imports/
-.Montly Exports/
 .Monthly Exports/
 *.xlsx
 *.xls
@@ -38,7 +37,6 @@ Screenshot*.jpg
 Screenshot*.jpeg
 
 # Legacy Google Sheets implementation: kept local until the FD-011 provenance review.
-App Scripts/
 
 # Future synthetic binary fixtures require a documented, reviewed exception.
 # These rules do not detect sensitive content in allowed files or existing Git history.
