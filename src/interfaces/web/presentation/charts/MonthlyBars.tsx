@@ -113,7 +113,8 @@ export function MonthlyBars(props: {
                 else if (event.key === "End") target = props.bars.length - 1;
                 else return;
                 event.preventDefault();
-                event.currentTarget.parentElement?.querySelectorAll<SVGGElement>(".bars-item")[target]?.focus({ preventScroll: true });
+                const items = event.currentTarget.parentElement?.querySelectorAll<SVGGElement>(".bars-item");
+                items?.[target]?.focus({ preventScroll: true });
               }}
               onFocus={() => { setHovered(null); setFocused(bar.key); }}
               onBlur={() => { setFocused(null); }}
