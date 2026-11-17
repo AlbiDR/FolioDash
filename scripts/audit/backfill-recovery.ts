@@ -125,7 +125,7 @@ try {
       );
     },
     Number(process.env["FOLIODASH_BACKFILL_AUDIT_PORT"] ?? 4198),
-    "config/vite.backfill-audit.config.ts",
+    directory,
   );
   console.log(`Synthetic rendered backfill recovery passed: ${String(assertions)} assertions.`);
 } finally {

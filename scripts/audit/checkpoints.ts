@@ -6,7 +6,6 @@ const assertions = await runSyntheticJourney({
   entry: "tests/fixtures/checkpoints-browser.ts",
   directory: "dist/acceptance/checkpoints-audit",
   port: Number(process.env["FOLIODASH_CHECKPOINTS_AUDIT_PORT"] ?? 4201),
-  config: "config/vite.checkpoints-audit.config.ts",
   readySelector: ".checkpoint-form",
   run: async ({ evaluate, waitFor, check, click, text }) => {
     const set = async (selector: string, value: string): Promise<void> => {

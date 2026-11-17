@@ -6,7 +6,6 @@ const assertions = await runSyntheticJourney({
   entry: "tests/fixtures/sale-browser.ts",
   directory: "dist/acceptance/sale-audit",
   port: Number(process.env["FOLIODASH_SALE_AUDIT_PORT"] ?? 4201),
-  config: "config/vite.sale-audit.config.ts",
   readySelector: ".fund-question",
   run: async ({ evaluate, waitFor, check, click, text }) => {
     // Values reach the page as percent-encoded text, which holds only characters that are inert inside a JavaScript string literal.
