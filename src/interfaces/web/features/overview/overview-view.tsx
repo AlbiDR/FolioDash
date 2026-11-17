@@ -1,13 +1,13 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import { formatDateLong, type IsoDate } from "../../../../core/iso-date";
-import { REPORTING_POLICY } from "../../../../core/metrics";
-import { formatPercent } from "../../../../core/percent";
-import { availableRanges, type ChartRange } from "./chart-range";
+import { formatDateLong, type IsoDate } from "../../../../core/values/iso-date";
+import { REPORTING_POLICY } from "../../../../core/portfolio/metrics";
+import { formatPercent } from "../../../../core/values/percent";
+import { availableRanges, type ChartRange } from "./model/chart-range";
 import { RangeSelector } from "../../shared/ui/range-selector";
 import { PageNav } from "../../shared/ui/page-nav";
-import { type AllocationSlice, type MonthMetric, NO_MARKERS, dashboardFor } from "./dashboard-data";
-import type { CheckpointMarker } from "../../../../core/checkpoints";
+import { type AllocationSlice, type MonthMetric, NO_MARKERS, dashboardFor } from "./model/dashboard-data";
+import type { CheckpointMarker } from "../../../../core/portfolio/checkpoints";
 import { Donut } from "../../presentation/charts/donut";
 import { LineChart } from "../../presentation/charts/line-chart";
 import { MonthlyBars } from "../../presentation/charts/monthly-bars";
@@ -15,11 +15,11 @@ import { PerformanceBars } from "../../presentation/charts/performance-bars";
 import { Sparkline } from "../../presentation/charts/sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import { euroLabel, monthLabel, observationLabel } from "./chart-data";
-import type { OverviewFund, OverviewKpi, OverviewModel } from "./overview-model";
+import { euroLabel, monthLabel, observationLabel } from "./model/chart-data";
+import type { OverviewFund, OverviewKpi, OverviewModel } from "./model/overview-model";
 import { Percent, Pill, Signed, tone } from "./parts";
-import { portfolioAttention } from "./attention";
-import { GRID_MONTHS, type ReturnsGrid, returnsGrid } from "./returns-grid";
+import { portfolioAttention } from "./model/attention";
+import { GRID_MONTHS, type ReturnsGrid, returnsGrid } from "./model/returns-grid";
 import {
   type HoldingsSort,
   type HoldingsSortKey,
@@ -27,7 +27,7 @@ import {
   describeSort,
   nextSort,
   sortHoldings,
-} from "./holdings-sort";
+} from "./model/holdings-sort";
 import "./portfolio-feedback.css";
 
 /** One headline figure of the earlier spreadsheet's recap, with its own trend underneath. */

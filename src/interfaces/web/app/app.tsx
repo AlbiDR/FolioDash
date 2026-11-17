@@ -2,10 +2,10 @@ import type { JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { lazy } from "preact/compat";
 import { GetStarted } from "../features/account/get-started";
-import type { ImportPreparer } from "../../../applications/import-model";
+import type { ImportPreparer } from "../../../applications/import/import-model";
 import { FundView } from "../features/overview/fund-view";
 import { MonthsView } from "../features/overview/months-view";
-import type { OverviewModel } from "../features/overview/overview-model";
+import type { OverviewModel } from "../features/overview/model/overview-model";
 import { OverviewView } from "../features/overview/overview-view";
 import { PrivacyProvider, PrivacyToggle, usePrivacyChoice } from "../presentation/privacy/privacy";
 import { Presence } from "../shared/ui/presence";
@@ -15,26 +15,26 @@ import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sideba
 import { useMediaQuery } from "../shared/ui/use-media-query";
 import { useFocusVisibility } from "../shared/ui/use-focus-visibility";
 import { Icon, type IconName } from "../shared/ui/icons";
-import { watchGoogleFreshness } from "../../../adapters/browser/google-freshness";
-import { armGestureRenewal } from "../../../adapters/browser/gesture-renewal";
-import { prepareGoogleIdentity } from "../../../adapters/browser/google-identity";
-import { createBrowserSession, watchOtherWindows } from "./browser-session";
-import { DRIVE_FILE_SCOPE } from "./session";
-import { type ChartRange, resolveRange } from "../features/overview/chart-range";
-import { rememberClientId, resolveClientId } from "../../../adapters/browser/client-id";
-import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demo-portfolio";
-import { demoCheckpoints } from "./demo-checkpoints";
-import { type Checkpoint, chartMarkers } from "../../../core/checkpoints";
+import { watchGoogleFreshness } from "../../../adapters/browser/connection/google-freshness";
+import { armGestureRenewal } from "../../../adapters/browser/connection/gesture-renewal";
+import { prepareGoogleIdentity } from "../../../adapters/browser/connection/google-identity";
+import { createBrowserSession, watchOtherWindows } from "./session/browser-session";
+import { DRIVE_FILE_SCOPE } from "./session/session";
+import { type ChartRange, resolveRange } from "../features/overview/model/chart-range";
+import { rememberClientId, resolveClientId } from "../../../adapters/browser/connection/client-id";
+import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demo/demo-portfolio";
+import { demoCheckpoints } from "./demo/demo-checkpoints";
+import { type Checkpoint, chartMarkers } from "../../../core/portfolio/checkpoints";
 import { memoizeLast } from "../shared/ui/memo";
-import { overviewFromLedger } from "./overview-from-ledger";
+import { overviewFromLedger } from "./session/overview-from-ledger";
 import { type Route, navEntryOf, routeFrom } from "./routes";
-import { watchForUpdate } from "./service-worker";
+import { watchForUpdate } from "./platform/service-worker";
 import { describeAge } from "../features/account/time-ago";
 import { describeConnect } from "../features/account/account-text";
-import { useCheckpoints, useExpenses, useNow, useSession } from "./use-session";
-import { toIsoDate } from "../../../core/iso-date";
-import type { ExpenseCommand, ExpenseDay } from "../../../core/work-expenses";
-import { demoExpenses } from "./demo-expenses";
+import { useCheckpoints, useExpenses, useNow, useSession } from "./session/use-session";
+import { toIsoDate } from "../../../core/values/iso-date";
+import type { ExpenseCommand, ExpenseDay } from "../../../core/expenses/work-expenses";
+import { demoExpenses } from "./demo/demo-expenses";
 
 const TITLES = {
   overview: "Portfolio",
@@ -57,7 +57,7 @@ const HistoryView = lazy(async () => ({ default: (await import("../features/hist
 const ImportView = lazy(async () => ({ default: (await import("../features/import/import-view")).ImportView }));
 const prepareImport: ImportPreparer = async (file) => {
   try {
-    return await (await import("./import-preparer")).prepareImport(file);
+    return await (await import("./session/import-preparer")).prepareImport(file);
   } catch {
     return {
       status: "unreadable-file",

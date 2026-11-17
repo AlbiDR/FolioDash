@@ -39,10 +39,10 @@ Public OAuth client IDs are public by design, so they are variables and never se
 | File | Purpose |
 |---|---|
 | `.github/allowed-contributors.json` | The only humans whose attribution is accepted; GitHub no-reply addresses only, never a personal address |
-| `scripts/verify-contributors.ts` | Fails on any author or co-author that is not approved, or whose metadata names an AI system or automation. Dependency-free, so it needs no tooling decision |
+| `scripts/verify/contributors.ts` | Fails on any author or co-author that is not approved, or whose metadata names an AI system or automation. Dependency-free, so it needs no tooling decision |
 | `.github/workflows/verify.yml` | Runs contributor attribution through `npm run verify` on each supported Node version with complete history; no separate attribution workflow |
-| `scripts/verify-workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
-| `scripts/verify-punctuation.ts`, `scripts/punctuation.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
+| `scripts/verify/workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
+| `scripts/verify/punctuation.ts`, `scripts/verify/punctuation-policy.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
 | `.github/CODEOWNERS` | Review ownership of `.github/`, `docs/architecture/` (CleanStack and the other architecture documents) and `scripts/` |
 | `.github/pull_request_template.md` | Includes the conformance check against CleanStack |
 | `.github/SECURITY.md`, `.github/CONTRIBUTING.md` | Short, and they point to the docs rather than repeat them |

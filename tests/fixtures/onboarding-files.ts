@@ -1,6 +1,6 @@
 import { buildXlsx } from "./synthetic-xlsx";
 import { COL, FORMULA, ISIN_A, ISIN_B, ROW, number, syntheticSheet, text, withCell } from "./synthetic-fideuram-sheet";
-import type { RawSheet } from "../../src/core/raw-sheet";
+import type { RawSheet } from "../../src/core/statements/raw-sheet";
 
 function valuedSheet(price: string, fundValue: string, subtotal: string, total: string): RawSheet {
   let sheet = syntheticSheet();

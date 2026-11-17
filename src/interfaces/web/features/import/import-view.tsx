@@ -1,15 +1,15 @@
 import { Presence } from "../../shared/ui/presence";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/iso-date";
-import type { LedgerState } from "../../../../core/ledger";
+import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/values/iso-date";
+import type { LedgerState } from "../../../../core/portfolio/ledger";
 import { Amount } from "../../presentation/privacy/privacy";
-import type { DateSource } from "../../../../core/statement-date";
+import type { DateSource } from "../../../../core/statements/statement-date";
 import { CashQuestions } from "./cash-questions";
 import { ManualEntry } from "./manual-entry";
 import { BackfillEntry } from "./backfill-entry";
 import { ExcelHistoryView } from "./excel-history-view";
-import { prepareExcelHistory, type ExcelHistoryReview } from "../../../../applications/excel-history";
+import { prepareExcelHistory, type ExcelHistoryReview } from "../../../../applications/import/excel-history";
 import type {
   ImportFile,
   ImportPreparer,
@@ -18,7 +18,7 @@ import type {
   ReviewAdjustment,
   ReviewIssue,
   ReviewStatement,
-} from "../../../../applications/import-model";
+} from "../../../../applications/import/import-model";
 
 const MAX_CELLS_LISTED = 8;
 

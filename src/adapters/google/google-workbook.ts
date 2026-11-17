@@ -1,7 +1,7 @@
-import { canonicalJson } from "../../core/canonical-json";
-import { sha256Hex } from "../../core/sha256";
-import type { Workbook } from "../../applications/session-model";
-import type { Grid, GridCell } from "../../applications/sheet-grid";
+import { canonicalJson } from "../../core/integrity/canonical-json";
+import { sha256Hex } from "../../core/integrity/sha256";
+import type { Workbook } from "../../applications/session/session-model";
+import type { Grid, GridCell } from "../../applications/ledger/sheet-grid";
 import type { LedgerRow } from "../ledger/row-ledger-store";
 import { type RestClient, type RestResult, callRest } from "./rest";
 import {

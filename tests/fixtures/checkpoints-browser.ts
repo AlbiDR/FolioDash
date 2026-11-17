@@ -2,16 +2,16 @@
 import { h, render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { FakeGoogle } from "./fake-google";
-import { createCheckpointLock, createCheckpointStore } from "../../src/adapters/browser/checkpoint-store";
+import { createCheckpointLock, createCheckpointStore } from "../../src/adapters/browser/storage/checkpoint-store";
 import { CHECKPOINT_LOG_TITLE } from "../../src/adapters/google/direct-checkpoints";
 import { createWorkbook } from "../../src/adapters/google/google-workbook";
 import type { RestClient } from "../../src/adapters/google/rest";
-import type { Workbook } from "../../src/applications/session-model";
-import { canonicalJson } from "../../src/core/canonical-json";
-import type { CheckpointCommand } from "../../src/core/checkpoints";
-import { type IsoDate, parseIsoDate } from "../../src/core/iso-date";
-import { sha256Hex } from "../../src/core/sha256";
-import { CheckpointSession } from "../../src/interfaces/web/app/checkpoint-session";
+import type { Workbook } from "../../src/applications/session/session-model";
+import { canonicalJson } from "../../src/core/integrity/canonical-json";
+import type { CheckpointCommand } from "../../src/core/portfolio/checkpoints";
+import { type IsoDate, parseIsoDate } from "../../src/core/values/iso-date";
+import { sha256Hex } from "../../src/core/integrity/sha256";
+import { CheckpointSession } from "../../src/interfaces/web/app/session/checkpoint-session";
 import { CheckpointsView } from "../../src/interfaces/web/features/checkpoints/checkpoints-view";
 import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/privacy";
 

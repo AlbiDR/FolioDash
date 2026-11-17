@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../fixtures/fake-google";
 import { date, interpret, januarySheet, OPENING } from "../fixtures/saved-months";
-import { createExpenseCache } from "../../src/adapters/browser/expense-cache";
-import { createLedgerCache, type KeyValueStore } from "../../src/adapters/browser/ledger-cache";
+import { createExpenseCache } from "../../src/adapters/browser/storage/expense-cache";
+import { createLedgerCache, type KeyValueStore } from "../../src/adapters/browser/storage/ledger-cache";
 import type { RestClient } from "../../src/adapters/google/rest";
 import { presentStatement } from "../../src/adapters/fideuram/fideuram-presentation";
-import { ZERO_CENTS } from "../../src/core/money";
-import type { SignInResult } from "../../src/applications/session-model";
-import { Session } from "../../src/interfaces/web/app/session";
+import { ZERO_CENTS } from "../../src/core/values/money";
+import type { SignInResult } from "../../src/applications/session/session-model";
+import { Session } from "../../src/interfaces/web/app/session/session";
 
 const EXPENSE_INSPECT = encodeURIComponent("sheets(properties(sheetId,title),developerMetadata)");
 

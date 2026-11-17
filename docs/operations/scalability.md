@@ -4,7 +4,7 @@ Recorded 2026-11-04. Architecture authority: [CleanStack](../architecture/cleans
 
 ## Reproduce
 
-Run `npm ci --ignore-scripts`, then `npm run benchmark:history`. The command bundles the benchmark with the existing esbuild dependency into ignored `dist/benchmarks/history.mjs` and runs it in Node. No production dependency, cloud resource, credential, network access or private data is required. The benchmark exits unsuccessfully if a measured operation throws or a stored ledger fails validation. Timing values are reported, not used as flaky CI pass/fail thresholds.
+Run `npm ci --ignore-scripts`, then `npm run audit:history`. The command bundles the benchmark with the existing esbuild dependency into ignored `dist/benchmarks/history.mjs` and runs it in Node. No production dependency, cloud resource, credential, network access or private data is required. The benchmark exits unsuccessfully if a measured operation throws or a stored ledger fails validation. Timing values are reported, not used as flaky CI pass/fail thresholds.
 
 The output names the Node version, operating system, architecture, CPU and synthetic dimensions. Each operation gets one untimed warm-up followed by seven timed samples; output reports median, nearest-rank p95 and worst. With seven samples, p95 is the worst sample. No forced garbage collection is used. Timing includes ordinary runtime and allocation variability. These are warm operation measurements, not cold starts or input-to-pixel latency. Operations are measured separately; adding medians does not establish an end-to-end percentile.
 

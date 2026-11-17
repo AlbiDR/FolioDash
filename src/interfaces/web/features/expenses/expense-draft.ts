@@ -1,5 +1,5 @@
-import { formatEuro, parseItalianAmount } from "../../../../core/money";
-import type { ExpenseAmounts } from "../../../../core/work-expenses";
+import { formatEuro, parseItalianAmount } from "../../../../core/values/money";
+import type { ExpenseAmounts } from "../../../../core/expenses/work-expenses";
 
 export type ExpenseDraft = readonly [string, string, string, string, string];
 export const EMPTY_EXPENSE_DRAFT: ExpenseDraft = ["", "", "", "", ""];

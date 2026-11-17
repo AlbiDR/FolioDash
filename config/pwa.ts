@@ -32,7 +32,7 @@ export function serviceWorkerPlugin(): Plugin {
       const hash = createHash("sha256");
       for (const file of files) hash.update(file).update(readFileSync(join(outDir, file)));
       const result = await build({
-        entryPoints: [fileURLToPath(new URL("../src/interfaces/web/serviceWorker/sw.ts", import.meta.url))],
+        entryPoints: [fileURLToPath(new URL("../src/interfaces/web/service-worker/sw.ts", import.meta.url))],
         bundle: true,
         write: false,
         format: "iife",

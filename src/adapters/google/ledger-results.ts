@@ -1,5 +1,5 @@
-import type { CallFailure } from "../../applications/session-model";
-import type { LedgerState } from "../../core/ledger";
+import type { CallFailure } from "../../applications/session/session-model";
+import type { LedgerState } from "../../core/portfolio/ledger";
 
 /** What reading the ledger can turn up. Shared by every way of reaching the person's spreadsheet. */
 export type RemoteRead =

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { twoSavedMonths } from "../../../tests/fixtures/saved-months";
-import { canonicalJson } from "../../core/canonical-json";
-import { sha256Hex } from "../../core/sha256";
+import { canonicalJson } from "../../core/integrity/canonical-json";
+import { sha256Hex } from "../../core/integrity/sha256";
 
 const receipt = (revision: string) => ({ commandId: revision, revision, requestHash: "synthetic" });
 

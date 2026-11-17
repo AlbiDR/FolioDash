@@ -1,9 +1,9 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import type { Checkpoint, CheckpointCommand } from "../../../../core/checkpoints";
-import { MAX_NOTE_LENGTH, isSafeNote } from "../../../../core/checkpoints";
-import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/iso-date";
-import { type EuroCents, parseItalianAmount } from "../../../../core/money";
+import type { Checkpoint, CheckpointCommand } from "../../../../core/portfolio/checkpoints";
+import { MAX_NOTE_LENGTH, isSafeNote } from "../../../../core/portfolio/checkpoints";
+import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/values/iso-date";
+import { type EuroCents, parseItalianAmount } from "../../../../core/values/money";
 import { Amount, usePrivacy } from "../../presentation/privacy/privacy";
 import "./checkpoints.css";
 

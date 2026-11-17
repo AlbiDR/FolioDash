@@ -1,6 +1,6 @@
 import { type ComponentChildren, type JSX, createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
-import type { EuroCents } from "../../../../core/money";
+import type { EuroCents } from "../../../../core/values/money";
 import { Icon } from "../../shared/ui/icons";
 import { type PrivacyStorage, amountText, readPrivacyChoice, writePrivacyChoice } from "./privacy-choice";
 

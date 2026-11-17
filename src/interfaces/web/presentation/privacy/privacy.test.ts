@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EuroCents } from "../../../../core/money";
+import type { EuroCents } from "../../../../core/values/money";
 import {
   MASK,
   type PrivacyStorage,

@@ -12,7 +12,7 @@ Each interaction must be inspected through rest, hover where supported, keyboard
 
 ## Discovery and maintenance
 
-- `npm run inventory:interactions` regenerates the source table after inspecting the changes. IDs use the source file and control-template signature, with duplicate occurrences distinguished. Line moves keep identity; changed labels, attributes or handlers change identity.
+- `npm run docs:interactions` regenerates the source table after inspecting the changes. IDs use the source file and control-template signature, with duplicate occurrences distinguished. Line moves keep identity; changed labels, attributes or handlers change identity.
 - `npm run verify:interactions`, included in `npm run verify`, fails for a stale table or a custom click target without semantic control ownership. It includes conditional controls, repeated templates, SVG marks, static HTML links and scroll targets. It excludes delegated event containers and headings with only programmatic focus.
 - `npm run audit:interactions` exercises the production synthetic demo in a fresh local-only Chrome session and writes a rendered-control report under ignored `dist/interaction-audit/`. It fails on an unclassified rendered control or missing animated feedback, then checks the period selector through its resulting chart update. Browser reports contain only invented demo labels, never real account data.
 - Review notes in the last source-table column are retained for unchanged IDs. New or changed controls start with STATES OPEN; generation never upgrades them to verified.
@@ -211,19 +211,19 @@ One row is a source template; a fund-link template can render many controls. All
 | c911260ac6f7-1 | [backfill-entry.tsx:605](../../src/interfaces/web/features/import/backfill-entry.tsx#L605) | button / action | Start a new review | SOURCE CLASSIFIED; STATES OPEN |
 | b74d1ed1e85a-1 | [backfill-entry.tsx:633](../../src/interfaces/web/features/import/backfill-entry.tsx#L633) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | ec8c4bc8e227-1 | [backfill-entry.tsx:642](../../src/interfaces/web/features/import/backfill-entry.tsx#L642) | button / action | Restore the history from before this change | SOURCE CLASSIFIED; STATES OPEN |
-| 36f447d7f20a-1 | [cash-questions.tsx:142](../../src/interfaces/web/features/import/cash-questions.tsx#L142) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
-| 08e3d6be1e14-1 | [cash-questions.tsx:415](../../src/interfaces/web/features/import/cash-questions.tsx#L415) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f1e88e00c898-1 | [cash-questions.tsx:426](../../src/interfaces/web/features/import/cash-questions.tsx#L426) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 536b48f299ad-1 | [cash-questions.tsx:507](../../src/interfaces/web/features/import/cash-questions.tsx#L507) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
-| 95aa55ccda98-1 | [cash-questions.tsx:522](../../src/interfaces/web/features/import/cash-questions.tsx#L522) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| ae0a63bf37f5-1 | [cash-questions.tsx:533](../../src/interfaces/web/features/import/cash-questions.tsx#L533) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 27a2c31d4f06-1 | [cash-questions.tsx:560](../../src/interfaces/web/features/import/cash-questions.tsx#L560) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e2d42d10656a-1 | [cash-questions.tsx:571](../../src/interfaces/web/features/import/cash-questions.tsx#L571) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 92c76e94f213-1 | [cash-questions.tsx:596](../../src/interfaces/web/features/import/cash-questions.tsx#L596) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| d6244abfcc93-1 | [cash-questions.tsx:628](../../src/interfaces/web/features/import/cash-questions.tsx#L628) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
-| 4183aa3b87c5-1 | [cash-questions.tsx:713](../../src/interfaces/web/features/import/cash-questions.tsx#L713) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 3a71ef179eb4-1 | [cash-questions.tsx:773](../../src/interfaces/web/features/import/cash-questions.tsx#L773) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
-| 3a71ef179eb4-2 | [cash-questions.tsx:784](../../src/interfaces/web/features/import/cash-questions.tsx#L784) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| 36f447d7f20a-1 | [cash-questions.tsx:147](../../src/interfaces/web/features/import/cash-questions.tsx#L147) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
+| 08e3d6be1e14-1 | [cash-questions.tsx:420](../../src/interfaces/web/features/import/cash-questions.tsx#L420) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f1e88e00c898-1 | [cash-questions.tsx:431](../../src/interfaces/web/features/import/cash-questions.tsx#L431) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 536b48f299ad-1 | [cash-questions.tsx:512](../../src/interfaces/web/features/import/cash-questions.tsx#L512) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
+| 95aa55ccda98-1 | [cash-questions.tsx:527](../../src/interfaces/web/features/import/cash-questions.tsx#L527) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| ae0a63bf37f5-1 | [cash-questions.tsx:538](../../src/interfaces/web/features/import/cash-questions.tsx#L538) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 27a2c31d4f06-1 | [cash-questions.tsx:565](../../src/interfaces/web/features/import/cash-questions.tsx#L565) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e2d42d10656a-1 | [cash-questions.tsx:576](../../src/interfaces/web/features/import/cash-questions.tsx#L576) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 92c76e94f213-1 | [cash-questions.tsx:601](../../src/interfaces/web/features/import/cash-questions.tsx#L601) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d6244abfcc93-1 | [cash-questions.tsx:633](../../src/interfaces/web/features/import/cash-questions.tsx#L633) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
+| 4183aa3b87c5-1 | [cash-questions.tsx:718](../../src/interfaces/web/features/import/cash-questions.tsx#L718) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 3a71ef179eb4-1 | [cash-questions.tsx:778](../../src/interfaces/web/features/import/cash-questions.tsx#L778) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| 3a71ef179eb4-2 | [cash-questions.tsx:789](../../src/interfaces/web/features/import/cash-questions.tsx#L789) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
 | e15754094f00-1 | [excel-history-view.tsx:247](../../src/interfaces/web/features/import/excel-history-view.tsx#L247) | button / action | Exclude statements from months already recorded or earlier | SOURCE CLASSIFIED; STATES OPEN |
 | 7ee8a3898195-1 | [excel-history-view.tsx:270](../../src/interfaces/web/features/import/excel-history-view.tsx#L270) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 073125319048-1 | [excel-history-view.tsx:281](../../src/interfaces/web/features/import/excel-history-view.tsx#L281) | input / field | {'batch-date-${entry.id}'} | SOURCE CLASSIFIED; STATES OPEN |

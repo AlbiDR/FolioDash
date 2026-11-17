@@ -1,4 +1,4 @@
-import type { RawCell, RawSheet } from "../../src/core/raw-sheet";
+import type { RawCell, RawSheet } from "../../src/core/statements/raw-sheet";
 
 /** Every value here is invented. Nothing comes from a real statement. */
 

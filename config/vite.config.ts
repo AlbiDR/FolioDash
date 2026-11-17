@@ -5,7 +5,7 @@ import { defineConfig } from "vite";
 import { serviceWorkerPlugin } from "./pwa.ts";
 
 /** Which commit this build was made from, with "-dirty" if it holds changes that are not committed. A build with no git around says so.
- * FOLIODASH_BUILD_STAMP pins the whole label, so two builds can be compared byte for byte (see scripts/snapshot-oracle.ts). */
+ * FOLIODASH_BUILD_STAMP pins the whole label, so two builds can be compared byte for byte (see scripts/verify/oracle.ts). */
 function buildStamp(): string {
   const pinned = process.env["FOLIODASH_BUILD_STAMP"];
   if (pinned !== undefined && pinned !== "") return pinned;

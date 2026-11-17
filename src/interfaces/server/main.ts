@@ -4,7 +4,7 @@
 
 import { RowLedgerStore } from "../../adapters/ledger/row-ledger-store";
 import { type SpreadsheetLike, SheetsRowSheet } from "../../adapters/appsscript/sheets-row-sheet";
-import type { ServiceEnvironment } from "../../applications/ledger-service";
+import type { ServiceEnvironment } from "../../applications/ledger/ledger-service";
 import { createService } from "./service";
 
 declare const SpreadsheetApp: { openById(id: string): SpreadsheetLike; flush(): void };

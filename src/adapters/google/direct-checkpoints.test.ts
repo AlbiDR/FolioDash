@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../tests/fixtures/fake-google";
-import { canonicalJson } from "../../core/canonical-json";
-import { ADD_ADMISSION_LIMIT } from "../../core/checkpoints";
-import { type CheckpointCommand } from "../../core/checkpoints";
-import { type IsoDate, parseIsoDate } from "../../core/iso-date";
-import { toEuroCents } from "../../core/money";
-import { sha256Hex } from "../../core/sha256";
+import { canonicalJson } from "../../core/integrity/canonical-json";
+import { ADD_ADMISSION_LIMIT } from "../../core/portfolio/checkpoints";
+import { type CheckpointCommand } from "../../core/portfolio/checkpoints";
+import { type IsoDate, parseIsoDate } from "../../core/values/iso-date";
+import { toEuroCents } from "../../core/values/money";
+import { sha256Hex } from "../../core/integrity/sha256";
 import { createWorkbook } from "./google-workbook";
 import {
   appendCheckpoint,

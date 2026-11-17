@@ -1,7 +1,7 @@
-import { parseIsin } from "../../../../core/isin";
-import { isSafeFundName } from "../../../../core/ledger";
-import { addCents, parseItalianAmount, ZERO_CENTS } from "../../../../core/money";
-import type { ReviewStatement } from "../../../../applications/import-model";
+import { parseIsin } from "../../../../core/values/isin";
+import { isSafeFundName } from "../../../../core/portfolio/ledger";
+import { addCents, parseItalianAmount, ZERO_CENTS } from "../../../../core/values/money";
+import type { ReviewStatement } from "../../../../applications/import/import-model";
 
 export interface ManualRow {
   readonly name: string;

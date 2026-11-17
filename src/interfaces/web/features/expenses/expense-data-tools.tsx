@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { ExpenseSaveOutcome } from "../../../../applications/expense-model";
+import type { ExpenseSaveOutcome } from "../../../../applications/session/expense-model";
 
 export function ExpenseDataTools(props: {
   readonly days: number;

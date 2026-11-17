@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discoverInteractions, inventoryTable } from "../../scripts/interaction-inventory";
+import { discoverInteractions, inventoryTable } from "../../scripts/verify/interaction-inventory";
 
 describe("interaction discovery", () => {
   it("finds conditional/repeated native controls, SVG marks and inspection regions", () => {

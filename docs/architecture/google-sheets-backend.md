@@ -153,7 +153,7 @@ Keep data writes batched and formatting out of the service's hot path. No repeat
 
 ### 7.1 Implemented against an in-memory sheet
 
-The protocol's logic exists in `src/applications/ledger-service.ts` (use cases: read the ledger, commit a statement, read a command outcome) and `src/adapters/ledger/row-ledger-store.ts` (the row format), behind a minimal `RowSheet` port. It is exercised with an in-memory sheet that can be made to fail, so the failure paths run in CI. This is **not** a test of Google Sheets or Apps Script.
+The protocol's logic exists in `src/applications/ledger/ledger-service.ts` (use cases: read the ledger, commit a statement, read a command outcome) and `src/adapters/ledger/row-ledger-store.ts` (the row format), behind a minimal `RowSheet` port. It is exercised with an in-memory sheet that can be made to fail, so the failure paths run in CI. This is **not** a test of Google Sheets or Apps Script.
 
 Row format version 1, append-only, every field plain text so a sheet cannot retype it:
 

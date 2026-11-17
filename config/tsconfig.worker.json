@@ -4,6 +4,6 @@
     "lib": ["ES2022", "WebWorker"],
     "types": []
   },
-  "include": ["../src/interfaces/web/serviceWorker/**/*.ts"],
+  "include": ["../src/interfaces/web/service-worker/**/*.ts"],
   "exclude": []
 }

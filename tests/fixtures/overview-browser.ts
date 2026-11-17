@@ -1,9 +1,9 @@
 // Local browser harness: the Portfolio shown from invented data as if it were a person's own recorded statements.
 import { h, render } from "preact";
 import { useState } from "preact/hooks";
-import { parseIsoDate, type IsoDate } from "../../src/core/iso-date";
-import { demoLedger } from "../../src/interfaces/web/app/demo-portfolio";
-import { overviewFromLedger } from "../../src/interfaces/web/app/overview-from-ledger";
+import { parseIsoDate, type IsoDate } from "../../src/core/values/iso-date";
+import { demoLedger } from "../../src/interfaces/web/app/demo/demo-portfolio";
+import { overviewFromLedger } from "../../src/interfaces/web/app/session/overview-from-ledger";
 import { OverviewView } from "../../src/interfaces/web/features/overview/overview-view";
 import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/privacy";
 

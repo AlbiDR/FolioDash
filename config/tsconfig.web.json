@@ -7,5 +7,5 @@
     "jsxImportSource": "preact"
   },
   "include": ["../src/interfaces/web/**/*.ts", "../src/interfaces/web/**/*.tsx", "../src/adapters/browser/**/*.ts"],
-  "exclude": ["../src/interfaces/web/serviceWorker/sw.ts"]
+  "exclude": ["../src/interfaces/web/service-worker/sw.ts"]
 }

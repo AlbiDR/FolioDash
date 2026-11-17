@@ -1,4 +1,4 @@
-import { parseIsin } from "../../../core/isin";
+import { parseIsin } from "../../../core/values/isin";
 
 export type Route =
   | { readonly name: "overview" }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decimalToString } from "../../core/decimal";
+import { decimalToString } from "../../core/values/decimal";
 import {
   COL,
   FORMULA,
@@ -14,7 +14,7 @@ import {
   withoutRow,
 } from "../../../tests/fixtures/synthetic-fideuram-sheet";
 import { interpretFideuramSheet } from "./fideuram-layout";
-import type { RawSheet } from "../../core/raw-sheet";
+import type { RawSheet } from "../../core/statements/raw-sheet";
 
 function interpretOk(sheet: RawSheet) {
   const result = interpretFideuramSheet(sheet);
