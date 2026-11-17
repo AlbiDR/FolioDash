@@ -19,21 +19,28 @@ function chunk(type: string, data: Buffer): Buffer {
   return result;
 }
 
-function png(width: number, height: number, alpha?: number): Buffer {
+/** A picture whose pixels are transparent except for an opaque box, given as shares of its width and height. */
+function png(width: number, height: number, box?: readonly [number, number, number, number]): Buffer {
   const header = Buffer.alloc(13);
   header.writeUInt32BE(width);
   header.writeUInt32BE(height, 4);
   header[8] = 8;
-  header[9] = alpha === undefined ? 2 : 6;
-  const rows = Buffer.alloc(height * (width * (alpha === undefined ? 3 : 4) + 1));
-  // Every pixel gets this alpha, so a value of 255 is an opaque picture.
-  if (alpha !== undefined) for (let row = 0; row < height; row++) for (let pixel = 0; pixel < width; pixel++) rows[row * (width * 4 + 1) + 1 + pixel * 4 + 3] = alpha;
+  header[9] = box === undefined ? 2 : 6;
+  const stride = width * (box === undefined ? 3 : 4) + 1;
+  const rows = Buffer.alloc(height * stride);
+  if (box !== undefined) {
+    for (let row = Math.floor(box[1] * height); row < Math.floor(box[3] * height); row++) {
+      for (let pixel = Math.floor(box[0] * width); pixel < Math.floor(box[2] * width); pixel++) rows[row * stride + 1 + pixel * 4 + 3] = 255;
+    }
+  }
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", deflateSync(rows)), chunk("IEND", Buffer.alloc(0))]);
 }
 
+const FRAMED = [0.03, 0.04, 0.97, 0.96] as const;
+
 const desktop = png(2880, 1200);
-const mobile = png(780, 1688, 0);
-const clear = png(2480, 3600, 0);
+const mobile = png(780, 1688, [0.02, 0, 0.98, 1]);
+const clear = png(2480, 3600, FRAMED);
 
 function fixture(): { app: string; screenshots: string; output: string } {
   const root = mkdtempSync(join(tmpdir(), "foliodash-pages-test-"));
@@ -120,9 +127,19 @@ void describe("checked Pages composition", () => {
 
   void it("rejects an image that is drawn on an opaque page background", () => {
     const { app, screenshots, output } = fixture();
-    writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, 255));
+    writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, [0, 0, 1, 1]));
     assert.throws(() => { writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION); }, /without a page background/u);
     assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /without a page background/u);
+  });
+
+  for (const [problem, box, pattern] of [
+    ["content cut off at an edge", [0.03, 0.04, 0.97, 1], /touches the bottom edge/u],
+    ["a crop that is far too loose", [0.2, 0.2, 0.8, 0.8], /cropped too loosely/u],
+    ["a picture that fills only one side", [0.03, 0.04, 0.55, 0.96], /lopsided/u],
+  ] as const) void it(`rejects ${problem}`, () => {
+    const { app, screenshots } = fixture();
+    writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, box));
+    assert.throws(() => { writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION); }, pattern);
   });
 
   void it("rejects receipts for another revision or carrying extra fields", () => {

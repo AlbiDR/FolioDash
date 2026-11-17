@@ -12,13 +12,47 @@ const RECEIPT = "screenshots.json";
 const HEX = /^[a-f0-9]{64}$/u;
 
 const MIN_CLEAR_SHARE = 0.02;
+const SOLID_ALPHA = 128;
+const BAND = 0.12;
 
-/** Share of fully transparent pixels in 8-bit RGBA rows, after undoing the PNG row filters. */
-function clearShare(rows: Buffer, width: number, height: number): number {
+export interface Layout {
+  /** Share of fully transparent pixels. */
+  readonly clear: number;
+  /** Empty margin on each side, as a share of the image, around everything that is at least half opaque. */
+  readonly margin: { readonly left: number; readonly top: number; readonly right: number; readonly bottom: number };
+  /** Share of the outer left and right bands that is painted. */
+  readonly bands: { readonly left: number; readonly right: number };
+}
+
+const MIN_MARGIN = 0.01;
+const MAX_MARGIN = 0.12;
+const MIN_BALANCE = 0.4;
+
+/** What is wrong with the framing of a desktop picture, in words; empty when it is framed well. A phone shot is a whole screen, so it is exempt. */
+export function framingProblems(layout: Layout): string[] {
+  const problems: string[] = [];
+  for (const [side, margin] of Object.entries(layout.margin)) {
+    if (margin < MIN_MARGIN) problems.push(`content touches the ${side} edge, so something is cut off`);
+    else if (margin > MAX_MARGIN) problems.push(`the ${side} margin is ${String(Math.round(margin * 100))}% of the picture, so it is cropped too loosely`);
+  }
+  const wider = Math.max(layout.bands.left, layout.bands.right);
+  if (wider > 0 && Math.min(layout.bands.left, layout.bands.right) / wider < MIN_BALANCE) problems.push("one side is much emptier than the other, so it looks lopsided");
+  return problems;
+}
+
+/** Measures 8-bit RGBA rows after undoing the PNG row filters. */
+export function layoutOf(rows: Buffer, width: number, height: number): Layout {
   const stride = width * 4;
+  const band = Math.max(1, Math.floor(width * BAND));
   let previous = new Uint8Array(stride);
   let current = new Uint8Array(stride);
   let clear = 0;
+  let leftBand = 0;
+  let rightBand = 0;
+  let minX = width;
+  let maxX = -1;
+  let minY = height;
+  let maxY = -1;
   for (let row = 0; row < height; row++) {
     const start = row * (stride + 1);
     const filter = rows[start] ?? 0;
@@ -40,11 +74,26 @@ function clearShare(rows: Buffer, width: number, height: number): number {
       }
       const value = (raw + predictor) & 255;
       current[index] = value;
-      if (index % 4 === 3 && value === 0) clear++;
+      if (index % 4 !== 3) continue;
+      const x = (index - 3) / 4;
+      if (value === 0) clear++;
+      if (value >= SOLID_ALPHA) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (row < minY) minY = row;
+        if (row > maxY) maxY = row;
+        if (x < band) leftBand++;
+        else if (x >= width - band) rightBand++;
+      }
     }
     [previous, current] = [current, previous];
   }
-  return clear / (width * height);
+  const painted = maxX >= 0;
+  return {
+    clear: clear / (width * height),
+    margin: painted ? { left: minX / width, top: minY / height, right: (width - 1 - maxX) / width, bottom: (height - 1 - maxY) / height } : { left: 1, top: 1, right: 1, bottom: 1 },
+    bands: { left: leftBand / (band * height), right: rightBand / (band * height) },
+  };
 }
 
 export function sha256(bytes: Buffer): string {
@@ -107,7 +156,10 @@ function images(root: string): { name: string; sha256: string; width: number; he
     const pixels = content.subarray(bytes.length - compressedSize);
     if (pixels.length !== height * rowSize) throw new Error("Incomplete screenshot pixel rows.");
     // Every README image is drawn without a page background, so a real share of its pixels is fully transparent.
-    if (channels !== 4 || clearShare(pixels, width, height) < MIN_CLEAR_SHARE) throw new Error(`${name} must be drawn without a page background.`);
+    const layout = channels === 4 ? layoutOf(pixels, width, height) : undefined;
+    if (layout === undefined || layout.clear < MIN_CLEAR_SHARE) throw new Error(`${name} must be drawn without a page background.`);
+    const framing = MOBILE_IMAGES.has(name) ? [] : framingProblems(layout);
+    if (framing.length > 0) throw new Error(`${name} is framed badly: ${framing.join("; ")}. Adjust its crop in scripts/readmeViews.ts.`);
     for (let row = 0; row < height; row++) if ((pixels[row * rowSize] ?? 255) > 4) throw new Error("Invalid screenshot row filter.");
     return { name, sha256: sha256(bytes), width, height };
   });
