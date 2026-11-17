@@ -1,6 +1,8 @@
 # Dependency maintenance
 
-Run `npm ci --ignore-scripts`, `npm run audit:dependencies` and `npm run verify` after a dependency change. The audit includes development dependencies and fails on moderate or greater severity. Do not dismiss an alert or lower the threshold as a substitute for a fix.
+Run `npm ci --ignore-scripts`, `npm run audit:dependencies` and `npm run verify` after a dependency change. The audit covers production dependencies (`--omit=dev`) and fails on moderate or greater severity. Do not dismiss an alert or lower the threshold as a substitute for a fix.
+
+Development tooling is excluded since 2026-11-17 on the owner's decision: GHSA-fc5q-39xc-vjpf (picomatch ReDoS, high, no patched version; 4.0.7 is the latest release) is reachable only through vite, vitest and typescript-eslint at build and test time and is not shipped. Run `npm audit --audit-level=moderate` without the flag to see the full tree and restore the full gate once picomatch publishes a fix.
 
 ## Current security override
 
