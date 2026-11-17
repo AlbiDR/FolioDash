@@ -2,14 +2,40 @@
 
 Each rule has one authoritative home. Other documents link to that home rather than maintain competing definitions.
 
+## Architecture
+
+What the system is, its boundaries and its invariants.
+
 | Document | Owns | Status |
 |---|---|---|
 | [CleanStack Architecture](architecture/cleanstack.md) | Product boundaries, dependency law, financial/data invariants, safety and governance | Draft for owner review |
 | [Naming and structure contract](architecture/naming-contract.md) | File, folder, command and tag names, size limits, the shared vocabulary and the ratchet that enforces them | Implemented as a ratchet 2026-11-17; symbol-name lint planned |
+| [Repository map](architecture/repository-map.md) | Generated folder tree and layer dependency diagram, taken from the real files and imports | Generated; `npm run verify:docs` fails when it is stale |
 | [Google-backed architecture](architecture/google-sheets-backend.md) | Selected GitHub/Sheets/Apps Script direction, service/data boundaries, credential correction and runtime proof gates | Direction selected; protocol proposed and unverified |
 | [Work expenses tracker preparation](architecture/work-expenses-tracker.md) | Original parity scope, confirmed day semantics, workbook compatibility proposal and setup/view safeguards | Followed by authorised implementation; live expense proof pending |
-| [Work expenses implementation](operations/work-expenses.md) | Current tracker journey, reporting definitions, checked Google records, complete correction backup/recovery and evidence | Implemented locally; provider and physical-device acceptance pending |
 | [Fideuram XLSX layout v1](architecture/fideuram-xlsx-layout.md) | Observed bank export layout, cell formats, reconciliation relations and proposed bank-adapter rules | Observed layout reference; parser and synthetic fixtures implemented, live acceptance separate |
+
+## Design
+
+How the interface looks, moves and is organised.
+
+| Document | Owns | Status |
+|---|---|---|
+| [Structural UI and UX redesign](design/structural-ui-redesign.md) | Measured baseline, container policy, screen order, shell and per-destination structure, supersession scope and verification record for the 2026-11-08 redesign | Implemented 2026-11-08; emulated-browser results recorded in the document; physical-device, deployed, other-engine and screen-reader checks not done |
+| [UI system](design/ui-system.md) | Type roles, shape and button rules, shared parts (key and value list, disclosure group, notices, tables, fields), container and hover policy, per-screen changes, measured evidence and what is not verified | Implemented 2026-11-08 and checked in an emulated browser; physical-device, deployed-origin and screen-reader checks open |
+| [Astryx reference](design/astryx-reference.md) | Recurring external design references, adaptation rules and pattern register | Owner-directed reference; FolioDash's own contracts remain authoritative |
+| [Mobile dashboard layout](design/mobile-dashboard.md) | Mobile card hierarchy, disclosure, readable metrics and responsive verification | Partly superseded 2026-11-08 by the structural redesign; reflow, type and touch rules remain; historical results retained |
+| [Dashboard coherence](design/dashboard-coherence.md) | Product narrative, progressive bento hierarchy, consistent supporting workflows and detail refinement | Partly superseded 2026-11-08 by the structural redesign; product narrative and later financial/chart amendments remain; historical results retained |
+| [Work expenses experience plan](design/work-expenses-experience.md) | Consolidated product narrative, navigation, bento composition, daily journeys, motion and implementation sequence; includes a static layout study | Partly superseded 2026-11-08 by the structural redesign for layout and order; domain, privacy and recovery rules remain; design rationale retained |
+| [Interaction coverage](design/interaction-coverage.md) | Complete source control inventory, shared feedback contract, rendered discovery and state-by-state coverage gaps | Source audit and shared control implementation; browser evidence tracked in the document |
+
+## Operations
+
+How the project is run, verified, configured and released.
+
+| Document | Owns | Status |
+|---|---|---|
+| [Work expenses implementation](operations/work-expenses.md) | Current tracker journey, reporting definitions, checked Google records, complete correction backup/recovery and evidence | Implemented locally; provider and physical-device acceptance pending |
 | [Repository configuration](operations/repository-configuration.md) | GitHub variables, secrets, environments and the historical public-release gate | Existing Pages/main restriction inspected 2026-11-05; Apps Script environment has no protection; required checks/reviews remain absent |
 | [GitHub Actions](operations/github-actions.md) | Workflow dependency graph, checked artifacts, cancellation, deployment guards and maintenance | Single verification pipeline and guarded deployment implemented; evidence and remaining gates recorded with the change |
 | [Checkpoints](operations/checkpoints.md) | Value-only checkpoints: what they are, where they are stored, safe saving, recovery exclusion and evidence | Implemented locally with synthetic data; real Google and window behaviour not verified |
@@ -19,13 +45,6 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | [Installable app](operations/pwa.md) | Manifest, icons, service worker, offline behaviour and what is and is not verified | Built and checked in desktop Chrome (2026-11-02); not yet checked on Android or iOS |
 | [Starting from Excel history](operations/importing-history.md) | Multiple bank exports, one-statement-per-sheet workbooks, date/cash review, confirmation and interrupted-save recovery | Implemented and checked locally with synthetic files; live Google and physical-device acceptance pending |
 | [Synthetic onboarding acceptance](operations/onboarding-acceptance.md) | Generated device-test files, an isolated local Google-test build, expected financial results and live/emulator evidence | Synthetic Google create/save/read-back/replay passed on Android emulator; physical-device and deployed-origin acceptance pending |
-| [Structural UI and UX redesign](design/structural-ui-redesign.md) | Measured baseline, container policy, screen order, shell and per-destination structure, supersession scope and verification record for the 2026-11-08 redesign | Implemented 2026-11-08; emulated-browser results recorded in the document; physical-device, deployed, other-engine and screen-reader checks not done |
-| [UI system](design/ui-system.md) | Type roles, shape and button rules, shared parts (key and value list, disclosure group, notices, tables, fields), container and hover policy, per-screen changes, measured evidence and what is not verified | Implemented 2026-11-08 and checked in an emulated browser; physical-device, deployed-origin and screen-reader checks open |
-| [Astryx reference](design/astryx-reference.md) | Recurring external design references, adaptation rules and pattern register | Owner-directed reference; FolioDash's own contracts remain authoritative |
-| [Mobile dashboard layout](design/mobile-dashboard.md) | Mobile card hierarchy, disclosure, readable metrics and responsive verification | Partly superseded 2026-11-08 by the structural redesign; reflow, type and touch rules remain; historical results retained |
-| [Dashboard coherence](design/dashboard-coherence.md) | Product narrative, progressive bento hierarchy, consistent supporting workflows and detail refinement | Partly superseded 2026-11-08 by the structural redesign; product narrative and later financial/chart amendments remain; historical results retained |
-| [Work expenses experience plan](design/work-expenses-experience.md) | Consolidated product narrative, navigation, bento composition, daily journeys, motion and implementation sequence; includes a static layout study | Partly superseded 2026-11-08 by the structural redesign for layout and order; domain, privacy and recovery rules remain; design rationale retained |
-| [Interaction coverage](design/interaction-coverage.md) | Complete source control inventory, shared feedback contract, rendered discovery and state-by-state coverage gaps | Source audit and shared control implementation; browser evidence tracked in the document |
 | [Microanimations and interactions](operations/interactions.md) | Original 92 interaction/motion touchpoints, shared surface feedback, allocation inspection and reduced-motion verification | Implemented locally; physical Android and screen-reader verification pending |
 | [Lighthouse verification](operations/lighthouse.md) | Reproducible audit settings, startup loading changes and measured evidence | Full production audits reached 100 in all four categories on mobile and desktop; mobile Performance varied 98-100 across runs |
 | [Repository policy](operations/repository-policy.md) | Executable root/import rules, current content ownership, commands and enforcement limits | Implemented with deliberate violation tests; live acceptance separate |
