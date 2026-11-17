@@ -1,17 +1,9 @@
 import ts from "typescript";
 
-// Every entry here is a tool-discovery file: the named tool only looks for it at the repository root.
-const ROOT_FILES = new Set([
-  "README.md",
-  "AGENTS.md",
-  ".editorconfig",
-  ".gitattributes",
-  ".gitignore",
-  ".nvmrc",
-  "package.json",
-  "package-lock.json",
-]);
-const ROOT_DIRECTORIES = new Set([".github", ".vscode", "config", "docs", "scripts", "src", "tests"]);
+// The root is the first thing a visitor sees, so this list stays minimal: a new entry needs a documented reason
+// that no tool-supported explicit path in config/ can meet (CleanStack section 4.3).
+const ROOT_FILES = new Set(["README.md", "AGENTS.md", ".gitignore", "package.json", "package-lock.json"]);
+const ROOT_DIRECTORIES = new Set([".github", "config", "docs", "scripts", "src", "tests"]);
 const GENERATED_OR_PRIVATE =
   /(?:^|\/)(?:node_modules|dist|build|coverage|private|local-data|backups|imports|\.Monthly Exports|\.cache|test-results|playwright-report)(?:\/|$)|(?:^|\/)\.env(?:\.|$)|\.(?:xlsx?|xlsm|csv|pdf|sqlite3?|db|log|zip|pem|key)$|(?:^|\/)(?:\.DS_Store|\.clasp(?:rc)?\.json)$/i;
 
