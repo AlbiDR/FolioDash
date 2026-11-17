@@ -10,7 +10,7 @@ Development tooling is excluded since 2026-11-17 on the owner's decision: GHSA-f
 
 The override addresses [GHSA-g3hv-75wg-m249 / CVE-2026-118764](https://github.com/advisories/GHSA-g3hv-75wg-m249), tracked by [Dependabot alert 1](https://github.com/AlbiDR/FolioDash/security/dependabot/1). Crafted glob patterns can amplify preprocessing work and consume excessive CPU/memory. This dependency is development tooling, not part of the browser's bank statement reader.
 
-The advisory identifies 11.0.1 as the first patched release. It supports the project's Node 22/24 CI versions. The override is scoped to version 10 requests so unrelated future major versions are not silently replaced. Remove it when the parent packages naturally resolve to patched versions, after a clean install, audit and project checks pass.
+The advisory identifies 11.0.1 as the first patched release. It supports the project's Node 22 CI version. The override is scoped to version 10 requests so unrelated future major versions are not silently replaced. Remove it when the parent packages naturally resolve to patched versions, after a clean install, audit and project checks pass.
 
 Verification after this major-version override:
 
