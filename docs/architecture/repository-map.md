@@ -97,8 +97,10 @@ tests/
 │   ├── google-adapters/
 │   └── session/
 ├── performance/
+├── properties/
 ├── regression/
-└── scripts/
+├── scripts/
+└── setup/
 ```
 
 ```text

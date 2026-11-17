@@ -24,3 +24,17 @@ The lockfile also synchronises its root Node requirement with the existing `pack
 ## Formatter: Prettier
 
 Added 2026-11-17 for the organization standard. Prettier 3.9.10, MIT licence, development dependency only, exact-pinned. It is pinned exactly because formatter output changes between releases, and a drifting range would make the format check flaky. Release 3.9.10 was published on 2026-10-10; the newer 3.10.0 and 3.10.1 (2026-11-11 and 2026-11-12) were passed over until they have aged. It runs only at development time through `npm run format` and `npm run format:check`, with configuration in `config/prettier.json`, and ships nothing to the browser. It is installed with `--ignore-scripts` like every other dependency. Markdown, YAML and the public asset folder are outside its scope for now.
+
+## Test layer, 2026-11-18
+
+Added for phase 7 of the organization standard. All are development dependencies, installed with `--ignore-scripts`, exact-pinned, and none ships in the application or the Apps Script bundle.
+
+| Package | Version | Licence | Published | Purpose |
+|---|---|---|---|---|
+| `@vitest/coverage-v8` | 5.0.5 | MIT | 2026-10-15 | V8 coverage for the coverage ratchet. Pinned to the installed Vitest 5.0.5 exactly: a caret range moved Vitest itself to 5.1.0 during installation, which was reverted |
+| `fast-check` | 4.10.2 | MIT | 2026-09-19 | Property-based tests for the pure kernel, with a fixed default seed |
+| `axe-core` | 4.14.0 | MPL-2.0 | 2026-10-05 | Automated accessibility rules injected into the existing rendered audit. MPL-2.0 is file-level copyleft that applies to modified axe files; it is used unmodified as a development tool and is not distributed |
+| `@stryker-mutator/core`, `@stryker-mutator/vitest-runner` | 10.1.1 | Apache-2.0 | 2026-10-23 | Mutation testing of the kernel, run on demand with `npm run audit:mutation` |
+
+Stryker brings about 200 transitive packages, the largest footprint of the four. It is kept only for the kernel mutation audit and is a candidate for removal if that audit stops finding gaps. `npm run audit:dependencies` covers production dependencies only (see above), so none of these is in its scope.
+

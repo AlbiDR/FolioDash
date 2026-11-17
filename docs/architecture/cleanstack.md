@@ -301,7 +301,7 @@ These standards bind every future change, and every future session MUST follow t
 
 ### 12.3 Adoption status of the standard
 
-The organization standard is adopted in eleven phases. Phases 1 to 6 are in place; the rest are planned and are not claimed until they land.
+The organization standard is adopted in eleven phases. Phases 1 to 7 are in place; the rest are planned and are not claimed until they land.
 
 | Phase | Result | State |
 |---|---|---|
@@ -311,7 +311,7 @@ The organization standard is adopted in eleven phases. Phases 1 to 6 are in plac
 | 4 | Kebab-case files, concept folders, scripts by purpose, script namespaces | Implemented |
 | 5 | Oversized files split; three session classes remain recorded | Implemented, with an open exception |
 | 6 | Documentation check, generated repository map, this revision, rule IDs | Implemented |
-| 7 | Coverage ratchet, component tests, property and mutation tests, rendered audits and accessibility in CI, visual baselines | Planned |
+| 7 | Coverage ratchet, property tests, accessibility audit in CI, kernel mutation floor, workflow-reference gate; component tests, visual baselines and a browser matrix decided against or deferred ([testing](../operations/testing.md)) | Implemented, with a mutation backlog |
 | 8 | Motion tokens and style lint, controls from primitives only | Planned |
 | 9 | Dependency updates, secret scanning, required checks and templates on GitHub | Planned; repository settings need the owner's approval |
 | 10 | Every report-only rule becomes blocking | Planned |
@@ -321,9 +321,10 @@ The organization standard is adopted in eleven phases. Phases 1 to 6 are in plac
 
 - **GAT-1** A capability is called supported only with evidence in its category: **kernel** (independent examples and properties for exact cents, flows versus gains, lifecycle, missing data, baselines and deterministic replay); **parsing** (synthetic exports, blanks, European separators, invalid identifiers and subtotals, duplicates, unsupported and formula files, bounded hostile XLSX); **commit** (idempotency, stale previews, two-device races, timeouts, lost acknowledgements, corrections and atomic recovery); **security and privacy** (authorisation across two accounts, forbidden upload, log and build payload checks, cache isolation, session expiry, deletion); **PWA and browser** (real rendered charts and source values, install and update, local-file import, keyboard and touch, offline status); **recovery and migration** (full export and restore, damaged backup rejection, read-only parity); **deployment** (the exact verified revision, headers and caching, private denial to anonymous and wrong-account requests, real Mac and Android journeys with synthetic data).
 - **GAT-2** Each gate reports PASS, FAIL or BLOCKED / NOT RUN, with revision, environment, method and evidence. A syntax check or a mocked chart cannot satisfy a renderer gate, and a tool never invents a measurement or reports an unavailable manual check as done.
-- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit and contract tests, the Pages assembly test, the production build, the PWA check and the Apps Script bundle check. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
-- **GAT-4** The rendered interaction audit and the seven synthetic journeys are not part of `npm run verify`. They run in the Node 22 CI job and block release assembly, and README capture runs for a release from `main`. A change to the interface runs them locally before it is pushed, including `npm run capture:readme`, and reports the result.
+- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit, property and contract tests with coverage, the coverage ratchet, the script tests, the production build, the PWA check and the Apps Script bundle check. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
+- **GAT-4** The rendered interaction audit, the seven synthetic journeys and the accessibility audit are not part of `npm run verify`. They run in the Node 22 CI job and block release assembly, and README capture runs for a release from `main`. A change to the interface runs them locally before it is pushed, including `npm run capture:readme`, and reports the result.
 - **GAT-5** Content and privacy scanning, live-Google proof, real-device proof and a restore drill are not yet gates. They remain Open and are never implied by a green `verify`.
+- **GAT-6** Mutation testing of the kernel runs on demand (`npm run audit:mutation`). Its score MUST NOT fall below the floor recorded in `config/stryker.config.json`, and surviving mutants are a ranked backlog fixed in their own commits, never inside a restructure (STD-7). See [testing](../operations/testing.md).
 
 ## 14. Forbidden paths
 
@@ -388,4 +389,5 @@ Open decisions that gate work: FD-004, FD-005, FD-009 and FD-011. Real-data migr
 | 2026-11-05 | FD-021 | Short-lived access survives a reload; the write batch claims its predecessor |
 | 2026-11-07 | FD-022 | The connection is remembered on the device and renewed on the next click; refresh tokens are not used |
 | 2026-11-17 | Organization standard, phases 1 to 6 | Formatter, byte oracle, naming and structure contract with a ratchet, kebab-case and concept folders, oversized files split, documentation check and generated map |
+| 2026-11-18 | Organization standard, phase 7 | Coverage and accessibility ratchets, property tests, kernel mutation floor, one test runner layout and a workflow-reference gate (GAT-3, GAT-4, GAT-6) |
 | 2026-11-18 | Owner request | Principles revised by the owner (PRN-1 to PRN-14); this document restructured into addressable rules with permanent IDs, brought up to the current state and given its engineering standards (section 12) |

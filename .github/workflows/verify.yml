@@ -97,6 +97,7 @@ jobs:
           npm run audit:account-outcomes
           npm run audit:overview-signals
           npm run audit:checkpoints
+          npm run audit:accessibility
 
       - name: Capture current README views
         if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')

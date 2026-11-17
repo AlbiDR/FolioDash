@@ -63,6 +63,7 @@ describe("filesystem compartments", () => {
     "tests/export.json",
     "src/adapters/Loose.ts",
     "src/core/NOTES.md",
+    "config/vite.test.ts",
   ])("rejects misplaced content %s", (file) => {
     expect(pathProblems([file]).length).toBeGreaterThan(0);
   });
