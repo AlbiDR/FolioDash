@@ -10,7 +10,7 @@ Status: **Implemented as a ratchet, 2026-11-17** (organization standard, phase 3
 | Layer imports follow the dependency law; no cycles | `npm run verify:repository` | Blocking |
 | Code is formatted by the pinned formatter | `npm run format:check` | Blocking |
 | File names, folder names, file length and folder size below | `npm run verify:structure` | Ratchet: no new violation; recorded ones tolerated |
-| Every Markdown link and heading anchor resolves, every backticked repository path exists, every document is linked from `docs/README.md`, the repository map is current | `npm run verify:docs` | Blocking |
+| Every Markdown link and heading anchor resolves, every backticked repository path exists, every document is linked from `docs/README.md`, rule IDs in the ADR are unique and contiguous and every cited ID and `CleanStack section N` exists, the repository map is current | `npm run verify:docs` | Blocking |
 | Symbol names, import order, error shape | Planned lint rules, a later phase | Not yet enforced |
 | Commit subjects, branch and tag names | Review only | Not yet enforced |
 
