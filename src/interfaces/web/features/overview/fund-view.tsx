@@ -1,16 +1,16 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
-import { availableRanges, type ChartRange, rangeStart } from "./chart-range";
+import { availableRanges, type ChartRange, rangeStart } from "./model/chart-range";
 import { RangeSelector } from "../../shared/ui/range-selector";
 import { LineChart } from "../../presentation/charts/line-chart";
 import type { ChartSeries } from "../../presentation/charts/line-chart-geometry";
 import { Amount } from "../../presentation/privacy/privacy";
-import { euroLabel, euros, monthLabel, observationLabel, utcTime } from "./chart-data";
-import type { OverviewModel } from "./overview-model";
+import { euroLabel, euros, monthLabel, observationLabel, utcTime } from "./model/chart-data";
+import type { OverviewModel } from "./model/overview-model";
 import { Percent, Pill, Signed } from "./parts";
 import { Icon } from "../../shared/ui/icons";
-import { formatDateLong, type IsoDate } from "../../../../core/iso-date";
-import type { EuroCents } from "../../../../core/money";
+import { formatDateLong, type IsoDate } from "../../../../core/values/iso-date";
+import type { EuroCents } from "../../../../core/values/money";
 
 /** Statements shown before the rest go behind a disclosure, so a long history does not push the page's end away. */
 const HISTORY_RECENT = 12;

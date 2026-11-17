@@ -1,0 +1,74 @@
+import { interpretFideuramSheet } from "../../../../adapters/fideuram/fideuram-layout";
+import { XLSX_LIMITS } from "../../../../adapters/xlsx/xlsx-error";
+import { readXlsx } from "../../../../adapters/xlsx/xlsx-reader";
+import { type IsoDate, toIsoDate } from "../../../../core/values/iso-date";
+import { statementDateCandidate } from "../../../../core/statements/statement-date";
+import { dateInSheetName } from "../../../../applications/import/excel-history";
+import type {
+  ImportFile,
+  ImportPreparer,
+  ImportReview,
+  ReviewedSheet,
+} from "../../../../applications/import/import-model";
+
+/** The user's own calendar date for an instant, using the browser's time zone. */
+export function browserLocalDate(milliseconds: number): IsoDate | null {
+  const moment = new Date(milliseconds);
+  return toIsoDate(moment.getFullYear(), moment.getMonth() + 1, moment.getDate());
+}
+
+/**
+ * The composition root's import port: reads a spreadsheet, finds the sheets that
+ * look like a bank holdings sheet, checks each one, and proposes a statement
+ * date. Pure of storage and network, so it is testable with synthetic files.
+ */
+export function createImportPreparer(localDateOf: (milliseconds: number) => IsoDate | null): ImportPreparer {
+  return async (file: ImportFile): Promise<ImportReview> => {
+    if (file.size > XLSX_LIMITS.maxFileBytes) {
+      return { status: "unreadable-file", message: "This file is larger than the supported size." };
+    }
+    const result = await readXlsx(await file.read());
+    if (!result.ok) return { status: "unreadable-file", message: result.message };
+
+    const sheets: ReviewedSheet[] = [];
+    const ignoredSheets: string[] = [];
+    for (const entry of result.sheets) {
+      const interpreted = interpretFideuramSheet(entry.sheet);
+      if (!interpreted.ok && interpreted.issues.every((issue) => issue.code === "layout-not-found")) {
+        ignoredSheets.push(entry.name);
+        continue;
+      }
+      sheets.push({
+        name: entry.name,
+        dateCandidate: dateInSheetName(entry.name),
+        raw: entry.sheet,
+        outcome: interpreted.ok
+          ? {
+              ok: true,
+              statement: {
+                funds: interpreted.statement.funds.map(({ isin, name, marketValue }) => ({ isin, name, marketValue })),
+                fundsSubtotal: interpreted.statement.fundsSubtotal,
+                categories: interpreted.statement.categories,
+                total: interpreted.statement.total,
+                adjustments: interpreted.statement.adjustments,
+              },
+            }
+          : { ok: false, issues: interpreted.issues },
+      });
+    }
+    return {
+      status: "reviewed",
+      sheets,
+      ignoredSheets,
+      workbookSheetCount: result.sheets.length,
+      dateCandidate: statementDateCandidate({
+        created: result.created,
+        fileName: file.name,
+        lastModified: file.lastModified,
+        localDateOf,
+      }),
+    };
+  };
+}
+
+export const prepareImport: ImportPreparer = createImportPreparer(browserLocalDate);

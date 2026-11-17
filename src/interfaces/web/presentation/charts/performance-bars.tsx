@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { formatPercent } from "../../../../core/percent";
+import { formatPercent } from "../../../../core/values/percent";
 
 export interface PerformanceRow {
   readonly key: string;

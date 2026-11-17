@@ -1,10 +1,10 @@
 import { expect, it } from "vitest";
 import { createOnboardingFixtures, ONBOARDING_EXPECTED } from "./onboarding-files";
-import { createImportPreparer, browserLocalDate } from "../../src/interfaces/web/app/import-preparer";
-import { prepareExcelHistory, planExcelHistory } from "../../src/applications/excel-history";
-import { EMPTY_LEDGER } from "../../src/core/ledger";
-import { applyImport } from "../../src/core/import-plan";
-import { ZERO_CENTS, toEuroCents } from "../../src/core/money";
+import { createImportPreparer, browserLocalDate } from "../../src/interfaces/web/app/session/import-preparer";
+import { prepareExcelHistory, planExcelHistory } from "../../src/applications/import/excel-history";
+import { EMPTY_LEDGER } from "../../src/core/portfolio/ledger";
+import { applyImport } from "../../src/core/statements/import-plan";
+import { ZERO_CENTS, toEuroCents } from "../../src/core/values/money";
 import { FakeGoogle } from "./fake-google";
 import { commitDirect, ensureWorkbook, readAllDirect } from "../../src/adapters/google/direct-ledger";
 

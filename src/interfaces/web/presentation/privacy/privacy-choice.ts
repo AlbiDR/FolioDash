@@ -1,4 +1,4 @@
-import { type EuroCents, formatEuro, formatSignedEuro } from "../../../../core/money";
+import { type EuroCents, formatEuro, formatSignedEuro } from "../../../../core/values/money";
 
 const KEY = "foliodash.privacy.v1";
 

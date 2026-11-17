@@ -1,8 +1,8 @@
 import { Presence } from "../../shared/ui/presence";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { ExpenseConflict, ExpenseSaveOutcome } from "../../../../applications/expense-model";
-import { formatDateLong, parseIsoDate, type IsoDate } from "../../../../core/iso-date";
+import type { ExpenseConflict, ExpenseSaveOutcome } from "../../../../applications/session/expense-model";
+import { formatDateLong, parseIsoDate, type IsoDate } from "../../../../core/values/iso-date";
 import {
   EMPTY_EXPENSE_AMOUNTS,
   EXPENSE_LABELS,
@@ -21,7 +21,7 @@ import {
   type ExpenseAmounts,
   type ExpenseCommand,
   type ExpenseDay,
-} from "../../../../core/work-expenses";
+} from "../../../../core/expenses/work-expenses";
 import { Amount, usePrivacy } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
 import { PageNav } from "../../shared/ui/page-nav";

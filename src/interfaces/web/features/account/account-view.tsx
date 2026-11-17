@@ -5,9 +5,9 @@ import type {
   SessionState,
   TidyOutcome,
   VerifyOutcome,
-} from "../../../../applications/session-model";
+} from "../../../../applications/session/session-model";
 import type { JSX } from "preact";
-import type { RemoteSave } from "../../../../applications/import-model";
+import type { RemoteSave } from "../../../../applications/import/import-model";
 import { useRef, useState } from "preact/hooks";
 import { describeAge } from "./time-ago";
 import { Icon } from "../../shared/ui/icons";

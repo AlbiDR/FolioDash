@@ -1,4 +1,4 @@
-import type { RawCell, RawSheet } from "../../core/raw-sheet";
+import type { RawCell, RawSheet } from "../../core/statements/raw-sheet";
 import { type XlsxLimits, XLSX_LIMITS, XlsxError, type XlsxErrorCode } from "./xlsx-error";
 import { type XmlElement, childElements, firstChild, parseXml, textOf } from "./xml";
 import { type ZipArchive, openZip } from "./zip";

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { FakeGoogle } from "../../../tests/fixtures/fake-google";
-import { canonicalJson } from "../../core/canonical-json";
-import { parseIsoDate } from "../../core/iso-date";
-import { sha256Hex } from "../../core/sha256";
-import { isWorkday, shiftDate, parseExpenseAmounts, type ExpenseCommand } from "../../core/work-expenses";
+import { canonicalJson } from "../../core/integrity/canonical-json";
+import { parseIsoDate } from "../../core/values/iso-date";
+import { sha256Hex } from "../../core/integrity/sha256";
+import { isWorkday, shiftDate, parseExpenseAmounts, type ExpenseCommand } from "../../core/expenses/work-expenses";
 import { createWorkbook, writeGridTabs } from "./google-workbook";
-import { bufferedGrid, plainCell } from "../../applications/sheet-grid";
+import { bufferedGrid, plainCell } from "../../applications/ledger/sheet-grid";
 import {
   checkExpense,
   decodeExpenseBackup,

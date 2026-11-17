@@ -1,13 +1,13 @@
 // Local browser harness: all records, workbook IDs and provider responses are synthetic.
 import { h, render } from "preact";
 import { FakeGoogle } from "./fake-google";
-import { createLedgerCache } from "../../src/adapters/browser/ledger-cache";
-import { createRevisionPendingStore } from "../../src/adapters/browser/revision-pending";
+import { createLedgerCache } from "../../src/adapters/browser/storage/ledger-cache";
+import { createRevisionPendingStore } from "../../src/adapters/browser/storage/revision-pending";
 import { presentStatement } from "../../src/adapters/fideuram/fideuram-presentation";
-import { parseIsoDate } from "../../src/core/iso-date";
-import { toEuroCents, ZERO_CENTS } from "../../src/core/money";
-import { Session } from "../../src/interfaces/web/app/session";
-import { interpretStatement } from "../../src/interfaces/web/app/interpret-statement";
+import { parseIsoDate } from "../../src/core/values/iso-date";
+import { toEuroCents, ZERO_CENTS } from "../../src/core/values/money";
+import { Session } from "../../src/interfaces/web/app/session/session";
+import { interpretStatement } from "../../src/interfaces/web/app/session/interpret-statement";
 import { BackfillEntry } from "../../src/interfaces/web/features/import/backfill-entry";
 import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/privacy";
 

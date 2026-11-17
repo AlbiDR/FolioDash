@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toEuroCents } from "../../../../core/money";
+import { toEuroCents } from "../../../../core/values/money";
 import { expenseCorrectionIndices, expenseDraftChanged, expenseDraftFor, parseExpenseDraft } from "./expense-draft";
 
 describe("expense entry boundary", () => {

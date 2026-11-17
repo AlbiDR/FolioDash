@@ -1,8 +1,8 @@
-import type { ExpenseConflict, ExpenseSaveOutcome } from "../../applications/expense-model";
-import { bufferedGrid, plainCell, type Grid, type GridCell } from "../../applications/sheet-grid";
-import { canonicalJson } from "../../core/canonical-json";
-import { toSpreadsheetSerial, type IsoDate } from "../../core/iso-date";
-import { sha256Hex } from "../../core/sha256";
+import type { ExpenseConflict, ExpenseSaveOutcome } from "../../applications/session/expense-model";
+import { bufferedGrid, plainCell, type Grid, type GridCell } from "../../applications/ledger/sheet-grid";
+import { canonicalJson } from "../../core/integrity/canonical-json";
+import { toSpreadsheetSerial, type IsoDate } from "../../core/values/iso-date";
+import { sha256Hex } from "../../core/integrity/sha256";
 import {
   EXPENSE_LABELS,
   EXPENSE_OPTIONAL_INDICES,
@@ -16,8 +16,8 @@ import {
   weekDates,
   type ExpenseCommand,
   type ExpenseDay,
-} from "../../core/work-expenses";
-import type { EuroCents } from "../../core/money";
+} from "../../core/expenses/work-expenses";
+import type { EuroCents } from "../../core/values/money";
 import { writeGridTabs } from "./google-workbook";
 import { EXPENSE_METADATA_KEY, EXPENSE_RECORD_ROLE, EXPENSE_VIEW_TITLE, LEDGER_TAB } from "./sheets-layout";
 import { callRest, wroteNothing, type RestClient } from "./rest";

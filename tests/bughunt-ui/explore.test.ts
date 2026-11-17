@@ -1,12 +1,12 @@
 import { it } from "vitest";
-import { parseIsoDate, type IsoDate } from "../../src/core/iso-date";
-import { toEuroCents, type EuroCents } from "../../src/core/money";
-import { expenseReport, type ExpenseDay } from "../../src/core/work-expenses";
+import { parseIsoDate, type IsoDate } from "../../src/core/values/iso-date";
+import { toEuroCents, type EuroCents } from "../../src/core/values/money";
+import { expenseReport, type ExpenseDay } from "../../src/core/expenses/work-expenses";
 import { computeLineChart } from "../../src/interfaces/web/presentation/charts/line-chart-geometry";
 import { positionAxisLabels } from "../../src/interfaces/web/presentation/charts/axis-labels";
-import { monthLabel, utcTime, euroLabel } from "../../src/interfaces/web/features/overview/chart-data";
+import { monthLabel, utcTime, euroLabel } from "../../src/interfaces/web/features/overview/model/chart-data";
 import { describeAge } from "../../src/interfaces/web/features/account/time-ago";
-import { formatPercent } from "../../src/core/percent";
+import { formatPercent } from "../../src/core/values/percent";
 import { motionMilliseconds } from "../../src/interfaces/web/shared/ui/motion-timing";
 import { maskNumbers } from "../../src/interfaces/web/presentation/privacy/privacy-choice";
 

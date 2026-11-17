@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ratchet, structureViolations, type StructureOptions } from "../../scripts/structure-policy";
+import { ratchet, structureViolations, type StructureOptions } from "../../scripts/verify/structure-policy";
 
 const options: StructureOptions = {
   codeExtensions: [".ts", ".tsx", ".css"],

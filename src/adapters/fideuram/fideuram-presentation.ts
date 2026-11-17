@@ -1,7 +1,7 @@
-import { type Grid, type GridCell, bufferedGrid, plainCell, rawCell } from "../../applications/sheet-grid";
-import { type Decimal, decimalToNumber } from "../../core/decimal";
-import { toSpreadsheetSerial } from "../../core/iso-date";
-import type { RawCell, RawSheet } from "../../core/raw-sheet";
+import { type Grid, type GridCell, bufferedGrid, plainCell, rawCell } from "../../applications/ledger/sheet-grid";
+import { type Decimal, decimalToNumber } from "../../core/values/decimal";
+import { toSpreadsheetSerial } from "../../core/values/iso-date";
+import type { RawCell, RawSheet } from "../../core/statements/raw-sheet";
 import { FIDEURAM_HEADERS, type FundPosition, findHeader, interpretFideuramSheet } from "./fideuram-layout";
 import {
   type Currency,

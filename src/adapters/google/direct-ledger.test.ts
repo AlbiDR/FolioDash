@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { legacyJanuarySummary, LEGACY_SUMMARY_NOTICE } from "../../../tests/fixtures/legacy-summary";
 import { FakeGoogle } from "../../../tests/fixtures/fake-google";
-import type { CommitRequest } from "../../applications/ledger-service";
-import { readableView } from "../../applications/readable-view";
-import { rawGrid } from "../../applications/sheet-grid";
-import type { FundCommand, StatementInput } from "../../core/import-plan";
-import { type IsoDate, parseIsoDate, toSpreadsheetSerial } from "../../core/iso-date";
-import { parseIsin } from "../../core/isin";
-import { EMPTY_LEDGER } from "../../core/ledger";
-import type { RawSheet } from "../../core/raw-sheet";
-import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/money";
+import type { CommitRequest } from "../../applications/ledger/ledger-service";
+import { readableView } from "../../applications/ledger/readable-view";
+import { rawGrid } from "../../applications/ledger/sheet-grid";
+import type { FundCommand, StatementInput } from "../../core/statements/import-plan";
+import { type IsoDate, parseIsoDate, toSpreadsheetSerial } from "../../core/values/iso-date";
+import { parseIsin } from "../../core/values/isin";
+import { EMPTY_LEDGER } from "../../core/portfolio/ledger";
+import type { RawSheet } from "../../core/statements/raw-sheet";
+import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/values/money";
 import {
   type DirectDeps,
   attachDirect,

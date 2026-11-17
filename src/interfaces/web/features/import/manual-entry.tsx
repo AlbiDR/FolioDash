@@ -1,11 +1,11 @@
 import { Presence } from "../../shared/ui/presence";
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { formatDateLong, parseIsoDate } from "../../../../core/iso-date";
-import type { LedgerState } from "../../../../core/ledger";
+import { formatDateLong, parseIsoDate } from "../../../../core/values/iso-date";
+import type { LedgerState } from "../../../../core/portfolio/ledger";
 import { Amount } from "../../presentation/privacy/privacy";
 import { CashQuestions } from "./cash-questions";
-import type { RemoteSave, ReviewStatement } from "../../../../applications/import-model";
+import type { RemoteSave, ReviewStatement } from "../../../../applications/import/import-model";
 import { type ManualRow, prepareManualStatement } from "./manual-statement";
 
 interface EntryRow extends ManualRow {

@@ -1,9 +1,9 @@
 // Local browser harness: all funds, amounts and ledgers are synthetic.
 import { h, render } from "preact";
-import { applyImport, type FundCommand, type StatementInput } from "../../src/core/import-plan";
-import { EMPTY_LEDGER, type LedgerState } from "../../src/core/ledger";
-import { parseIsoDate, type IsoDate } from "../../src/core/iso-date";
-import { toEuroCents, ZERO_CENTS, type EuroCents } from "../../src/core/money";
+import { applyImport, type FundCommand, type StatementInput } from "../../src/core/statements/import-plan";
+import { EMPTY_LEDGER, type LedgerState } from "../../src/core/portfolio/ledger";
+import { parseIsoDate, type IsoDate } from "../../src/core/values/iso-date";
+import { toEuroCents, ZERO_CENTS, type EuroCents } from "../../src/core/values/money";
 import { CashQuestions } from "../../src/interfaces/web/features/import/cash-questions";
 import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/privacy";
 

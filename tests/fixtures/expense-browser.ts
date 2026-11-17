@@ -3,9 +3,9 @@ import { h, render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { FakeGoogle } from "./fake-google";
 import { createWorkbook } from "../../src/adapters/google/google-workbook";
-import { parseIsoDate } from "../../src/core/iso-date";
-import { toEuroCents, ZERO_CENTS } from "../../src/core/money";
-import { ExpenseSession } from "../../src/interfaces/web/app/expense-session";
+import { parseIsoDate } from "../../src/core/values/iso-date";
+import { toEuroCents, ZERO_CENTS } from "../../src/core/values/money";
+import { ExpenseSession } from "../../src/interfaces/web/app/session/expense-session";
 import { ExpensesView } from "../../src/interfaces/web/features/expenses/expenses-view";
 import { PrivacyProvider } from "../../src/interfaces/web/presentation/privacy/privacy";
 

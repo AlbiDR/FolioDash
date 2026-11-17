@@ -1,5 +1,5 @@
-import type { CommitRequest } from "../../applications/ledger-service";
-import { parseLedgerState } from "../../core/ledger";
+import type { CommitRequest } from "../../applications/ledger/ledger-service";
+import { parseLedgerState } from "../../core/portfolio/ledger";
 import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./ledger-results";
 import { type HttpClient, runScriptFunction } from "./scripts-run";
 

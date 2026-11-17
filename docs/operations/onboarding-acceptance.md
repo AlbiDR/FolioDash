@@ -18,7 +18,7 @@ Tests cover distinct workbook discovery, creation, name fallback, session connec
 ## Prepare the local run
 
 ```sh
-npm run fixtures:onboarding
+npm run build:fixtures
 npm run build:acceptance
 npm run preview:acceptance
 ```
@@ -86,7 +86,7 @@ Live API evidence retained only sanitized operation/status metadata: discovery u
 
 The owner's priority journey is a person discovering the published site with no FolioDash workbook and no device copy, connecting Google, and entering their first November 2026 statement manually. Excel history is optional. A successful first-month baseline must not require previous monthly statements, an existing workbook, Apps Script setup or manually created ledger tabs.
 
-The automated session regression in `src/interfaces/web/app/session.test.ts` takes the actual manual statement preparer through first connection, workbook creation, direct commit and a fresh-device read. Invented inputs are two funds valued at 1.300,00 and 900,00 EUR on 2026-11-15, with explicitly supplied opening net invested of 1.000,00 EUR each. It asserts one workbook, one saved statement, 2.200,00 EUR total value, preserved opening balances, a hidden ledger, a visible readable view and identical remote history on the second device with an empty cache. A second connection must reuse the workbook. This uses FakeGoogle; it does not prove deployed Google consent, API behavior, real-account isolation or rendered manual-entry usability.
+The automated session regression in `src/interfaces/web/app/session/session.test.ts` takes the actual manual statement preparer through first connection, workbook creation, direct commit and a fresh-device read. Invented inputs are two funds valued at 1.300,00 and 900,00 EUR on 2026-11-15, with explicitly supplied opening net invested of 1.000,00 EUR each. It asserts one workbook, one saved statement, 2.200,00 EUR total value, preserved opening balances, a hidden ledger, a visible readable view and identical remote history on the second device with an empty cache. A second connection must reuse the workbook. This uses FakeGoogle; it does not prove deployed Google consent, API behavior, real-account isolation or rendered manual-entry usability.
 
 Live acceptance for the exact scenario:
 

@@ -1,13 +1,13 @@
 import type { JSX } from "preact";
 import { useLayoutEffect, useRef, useState } from "preact/hooks";
-import { type IsoDate, formatDateLong } from "../../../../core/iso-date";
-import type { StatementLabel } from "../../../../core/statement-labels";
+import { type IsoDate, formatDateLong } from "../../../../core/values/iso-date";
+import type { StatementLabel } from "../../../../core/statements/statement-labels";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import type { OverviewModel } from "./overview-model";
+import type { OverviewModel } from "./model/overview-model";
 import { Percent, Signed } from "./parts";
-import { columnClass } from "./month-columns";
-import { type RowMarks, displayedHundredths, rowMarks } from "./row-marks";
+import { columnClass } from "./model/month-columns";
+import { type RowMarks, displayedHundredths, rowMarks } from "./model/row-marks";
 
 /** A column heading: the short name, with the exact export date for anyone who cannot see it. */
 function StatementHeading(props: { readonly label: StatementLabel | undefined; readonly date: IsoDate }): JSX.Element {

@@ -1,4 +1,4 @@
-import type { ConnectOutcome, RestoreOutcome } from "../../../../applications/session-model";
+import type { ConnectOutcome, RestoreOutcome } from "../../../../applications/session/session-model";
 import { describe, expect, it } from "vitest";
 import { describeConnect, describeRestore } from "./account-text";
 

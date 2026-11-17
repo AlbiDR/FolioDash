@@ -4,8 +4,8 @@ import type {
   SheetStatus,
   TidyOutcome,
   VerifyOutcome,
-} from "../../../../applications/session-model";
-import { formatMonthYear } from "../../../../core/iso-date";
+} from "../../../../applications/session/session-model";
+import { formatMonthYear } from "../../../../core/values/iso-date";
 
 export interface Message {
   readonly good: boolean;

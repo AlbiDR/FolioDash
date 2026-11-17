@@ -1,21 +1,21 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { sha256Hex } from "../../src/core/sha256";
-import { canonicalJson } from "../../src/core/canonical-json";
-import { parseStoredSheet, toStoredSheet, cellRef } from "../../src/core/raw-sheet";
+import { sha256Hex } from "../../src/core/integrity/sha256";
+import { canonicalJson } from "../../src/core/integrity/canonical-json";
+import { parseStoredSheet, toStoredSheet, cellRef } from "../../src/core/statements/raw-sheet";
 import { readXlsx } from "../../src/adapters/xlsx/xlsx-reader";
 import { parseXml } from "../../src/adapters/xlsx/xml";
 import { XLSX_LIMITS } from "../../src/adapters/xlsx/xlsx-error";
 import { interpretFideuramSheet } from "../../src/adapters/fideuram/fideuram-layout";
 import { buildXlsx } from "../fixtures/synthetic-xlsx";
 import { COL, ROW, syntheticSheet, text, number, withCell, withRowsBefore } from "../fixtures/synthetic-fideuram-sheet";
-import { createDurableStore, createMemoryStore } from "../../src/adapters/browser/durable-store";
-import { dateInSheetName } from "../../src/applications/excel-history";
-import { statementDateCandidate } from "../../src/core/statement-date";
+import { createDurableStore, createMemoryStore } from "../../src/adapters/browser/storage/durable-store";
+import { dateInSheetName } from "../../src/applications/import/excel-history";
+import { statementDateCandidate } from "../../src/core/statements/statement-date";
 import { RowLedgerStore, type LedgerRow, type RowSheet } from "../../src/adapters/ledger/row-ledger-store";
-import { commitStatement, readLedger, type ServiceEnvironment } from "../../src/applications/ledger-service";
-import { EMPTY_LEDGER } from "../../src/core/ledger";
-import { parseIsoDate } from "../../src/core/iso-date";
+import { commitStatement, readLedger, type ServiceEnvironment } from "../../src/applications/ledger/ledger-service";
+import { EMPTY_LEDGER } from "../../src/core/portfolio/ledger";
+import { parseIsoDate } from "../../src/core/values/iso-date";
 
 describe("input boundaries", () => {
   it("sha256 vs node", () => {

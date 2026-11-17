@@ -1,15 +1,20 @@
 import { Presence } from "../../shared/ui/presence";
 import type { JSX } from "preact";
 import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
-import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/import-plan";
-import type { StatementSource } from "../../../../applications/ledger-service";
-import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../../applications/import-model";
-import { type IsoDate, formatDateLong } from "../../../../core/iso-date";
-import type { LedgerState } from "../../../../core/ledger";
-import { computeMetrics } from "../../../../core/metrics";
-import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/money";
+import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/statements/import-plan";
+import type { StatementSource } from "../../../../applications/ledger/ledger-service";
+import type {
+  CheckResult,
+  RecordRequest,
+  RecordResult,
+  RemoteSave,
+} from "../../../../applications/import/import-model";
+import { type IsoDate, formatDateLong } from "../../../../core/values/iso-date";
+import type { LedgerState } from "../../../../core/portfolio/ledger";
+import { computeMetrics } from "../../../../core/portfolio/metrics";
+import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/values/money";
 import { Amount } from "../../presentation/privacy/privacy";
-import type { ReviewStatement } from "../../../../applications/import-model";
+import type { ReviewStatement } from "../../../../applications/import/import-model";
 
 interface Answer {
   readonly opening: string;
