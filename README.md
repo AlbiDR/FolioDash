@@ -186,7 +186,7 @@ npm run verify
 npm run audit:dependencies
 ```
 
-Verification covers repository boundaries, attribution and punctuation policies, types, lint, tests, Pages artifact integrity, production/PWA output and the retained Apps Script bundle. The dependency audit fails on moderate or greater severity. CI checks Node 22 and 24; the existing Pages pipeline publishes the checked artifact. Workflow edits also require `npm run verify:workflows`.
+Verification covers repository boundaries, attribution and punctuation policies, types, lint, tests, Pages artifact integrity, production/PWA output and the retained Apps Script bundle. The dependency audit fails on moderate or greater severity. CI checks Node 22; the existing Pages pipeline publishes the checked artifact. Workflow edits also require `npm run verify:workflows`.
 
 For a production preview, run `npm run build`, then `npm run preview`. README screenshots refresh automatically with successful `main` releases. CI captures the checked build in a fresh browser profile, blocks external requests, and publishes the images at stable Pages URLs. No screenshot commits or manual recaptures are needed.
 
