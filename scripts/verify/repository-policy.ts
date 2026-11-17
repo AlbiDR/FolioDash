@@ -39,7 +39,7 @@ export function pathProblems(files: readonly string[]): string[] {
   });
 }
 
-function layer(file: string): string | null {
+export function layer(file: string): string | null {
   if (file.startsWith("src/core/")) return "core";
   if (file.startsWith("src/applications/")) return "applications";
   if (file.startsWith("src/adapters/")) return "adapters";

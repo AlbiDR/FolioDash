@@ -67,6 +67,12 @@ The root is the first thing a visitor sees, so it holds only the documentation e
 
 `npm run verify:structure` enforces the [naming and structure contract](../architecture/naming-contract.md): kebab-case file and folder names, at most 400 lines per code file and at most 20 code files directly in a folder. Limits are in `config/structure.json`. The violations that exist today are recorded in `config/structure-baseline.json`; the check fails on a new violation and on a recorded one that has been fixed but not removed (`--shrink`), so the record only shrinks. It reads tracked and new non-ignored paths and line counts, runs inside `verify` right after the repository policy, and does not judge whether a name or a split is a good one.
 
+## Documentation check, 2026-11-18
+
+`npm run verify:docs` runs inside `verify`, after the structure check. It reads every Markdown file in `docs/`, `.github/` and the root and fails when an inline link or its heading anchor does not resolve, when a backticked repository path (`src/...`, `scripts/...`, `config/...`, `docs/...`, `tests/...`, `.github/...`) names something that no longer exists, when a document under `docs/` is not linked from [the index](../README.md), or when the generated [repository map](../architecture/repository-map.md) differs from what `npm run docs:map` would write. Globs and placeholders such as `src/**` or `<layer>` are skipped, and fenced code blocks are examples, not references. It checks that a reference points at something real, not that the prose around it is still true.
+
+Front matter with a status and a review date on every document was considered and not adopted: the index already carries each document's status, and a review date goes stale silently, while git records when a file last changed.
+
 ## Oversized files, 2026-11-18
 
 `config/structure-baseline.json` now records three files above 400 lines: `session.ts` (1,512 lines), `checkpoint-session.ts` (649) and `expense-session.ts` (437) in `src/interfaces/web/app/session/`. Each is one class whose methods share private state (the token, the generation counter and the current ledger), so getting under the limit means introducing collaborator classes or passing a context object, which is a design change and not a mechanical move. They stay recorded, with the reason, until that design is done and verified. Their tests were split like the others.
