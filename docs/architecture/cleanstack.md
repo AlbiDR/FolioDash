@@ -41,18 +41,23 @@ There is no affiliation with or endorsement by a bank, fund manager or hosting p
 
 ## 3. Architectural principles
 
-1. **KISS and YAGNI:** implement the smallest system that satisfies current invariants; no speculative services or empty directory hierarchy.
-2. **Single source of truth:** one canonical implementation per financial rule; one owner for each document, token, schema and state transition.
-3. **Pure kernel:** financial types and calculations do not depend on UI frameworks, browsers, networks, storage, locale APIs or cloud SDKs.
-4. **Single responsibility and dependency inversion:** application use cases depend on narrow ports; external adapters implement them.
-5. **Least astonishment:** preview and save describe the same reviewed information; failed charts cannot invalidate an already-saved statement.
-6. **Fail closed:** uncertain ownership, invalid money, contradictory evidence or ambiguous save status stops further financial writes.
-7. **Evidence over assertion:** unit tests, simulated browser checks and live-device checks prove different things. An unrun gate remains unrun.
-8. **Mistake-proofing:** prevent duplicate commits and unsafe state transitions structurally rather than rely on warning text.
-9. **Proportionate dependencies:** every production dependency has a purpose, maintenance/security review and licence check. Necessary parsing/chart libraries are not forbidden merely to claim zero dependencies.
-10. **Explicit policy:** mathematical identities, versioned financial definitions, display tokens and operational limits are different categories. Financial formulas do not self-calibrate against portfolio performance. Limits and visual margins are named and tested, not scattered literals.
+1. **KISS and YAGNI:** implement the smallest system that satisfies current invariants; no speculative services, over-engineered backend wrappers, or empty directory hierarchy.
+2. **Single source of truth:** one canonical implementation per financial rule and calculation; one owner for each document, token, schema, and state transition.
+3. **Pure kernel:** financial types, calculations, and parsing logic do not depend on UI frameworks, browsers, networks, storage, locale APIs, or cloud SDKs.
+4. **Single responsibility and dependency inversion:** application use cases depend on narrow ports; external adapters and UI components implement them.
+5. **Parse, don't validate:** raw inputs from bank exports, manual forms, and Google workbook reads are parsed at the adapter boundary into strict domain types where invalid financial states are unrepresentable.
+6. **Fail closed:** uncertain ownership, invalid money, contradictory evidence, or ambiguous save status stops further financial writes and UI commits.
+7. **Least astonishment:** preview and save describe the exact same reviewed information; failed charts or rendering errors cannot invalidate an already-saved statement.
+8. **Mistake-proofing:** prevent duplicate commits, race conditions, and unsafe state transitions structurally through strict typing and state checks rather than relying on warning text.
+9. **Idempotency and determinism:** statement imports, ledger writes, and remote sync operations are deterministic and idempotent; re-running an import or retrying an interrupted network sync produces zero duplicate mutations.
+10. **Immutable ledger facts:** confirmed historical financial entries are append-only; adjustments and corrections are modeled as explicit compensating transactions rather than silent in-place edits.
+11. **Explicit policy:** mathematical identities, versioned financial definitions, display tokens, and operational limits are different categories. Financial formulas do not self-calibrate against portfolio performance. Limits and visual margins are named and tested, not scattered literals.
+12. **Offline-first and sync clarity:** as a static PWA hosted on GitHub Pages, the application maintains zero trust in ephemeral client storage—all invariants execute locally within the pure kernel before sync. Cached projections remain readable offline, while authentication expiry, stale cache timestamps, and uncommitted local drafts are surfaced explicitly so they are never mistaken for authoritative ledger commits.
+13. **Evidence over assertion:** unit tests, simulated browser checks, and live-device checks prove different things. An unrun gate remains unrun.
+14. **Proportionate dependencies:** every production dependency has a purpose, maintenance/security review, and licence check. Necessary parsing and chart libraries are not forbidden merely to claim zero dependencies.
 
-Git is authoritative for code and schema, **not a store of the user's financial records**. The committed ledger in the user's private Google workbook is authoritative for confirmed financial facts; caches, charts and dashboard values are projections. Bank tabs alone cannot reconstruct cash movements and opening capital.
+Git is authoritative for code, schema, and static assets, **not a store of the user's financial records**. The committed ledger in the user's private Google workbook is authoritative for confirmed financial facts; local caches, bento dashboard tiles, and chart values are strictly projections. Bank tabs alone cannot reconstruct cash movements and opening capital.
+
 
 ## 4. Structural architecture
 
