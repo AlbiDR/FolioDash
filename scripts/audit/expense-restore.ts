@@ -6,7 +6,6 @@ const assertions = await runSyntheticJourney({
   entry: "tests/fixtures/expense-restore-browser.ts",
   directory: "dist/acceptance/expense-restore-audit",
   port: Number(process.env["FOLIODASH_EXPENSE_RESTORE_AUDIT_PORT"] ?? 4200),
-  config: "config/vite.expense-restore-audit.config.ts",
   readySelector: "#expense-data-heading",
   run: async ({ evaluate, waitFor, check, click, text }) => {
     await evaluate("document.querySelector('.more details').open=true");

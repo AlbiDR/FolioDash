@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { stripVTControlCharacters } from "node:util";
 
@@ -17,7 +17,7 @@ export interface LocalBrowser {
 export async function withLocalBrowser(
   run: (browser: LocalBrowser) => Promise<void>,
   APP_PORT = 4197,
-  previewConfig = "config/vite.config.ts",
+  previewDirectory?: string,
 ): Promise<void> {
   const ORIGIN = `http://127.0.0.1:${String(APP_PORT)}`;
   const chromePath =
@@ -191,7 +191,8 @@ export async function withLocalBrowser(
         "node_modules/vite/bin/vite.js",
         "preview",
         "--config",
-        previewConfig,
+        "config/vite.config.ts",
+        ...(previewDirectory === undefined ? [] : ["--outDir", resolve(previewDirectory)]),
         "--host",
         "127.0.0.1",
         "--port",

@@ -6,7 +6,6 @@ const assertions = await runSyntheticJourney({
   entry: "tests/fixtures/account-browser.ts",
   directory: "dist/acceptance/account-audit",
   port: Number(process.env["FOLIODASH_ACCOUNT_AUDIT_PORT"] ?? 4202),
-  config: "config/vite.account-audit.config.ts",
   readySelector: "#account-connection-heading",
   run: async ({ evaluate, waitFor, check, click, text, call }) => {
     const seen = async (value: string, label: string): Promise<void> => {

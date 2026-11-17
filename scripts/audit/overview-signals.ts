@@ -6,7 +6,6 @@ const assertions = await runSyntheticJourney({
   entry: "tests/fixtures/overview-browser.ts",
   directory: "dist/acceptance/overview-audit",
   port: Number(process.env["FOLIODASH_OVERVIEW_AUDIT_PORT"] ?? 4310),
-  config: "config/vite.overview-audit.config.ts",
   readySelector: ".portfolio-dashboard",
   run: async ({ evaluate, waitFor, check }) => {
     const settle = async (): Promise<void> => {

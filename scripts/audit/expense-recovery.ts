@@ -237,7 +237,7 @@ try {
       await check("!document.querySelector('.expense-conflict')", "the conflict card clears once resolved");
     },
     Number(process.env["FOLIODASH_EXPENSE_AUDIT_PORT"] ?? 4199),
-    "config/vite.expense-audit.config.ts",
+    directory,
   );
   console.log(`Synthetic rendered expense recovery passed: ${String(assertions)} assertions.`);
 } finally {

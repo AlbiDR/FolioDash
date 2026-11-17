@@ -9,7 +9,6 @@ export interface SyntheticJourney {
   readonly entry: string;
   readonly directory: string;
   readonly port: number;
-  readonly config: string;
   /** Text that appears once the harness has rendered. */
   readonly readySelector: string;
   readonly run: (
@@ -118,7 +117,7 @@ export async function runSyntheticJourney(journey: SyntheticJourney): Promise<nu
         });
       },
       journey.port,
-      journey.config,
+      journey.directory,
     );
     return assertions;
   } finally {
