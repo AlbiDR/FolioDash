@@ -4,8 +4,12 @@ export function createMemoryStore(): KeyValueStore {
   const data = new Map<string, string>();
   return {
     getItem: (key) => data.get(key) ?? null,
-    setItem: (key, value) => { data.set(key, value); },
-    removeItem: (key) => { data.delete(key); },
+    setItem: (key, value) => {
+      data.set(key, value);
+    },
+    removeItem: (key) => {
+      data.delete(key);
+    },
   };
 }
 
@@ -16,7 +20,10 @@ export function createMemoryStore(): KeyValueStore {
  * remembered instead of breaking it. A value moved to a later store is removed from the
  * earlier ones, so a stale copy is never read back in place of the newer one.
  */
-export function createDurableStore(openers: readonly (() => KeyValueStore)[], fallback: KeyValueStore = createMemoryStore()): KeyValueStore {
+export function createDurableStore(
+  openers: readonly (() => KeyValueStore)[],
+  fallback: KeyValueStore = createMemoryStore(),
+): KeyValueStore {
   const stores = (): KeyValueStore[] => {
     const open: KeyValueStore[] = [];
     for (const opener of openers) {

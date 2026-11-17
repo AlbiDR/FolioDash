@@ -2,9 +2,16 @@ import { describe, expect, it } from "vitest";
 import { parseIsoDate } from "../../../../core/IsoDate";
 import { availableRanges, rangeStart, resolveRange } from "./chartRange";
 
-const dates = ["2025-07-01", "2025-08-01", "2025-09-01", "2025-10-10", "2025-11-02", "2026-06-08", "2026-10-03", "2026-11-01"].map(
-  (text) => parseIsoDate(text) as NonNullable<ReturnType<typeof parseIsoDate>>,
-);
+const dates = [
+  "2025-07-01",
+  "2025-08-01",
+  "2025-09-01",
+  "2025-10-10",
+  "2025-11-02",
+  "2026-06-08",
+  "2026-10-03",
+  "2026-11-01",
+].map((text) => parseIsoDate(text) as NonNullable<ReturnType<typeof parseIsoDate>>);
 
 describe("rangeStart", () => {
   it("starts at the first statement for All and for an empty history", () => {
@@ -28,7 +35,9 @@ describe("rangeStart", () => {
 
 describe("availableRanges", () => {
   const ids = (list: readonly string[]) =>
-    availableRanges(list.map((text) => parseIsoDate(text) as NonNullable<ReturnType<typeof parseIsoDate>>)).map((option) => option.id);
+    availableRanges(list.map((text) => parseIsoDate(text) as NonNullable<ReturnType<typeof parseIsoDate>>)).map(
+      (option) => option.id,
+    );
 
   it("offers only All for a single statement", () => {
     expect(ids(["2026-11-01"])).toEqual(["All"]);
@@ -47,7 +56,9 @@ describe("availableRanges", () => {
   });
 
   it("starts YTD at January of the latest statement's year", () => {
-    const list = ["2025-06-01", "2025-12-20", "2026-02-01", "2026-11-01"].map((text) => parseIsoDate(text) as NonNullable<ReturnType<typeof parseIsoDate>>);
+    const list = ["2025-06-01", "2025-12-20", "2026-02-01", "2026-11-01"].map(
+      (text) => parseIsoDate(text) as NonNullable<ReturnType<typeof parseIsoDate>>,
+    );
     expect(list[rangeStart(list, "YTD")]).toBe("2026-02-01");
   });
 

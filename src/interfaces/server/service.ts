@@ -16,7 +16,11 @@ export type ServiceResult<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly error: "invalid-request" | "unavailable"; readonly message: string };
 
-function guard<T>(workbookId: unknown, open: EnvironmentOpener, action: (environment: ServiceEnvironment) => T): ServiceResult<T> {
+function guard<T>(
+  workbookId: unknown,
+  open: EnvironmentOpener,
+  action: (environment: ServiceEnvironment) => T,
+): ServiceResult<T> {
   if (typeof workbookId !== "string" || workbookId.length < 10 || workbookId.length > 100) {
     return { ok: false, error: "invalid-request", message: "The workbook id is missing or malformed." };
   }
@@ -35,9 +39,11 @@ function guard<T>(workbookId: unknown, open: EnvironmentOpener, action: (environ
 export function createService(open: EnvironmentOpener) {
   return {
     /** Confirms the caller can reach the workbook and that its ledger is intact. */
-    check: (workbookId: unknown): ServiceResult<LoadResult> => guard(workbookId, open, (environment) => readLedger(environment)),
+    check: (workbookId: unknown): ServiceResult<LoadResult> =>
+      guard(workbookId, open, (environment) => readLedger(environment)),
 
-    read: (workbookId: unknown): ServiceResult<LoadResult> => guard(workbookId, open, (environment) => readLedger(environment)),
+    read: (workbookId: unknown): ServiceResult<LoadResult> =>
+      guard(workbookId, open, (environment) => readLedger(environment)),
 
     commit: (workbookId: unknown, request: unknown): ServiceResult<CommitOutcome> => {
       const parsed = parseCommitRequest(request);

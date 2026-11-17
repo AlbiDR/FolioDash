@@ -60,7 +60,9 @@ export class SheetsRowSheet implements RowSheet {
       .getRange(2, 1, last - 1, COLUMNS)
       .getValues()
       .map((cells) => {
-        const [revision, type, payload, checksum] = cells.map((cell) => (typeof cell === "string" ? cell : String(cell)));
+        const [revision, type, payload, checksum] = cells.map((cell) =>
+          typeof cell === "string" ? cell : String(cell),
+        );
         return {
           revision: revision ?? "",
           // An unknown type is kept as is so the store reports the ledger as damaged instead of hiding it.

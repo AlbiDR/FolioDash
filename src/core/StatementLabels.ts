@@ -55,7 +55,9 @@ function lastDayOfMonth(date: IsoDate): number {
  * cannot push later statements out of step. Display only: nothing here is stored.
  */
 export function statementLabels(dates: readonly IsoDate[]): readonly StatementLabel[] {
-  const order = dates.map((date, index) => ({ date, index })).sort((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : left.index - right.index));
+  const order = dates
+    .map((date, index) => ({ date, index }))
+    .sort((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : left.index - right.index));
   const named = new Set<number>();
   const labels = new Array<StatementLabel>(dates.length);
 

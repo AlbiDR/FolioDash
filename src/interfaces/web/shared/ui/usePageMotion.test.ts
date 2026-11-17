@@ -2,14 +2,22 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createPageMotion } from "./usePageMotion";
 
 function fixture() {
-  const animations: { onfinish: (() => void) | null; oncancel: (() => void) | null; cancel: ReturnType<typeof vi.fn> }[] = [];
+  const animations: {
+    onfinish: (() => void) | null;
+    oncancel: (() => void) | null;
+    cancel: ReturnType<typeof vi.fn>;
+  }[] = [];
   const attributes = new Set<string>();
   const node = {
     inert: false,
     setAttribute: (name: string) => attributes.add(name),
     removeAttribute: (name: string) => attributes.delete(name),
     animate: vi.fn(() => {
-      const animation = { onfinish: null as (() => void) | null, oncancel: null as (() => void) | null, cancel: vi.fn(() => undefined) };
+      const animation = {
+        onfinish: null as (() => void) | null,
+        oncancel: null as (() => void) | null,
+        cancel: vi.fn(() => undefined),
+      };
       animations.push(animation);
       return animation;
     }),
@@ -18,13 +26,21 @@ function fixture() {
   const visibility = { hidden: false };
   vi.stubGlobal("window", { matchMedia: () => media });
   vi.stubGlobal("document", visibility);
-  vi.stubGlobal("getComputedStyle", () => ({ opacity: "0.8", transform: "none", getPropertyValue: (name: string) => ({ "--duration-short": ".18s", "--motion-nudge": "2px", "--ease-standard": "ease-out" })[name] }));
+  vi.stubGlobal("getComputedStyle", () => ({
+    opacity: "0.8",
+    transform: "none",
+    getPropertyValue: (name: string) =>
+      ({ "--duration-short": ".18s", "--motion-nudge": "2px", "--ease-standard": "ease-out" })[name],
+  }));
   const motion = createPageMotion({ current: node as unknown as HTMLElement });
   return { motion, node, media, visibility, animations, attributes };
 }
 
 beforeEach(() => vi.useFakeTimers());
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 it("keeps the outgoing page inert until exit ends, then commits only the latest destination", () => {
   const { motion, node, animations, attributes } = fixture();
@@ -89,7 +105,9 @@ it("recovers if animation events never arrive or the browser rejects animation",
   vi.advanceTimersByTime(280);
   expect(commit).toHaveBeenCalledOnce();
   expect(node.inert).toBe(false);
-  node.animate.mockImplementation(() => { throw new Error("Animation unavailable"); });
+  node.animate.mockImplementation(() => {
+    throw new Error("Animation unavailable");
+  });
   motion.change(commit);
   expect(commit).toHaveBeenCalledTimes(2);
   expect(node.inert).toBe(false);

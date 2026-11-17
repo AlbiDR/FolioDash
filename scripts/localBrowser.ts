@@ -14,11 +14,24 @@ export interface LocalBrowser {
 
 /** Fresh signed-out browser, production preview, service-worker bypass and local-only network.
  * Shared by README capture and the interaction audit; never attaches to a person's browser. */
-export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<void>, APP_PORT = 4197, previewConfig = "config/vite.config.ts"): Promise<void> {
+export async function withLocalBrowser(
+  run: (browser: LocalBrowser) => Promise<void>,
+  APP_PORT = 4197,
+  previewConfig = "config/vite.config.ts",
+): Promise<void> {
   const ORIGIN = `http://127.0.0.1:${String(APP_PORT)}`;
-  const chromePath = process.env["CHROME_PATH"] ?? (process.platform === "darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" : "google-chrome");
+  const chromePath =
+    process.env["CHROME_PATH"] ??
+    (process.platform === "darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" : "google-chrome");
   const profile = mkdtempSync(join(tmpdir(), "foliodash-readme-"));
-  const pending = new Map<number, { resolve: (value: Record<string, unknown>) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
+  const pending = new Map<
+    number,
+    {
+      resolve: (value: Record<string, unknown>) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   const browserErrors: string[] = [];
   const blockedOrigins = new Set<string>();
   let preview: ChildProcess | undefined;
@@ -30,7 +43,8 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
   let sequence = 0;
 
   function object(value: unknown): Record<string, unknown> {
-    if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error("Unexpected browser response.");
+    if (typeof value !== "object" || value === null || Array.isArray(value))
+      throw new Error("Unexpected browser response.");
     return value as Record<string, unknown>;
   }
 
@@ -75,14 +89,20 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
         if (response["error"] !== undefined) operation.reject(new Error("Browser command failed."));
         else operation.resolve(object(response["result"]));
       } else if (response["method"] === "Fetch.requestPaused") {
-        void intercept(object(response["params"])).catch(() => { browserErrors.push("Network interception failed."); });
+        void intercept(object(response["params"])).catch(() => {
+          browserErrors.push("Network interception failed.");
+        });
       } else if (response["method"] === "Runtime.exceptionThrown") browserErrors.push("Unhandled browser exception.");
     } catch {
       browserErrors.push("Invalid browser protocol response.");
     }
   }
 
-  async function waitFor(check: () => Promise<boolean>, description: string, timeoutMilliseconds = 10_000): Promise<void> {
+  async function waitFor(
+    check: () => Promise<boolean>,
+    description: string,
+    timeoutMilliseconds = 10_000,
+  ): Promise<void> {
     const deadline = Date.now() + timeoutMilliseconds;
     while (Date.now() < deadline) {
       if (await check()) return;
@@ -92,58 +112,130 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
   }
 
   async function localReady(): Promise<boolean> {
-    if (preview?.exitCode !== null && preview?.exitCode !== undefined) throw new Error("The local preview could not bind its port.");
+    if (preview?.exitCode !== null && preview?.exitCode !== undefined)
+      throw new Error("The local preview could not bind its port.");
     if (!previewReady) return false;
-    try { return (await fetch(ORIGIN)).ok; } catch { return false; }
+    try {
+      return (await fetch(ORIGIN)).ok;
+    } catch {
+      return false;
+    }
   }
 
   async function connectBrowser(): Promise<void> {
     let address: string | undefined;
-    await waitFor(async () => {
-      if (chrome?.exitCode !== null && chrome?.exitCode !== undefined) throw new Error(`Chrome exited during startup (${String(chrome.exitCode)}). ${chromeDiagnostics}`);
-      try {
-        const debugPort = Number(readFileSync(join(profile, "DevToolsActivePort"), "utf8").split("\n")[0]);
-        if (!Number.isInteger(debugPort) || debugPort <= 0) return false;
-        const pages: unknown = await (await fetch(`http://127.0.0.1:${String(debugPort)}/json/list`)).json();
-        if (!Array.isArray(pages)) return false;
-        for (const candidate of pages as unknown[]) {
-          const page = object(candidate);
-          if (page["type"] === "page" && typeof page["webSocketDebuggerUrl"] === "string") address = page["webSocketDebuggerUrl"];
+    await waitFor(
+      async () => {
+        if (chrome?.exitCode !== null && chrome?.exitCode !== undefined)
+          throw new Error(`Chrome exited during startup (${String(chrome.exitCode)}). ${chromeDiagnostics}`);
+        try {
+          const debugPort = Number(readFileSync(join(profile, "DevToolsActivePort"), "utf8").split("\n")[0]);
+          if (!Number.isInteger(debugPort) || debugPort <= 0) return false;
+          const pages: unknown = await (await fetch(`http://127.0.0.1:${String(debugPort)}/json/list`)).json();
+          if (!Array.isArray(pages)) return false;
+          for (const candidate of pages as unknown[]) {
+            const page = object(candidate);
+            if (page["type"] === "page" && typeof page["webSocketDebuggerUrl"] === "string")
+              address = page["webSocketDebuggerUrl"];
+          }
+          return address !== undefined;
+        } catch {
+          return false;
         }
-        return address !== undefined;
-      } catch { return false; }
-    }, "Chrome", 30_000);
+      },
+      "Chrome",
+      30_000,
+    );
     if (address === undefined) throw new Error("Chrome did not expose a page.");
     socket = new WebSocket(address);
     socket.addEventListener("message", message);
     await new Promise<void>((resolveOpen, reject) => {
-      socket?.addEventListener("open", () => { resolveOpen(); }, { once: true });
-      socket?.addEventListener("error", () => { reject(new Error("Could not connect to Chrome.")); }, { once: true });
+      socket?.addEventListener(
+        "open",
+        () => {
+          resolveOpen();
+        },
+        { once: true },
+      );
+      socket?.addEventListener(
+        "error",
+        () => {
+          reject(new Error("Could not connect to Chrome."));
+        },
+        { once: true },
+      );
     });
   }
 
   async function stop(child: ChildProcess | undefined, graceful = false): Promise<void> {
     if (child === undefined || child.pid === undefined || child.exitCode !== null) return;
     await new Promise<void>((resolveExit) => {
-      const timer = setTimeout(() => { child.kill("SIGKILL"); }, graceful ? 5000 : 1500);
-      child.once("exit", () => { clearTimeout(timer); resolveExit(); });
+      const timer = setTimeout(
+        () => {
+          child.kill("SIGKILL");
+        },
+        graceful ? 5000 : 1500,
+      );
+      child.once("exit", () => {
+        clearTimeout(timer);
+        resolveExit();
+      });
       if (!graceful) child.kill();
     });
   }
 
   try {
-    preview = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--config", previewConfig, "--host", "127.0.0.1", "--port", String(APP_PORT), "--strictPort"], { stdio: ["ignore", "pipe", "ignore"] });
+    preview = spawn(
+      process.execPath,
+      [
+        "node_modules/vite/bin/vite.js",
+        "preview",
+        "--config",
+        previewConfig,
+        "--host",
+        "127.0.0.1",
+        "--port",
+        String(APP_PORT),
+        "--strictPort",
+      ],
+      { stdio: ["ignore", "pipe", "ignore"] },
+    );
     preview.stdout?.on("data", (chunk: Buffer) => {
       previewOutput += stripVTControlCharacters(chunk.toString());
       if (previewOutput.includes(ORIGIN)) previewReady = true;
     });
-    preview.on("error", () => { browserErrors.push("Could not start the local preview."); });
+    preview.on("error", () => {
+      browserErrors.push("Could not start the local preview.");
+    });
     await waitFor(localReady, "the local production preview");
-    chrome = spawn(chromePath, ["--headless", "--disable-gpu", "--disable-background-networking", "--disable-component-update", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
-    chrome.stderr?.on("data", (chunk: Buffer) => { chromeDiagnostics = (chromeDiagnostics + stripVTControlCharacters(chunk.toString())).slice(-8000); });
-    chrome.on("error", () => { browserErrors.push("Could not start Chrome. Check CHROME_PATH."); });
-    try { await connectBrowser(); } catch (error) {
-      throw new Error(`Could not connect to the fresh synthetic Chrome profile. ${chromeDiagnostics}`, { cause: error });
+    chrome = spawn(
+      chromePath,
+      [
+        "--headless",
+        "--disable-gpu",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--hide-scrollbars",
+        "--remote-debugging-port=0",
+        `--user-data-dir=${profile}`,
+        "about:blank",
+      ],
+      { stdio: ["ignore", "ignore", "pipe"] },
+    );
+    chrome.stderr?.on("data", (chunk: Buffer) => {
+      chromeDiagnostics = (chromeDiagnostics + stripVTControlCharacters(chunk.toString())).slice(-8000);
+    });
+    chrome.on("error", () => {
+      browserErrors.push("Could not start Chrome. Check CHROME_PATH.");
+    });
+    try {
+      await connectBrowser();
+    } catch (error) {
+      throw new Error(`Could not connect to the fresh synthetic Chrome profile. ${chromeDiagnostics}`, {
+        cause: error,
+      });
     }
     await call("Runtime.enable");
     await call("Page.enable");
@@ -152,7 +244,9 @@ export async function withLocalBrowser(run: (browser: LocalBrowser) => Promise<v
     await call("Fetch.enable", { patterns: [{ urlPattern: "*", requestStage: "Request" }] });
     await run({ origin: ORIGIN, call, evaluate, waitFor });
     if (browserErrors.length > 0 || blockedOrigins.size > 0) {
-      throw new Error(`Browser check failed: ${browserErrors.join(" ") || "no runtime errors"}; ${String(blockedOrigins.size)} nonlocal origin(s) blocked.`);
+      throw new Error(
+        `Browser check failed: ${browserErrors.join(" ") || "no runtime errors"}; ${String(blockedOrigins.size)} nonlocal origin(s) blocked.`,
+      );
     }
   } finally {
     // Closing through CDP lets Chrome stop its profile-writing helpers first.

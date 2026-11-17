@@ -13,32 +13,64 @@ import { Session } from "./session";
 function world() {
   const google = new FakeGoogle();
   const values = new Map<string, string>();
-  const storage: KeyValueStore = { getItem: key => values.get(key) ?? null, setItem: (key, value) => { values.set(key, value); }, removeItem: key => { values.delete(key); } };
+  const storage: KeyValueStore = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => {
+      values.set(key, value);
+    },
+    removeItem: (key) => {
+      values.delete(key);
+    },
+  };
   let id = 0;
-  const make = (rest: RestClient = google.client) => new Session({ clientId: "synthetic-client", interpret, present: presentStatement, signIn: () => Promise.resolve({ ok: true, accessToken: google.token, expiresInSeconds: 3600 }), rest, cache: createLedgerCache(() => storage), expenseCache: createExpenseCache(() => storage), now: () => 1_793_875_200_000, newId: () => `session-expense-${String(++id)}` });
-  const zeroDay = { date: date("2026-11-02"), amounts: [ZERO_CENTS, ZERO_CENTS, ZERO_CENTS, ZERO_CENTS, ZERO_CENTS] as const, expectedRevision: null };
+  const make = (rest: RestClient = google.client) =>
+    new Session({
+      clientId: "synthetic-client",
+      interpret,
+      present: presentStatement,
+      signIn: () => Promise.resolve({ ok: true, accessToken: google.token, expiresInSeconds: 3600 }),
+      rest,
+      cache: createLedgerCache(() => storage),
+      expenseCache: createExpenseCache(() => storage),
+      now: () => 1_793_875_200_000,
+      newId: () => `session-expense-${String(++id)}`,
+    });
+  const zeroDay = {
+    date: date("2026-11-02"),
+    amounts: [ZERO_CENTS, ZERO_CENTS, ZERO_CENTS, ZERO_CENTS, ZERO_CENTS] as const,
+    expectedRevision: null,
+  };
   return { google, make, values, zeroDay };
 }
 
 describe("portfolio and expenses sharing a session", () => {
   it("saves expenses without portfolio statements and rebuilds them on another session", async () => {
     const { make, google, zeroDay } = world();
-    const session = make(); await session.connect(); await session.expenses.refresh();
+    const session = make();
+    await session.connect();
+    await session.expenses.refresh();
     expect((await session.expenses.save(zeroDay)).status).toBe("saved");
     expect(session.state.ledger.snapshots).toHaveLength(0);
-    const another = make(); await another.connect(); await another.expenses.refresh();
+    const another = make();
+    await another.connect();
+    await another.expenses.refresh();
     expect(another.state.workbook?.id).toBe(session.state.workbook?.id);
     expect(another.expenses.state.days[0]?.amounts).toEqual(zeroDay.amounts);
     expect(google.workbooks.size).toBe(1);
-    await session.idle(); await another.idle();
+    await session.idle();
+    await another.idle();
   });
   it("restores a missing spending-only workbook from the checked device history", async () => {
     const { make, google, zeroDay } = world();
-    const session = make(); await session.connect(); await session.expenses.refresh();
-    await session.expenses.save(zeroDay); await session.idle();
+    const session = make();
+    await session.connect();
+    await session.expenses.refresh();
+    await session.expenses.save(zeroDay);
+    await session.idle();
     const originalId = session.state.workbook?.id ?? "";
     google.workbooks.delete(originalId);
-    const file = google.files.get(originalId); if (file) file.trashed = true;
+    const file = google.files.get(originalId);
+    if (file) file.trashed = true;
     expect((await session.refresh()).status).toBe("needs-attention");
     expect((await session.restoreFromDevice()).status).toBe("restored");
     expect(session.state.workbook?.id).not.toBe(originalId);
@@ -49,14 +81,24 @@ describe("portfolio and expenses sharing a session", () => {
   });
   it("recovers portfolio figures and expense correction history into the same replacement workbook", async () => {
     const { make, google, zeroDay } = world();
-    const session = make(); await session.connect(); await session.expenses.refresh();
-    const bank = interpret(januarySheet()); if (!bank.ok) throw new Error("Synthetic statement failed");
-    const recorded = await session.save.record({ date: date("2026-01-31"), statement: bank.statement, commands: OPENING }, session.save.newCommandId(), session.state.ledger.revision);
+    const session = make();
+    await session.connect();
+    await session.expenses.refresh();
+    const bank = interpret(januarySheet());
+    if (!bank.ok) throw new Error("Synthetic statement failed");
+    const recorded = await session.save.record(
+      { date: date("2026-01-31"), statement: bank.statement, commands: OPENING },
+      session.save.newCommandId(),
+      session.state.ledger.revision,
+    );
     expect(recorded.status).toBe("recorded");
-    await session.expenses.save(zeroDay); await session.idle();
+    await session.expenses.save(zeroDay);
+    await session.idle();
     const before = session.expenses.exportBackup();
     const originalId = session.state.workbook?.id ?? "";
-    google.workbooks.delete(originalId); const file = google.files.get(originalId); if (file) file.trashed = true;
+    google.workbooks.delete(originalId);
+    const file = google.files.get(originalId);
+    if (file) file.trashed = true;
     await session.refresh();
     expect((await session.restoreFromDevice()).status).toBe("restored");
     expect(session.state.ledger.snapshots).toHaveLength(1);
@@ -65,7 +107,10 @@ describe("portfolio and expenses sharing a session", () => {
   });
   it("forgetting a device clears both copies and any pending expense state", async () => {
     const { make, values, zeroDay } = world();
-    const session = make(); await session.connect(); await session.expenses.refresh(); await session.expenses.save(zeroDay);
+    const session = make();
+    await session.connect();
+    await session.expenses.refresh();
+    await session.expenses.save(zeroDay);
     expect(values.size).toBe(2);
     session.forget();
     expect(values.size).toBe(0);
@@ -78,24 +123,41 @@ describe("portfolio and expenses sharing a session", () => {
     let hold = false;
     let release: () => void = () => undefined;
     let captured: () => void = () => undefined;
-    const gate = new Promise<void>(resolve => { release = resolve; });
-    const started = new Promise<void>(resolve => { captured = resolve; });
-    const session = make(async request => {
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const started = new Promise<void>((resolve) => {
+      captured = resolve;
+    });
+    const session = make(async (request) => {
       const response = await google.client(request);
-      if (hold && request.method === "GET" && request.url.includes("/values/")) { captured(); await gate; }
+      if (hold && request.method === "GET" && request.url.includes("/values/")) {
+        captured();
+        await gate;
+      }
       return response;
     });
-    await session.connect(); await session.expenses.refresh(); await session.expenses.save(zeroDay); await session.idle();
+    await session.connect();
+    await session.expenses.refresh();
+    await session.expenses.save(zeroDay);
+    await session.idle();
     hold = true;
-    const pending = session.refresh(); await started;
-    session.forget(); release(); await pending;
+    const pending = session.refresh();
+    await started;
+    session.forget();
+    release();
+    await pending;
     expect(session.state.mode).toBe("signed-out");
     expect(session.expenses.state.commands).toHaveLength(0);
     expect(values.size).toBe(0);
   });
   it("clears prior expense coverage before displaying a different connected workbook", async () => {
     const { make, google, values, zeroDay } = world();
-    const session = make(); await session.connect(); await session.expenses.refresh(); await session.expenses.save(zeroDay); await session.idle();
+    const session = make();
+    await session.connect();
+    await session.expenses.refresh();
+    await session.expenses.save(zeroDay);
+    await session.idle();
     const second = await createWorkbook(google.client, google.token);
     expect(second.ok).toBe(true);
     expect((await session.connect()).status).toBe("connected");
@@ -110,8 +172,11 @@ describe("portfolio and expenses sharing a session", () => {
 /** A reopened device whose one-hour Google access has lapsed: the saved expense copy is shown, and nothing else has been checked yet. */
 async function reopenedAfterLapse(rest?: RestClient) {
   const { make, zeroDay, google } = world();
-  const first = make(); await first.connect(); await first.expenses.refresh();
-  await first.expenses.save(zeroDay); await first.idle();
+  const first = make();
+  await first.connect();
+  await first.expenses.refresh();
+  await first.expenses.save(zeroDay);
+  await first.idle();
   const reopened = make(rest);
   expect(reopened.state.sheet).toBe("unchecked");
   expect(reopened.expenses.state.cached).toBe(true);
@@ -151,7 +216,10 @@ describe("expenses after Google access has lapsed", () => {
     const { reopened, zeroDay, google } = await reopenedAfterLapse();
     const before = google.files.size;
     const outcome = await reopened.expenses.save({ ...zeroDay, date: date("2026-11-03") });
-    expect(outcome).toEqual({ status: "not-saved", message: "Sync and check your Google workbook in Your data before changing expenses." });
+    expect(outcome).toEqual({
+      status: "not-saved",
+      message: "Sync and check your Google workbook in Your data before changing expenses.",
+    });
     expect(google.files.size).toBe(before);
     await reopened.idle();
   });

@@ -3,7 +3,12 @@ import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
 import { createExpenseCache } from "../../../adapters/browser/ExpenseCache";
 import type { KeyValueStore } from "../../../adapters/browser/LedgerCache";
 import { createWorkbook } from "../../../adapters/google/GoogleWorkbook";
-import { decodeExpenseBackup, encodeExpenseBackup, EXPENSE_LOG_TITLE, saveExpense } from "../../../adapters/google/DirectExpenses";
+import {
+  decodeExpenseBackup,
+  encodeExpenseBackup,
+  EXPENSE_LOG_TITLE,
+  saveExpense,
+} from "../../../adapters/google/DirectExpenses";
 import type { RestClient } from "../../../adapters/google/Rest";
 import { parseExpenseCommand, type ExpenseCommand } from "../../../core/WorkExpenses";
 import { ExpenseSession } from "./expenseSession";
@@ -19,12 +24,23 @@ const request = { date: first.date, amounts: first.amounts, expectedRevision: fi
 
 function memory(): KeyValueStore {
   const data = new Map<string, string>();
-  return { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); }, removeItem: (key) => { data.delete(key); } };
+  return {
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => {
+      data.set(key, value);
+    },
+    removeItem: (key) => {
+      data.delete(key);
+    },
+  };
 }
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason: Error) => void;
-  const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; });
+  const promise = new Promise<T>((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
   return { promise, resolve, reject };
 }
 
@@ -38,10 +54,30 @@ async function world() {
   let ids = 0;
   let rest: RestClient = google.client;
   const access = () => Promise.resolve({ ok: true as const, token: google.token, workbook: active });
-  const make = () => new ExpenseSession({ rest: (call) => rest(call), cache: boundCache, newId: () => `synthetic-${String(++ids)}`, access });
+  const make = () =>
+    new ExpenseSession({
+      rest: (call) => rest(call),
+      cache: boundCache,
+      newId: () => `synthetic-${String(++ids)}`,
+      access,
+    });
   const session = make();
   await session.refresh();
-  return { google, boundCache, store, session, make, access, setRest: (next: RestClient) => { rest = next; }, setWorkbook: (next: typeof active) => { active = next; }, workbook: created.value };
+  return {
+    google,
+    boundCache,
+    store,
+    session,
+    make,
+    access,
+    setRest: (next: RestClient) => {
+      rest = next;
+    },
+    setWorkbook: (next: typeof active) => {
+      active = next;
+    },
+    workbook: created.value,
+  };
 }
 
 describe("expense session integrity and recovery", () => {
@@ -50,8 +86,12 @@ describe("expense session integrity and recovery", () => {
     const entered = deferred<undefined>();
     const release = deferred<undefined>();
     let inspections = 0;
-    setRest(async call => {
-      if (call.method === "GET" && call.url.includes("?fields=")) { inspections++; entered.resolve(undefined); await release.promise; }
+    setRest(async (call) => {
+      if (call.method === "GET" && call.url.includes("?fields=")) {
+        inspections++;
+        entered.resolve(undefined);
+        await release.promise;
+      }
       return google.client(call);
     });
     const background = session.refresh();
@@ -67,7 +107,12 @@ describe("expense session integrity and recovery", () => {
   it("makes a failed connection check visible and recoverable without losing the history", async () => {
     const { session, google, boundCache } = await world();
     await session.save(request);
-    const denied = new ExpenseSession({ rest: google.client, cache: boundCache, newId: () => "unused", access: () => Promise.resolve({ ok: false, message: "Sign in with Google to check these records." }) });
+    const denied = new ExpenseSession({
+      rest: google.client,
+      cache: boundCache,
+      newId: () => "unused",
+      access: () => Promise.resolve({ ok: false, message: "Sign in with Google to check these records." }),
+    });
     await denied.refresh();
     expect(denied.state.ready).toBe(false);
     expect(denied.state.message).toContain("Sign in with Google");
@@ -79,7 +124,8 @@ describe("expense session integrity and recovery", () => {
     const { session, google, setRest } = await world();
     const access = deferred<{ readonly ok: true; readonly token: string; readonly workbook: Workbook }>();
     const delayed = new ExpenseSession({ rest: google.client, newId: () => "unused", access: () => access.promise });
-    const checking = delayed.refresh(); access.reject(new Error("Synthetic identity failure"));
+    const checking = delayed.refresh();
+    access.reject(new Error("Synthetic identity failure"));
     await expect(checking).resolves.toBeUndefined();
     expect(delayed.state.ready).toBe(false);
     expect(delayed.state.message).toContain("could not be checked");
@@ -104,9 +150,19 @@ describe("expense session integrity and recovery", () => {
     const firstRevision = session.state.days[0]?.revision;
     expect(firstRevision).toBeDefined();
     const zero = command({ ...first, id: "unused-zero", amounts: [0, 0, 0, 0, 0], expectedRevision: firstRevision });
-    expect((await session.save({ date: zero.date, amounts: zero.amounts, expectedRevision: zero.expectedRevision })).status).toBe("saved");
-    const clear = command({ ...first, id: "unused-clear", amounts: [null, null, null, null, null], expectedRevision: session.state.days[0]?.revision });
-    expect((await session.save({ date: clear.date, amounts: clear.amounts, expectedRevision: clear.expectedRevision })).status).toBe("saved");
+    expect(
+      (await session.save({ date: zero.date, amounts: zero.amounts, expectedRevision: zero.expectedRevision })).status,
+    ).toBe("saved");
+    const clear = command({
+      ...first,
+      id: "unused-clear",
+      amounts: [null, null, null, null, null],
+      expectedRevision: session.state.days[0]?.revision,
+    });
+    expect(
+      (await session.save({ date: clear.date, amounts: clear.amounts, expectedRevision: clear.expectedRevision }))
+        .status,
+    ).toBe("saved");
     const history = decodeExpenseBackup(JSON.parse(session.exportBackup()) as unknown);
     expect(history?.commands).toHaveLength(3);
     expect(history?.days[0]?.amounts).toEqual([null, null, null, null, null]);
@@ -118,7 +174,10 @@ describe("expense session integrity and recovery", () => {
     setRest(async (call) => {
       if (blocked && call.method === "GET") throw new Error("Synthetic read outage");
       const result = await google.client(call);
-      if (call.method === "POST" && call.url.includes(":append")) { blocked = true; throw new Error("Synthetic acknowledgement lost"); }
+      if (call.method === "POST" && call.url.includes(":append")) {
+        blocked = true;
+        throw new Error("Synthetic acknowledgement lost");
+      }
       return result;
     });
     expect((await session.save(request)).status).toBe("unknown");
@@ -142,7 +201,10 @@ describe("expense session integrity and recovery", () => {
     setRest(async (call) => {
       if (blocked && call.method === "GET") throw new Error("Synthetic read outage");
       const answer = await google.client(call);
-      if (call.method === "POST" && call.url.includes(":append")) { blocked = true; throw new Error("Synthetic acknowledgement lost"); }
+      if (call.method === "POST" && call.url.includes(":append")) {
+        blocked = true;
+        throw new Error("Synthetic acknowledgement lost");
+      }
       return answer;
     });
     await session.save(request);
@@ -172,8 +234,20 @@ describe("expense session integrity and recovery", () => {
   it("preserves cached correction history when Google returns a valid but truncated log", async () => {
     const { google, session, workbook, boundCache, make } = await world();
     expect((await session.save(request)).status).toBe("saved");
-    const correction = command({ ...first, amounts: [200, 500, 0, 0, 0], expectedRevision: session.state.days[0]?.revision });
-    expect((await session.save({ date: correction.date, amounts: correction.amounts, expectedRevision: correction.expectedRevision })).status).toBe("saved");
+    const correction = command({
+      ...first,
+      amounts: [200, 500, 0, 0, 0],
+      expectedRevision: session.state.days[0]?.revision,
+    });
+    expect(
+      (
+        await session.save({
+          date: correction.date,
+          amounts: correction.amounts,
+          expectedRevision: correction.expectedRevision,
+        })
+      ).status,
+    ).toBe("saved");
     const known = [...session.state.commands];
     const reloaded = make();
     expect(reloaded.state.cached).toBe(true);
@@ -195,7 +269,11 @@ describe("expense session integrity and recovery", () => {
     const { google, session, setWorkbook, boundCache, make } = await world();
     await session.save(request);
     const backup = session.exportBackup();
-    const other = await createWorkbook(google.client, google.token, { title: "Synthetic recovery", propertyKey: "recovery", propertyValue: "v1" });
+    const other = await createWorkbook(google.client, google.token, {
+      title: "Synthetic recovery",
+      propertyKey: "recovery",
+      propertyValue: "v1",
+    });
     if (!other.ok) throw new Error("Synthetic recovery workbook failed");
     expect(session.prepareWorkbookRecovery(other.value.id)).toBe(true);
     setWorkbook(other.value);
@@ -221,7 +299,11 @@ describe("expense session integrity and recovery", () => {
   it("drops the old workbook copy before exposing a different connected workbook", async () => {
     const { google, session, setWorkbook, boundCache } = await world();
     await session.save(request);
-    const other = await createWorkbook(google.client, google.token, { title: "Synthetic second account", propertyKey: "second", propertyValue: "v1" });
+    const other = await createWorkbook(google.client, google.token, {
+      title: "Synthetic second account",
+      propertyKey: "second",
+      propertyValue: "v1",
+    });
     if (!other.ok) throw new Error("Synthetic second workbook failed");
     setWorkbook(other.value);
     await session.refresh();
@@ -235,7 +317,11 @@ describe("expense session integrity and recovery", () => {
     await session.save(request);
     const barrier = deferred<undefined>();
     let waiting = false;
-    setRest(async (call) => { waiting = true; await barrier.promise; return google.client(call); });
+    setRest(async (call) => {
+      waiting = true;
+      await barrier.promise;
+      return google.client(call);
+    });
     const refresh = session.refresh();
     await Promise.resolve();
     expect(waiting).toBe(true);
@@ -250,7 +336,12 @@ describe("expense session integrity and recovery", () => {
   it("ignores a rejected old-account access promise after the session is forgotten", async () => {
     const { google, boundCache } = await world();
     const barrier = deferred<{ readonly ok: true; readonly token: string; readonly workbook: Workbook }>();
-    const session = new ExpenseSession({ rest: google.client, cache: boundCache, newId: () => "synthetic", access: () => barrier.promise });
+    const session = new ExpenseSession({
+      rest: google.client,
+      cache: boundCache,
+      newId: () => "synthetic",
+      access: () => barrier.promise,
+    });
     const saving = session.save(request);
     session.forget();
     barrier.reject(new Error("Old account failed"));
@@ -264,7 +355,13 @@ describe("expense session integrity and recovery", () => {
     const { google, session, boundCache, access } = await world();
     await session.save(request);
     for (const workbookId of [null, "different-workbook"]) {
-      const mismatched = new ExpenseSession({ rest: google.client, cache: boundCache, newId: () => "synthetic", access, workbookId });
+      const mismatched = new ExpenseSession({
+        rest: google.client,
+        cache: boundCache,
+        newId: () => "synthetic",
+        access,
+        workbookId,
+      });
       expect(mismatched.state.days).toEqual([]);
       expect(mismatched.state.commands).toEqual([]);
       expect(mismatched.state.cached).toBe(false);
@@ -274,7 +371,12 @@ describe("expense session integrity and recovery", () => {
   it("restores a full spending-only correction history without an investment statement and reconciles a repeat read-only", async () => {
     const { session, google, workbook } = await world();
     const initial = command({ ...first, id: "history-first" });
-    const cleared = command({ ...first, id: "history-cleared", amounts: [null, null, null, null, null], expectedRevision: initial.id });
+    const cleared = command({
+      ...first,
+      id: "history-cleared",
+      amounts: [null, null, null, null, null],
+      expectedRevision: initial.id,
+    });
     const text = encodeExpenseBackup([initial, cleared]);
     expect(session.previewBackup(text)?.commands).toHaveLength(2);
     expect((await session.restoreBackup(text)).status).toBe("saved");
@@ -302,7 +404,14 @@ describe("expense session integrity and recovery", () => {
     const release = deferred<undefined>();
     setRest(async (call) => {
       const answer = await google.client(call);
-      if (call.method === "POST" && call.url.endsWith(":batchUpdate") && call.body?.includes("foliodash.expenses") === true) { entered.resolve(undefined); await release.promise; }
+      if (
+        call.method === "POST" &&
+        call.url.endsWith(":batchUpdate") &&
+        call.body?.includes("foliodash.expenses") === true
+      ) {
+        entered.resolve(undefined);
+        await release.promise;
+      }
       return answer;
     });
     const text = encodeExpenseBackup([first]);
@@ -323,7 +432,10 @@ describe("expense session integrity and recovery", () => {
     setRest(async (call) => {
       if (lost && call.method === "GET") throw new Error("Synthetic recovery read outage");
       const answer = await google.client(call);
-      if (call.method === "POST" && call.body?.includes("foliodash.expenses") === true) { lost = true; throw new Error("Synthetic recovery answer lost"); }
+      if (call.method === "POST" && call.body?.includes("foliodash.expenses") === true) {
+        lost = true;
+        throw new Error("Synthetic recovery answer lost");
+      }
       return answer;
     });
     const text = encodeExpenseBackup([first]);
@@ -347,7 +459,10 @@ describe("expense session integrity and recovery", () => {
     setRest(async (call) => {
       if (lost && call.method === "GET") throw new Error("Synthetic recovery read outage");
       const answer = await google.client(call);
-      if (call.method === "POST" && call.body?.includes("foliodash.expenses") === true) { lost = true; throw new Error("Synthetic recovery answer lost"); }
+      if (call.method === "POST" && call.body?.includes("foliodash.expenses") === true) {
+        lost = true;
+        throw new Error("Synthetic recovery answer lost");
+      }
       return answer;
     });
     const text = encodeExpenseBackup([first]);
@@ -377,13 +492,20 @@ describe("expense session integrity and recovery", () => {
     let held = false;
     setRest(async (call) => {
       const answer = await google.client(call);
-      if (!held && call.method === "GET" && call.url.includes("/values/")) { held = true; entered.resolve(undefined); await release.promise; }
+      if (!held && call.method === "GET" && call.url.includes("/values/")) {
+        held = true;
+        entered.resolve(undefined);
+        await release.promise;
+      }
       return answer;
     });
     const refreshing = session.refresh();
     await entered.promise;
     const changed = command({ ...first, amounts: [200, 500, 0, 0, 0], expectedRevision: previous });
-    expect((await session.save({ date: changed.date, amounts: changed.amounts, expectedRevision: changed.expectedRevision })).status).toBe("saved");
+    expect(
+      (await session.save({ date: changed.date, amounts: changed.amounts, expectedRevision: changed.expectedRevision }))
+        .status,
+    ).toBe("saved");
     const confirmed = session.state.commands;
     release.resolve(undefined);
     await refreshing;

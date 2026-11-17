@@ -6,9 +6,19 @@
 /* Set A: navigation, controls and workflow feedback (43-67). */
 
 /* 43: Main navigation selection glides between destinations. */
-.nav-list { --nav-gap: 2px; position: relative; isolation: isolate; gap: var(--nav-gap); }
-.nav-list > li { min-width: 0; }
-.nav-list .nav-link { height: 100%; overflow-wrap: anywhere; }
+.nav-list {
+  --nav-gap: 2px;
+  position: relative;
+  isolation: isolate;
+  gap: var(--nav-gap);
+}
+.nav-list > li {
+  min-width: 0;
+}
+.nav-list .nav-link {
+  height: 100%;
+  overflow-wrap: anywhere;
+}
 .nav-list::before {
   content: "";
   position: absolute;
@@ -21,9 +31,13 @@
   transform: translateX(calc(var(--nav-index) * (100% + var(--nav-gap))));
   transition: transform var(--duration-feedback) var(--ease-standard);
 }
-.nav-list .nav-link[aria-current="page"] { background: transparent; }
+.nav-list .nav-link[aria-current="page"] {
+  background: transparent;
+}
 @media (min-width: 64rem) {
-  .nav-list { --nav-gap: 4px; }
+  .nav-list {
+    --nav-gap: 4px;
+  }
   .nav-list::before {
     inset: 0 0 auto;
     width: 100%;
@@ -33,27 +47,70 @@
 }
 
 /* 44: Sidebar toggle reflects the direction it will open. */
-.sidebar-toggle > svg { transition: transform var(--duration-feedback) var(--ease-standard); }
-.sidebar-toggle[aria-expanded="false"] > svg { transform: scaleX(-1); }
+.sidebar-toggle > svg {
+  transition: transform var(--duration-feedback) var(--ease-standard);
+}
+.sidebar-toggle[aria-expanded="false"] > svg {
+  transform: scaleX(-1);
+}
 
 /* 45: Source chip hover surface. */
-.status-chip { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
-@media (hover: hover) and (pointer: fine) { .status-chip:hover { box-shadow: inset 0 0 0 1px var(--color-accent); } }
+.status-chip {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .status-chip:hover {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+}
 
 /* 46: Source dot settles only when the actual source tone changes. */
-.status-dot { animation: motion-dot var(--duration-feedback) var(--ease-standard); }
-@keyframes motion-dot { from { transform: scale(0.7); } to { transform: scale(1); } }
+.status-dot {
+  animation: motion-dot var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-dot {
+  from {
+    transform: scale(0.7);
+  }
+  to {
+    transform: scale(1);
+  }
+}
 
 /* 47: Toolbar icon hover boundary. */
-.icon-button { transition: background var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
-@media (hover: hover) and (pointer: fine) { .icon-button:hover { box-shadow: inset 0 0 0 1px var(--color-accent); } }
+.icon-button {
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+}
 
 /* 48: New page title arrival; only the heading is remounted. */
-.page-title-arrival { animation: motion-label var(--duration-cue) var(--ease-standard); }
-@keyframes motion-label { from { opacity: var(--motion-reveal-opacity); transform: translateY(var(--motion-nudge)); } to { opacity: 1; transform: none; } }
+.page-title-arrival {
+  animation: motion-label var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-label {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(var(--motion-nudge));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 /* 49: Import-mode destination marker. */
-.mode-row .segmented a { position: relative; }
+.mode-row .segmented a {
+  position: relative;
+}
 .mode-row .segmented a::after {
   content: "";
   position: absolute;
@@ -66,23 +123,48 @@
   transform: scaleX(0);
   transition: transform var(--duration-short) var(--ease-standard);
 }
-.mode-row .segmented a[aria-current="page"]::after { transform: scaleX(1); }
+.mode-row .segmented a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
 
 /* 50: Search-result count confirmation (counts only, never financial amounts). */
-.filter-count { display: inline-block; animation: motion-fade var(--duration-cue) var(--ease-standard); }
-@keyframes motion-fade { from { opacity: var(--motion-reveal-opacity); } to { opacity: 1; } }
+.filter-count {
+  display: inline-block;
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-fade {
+  from {
+    opacity: var(--motion-reveal-opacity);
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* 51: Active field label. */
-.field > label { transition: color var(--duration-short) var(--ease-standard); }
-.field:focus-within > label { color: var(--color-accent); }
+.field > label {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.field:focus-within > label {
+  color: var(--color-accent);
+}
 
 /* 52: Active field instructions become more prominent. */
-.field > .hint { transition: color var(--duration-short) var(--ease-standard); }
-.field:focus-within > .hint { color: var(--color-text); }
+.field > .hint {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.field:focus-within > .hint {
+  color: var(--color-text);
+}
 
 /* 53: Placeholder recedes when typing begins; the visible label remains. */
-.field input::placeholder { opacity: 1; transition: opacity var(--duration-short) var(--ease-standard); }
-.field input:focus::placeholder { opacity: 0.6; }
+.field input::placeholder {
+  opacity: 1;
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+.field input:focus::placeholder {
+  opacity: 0.6;
+}
 
 /* 54: Native file-picker button hover feedback. */
 .field input::file-selector-button {
@@ -97,24 +179,48 @@
   cursor: pointer;
   transition: background-color var(--duration-short) var(--ease-standard);
 }
-@media (hover: hover) and (pointer: fine) { .field input:not(:disabled):hover::file-selector-button { background: var(--surface-high); } }
+@media (hover: hover) and (pointer: fine) {
+  .field input:not(:disabled):hover::file-selector-button {
+    background: var(--surface-high);
+  }
+}
 
 /* 55: Valid manual subtotal gains a boundary, with its number updated immediately. */
-.manual-total { box-shadow: inset 0 0 0 1px transparent; transition: box-shadow var(--duration-short) var(--ease-standard); }
-.manual-total[data-complete="true"] { box-shadow: inset 0 0 0 1px var(--color-accent); }
+.manual-total {
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.manual-total[data-complete="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
 
 /* 56: Validation label enters/leaves its error colour. */
-.field:has(input[aria-invalid="true"]) > label { color: var(--color-error); }
+.field:has(input[aria-invalid="true"]) > label {
+  color: var(--color-error);
+}
 
 /* 57: Native checkbox check confirmation; its enclosing target retains its size. */
-input[type="checkbox"]:checked { animation: motion-choice var(--duration-cue) var(--ease-standard); }
-@keyframes motion-choice { from { scale: var(--motion-control-press); } to { transform: scale(1); } }
+input[type="checkbox"]:checked {
+  animation: motion-choice var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-choice {
+  from {
+    scale: var(--motion-control-press);
+  }
+  to {
+    transform: scale(1);
+  }
+}
 
 /* 58: Native radio selection confirmation. */
-input[type="radio"]:checked { animation: motion-choice var(--duration-cue) var(--ease-standard); }
+input[type="radio"]:checked {
+  animation: motion-choice var(--duration-cue) var(--ease-standard);
+}
 
 /* 59: Disabled controls fade to their actual availability state. */
-button:disabled { transition: opacity var(--duration-short) var(--ease-standard); }
+button:disabled {
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
 
 /* 60: External workbook-link underline grows without shifting its text. */
 .account .facts a {
@@ -124,178 +230,427 @@ button:disabled { transition: opacity var(--duration-short) var(--ease-standard)
   background-repeat: no-repeat;
   transition: background-size var(--duration-short) var(--ease-standard);
 }
-.account .facts a:focus-visible { background-size: 100% 1px; }
-@media (hover: hover) and (pointer: fine) { .account .facts a:hover { background-size: 100% 1px; } }
+.account .facts a:focus-visible {
+  background-size: 100% 1px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .account .facts a:hover {
+    background-size: 100% 1px;
+  }
+}
 
 /* 61: Disclosure hover surface. */
-summary { border-radius: var(--shape-sm); transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
-@media (hover: hover) and (pointer: fine) { summary:hover { background-color: var(--color-accent-soft); } }
+summary {
+  border-radius: var(--shape-sm);
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  summary:hover {
+    background-color: var(--color-accent-soft);
+  }
+}
 
 /* 62: Disclosure keyboard-focus boundary. */
-summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
+summary:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
 
 /* 63: Clipboard outcome appears without removing its live region. */
-.copy-result { display: inline-block; animation: motion-label var(--duration-cue) var(--ease-standard); }
+.copy-result {
+  display: inline-block;
+  animation: motion-label var(--duration-cue) var(--ease-standard);
+}
 
 /* 64: A newly empty fund search explains itself gently. */
-.search-empty { animation: motion-fade var(--duration-cue) var(--ease-standard); }
+.search-empty {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
 
 /* 65: Newly returned search rows appear; existing matching rows are not remounted. */
 .mobile-holdings[data-filtered="true"] > li,
-.holdings-table[data-filtered="true"] tbody > tr { animation: motion-fade var(--duration-cue) var(--ease-standard); }
+.holdings-table[data-filtered="true"] tbody > tr {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
 
 /* 66: Ready/review panels confirm readiness with a quiet edge. */
-.review-adjustments { animation: motion-edge var(--duration-feedback) var(--ease-standard); }
-@keyframes motion-edge { from { box-shadow: inset 0 0 0 1px var(--color-accent); } to { box-shadow: inset 0 0 0 1px transparent; } }
+.review-adjustments {
+  animation: motion-edge var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-edge {
+  from {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  to {
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
 
 /* 67: Browser-recorded summary settles after the actual local record completes. */
-.recorded { animation: motion-label var(--duration-feedback) var(--ease-standard); }
+.recorded {
+  animation: motion-label var(--duration-feedback) var(--ease-standard);
+}
 
 /* Set B: charts, tables and content-state feedback (68-92). */
 
 /* 68: Chart legend hover surface. */
-@media (hover: hover) and (pointer: fine) { .chart-legend-button:hover { background: var(--color-accent-soft); } }
+@media (hover: hover) and (pointer: fine) {
+  .chart-legend-button:hover {
+    background: var(--color-accent-soft);
+  }
+}
 
 /* 69: Keyboard-focused legend swatch nudges into view. */
-.chart-legend-button .chart-swatch { transition: translate var(--duration-short) var(--ease-standard); }
-.chart-legend-button:focus-visible .chart-swatch { translate: var(--motion-nudge) 0; }
+.chart-legend-button .chart-swatch {
+  transition: translate var(--duration-short) var(--ease-standard);
+}
+.chart-legend-button:focus-visible .chart-swatch {
+  translate: var(--motion-nudge) 0;
+}
 
 /* 70: The readout label follows the highlighted series; amounts do not animate. */
-.chart-readout-label { border-radius: var(--shape-xs); transition: background-color var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard); }
-.chart-readout-item[data-highlighted="true"] .chart-readout-label { background-color: var(--color-accent-soft); color: var(--color-text); }
+.chart-readout-label {
+  border-radius: var(--shape-xs);
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard);
+}
+.chart-readout-item[data-highlighted="true"] .chart-readout-label {
+  background-color: var(--color-accent-soft);
+  color: var(--color-text);
+}
 
 /* 71: Native date-slider thumb press; the hit area and observation coordinates stay fixed. */
-.chart-date-control input::-webkit-slider-thumb { transition: transform var(--duration-press) var(--ease-standard); }
-.chart-date-control input:active::-webkit-slider-thumb { transform: scale(1.1); }
-.chart-date-control input::-moz-range-thumb { transition: transform var(--duration-press) var(--ease-standard); }
-.chart-date-control input:active::-moz-range-thumb { transform: scale(1.1); }
+.chart-date-control input::-webkit-slider-thumb {
+  transition: transform var(--duration-press) var(--ease-standard);
+}
+.chart-date-control input:active::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+.chart-date-control input::-moz-range-thumb {
+  transition: transform var(--duration-press) var(--ease-standard);
+}
+.chart-date-control input:active::-moz-range-thumb {
+  transform: scale(1.1);
+}
 
 /* 72: Active date-slider label. */
-.chart-date-control > span { transition: color var(--duration-short) var(--ease-standard); }
-.chart-date-control:focus-within > span { color: var(--color-text); }
-
+.chart-date-control > span {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.chart-date-control:focus-within > span {
+  color: var(--color-text);
+}
 
 /* 74: Monthly bar pin outline fades to the actual selected state. */
-.bars-item .bar { stroke: var(--color-text); stroke-opacity: 0; transition: opacity var(--duration-short) var(--ease-standard), stroke-opacity var(--duration-short) var(--ease-standard); }
-.bars-item[aria-pressed="true"] .bar { stroke-opacity: 1; }
+.bars-item .bar {
+  stroke: var(--color-text);
+  stroke-opacity: 0;
+  transition:
+    opacity var(--duration-short) var(--ease-standard),
+    stroke-opacity var(--duration-short) var(--ease-standard);
+}
+.bars-item[aria-pressed="true"] .bar {
+  stroke-opacity: 1;
+}
 
 /* 75: Monthly bar keyboard hit region receives a subtle surface. */
-.bars-hit { transition: fill var(--duration-short) var(--ease-standard); }
-.bars-item:focus-visible .bars-hit { fill: var(--color-accent-soft); }
+.bars-hit {
+  transition: fill var(--duration-short) var(--ease-standard);
+}
+.bars-item:focus-visible .bars-hit {
+  fill: var(--color-accent-soft);
+}
 
 /* 76: Inspected bar month changes are confirmed separately from its financial value. */
-.bars-readout-month { animation: motion-fade var(--duration-cue) var(--ease-standard); }
+.bars-readout-month {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
 
 /* 77: Allocation legend dot acknowledges hover/focus. */
-.legend .dot { transition: transform var(--duration-short) var(--ease-standard); }
-.legend a:focus-visible .dot { transform: scale(1.12); }
-@media (hover: hover) and (pointer: fine) { .legend a:hover .dot { transform: scale(1.12); } }
+.legend .dot {
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+.legend a:focus-visible .dot {
+  transform: scale(1.12);
+}
+@media (hover: hover) and (pointer: fine) {
+  .legend a:hover .dot {
+    transform: scale(1.12);
+  }
+}
 
 /* 78: Allocation legend dot press. */
-.legend a:active .dot { transform: scale(0.9); }
+.legend a:active .dot {
+  transform: scale(0.9);
+}
 
 /* 79: Hovered ranking bar brightens without changing its length. */
-.perf-bar { transition: filter var(--duration-short) var(--ease-standard); }
-@media (hover: hover) and (pointer: fine) { .perf-row:hover .perf-bar { filter: brightness(1.15); } }
+.perf-bar {
+  transition: filter var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .perf-row:hover .perf-bar {
+    filter: brightness(1.15);
+  }
+}
 
 /* 80: Keyboard-focused ranking track boundary. */
-.perf-track { transition: box-shadow var(--duration-short) var(--ease-standard); }
-.perf-row:focus-visible .perf-track { box-shadow: 0 0 0 1px var(--color-accent); }
+.perf-track {
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.perf-row:focus-visible .perf-track {
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
 
 /* 81: Holdings share bar brightens on inspection, never changing its width. */
-.share-bar > span { opacity: 0.7; transition: opacity var(--duration-short) var(--ease-standard); }
-.holdings-table tr:focus-within .share-bar > span { opacity: 1; }
-@media (hover: hover) and (pointer: fine) { .holdings-table tr:hover .share-bar > span { opacity: 1; } }
+.share-bar > span {
+  opacity: 0.7;
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+.holdings-table tr:focus-within .share-bar > span {
+  opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .holdings-table tr:hover .share-bar > span {
+    opacity: 1;
+  }
+}
 
 /* 82: Keyboard-focused holdings row gets the existing row transition too. */
-.holdings-table tbody tr:focus-within { background: var(--color-surface-2); }
+.holdings-table tbody tr:focus-within {
+  background: var(--color-surface-2);
+}
 
 /* 83: Wide-table scroll region focus boundary. */
-.table-scroll { transition: box-shadow var(--duration-short) var(--ease-standard); }
-.table-scroll:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.table-scroll {
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.table-scroll:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
 
 /* 84: Phone holding name responds to focus/hover. */
-.holding-name { transition: color var(--duration-short) var(--ease-standard); }
-.mobile-holdings a:focus-visible .holding-name { color: var(--color-accent); }
-@media (hover: hover) and (pointer: fine) { .mobile-holdings a:hover .holding-name { color: var(--color-accent); } }
+.holding-name {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.mobile-holdings a:focus-visible .holding-name {
+  color: var(--color-accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .mobile-holdings a:hover .holding-name {
+    color: var(--color-accent);
+  }
+}
 
 /* 85: Previous/next month arrows indicate their direction. */
-.month-step { display: inline-flex; align-items: center; gap: var(--space-1); --step-direction: 1; }
-.month-step.previous { --step-direction: -1; }
-.month-step > svg { flex-shrink: 0; transition: transform var(--duration-short) var(--ease-standard); }
-.month-step:not(:disabled):focus-visible > svg { transform: translateX(calc(var(--step-direction) * var(--motion-nudge))); }
-@media (hover: hover) and (pointer: fine) { .month-step:not(:disabled):hover > svg { transform: translateX(calc(var(--step-direction) * var(--motion-nudge))); } }
+.month-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  --step-direction: 1;
+}
+.month-step.previous {
+  --step-direction: -1;
+}
+.month-step > svg {
+  flex-shrink: 0;
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+.month-step:not(:disabled):focus-visible > svg {
+  transform: translateX(calc(var(--step-direction) * var(--motion-nudge)));
+}
+@media (hover: hover) and (pointer: fine) {
+  .month-step:not(:disabled):hover > svg {
+    transform: translateX(calc(var(--step-direction) * var(--motion-nudge)));
+  }
+}
 
 /* 87: Actual source-status text changes soften; no source state is invented. */
-.source-label { animation: motion-fade var(--duration-cue) var(--ease-standard); }
+.source-label {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
 
 /* 88: Chart-reset action confirms that inspection is now active. */
-.chart-reset:not(:disabled) { animation: motion-edge var(--duration-feedback) var(--ease-standard); }
+.chart-reset:not(:disabled) {
+  animation: motion-edge var(--duration-feedback) var(--ease-standard);
+}
 
 /* 89: Actual account result heading arrival. */
-.account .review-adjustments > h3 { animation: motion-label var(--duration-cue) var(--ease-standard); }
+.account .review-adjustments > h3 {
+  animation: motion-label var(--duration-cue) var(--ease-standard);
+}
 
 /* 90: Confirmed history progress follows the real saved count; no fabricated progress. */
-.history-progress { height: var(--space-2); margin-top: var(--space-2); border-radius: var(--shape-full); background: var(--color-surface-2); overflow: hidden; }
-.history-progress::before { content: ""; display: block; width: var(--completion); height: 100%; border-radius: inherit; background: var(--color-accent); transition: width var(--duration-short) var(--ease-standard); }
+.history-progress {
+  height: var(--space-2);
+  margin-top: var(--space-2);
+  border-radius: var(--shape-full);
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+.history-progress::before {
+  content: "";
+  display: block;
+  width: var(--completion);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width var(--duration-short) var(--ease-standard);
+}
 
 /* 91: Real Google-consent waiting state gains a single edge cue, never a heartbeat. */
-.get-started button[data-working="true"] { animation: motion-wait var(--duration-feedback) var(--ease-standard); }
-@keyframes motion-wait { from { box-shadow: inset 0 0 0 1px transparent; } to { box-shadow: inset 0 0 0 1px var(--color-on-accent); } }
+.get-started button[data-working="true"] {
+  animation: motion-wait var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-wait {
+  from {
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  to {
+    box-shadow: inset 0 0 0 1px var(--color-on-accent);
+  }
+}
 
 /* 92: A real available-update notice arrives from above, with no automatic reload. */
-.app-update { animation: motion-update var(--duration-feedback) var(--ease-standard); }
-@keyframes motion-update { from { opacity: var(--motion-reveal-opacity); transform: translateY(calc(-1 * var(--motion-nudge))); } to { opacity: 1; transform: none; } }
+.app-update {
+  animation: motion-update var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-update {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(calc(-1 * var(--motion-nudge)));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 /* Cards, charts and stat blocks are containers, not controls: they get no hover, focus or press
  * feedback of their own. The links and buttons inside them carry it.
  */
-.spark-area { transition: opacity var(--duration-feedback) var(--ease-standard); }
-.spark-line { transition: stroke-width var(--duration-feedback) var(--ease-standard); }
-.hero::before, .hero::after { transition: translate var(--duration-medium) var(--ease-standard); }
-.hero:focus-within::before { translate: var(--motion-nudge) var(--motion-nudge); }
+.spark-area {
+  transition: opacity var(--duration-feedback) var(--ease-standard);
+}
+.spark-line {
+  transition: stroke-width var(--duration-feedback) var(--ease-standard);
+}
+.hero::before,
+.hero::after {
+  transition: translate var(--duration-medium) var(--ease-standard);
+}
+.hero:focus-within::before {
+  translate: var(--motion-nudge) var(--motion-nudge);
+}
 
 /* Inspection is an opacity/stroke treatment; allocation angles never change. */
-.donut-centre { pointer-events: none; }
-.donut[data-inspecting="true"] .donut-number { font-size: max(var(--text-body), min(1.5rem, 13cqi)); }
+.donut-centre {
+  pointer-events: none;
+}
+.donut[data-inspecting="true"] .donut-number {
+  font-size: max(var(--text-body), min(1.5rem, 13cqi));
+}
 .donut-slice {
   stroke: var(--color-surface);
   stroke-width: 0;
-  transition: opacity var(--duration-short) var(--ease-standard), stroke-width var(--duration-short) var(--ease-standard);
+  transition:
+    opacity var(--duration-short) var(--ease-standard),
+    stroke-width var(--duration-short) var(--ease-standard);
 }
-.donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) { opacity: 0.4; }
-.donut-slice[data-active="true"] { stroke-width: 2; }
-.donut a:focus-visible { outline: none; }
-.donut a:focus-visible .donut-slice { stroke: var(--color-text); stroke-width: 3; }
-.donut a:active .donut-slice { opacity: 0.7; }
-.allocation-card .legend a { min-height: var(--touch-target); }
-.allocation-card .legend a[data-active="true"] { background: var(--color-accent-soft); }
-.allocation-card .legend a[data-active="true"] .dot { transform: scale(1.12); }
-.allocation-card .legend a:active .dot { transform: scale(0.9); }
-.allocation-card .legend-name { white-space: normal; overflow-wrap: anywhere; }
+.donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) {
+  opacity: 0.4;
+}
+.donut-slice[data-active="true"] {
+  stroke-width: 2;
+}
+.donut a:focus-visible {
+  outline: none;
+}
+.donut a:focus-visible .donut-slice {
+  stroke: var(--color-text);
+  stroke-width: 3;
+}
+.donut a:active .donut-slice {
+  opacity: 0.7;
+}
+.allocation-card .legend a {
+  min-height: var(--touch-target);
+}
+.allocation-card .legend a[data-active="true"] {
+  background: var(--color-accent-soft);
+}
+.allocation-card .legend a[data-active="true"] .dot {
+  transform: scale(1.12);
+}
+.allocation-card .legend a:active .dot {
+  transform: scale(0.9);
+}
+.allocation-card .legend-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 /* Static data rows and cards do not react to the pointer: only what can be pressed suggests that it can. */
-.matrix tbody tr { transition: background-color var(--duration-short) var(--ease-standard); }
-.matrix tbody tr:focus-within { background-color: var(--color-accent-soft); }
-.row-link, .demo-nav a, .link-button {
-  transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard);
+.matrix tbody tr {
+  transition: background-color var(--duration-short) var(--ease-standard);
 }
-.link-button:active { scale: var(--motion-control-press); }
-.perf-row:active, .row-link:active, .demo-nav a:active { background-color: var(--color-accent-soft); }
+.matrix tbody tr:focus-within {
+  background-color: var(--color-accent-soft);
+}
+.row-link,
+.demo-nav a,
+.link-button {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.link-button:active {
+  scale: var(--motion-control-press);
+}
+.perf-row:active,
+.row-link:active,
+.demo-nav a:active {
+  background-color: var(--color-accent-soft);
+}
 
 @media (hover: hover) and (pointer: fine) {
-  .matrix tbody tr:hover { background-color: var(--color-accent-soft); }
-  .perf-row:hover, .row-link:hover { background-color: var(--color-accent-soft); }
-  .mobile-holdings a:hover { background-color: var(--color-accent-soft); }
-  .link-button:hover { box-shadow: var(--shadow-inspect); }
+  .matrix tbody tr:hover {
+    background-color: var(--color-accent-soft);
+  }
+  .perf-row:hover,
+  .row-link:hover {
+    background-color: var(--color-accent-soft);
+  }
+  .mobile-holdings a:hover {
+    background-color: var(--color-accent-soft);
+  }
+  .link-button:hover {
+    box-shadow: var(--shadow-inspect);
+  }
 }
 
 /* Native-control pseudo-elements are not covered by the universal element override. */
 @media (prefers-reduced-motion: reduce) {
-  .field input::placeholder { transition: none !important; }
-  .field input::file-selector-button { transition: none !important; }
-  .chart-date-control input::-webkit-slider-thumb { transition: none !important; transform: none !important; }
-  .chart-date-control input::-moz-range-thumb { transition: none !important; transform: none !important; }
+  .field input::placeholder {
+    transition: none !important;
+  }
+  .field input::file-selector-button {
+    transition: none !important;
+  }
+  .chart-date-control input::-webkit-slider-thumb {
+    transition: none !important;
+    transform: none !important;
+  }
+  .chart-date-control input::-moz-range-thumb {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 /* Motion refinement: 5 arrivals, 17 transitions, 15 microtransitions and 5 interactions.
@@ -303,95 +658,310 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
  */
 
 /* A1-A5: brief, single-pass arrivals. No stagger leaves controls waiting to become usable. */
-@keyframes surface-arrive { from { opacity: var(--motion-reveal-opacity); translate: 0 var(--motion-nudge); } to { opacity: 1; translate: 0 0; } }
-@keyframes toolbar-arrive { from { opacity: var(--motion-reveal-opacity); translate: 0 var(--motion-lift); } to { opacity: 1; translate: 0 0; } }
-@keyframes workflow-arrive { from { opacity: var(--motion-reveal-opacity); } to { opacity: 1; } }
-@keyframes state-arrive { from { scale: var(--motion-press); } to { scale: 1; } }
-@keyframes navigation-arrive { from { opacity: var(--motion-reveal-opacity); translate: 0 var(--motion-nudge); } to { opacity: 1; translate: 0 0; } }
-#main-content > :is(.dash, .screen, .account, .import) { animation: surface-arrive var(--duration-medium) var(--ease-standard); }
-.topbar { animation: toolbar-arrive var(--duration-medium) var(--ease-standard); }
-.expense-review, .expense-conflict { animation: workflow-arrive var(--duration-feedback) var(--ease-standard); }
-.expense-state { animation: state-arrive var(--duration-feedback) var(--ease-standard); }
-.page-nav { animation: navigation-arrive var(--duration-feedback) var(--ease-standard); }
+@keyframes surface-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    translate: 0 var(--motion-nudge);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes toolbar-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    translate: 0 var(--motion-lift);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes workflow-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes state-arrive {
+  from {
+    scale: var(--motion-press);
+  }
+  to {
+    scale: 1;
+  }
+}
+@keyframes navigation-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    translate: 0 var(--motion-nudge);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+#main-content > :is(.dash, .screen, .account, .import) {
+  animation: surface-arrive var(--duration-medium) var(--ease-standard);
+}
+.topbar {
+  animation: toolbar-arrive var(--duration-medium) var(--ease-standard);
+}
+.expense-review,
+.expense-conflict {
+  animation: workflow-arrive var(--duration-feedback) var(--ease-standard);
+}
+.expense-state {
+  animation: state-arrive var(--duration-feedback) var(--ease-standard);
+}
+.page-nav {
+  animation: navigation-arrive var(--duration-feedback) var(--ease-standard);
+}
 
 /* T1-T17: explicit properties preserve immediate focus outlines and stable geometry. */
-.shell { transition: background-color var(--duration-medium) var(--ease-standard); }
-.topbar { transition: background-color var(--duration-medium) var(--ease-standard), box-shadow var(--duration-feedback) var(--ease-standard); }
-.main-nav { transition: background-color var(--duration-medium) var(--ease-standard), box-shadow var(--duration-feedback) var(--ease-standard); }
-.card { transition: background-color var(--duration-medium) var(--ease-standard), border-color var(--duration-feedback) var(--ease-standard); }
-.chart { transition: background-color var(--duration-medium) var(--ease-standard), border-color var(--duration-feedback) var(--ease-standard); }
-.hero { transition: background-color var(--duration-medium) var(--ease-standard); }
-.segmented { transition: background-color var(--duration-medium) var(--ease-standard); }
-.page-nav button.page-nav-item { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
-.expenses-dashboard :is(input, select) { transition: background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
-.expense-state { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard); }
-.expense-week-list button { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
-.expense-record-list button { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
-.expense-note-actions button { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
-.notice { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
-.review-problem { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
-.review-adjustments { transition: background-color var(--duration-short) var(--ease-standard), box-shadow var(--duration-short) var(--ease-standard); }
+.shell {
+  transition: background-color var(--duration-medium) var(--ease-standard);
+}
+.topbar {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    box-shadow var(--duration-feedback) var(--ease-standard);
+}
+.main-nav {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    box-shadow var(--duration-feedback) var(--ease-standard);
+}
+.card {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    border-color var(--duration-feedback) var(--ease-standard);
+}
+.chart {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    border-color var(--duration-feedback) var(--ease-standard);
+}
+.hero {
+  transition: background-color var(--duration-medium) var(--ease-standard);
+}
+.segmented {
+  transition: background-color var(--duration-medium) var(--ease-standard);
+}
+.page-nav button.page-nav-item {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.expenses-dashboard :is(input, select) {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+.expense-state {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard);
+}
+.expense-week-list button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.expense-record-list button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.expense-note-actions button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.notice {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+.review-problem {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+.review-adjustments {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
 /* Native disclosure content remains inert when closed; supporting engines animate both directions. */
 @supports (interpolate-size: allow-keywords) and (transition-behavior: allow-discrete) {
-  details { interpolate-size: allow-keywords; }
+  details {
+    interpolate-size: allow-keywords;
+  }
   details::details-content {
     block-size: 0;
     opacity: 0;
     overflow: clip;
-    transition: block-size var(--duration-medium) var(--ease-standard), opacity var(--duration-feedback) var(--ease-standard), content-visibility var(--duration-medium) allow-discrete;
+    transition:
+      block-size var(--duration-medium) var(--ease-standard),
+      opacity var(--duration-feedback) var(--ease-standard),
+      content-visibility var(--duration-medium) allow-discrete;
   }
-  details[open]::details-content { block-size: auto; opacity: 1; }
+  details[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
   /* The content box owns the reveal; avoid a second animation on every child. */
-  details[open] > :not(summary) { animation: none; }
+  details[open] > :not(summary) {
+    animation: none;
+  }
 }
 
 /* M1-M15: small reversible details, with the same curve on entry and release. */
-.nav-link { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard); }
-.nav-link > svg { transition: transform var(--duration-feedback) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
-.sidebar-toggle > svg { transition: transform var(--duration-feedback) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
-.sidebar-toggle[aria-expanded="false"] > svg { opacity: 0.75; }
-.legend-name { transition: color var(--duration-short) var(--ease-standard); }
-.legend .dot { transition: transform var(--duration-feedback) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
-.chart-swatch { transition: translate var(--duration-short) var(--ease-standard), opacity var(--duration-short) var(--ease-standard); }
-.chart-legend-button { transition: background-color var(--duration-short) var(--ease-standard), color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard); }
-.expense-field > label { transition: color var(--duration-short) var(--ease-standard); }
-.expense-input { transition: color var(--duration-short) var(--ease-standard); }
-.expense-optional-label { transition: color var(--duration-short) var(--ease-standard); }
-.page-nav button.page-nav-item { transition: color var(--duration-short) var(--ease-standard), background-color var(--duration-short) var(--ease-standard), border-color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard), translate var(--duration-short) var(--ease-standard); }
-.expense-date-controls button { transition: background-color var(--duration-short) var(--ease-standard), transform var(--duration-press) var(--ease-standard), opacity var(--duration-short) var(--ease-standard), translate var(--duration-short) var(--ease-standard); }
-.expense-note-actions button > svg { transition: scale var(--duration-feedback) var(--ease-standard); }
-.account .facts a { transition: background-size var(--duration-short) var(--ease-standard), text-underline-offset var(--duration-short) var(--ease-standard); }
-.account .facts a:focus-visible { text-underline-offset: 0.3em; }
-.skip-link { transition: transform var(--duration-short) var(--ease-standard); }
+.nav-link {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard);
+}
+.nav-link > svg {
+  transition:
+    transform var(--duration-feedback) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+.sidebar-toggle > svg {
+  transition:
+    transform var(--duration-feedback) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+.sidebar-toggle[aria-expanded="false"] > svg {
+  opacity: 0.75;
+}
+.legend-name {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.legend .dot {
+  transition:
+    transform var(--duration-feedback) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+.chart-swatch {
+  transition:
+    translate var(--duration-short) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+.chart-legend-button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.expense-field > label {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.expense-input {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.expense-optional-label {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.page-nav button.page-nav-item {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard),
+    translate var(--duration-short) var(--ease-standard);
+}
+.expense-date-controls button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard),
+    translate var(--duration-short) var(--ease-standard);
+}
+.expense-note-actions button > svg {
+  transition: scale var(--duration-feedback) var(--ease-standard);
+}
+.account .facts a {
+  transition:
+    background-size var(--duration-short) var(--ease-standard),
+    text-underline-offset var(--duration-short) var(--ease-standard);
+}
+.account .facts a:focus-visible {
+  text-underline-offset: 0.3em;
+}
+.skip-link {
+  transition: transform var(--duration-short) var(--ease-standard);
+}
 
 /* I1-I5: meaningful user-triggered feedback; static cards never imitate controls. */
 .expense-field:focus-within > label,
-.expense-field:focus-within .expense-optional-label { color: var(--color-accent); }
-.expense-field:focus-within .expense-input { color: var(--color-accent); }
-.page-nav-item:focus-visible { translate: 0 var(--motion-lift); }
-.expense-date-controls button:not(:disabled):active { translate: 0 var(--motion-nudge); }
-.expense-note-actions button:not(:disabled):active > svg { scale: var(--motion-press); }
+.expense-field:focus-within .expense-optional-label {
+  color: var(--color-accent);
+}
+.expense-field:focus-within .expense-input {
+  color: var(--color-accent);
+}
+.page-nav-item:focus-visible {
+  translate: 0 var(--motion-lift);
+}
+.expense-date-controls button:not(:disabled):active {
+  translate: 0 var(--motion-nudge);
+}
+.expense-note-actions button:not(:disabled):active > svg {
+  scale: var(--motion-press);
+}
 @media (hover: hover) and (pointer: fine) {
-  .page-nav-item:hover { translate: 0 var(--motion-lift); }
+  .page-nav-item:hover {
+    translate: 0 var(--motion-lift);
+  }
   .expense-week-list button:not(:disabled):hover,
-  .expense-record-list button:not(:disabled):hover { background-color: var(--color-accent-soft); }
+  .expense-record-list button:not(:disabled):hover {
+    background-color: var(--color-accent-soft);
+  }
 }
 .expense-week-list button:focus-visible,
-.expense-record-list button:focus-visible { background-color: var(--color-accent-soft); }
+.expense-record-list button:focus-visible {
+  background-color: var(--color-accent-soft);
+}
 
 /* Explicitly cover the native disclosure pseudo-element as well as inherited size interpolation. */
 @media (prefers-reduced-motion: reduce) {
-  details { interpolate-size: numeric-only; }
-  details::details-content { transition: none !important; }
-  .page-nav-item, .expense-date-controls button { translate: none !important; }
-  .expense-note-actions button > svg { scale: none !important; }
+  details {
+    interpolate-size: numeric-only;
+  }
+  details::details-content {
+    transition: none !important;
+  }
+  .page-nav-item,
+  .expense-date-controls button {
+    translate: none !important;
+  }
+  .expense-note-actions button > svg {
+    scale: none !important;
+  }
 }
 
 /* Symmetric page choreography is owned by usePageMotion. The outgoing landmark is inert,
  * and only the latest requested destination mounts. Its own animation replaces child arrivals. */
-#main-content { transform-origin: top center; }
-#main-content[data-page-exiting="true"] { pointer-events: none; }
-#main-content > :is(.dash, .screen, .account, .import) { animation: none; }
+#main-content {
+  transform-origin: top center;
+}
+#main-content[data-page-exiting="true"] {
+  pointer-events: none;
+}
+#main-content > :is(.dash, .screen, .account, .import) {
+  animation: none;
+}
 
 /* Retained notices collapse both their box and the parent row gap. CSS reverses an interrupted
  * dismissal from its current position. Content remains context-aware, including privacy masking. */
@@ -400,13 +970,29 @@ summary:focus-visible { box-shadow: inset 0 0 0 1px var(--color-accent); }
   grid-template-rows: 1fr;
   opacity: 1;
   margin-block-end: 0;
-  transition: grid-template-rows var(--duration-medium) var(--ease-standard), opacity var(--duration-short) var(--ease-standard), margin-block-end var(--duration-medium) var(--ease-standard);
+  transition:
+    grid-template-rows var(--duration-medium) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard),
+    margin-block-end var(--duration-medium) var(--ease-standard);
 }
-.presence-content { min-height: 0; display: flow-root; }
-.presence[data-present="false"] { grid-template-rows: 0fr; opacity: 0; margin-block-end: calc(-1 * var(--presence-gap, 0px)); pointer-events: none; }
-.presence[data-present="false"] > .presence-content, .presence[data-settled="false"] > .presence-content { overflow: hidden; }
+.presence-content {
+  min-height: 0;
+  display: flow-root;
+}
+.presence[data-present="false"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-block-end: calc(-1 * var(--presence-gap, 0px));
+  pointer-events: none;
+}
+.presence[data-present="false"] > .presence-content,
+.presence[data-settled="false"] > .presence-content {
+  overflow: hidden;
+}
 /* The wrapper supplies entry opacity; suppress competing one-shot child fades on reversal. */
-.presence-content > :is(.notice, .review-problem, .review-adjustments, .expense-note) { animation: none; }
+.presence-content > :is(.notice, .review-problem, .review-adjustments, .expense-note) {
+  animation: none;
+}
 @starting-style {
   .presence[data-present="true"] {
     grid-template-rows: 0fr;

@@ -1,12 +1,25 @@
 import { Presence } from "../../shared/ui/Presence";
-import type { ConnectOutcome, RestoreOutcome, SessionState, TidyOutcome, VerifyOutcome } from "../../../../applications/SessionModel";
+import type {
+  ConnectOutcome,
+  RestoreOutcome,
+  SessionState,
+  TidyOutcome,
+  VerifyOutcome,
+} from "../../../../applications/SessionModel";
 import type { JSX } from "preact";
 import type { RemoteSave } from "../../../../applications/ImportModel";
 import { useRef, useState } from "preact/hooks";
 import { describeAge } from "./timeAgo";
 import { Icon } from "../../shared/ui/icons";
 import { PageNav } from "../../shared/ui/PageNav";
-import { type Message, SHEET_TEXT, describeConnect, describeRestore, describeTidy, describeVerify } from "./accountText";
+import {
+  type Message,
+  SHEET_TEXT,
+  describeConnect,
+  describeRestore,
+  describeTidy,
+  describeVerify,
+} from "./accountText";
 
 export interface AccountActions {
   connect(): Promise<ConnectOutcome>;
@@ -23,10 +36,17 @@ export interface AccountActions {
 
 function Result(props: { readonly message: Message | null }): JSX.Element | null {
   return (
-    <Presence show={props.message !== null}>{props.message !== null && <div class={props.message.good ? "review-adjustments notice-success" : "review-problem"} role={props.message.good ? "status" : "alert"}>
-      <h3>{props.message.title}</h3>
-      <p>{props.message.body}</p>
-    </div>}</Presence>
+    <Presence show={props.message !== null}>
+      {props.message !== null && (
+        <div
+          class={props.message.good ? "review-adjustments notice-success" : "review-problem"}
+          role={props.message.good ? "status" : "alert"}
+        >
+          <h3>{props.message.title}</h3>
+          <p>{props.message.body}</p>
+        </div>
+      )}
+    </Presence>
   );
 }
 
@@ -44,7 +64,9 @@ export function AccountView(props: {
   readonly revisionSave?: RemoteSave;
 }): JSX.Element {
   const { state, actions } = props;
-  const [pending, setPending] = useState<"connect" | "sync" | "restore" | "restore-history" | "verify" | "tidy" | null>(null);
+  const [pending, setPending] = useState<"connect" | "sync" | "restore" | "restore-history" | "verify" | "tidy" | null>(
+    null,
+  );
   const [uncertainRecovery, setUncertainRecovery] = useState<string | null>(null);
   const pendingChange = uncertainRecovery ?? state.pendingRevision ?? null;
   const busy = pending !== null || pendingChange !== null;
@@ -69,7 +91,11 @@ export function AccountView(props: {
       const outcome = await action();
       setMessage(outcome.status === "superseded" ? null : describeConnect(outcome));
     } catch {
-      setMessage({ good: false, title: "Something went wrong", body: "The result could not be confirmed. Check your spreadsheet and connection before trying again." });
+      setMessage({
+        good: false,
+        title: "Something went wrong",
+        body: "The result could not be confirmed. Check your spreadsheet and connection before trying again.",
+      });
     } finally {
       setPending(null);
     }
@@ -83,10 +109,21 @@ export function AccountView(props: {
       const outcome = await actions.restore();
       const described = describeRestore(outcome);
       // A restore never carries checkpoints over, and it should not seem to: say where they stayed.
-      setMessage(outcome.status === "restored" && (props.checkpointCount ?? 0) > 0 ? { ...described, body: `${described.body} Your checkpoints were not restored. They stay on this device, read only, on the Checkpoints screen.` } : described);
+      setMessage(
+        outcome.status === "restored" && (props.checkpointCount ?? 0) > 0
+          ? {
+              ...described,
+              body: `${described.body} Your checkpoints were not restored. They stay on this device, read only, on the Checkpoints screen.`,
+            }
+          : described,
+      );
       setConfirmRestore(false);
     } catch {
-      setMessage({ good: false, title: "Something went wrong", body: "Nothing on this device was changed. Try again." });
+      setMessage({
+        good: false,
+        title: "Something went wrong",
+        body: "Nothing on this device was changed. Try again.",
+      });
     } finally {
       setPending(null);
     }
@@ -94,17 +131,54 @@ export function AccountView(props: {
 
   async function restoreHistory(): Promise<void> {
     const save = props.revisionSave;
-    if (busy || !confirmHistoryRestore || state.workbook === null || state.recoveryTarget == null || save?.recoverRevision === undefined) return;
+    if (
+      busy ||
+      !confirmHistoryRestore ||
+      state.workbook === null ||
+      state.recoveryTarget == null ||
+      save?.recoverRevision === undefined
+    )
+      return;
     const id = save.newCommandId();
-    setPending("restore-history"); setHistoryRestoreMessage(null);
+    setPending("restore-history");
+    setHistoryRestoreMessage(null);
     try {
       const result = await save.recoverRevision(state.recoveryTarget, id, state.ledger.revision, state.workbook.id);
-      if (result.status === "recorded") { setConfirmHistoryRestore(false); setHistoryRestoreMessage({ good: true, title: "Previous history restored", body: "The portfolio and its attached bank statements were restored and checked." }); }
-      else if (result.status === "unknown" || result.status === "saved-not-reloaded") { setUncertainRecovery(id); setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: "The result is not confirmed. Check what happened before trying again." }); }
-      else setHistoryRestoreMessage({ good: false, title: "History not restored", body: result.status === "rejected" ? result.messages.join(" ") : result.status === "stale" ? "Your history changed. Review the latest data before restoring." : result.message });
+      if (result.status === "recorded") {
+        setConfirmHistoryRestore(false);
+        setHistoryRestoreMessage({
+          good: true,
+          title: "Previous history restored",
+          body: "The portfolio and its attached bank statements were restored and checked.",
+        });
+      } else if (result.status === "unknown" || result.status === "saved-not-reloaded") {
+        setUncertainRecovery(id);
+        setHistoryRestoreMessage({
+          good: false,
+          title: "Check the recovery",
+          body: "The result is not confirmed. Check what happened before trying again.",
+        });
+      } else
+        setHistoryRestoreMessage({
+          good: false,
+          title: "History not restored",
+          body:
+            result.status === "rejected"
+              ? result.messages.join(" ")
+              : result.status === "stale"
+                ? "Your history changed. Review the latest data before restoring."
+                : result.message,
+        });
     } catch {
-      setUncertainRecovery(id); setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: "The result is not confirmed. Check what happened before trying again." });
-    } finally { setPending(null); }
+      setUncertainRecovery(id);
+      setHistoryRestoreMessage({
+        good: false,
+        title: "Check the recovery",
+        body: "The result is not confirmed. Check what happened before trying again.",
+      });
+    } finally {
+      setPending(null);
+    }
   }
 
   async function checkHistoryRestore(): Promise<void> {
@@ -113,11 +187,39 @@ export function AccountView(props: {
     setPending("restore-history");
     try {
       const result = await save.check(pendingChange, state.workbook.id);
-      if (result.status === "recorded") { setUncertainRecovery(null); setConfirmHistoryRestore(false); setHistoryRestoreMessage({ good: true, title: "History change confirmed", body: "The portfolio was read back and checked." }); }
-      else if (result.status === "not-recorded") { setUncertainRecovery(null); setHistoryRestoreMessage({ good: false, title: "History not restored", body: "The spreadsheet shows that the recovery was not recorded. You can review it again." }); }
-      else setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: result.status === "cannot-tell" ? result.message : "The recovery was recorded but the spreadsheet could not be reloaded." });
-    } catch { setHistoryRestoreMessage({ good: false, title: "Check the recovery", body: "The spreadsheet could not be checked. Try again shortly." }); }
-    finally { setPending(null); }
+      if (result.status === "recorded") {
+        setUncertainRecovery(null);
+        setConfirmHistoryRestore(false);
+        setHistoryRestoreMessage({
+          good: true,
+          title: "History change confirmed",
+          body: "The portfolio was read back and checked.",
+        });
+      } else if (result.status === "not-recorded") {
+        setUncertainRecovery(null);
+        setHistoryRestoreMessage({
+          good: false,
+          title: "History not restored",
+          body: "The spreadsheet shows that the recovery was not recorded. You can review it again.",
+        });
+      } else
+        setHistoryRestoreMessage({
+          good: false,
+          title: "Check the recovery",
+          body:
+            result.status === "cannot-tell"
+              ? result.message
+              : "The recovery was recorded but the spreadsheet could not be reloaded.",
+        });
+    } catch {
+      setHistoryRestoreMessage({
+        good: false,
+        title: "Check the recovery",
+        body: "The spreadsheet could not be checked. Try again shortly.",
+      });
+    } finally {
+      setPending(null);
+    }
   }
 
   async function verify(): Promise<void> {
@@ -127,7 +229,11 @@ export function AccountView(props: {
     try {
       setCheckMessage(describeVerify(await actions.verify()));
     } catch {
-      setCheckMessage({ good: false, title: "Something went wrong", body: "The result could not be confirmed. Check your spreadsheet and connection before trying again." });
+      setCheckMessage({
+        good: false,
+        title: "Something went wrong",
+        body: "The result could not be confirmed. Check your spreadsheet and connection before trying again.",
+      });
     } finally {
       setPending(null);
     }
@@ -140,7 +246,11 @@ export function AccountView(props: {
     try {
       setTidyMessage(describeTidy(await actions.tidy()));
     } catch {
-      setTidyMessage({ good: false, title: "Something went wrong", body: "The result could not be confirmed. Check your spreadsheet and connection before trying again." });
+      setTidyMessage({
+        good: false,
+        title: "Something went wrong",
+        body: "The result could not be confirmed. Check your spreadsheet and connection before trying again.",
+      });
     } finally {
       setPending(null);
     }
@@ -148,36 +258,77 @@ export function AccountView(props: {
 
   const signedOut = state.mode === "signed-out";
   const statements = state.ledger.snapshots.length;
-  const canRestore = (state.sheet === "missing" || state.sheet === "emptied") && (statements > 0 || (props.expenseCommands ?? 0) > 0);
+  const canRestore =
+    (state.sheet === "missing" || state.sheet === "emptied") && (statements > 0 || (props.expenseCommands ?? 0) > 0);
 
   return (
     <section class="account screen" aria-labelledby="account-connection-heading">
       <p class="account-lead">Check synchronization, verify your saved history and manage the copy on this device.</p>
-      <div class="status" data-busy={busy} aria-live="polite">{pending !== null && <p>{pending === "connect" ? "Waiting for Google…" : pending === "sync" ? "Checking your latest saved history…" : pending === "restore" ? "Restoring your spreadsheet and checking the result…" : pending === "restore-history" ? "Restoring or checking your previous portfolio history…" : pending === "verify" ? "Reading and checking your saved statements…" : "Checking and organizing your spreadsheet…"}</p>}</div>
+      <div class="status" data-busy={busy} aria-live="polite">
+        {pending !== null && (
+          <p>
+            {pending === "connect"
+              ? "Waiting for Google…"
+              : pending === "sync"
+                ? "Checking your latest saved history…"
+                : pending === "restore"
+                  ? "Restoring your spreadsheet and checking the result…"
+                  : pending === "restore-history"
+                    ? "Restoring or checking your previous portfolio history…"
+                    : pending === "verify"
+                      ? "Reading and checking your saved statements…"
+                      : "Checking and organizing your spreadsheet…"}
+          </p>
+        )}
+      </div>
 
       <div class="card account-summary">
-        <h2 id="account-connection-heading" ref={connectionHeading} class="card-title" tabIndex={-1}>Your connection</h2>
+        <h2 id="account-connection-heading" ref={connectionHeading} class="card-title" tabIndex={-1}>
+          Your connection
+        </h2>
         {signedOut ? (
           <>
             <p class="card-subtitle">Not set up yet.</p>
             <p>
-              Continue with Google and FolioDash creates one private spreadsheet in your own Google Drive for your portfolio. The spreadsheet lives in your Google account, and you choose whether to share it.
+              Continue with Google and FolioDash creates one private spreadsheet in your own Google Drive for your
+              portfolio. The spreadsheet lives in your Google account, and you choose whether to share it.
             </p>
-            <button type="button" class="primary" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.connect(), "connect")}>
+            <button
+              type="button"
+              class="primary"
+              disabled={busy || !props.clientConfigured}
+              onClick={() => void run(() => actions.connect(), "connect")}
+            >
               {pending === "connect" ? "Waiting for Google…" : "Continue with Google"}
             </button>
-            {!props.clientConfigured && <p class="hint">This site has no Google client set up yet. Add it under Advanced below.</p>}
+            {!props.clientConfigured && (
+              <p class="hint">This site has no Google client set up yet. Add it under Advanced below.</p>
+            )}
           </>
         ) : (
           <>
             <p class="card-subtitle">
-              {state.connection === "checking" ? "Checking Google for changes from your other devices…" : state.connection === "renewing" ? "Renewing Google access with the account FolioDash remembers…" : state.connection === "waiting" ? "Showing your saved copy. Your next tap renews Google access quietly, then checks for changes." : state.connection === "reconnect" ? "Google access could not be renewed quietly. Reconnect to check your latest history." : state.connection === "offline" ? "Google could not be reached. Showing your saved copy; automatic checks resume when available." : state.mode === "online" ? "Your last Google check completed. Changes are checked automatically while the app is open." : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
+              {state.connection === "checking"
+                ? "Checking Google for changes from your other devices…"
+                : state.connection === "renewing"
+                  ? "Renewing Google access with the account FolioDash remembers…"
+                  : state.connection === "waiting"
+                    ? "Showing your saved copy. Your next tap renews Google access quietly, then checks for changes."
+                    : state.connection === "reconnect"
+                      ? "Google access could not be renewed quietly. Reconnect to check your latest history."
+                      : state.connection === "offline"
+                        ? "Google could not be reached. Showing your saved copy; automatic checks resume when available."
+                        : state.mode === "online"
+                          ? "Your last Google check completed. Changes are checked automatically while the app is open."
+                          : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
             </p>
             <dl class="facts stacked">
               <div>
                 <dt>Your Google Sheet</dt>
                 <dd>
-                  {state.workbook === null ? "-" : (
+                  {state.workbook === null ? (
+                    "-"
+                  ) : (
                     <a href={state.workbook.url} target="_blank" rel="noreferrer">
                       Open in Google Sheets
                     </a>
@@ -203,32 +354,118 @@ export function AccountView(props: {
                 </div>
               )}
             </dl>
-            <button type="button" class="primary" disabled={busy} onClick={() => void run(() => state.connection === "reconnect" ? actions.reconnect() : actions.refresh(), "sync")}>
-              <Icon name="history" size={16} /> {pending === "sync" ? "Syncing…" : state.connection === "reconnect" ? "Reconnect with Google" : "Sync now"}
+            <button
+              type="button"
+              class="primary"
+              disabled={busy}
+              onClick={() =>
+                void run(() => (state.connection === "reconnect" ? actions.reconnect() : actions.refresh()), "sync")
+              }
+            >
+              <Icon name="history" size={16} />{" "}
+              {pending === "sync"
+                ? "Syncing…"
+                : state.connection === "reconnect"
+                  ? "Reconnect with Google"
+                  : "Sync now"}
             </button>
           </>
         )}
 
         <Result message={message} />
-        {message !== null && !message.good && state.connection !== "reconnect" && <button type="button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect(), "connect")}>Reconnect with Google</button>}
-        {!signedOut && <button type="button" class="link-button" disabled={busy || !props.clientConfigured} onClick={() => void run(() => actions.reconnect({ differentAccount: true }), "connect")}>Use a different Google account</button>}
+        {message !== null && !message.good && state.connection !== "reconnect" && (
+          <button
+            type="button"
+            disabled={busy || !props.clientConfigured}
+            onClick={() => void run(() => actions.reconnect(), "connect")}
+          >
+            Reconnect with Google
+          </button>
+        )}
+        {!signedOut && (
+          <button
+            type="button"
+            class="link-button"
+            disabled={busy || !props.clientConfigured}
+            onClick={() => void run(() => actions.reconnect({ differentAccount: true }), "connect")}
+          >
+            Use a different Google account
+          </button>
+        )}
       </div>
 
-      {!signedOut && state.workbook !== null && <PageNav items={[{ id: "account-health-heading", label: "Verify" }, { id: "account-maintenance-heading", label: "Organize" }, { id: "account-device-heading", label: "Storage" }]} />}
+      {!signedOut && state.workbook !== null && (
+        <PageNav
+          items={[
+            { id: "account-health-heading", label: "Verify" },
+            { id: "account-maintenance-heading", label: "Organize" },
+            { id: "account-device-heading", label: "Storage" },
+          ]}
+        />
+      )}
 
-      {!signedOut && state.workbook !== null && (state.recoveryTarget != null || pendingChange !== null || historyRestoreMessage !== null) && <section class="account-section" aria-labelledby="account-recover-history-heading">
-        <h2 id="account-recover-history-heading" class="card-title">Restore the previous history</h2>
-        <p>Restore the portfolio and bank statements from before the most recent earlier-history insertion. Changes made since then will no longer appear in the current portfolio. Work expenses are not changed.</p>
-        {state.recoveryTarget != null && pendingChange === null && <><label class="check"><input type="checkbox" checked={confirmHistoryRestore} disabled={busy} onChange={event => { setConfirmHistoryRestore(event.currentTarget.checked); }} /> I understand that this replaces the current portfolio history.</label>
-          <button type="button" disabled={busy || !confirmHistoryRestore || state.sheet !== "ok"} onClick={() => { void restoreHistory(); }}>{pending === "restore-history" ? "Restoring…" : "Restore previous history"}</button></>}
-        {pendingChange !== null && <><p>A previous history change needs checking before another portfolio save.</p><button type="button" disabled={pending !== null} onClick={() => { void checkHistoryRestore(); }}>{pending === "restore-history" ? "Checking…" : "Check what happened"}</button></>}
-        <Result message={historyRestoreMessage} />
-      </section>}
+      {!signedOut &&
+        state.workbook !== null &&
+        (state.recoveryTarget != null || pendingChange !== null || historyRestoreMessage !== null) && (
+          <section class="account-section" aria-labelledby="account-recover-history-heading">
+            <h2 id="account-recover-history-heading" class="card-title">
+              Restore the previous history
+            </h2>
+            <p>
+              Restore the portfolio and bank statements from before the most recent earlier-history insertion. Changes
+              made since then will no longer appear in the current portfolio. Work expenses are not changed.
+            </p>
+            {state.recoveryTarget != null && pendingChange === null && (
+              <>
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    checked={confirmHistoryRestore}
+                    disabled={busy}
+                    onChange={(event) => {
+                      setConfirmHistoryRestore(event.currentTarget.checked);
+                    }}
+                  />{" "}
+                  I understand that this replaces the current portfolio history.
+                </label>
+                <button
+                  type="button"
+                  disabled={busy || !confirmHistoryRestore || state.sheet !== "ok"}
+                  onClick={() => {
+                    void restoreHistory();
+                  }}
+                >
+                  {pending === "restore-history" ? "Restoring…" : "Restore previous history"}
+                </button>
+              </>
+            )}
+            {pendingChange !== null && (
+              <>
+                <p>A previous history change needs checking before another portfolio save.</p>
+                <button
+                  type="button"
+                  disabled={pending !== null}
+                  onClick={() => {
+                    void checkHistoryRestore();
+                  }}
+                >
+                  {pending === "restore-history" ? "Checking…" : "Check what happened"}
+                </button>
+              </>
+            )}
+            <Result message={historyRestoreMessage} />
+          </section>
+        )}
 
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-health" aria-labelledby="account-health-heading">
-          <h2 id="account-health-heading" class="card-title" tabIndex={-1}>Verify your history</h2>
-          <p class="card-subtitle">Checks your saved records and replays attached bank statements against your figures. Manually entered statements have no bank document to replay. This check does not change your Google Sheet or device copy.</p>
+          <h2 id="account-health-heading" class="card-title" tabIndex={-1}>
+            Verify your history
+          </h2>
+          <p class="card-subtitle">
+            Checks your saved records and replays attached bank statements against your figures. Manually entered
+            statements have no bank document to replay. This check does not change your Google Sheet or device copy.
+          </p>
           <button type="button" disabled={busy} onClick={() => void verify()}>
             {pending === "verify" ? "Checking your history…" : "Check my history"}
           </button>
@@ -238,10 +475,23 @@ export function AccountView(props: {
 
       {!signedOut && state.workbook !== null && (
         <section class="account-section account-maintenance" aria-labelledby="account-maintenance-heading">
-          <h2 id="account-maintenance-heading" class="card-title" tabIndex={-1}>Organize your spreadsheet</h2>
-          <p class="card-subtitle">Your spreadsheet is maintained automatically after saves and checked for layout upgrades when you connect. Use this action to rebuild all views now.</p>
-          {state.organization !== undefined && <p role="status" class="hint">{state.organization.message}</p>}
-          <p class="hint">Tabs are ordered: portfolio, work expenses, newest bank statement first, then your other tabs and hidden records. Matching duplicate bank tabs are consolidated from retained statements. Unrecognised or edited tabs are preserved for review. Financial records and exact imported sources are kept.</p>
+          <h2 id="account-maintenance-heading" class="card-title" tabIndex={-1}>
+            Organize your spreadsheet
+          </h2>
+          <p class="card-subtitle">
+            Your spreadsheet is maintained automatically after saves and checked for layout upgrades when you connect.
+            Use this action to rebuild all views now.
+          </p>
+          {state.organization !== undefined && (
+            <p role="status" class="hint">
+              {state.organization.message}
+            </p>
+          )}
+          <p class="hint">
+            Tabs are ordered: portfolio, work expenses, newest bank statement first, then your other tabs and hidden
+            records. Matching duplicate bank tabs are consolidated from retained statements. Unrecognised or edited tabs
+            are preserved for review. Financial records and exact imported sources are kept.
+          </p>
           <button type="button" disabled={busy} onClick={() => void tidy()}>
             {pending === "tidy" ? "Organizing your spreadsheet…" : "Organize spreadsheet"}
           </button>
@@ -253,11 +503,19 @@ export function AccountView(props: {
         <div class="card">
           <h3 class="card-title">Restore your Google Sheet</h3>
           <p class="card-subtitle">
-            {state.sheet === "missing" ? "Your sheet cannot be opened." : "Your sheet is empty."} This device still has {statements}{" "}
-            {statements === 1 ? "statement" : "statements"}.
+            {state.sheet === "missing" ? "Your sheet cannot be opened." : "Your sheet is empty."} This device still has{" "}
+            {statements} {statements === 1 ? "statement" : "statements"}.
           </p>
           <p>
-            Restoring writes the copy on this device {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it back and checks it. The portfolio copy holds figures but not original bank statements, so those statements need to be imported again. {props.expenseCommands ? "The saved expense correction history on this device is also recovered into a replacement workbook; existing expense records are preserved." : "This device has no saved expense correction history to restore. Downloaded expense backups are restored separately below."} Checkpoints are not restored into a replacement workbook: this device keeps them, read only, on the <a href="#checkpoints">Checkpoints screen</a>.
+            Restoring writes the copy on this device{" "}
+            {state.sheet === "missing" ? "into a new Google Sheet" : "back into your empty Google Sheet"}, then reads it
+            back and checks it. The portfolio copy holds figures but not original bank statements, so those statements
+            need to be imported again.{" "}
+            {props.expenseCommands
+              ? "The saved expense correction history on this device is also recovered into a replacement workbook; existing expense records are preserved."
+              : "This device has no saved expense correction history to restore. Downloaded expense backups are restored separately below."}{" "}
+            Checkpoints are not restored into a replacement workbook: this device keeps them, read only, on the{" "}
+            <a href="#checkpoints">Checkpoints screen</a>.
           </p>
           <label class="check">
             <input
@@ -277,19 +535,26 @@ export function AccountView(props: {
       )}
 
       <section class="account-section" aria-labelledby="account-device-heading">
-        <h2 id="account-device-heading" class="card-title" tabIndex={-1}>Where your data lives</h2>
-        <a class="row-link plain" href="#checkpoints"><span>Checkpoints: value-only observations between statements</span><Icon name="chevron" size={18} /></a>
+        <h2 id="account-device-heading" class="card-title" tabIndex={-1}>
+          Where your data lives
+        </h2>
+        <a class="row-link plain" href="#checkpoints">
+          <span>Checkpoints: value-only observations between statements</span>
+          <Icon name="chevron" size={18} />
+        </a>
         <ul class="plain-list">
           <li>
-            <strong>Your Google Sheet is the record.</strong> It lives in your Google Drive and you can open it any time. FolioDash can only see the one
-            spreadsheet it created.
+            <strong>Your Google Sheet is the record.</strong> It lives in your Google Drive and you can open it any
+            time. FolioDash can only see the one spreadsheet it created.
           </li>
           <li>
-            <strong>This device keeps a copy</strong> so FolioDash opens instantly. It can always be rebuilt from your Google Sheet.
+            <strong>This device keeps a copy</strong> so FolioDash opens instantly. It can always be rebuilt from your
+            Google Sheet.
           </li>
           <li>
-            <strong>Anyone who can use this unlocked device and browser</strong> could see that copy and open FolioDash as you. Its Google access lasts up to an hour and is renewed on a tap while your Google account stays signed in here. If this device is shared, use Forget this device when you
-            finish.
+            <strong>Anyone who can use this unlocked device and browser</strong> could see that copy and open FolioDash
+            as you. Its Google access lasts up to an hour and is renewed on a tap while your Google account stays signed
+            in here. If this device is shared, use Forget this device when you finish.
           </li>
         </ul>
         {!signedOut && (
@@ -297,14 +562,21 @@ export function AccountView(props: {
             {confirmForget ? (
               <div class="review-problem" role="alert">
                 <h3>Forget this device?</h3>
-                <p>This removes the saved copy, Google access and the remembered account from this device and signs you out. Your Google Sheet is not touched, and you can continue with Google again any time.</p>
+                <p>
+                  This removes the saved copy, Google access and the remembered account from this device and signs you
+                  out. Your Google Sheet is not touched, and you can continue with Google again any time.
+                </p>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => {
                     actions.forget();
                     setConfirmForget(false);
-                    setMessage({ good: true, title: "This device was forgotten", body: "The saved copy on this device was removed. Your Google Sheet is unchanged." });
+                    setMessage({
+                      good: true,
+                      title: "This device was forgotten",
+                      body: "The saved copy on this device was removed. Your Google Sheet is unchanged.",
+                    });
                     requestAnimationFrame(() => connectionHeading.current?.focus());
                   }}
                 >
@@ -337,46 +609,67 @@ export function AccountView(props: {
             )}
           </>
         )}
-        {!signedOut && <div class="more"><details><summary>How staying connected works</summary><p class="hint">FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and every minute while visible. Finish or discard an edited draft before automatic checks resume. <a href="./privacy/" target="_blank" rel="noopener">Privacy policy</a></p></details></div>}
+        {!signedOut && (
+          <div class="more">
+            <details>
+              <summary>How staying connected works</summary>
+              <p class="hint">
+                FolioDash stays connected on this device until you choose Forget this device. Google's access lasts an
+                hour, so it is renewed quietly on your next tap, using the account it remembers; if Google still has
+                your session, nothing needs choosing. Changes are checked when you return, reconnect to the internet and
+                every minute while visible. Finish or discard an edited draft before automatic checks resume.{" "}
+                <a href="./privacy/" target="_blank" rel="noopener">
+                  Privacy policy
+                </a>
+              </p>
+            </details>
+          </div>
+        )}
       </section>
 
       {!props.clientConfigured && (
-        <div class="more"><details open>
-          <summary>Advanced: Google client ID</summary>
-          <p class="hint">
-            A hosted FolioDash already has this. It is the OAuth client ID of the Google Cloud project that signs people in. It is public by design and is not
-            a secret.
-          </p>
-          <div class="field">
-            <label for="client-id">Google OAuth client ID</label>
-            <input
-              id="client-id"
-              type="text"
-              autoComplete="off"
-              spellcheck={false}
+        <div class="more">
+          <details open>
+            <summary>Advanced: Google client ID</summary>
+            <p class="hint">
+              A hosted FolioDash already has this. It is the OAuth client ID of the Google Cloud project that signs
+              people in. It is public by design and is not a secret.
+            </p>
+            <div class="field">
+              <label for="client-id">Google OAuth client ID</label>
+              <input
+                id="client-id"
+                type="text"
+                autoComplete="off"
+                spellcheck={false}
+                disabled={busy}
+                value={clientText}
+                aria-invalid={clientError ? "true" : undefined}
+                aria-describedby={clientError ? "client-id-error" : undefined}
+                onInput={(event) => {
+                  setClientText(event.currentTarget.value);
+                  setClientError(false);
+                }}
+              />
+              {clientError && (
+                <p id="client-id-error" class="field-error" role="alert">
+                  That does not look like a client ID. It ends with .apps.googleusercontent.com.
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
               disabled={busy}
-              value={clientText}
-              aria-invalid={clientError ? "true" : undefined}
-              aria-describedby={clientError ? "client-id-error" : undefined}
-              onInput={(event) => {
-                setClientText(event.currentTarget.value);
-                setClientError(false);
+              onClick={() => {
+                const accepted = actions.setClientId(clientText);
+                setClientError(!accepted);
+                if (!accepted) document.getElementById("client-id")?.focus();
               }}
-            />
-            {clientError && <p id="client-id-error" class="field-error" role="alert">That does not look like a client ID. It ends with .apps.googleusercontent.com.</p>}
-          </div>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              const accepted = actions.setClientId(clientText);
-              setClientError(!accepted);
-              if (!accepted) document.getElementById("client-id")?.focus();
-            }}
-          >
-            Save client ID
-          </button>
-        </details></div>
+            >
+              Save client ID
+            </button>
+          </details>
+        </div>
       )}
       <p class="footnote build-stamp">FolioDash build: {props.build}</p>
     </section>

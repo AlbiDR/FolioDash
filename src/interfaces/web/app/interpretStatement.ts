@@ -8,7 +8,11 @@ export const interpretStatement: InterpretStatement = (sheet) => {
   return {
     ok: true,
     statement: {
-      funds: result.statement.funds.map((fund) => ({ isin: fund.isin, name: fund.name, marketValue: fund.marketValue })),
+      funds: result.statement.funds.map((fund) => ({
+        isin: fund.isin,
+        name: fund.name,
+        marketValue: fund.marketValue,
+      })),
       fundsSubtotal: result.statement.fundsSubtotal,
     },
   };

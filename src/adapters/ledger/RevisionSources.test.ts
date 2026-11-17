@@ -18,11 +18,18 @@ describe("revision-specific bank sources", () => {
     expect(store.loadSources()).toEqual({ status: "ok", sources: [corrected] });
     expect(store.recoveryTarget()).toBe(ledger.revision);
     expect(store.loadRevision(ledger.revision)).toEqual({ status: "ok", state: ledger, sources });
-    expect(store.loadRevision("backfill")).toEqual({ status: "ok", state: { ...ledger, revision: "backfill" }, sources: [corrected], recoveryTarget: ledger.revision });
+    expect(store.loadRevision("backfill")).toEqual({
+      status: "ok",
+      state: { ...ledger, revision: "backfill" },
+      sources: [corrected],
+      recoveryTarget: ledger.revision,
+    });
     store.publish({ ...ledger, revision: "later" }, receipt("later"));
     expect(store.loadSources()).toEqual({ status: "ok", sources: [corrected] });
     expect(store.recoveryTarget()).toBe(ledger.revision);
-    expect(JSON.parse([...sheet.rows].reverse().find(row => row.type === "META")?.payload ?? "{}")).toMatchObject({ schema: 2 });
+    expect(JSON.parse([...sheet.rows].reverse().find((row) => row.type === "META")?.payload ?? "{}")).toMatchObject({
+      schema: 2,
+    });
   });
 
   it("supports an empty effective set and refuses duplicate dates before writing", () => {
@@ -30,8 +37,14 @@ describe("revision-specific bank sources", () => {
     const first = sources[0];
     if (first === undefined) throw new Error("missing fixture");
     const before = [...sheet.rows];
-    expect(() => { store.publishWithSources({ ...ledger, revision: "bad" }, receipt("bad"), [first, first]); }).toThrow();
-    expect(() => { store.publishWithSources({ ...ledger, revision: "bad" }, receipt("bad"), [{ ...first, date: "2024-01-31" as typeof first.date }]); }).toThrow();
+    expect(() => {
+      store.publishWithSources({ ...ledger, revision: "bad" }, receipt("bad"), [first, first]);
+    }).toThrow();
+    expect(() => {
+      store.publishWithSources({ ...ledger, revision: "bad" }, receipt("bad"), [
+        { ...first, date: "2024-01-31" as typeof first.date },
+      ]);
+    }).toThrow();
     expect(sheet.rows).toEqual(before);
     store.publishWithSources({ ...ledger, revision: "empty" }, receipt("empty"), []);
     expect(store.loadSources()).toEqual({ status: "ok", sources: [] });
@@ -49,7 +62,10 @@ describe("revision-specific bank sources", () => {
     const payload = canonicalJson({ schema: 1, funds: ledger.funds });
     sheet.rows[start] = { ...header, payload, checksum: sha256Hex(payload) };
     const block = sheet.rows.slice(start, -1);
-    sheet.rows[sheet.rows.length - 1] = { ...commit, checksum: sha256Hex(canonicalJson(block.map(row => [row.type, row.payload]))) };
+    sheet.rows[sheet.rows.length - 1] = {
+      ...commit,
+      checksum: sha256Hex(canonicalJson(block.map((row) => [row.type, row.payload]))),
+    };
     const loaded = store.load();
     expect(loaded.status).toBe("damaged");
     if (loaded.status !== "damaged") throw new Error("expected damaged ledger");
@@ -65,8 +81,8 @@ describe("revision-specific bank sources", () => {
       store.publish({ ...ledger, revision }, receipt(revision));
     }
     const appended = sheet.rows.slice(afterUpgrade);
-    expect(appended.filter(row => row.type === "SOURCE")).toHaveLength(40);
-    expect(appended.filter(row => row.type === "SOURCE").every(row => row.payload.length < 140)).toBe(true);
+    expect(appended.filter((row) => row.type === "SOURCE")).toHaveLength(40);
+    expect(appended.filter((row) => row.type === "SOURCE").every((row) => row.payload.length < 140)).toBe(true);
     expect(store.loadSources()).toEqual({ status: "ok", sources });
     expect(store.loadRevision(ledger.revision)).toEqual({ status: "ok", state: ledger, sources });
   });
@@ -82,7 +98,10 @@ describe("revision-specific bank sources", () => {
     const payload = canonicalJson({ r: 0, h: "0".repeat(64) });
     sheet.rows[index] = { ...row, payload, checksum: sha256Hex(payload) };
     const block = sheet.rows.slice(start, -1);
-    sheet.rows[sheet.rows.length - 1] = { ...commit, checksum: sha256Hex(canonicalJson(block.map(item => [item.type, item.payload]))) };
+    sheet.rows[sheet.rows.length - 1] = {
+      ...commit,
+      checksum: sha256Hex(canonicalJson(block.map((item) => [item.type, item.payload]))),
+    };
     expect(store.load().status).toBe("damaged");
     expect(store.loadSources().status).toBe("damaged");
   });

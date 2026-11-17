@@ -26,9 +26,22 @@ function statement(funds: readonly (readonly [string, string, number])[]): State
   const listed = funds.map(([isin, name, value]) => ({ isin, name, marketValue: euros(value) }));
   return { funds: listed, fundsSubtotal: euros(funds.reduce((sum, fund) => sum + fund[2], 0)) };
 }
-const command = (isin: string, action: FundCommand["action"], extra: Partial<FundCommand> = {}): FundCommand => ({ isin, action, moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "", ...extra });
+const command = (isin: string, action: FundCommand["action"], extra: Partial<FundCommand> = {}): FundCommand => ({
+  isin,
+  action,
+  moneyIn: ZERO_CENTS,
+  moneyOut: ZERO_CENTS,
+  comment: "",
+  ...extra,
+});
 
-function record(state: LedgerState, input: StatementInput, date: string, commands: FundCommand[], revision: string): LedgerState {
+function record(
+  state: LedgerState,
+  input: StatementInput,
+  date: string,
+  commands: FundCommand[],
+  revision: string,
+): LedgerState {
   const result = applyImport(state, input, day(date), commands, revision);
   if (!result.ok) throw new Error(`Synthetic ledger setup failed: ${JSON.stringify(result.issues)}`);
   return result.state;
@@ -36,41 +49,94 @@ function record(state: LedgerState, input: StatementInput, date: string, command
 
 function start(): void {
   // January: four funds. February: Synthetic Fund C is fully sold and stays closed until the statement under review.
-  let ledger = record(EMPTY_LEDGER, statement([[A, "Synthetic Fund A", 1000], [B, "Synthetic Fund B", 500], [C, "Synthetic Fund C", 300], [E, "Synthetic Fund E", 800]]), "2026-01-31", [
-    command(A, "Start", { openingNetInvested: euros(900) }), command(B, "Start", { openingNetInvested: euros(450) }), command(C, "Start", { openingNetInvested: euros(250) }), command(E, "Start", { openingNetInvested: euros(700) }),
-  ], "synthetic-1");
-  ledger = record(ledger, statement([[A, "Synthetic Fund A", 1010], [B, "Synthetic Fund B", 510], [E, "Synthetic Fund E", 810]]), "2026-02-28", [
-    command(A, "Keep"), command(B, "Keep"), command(E, "Keep"), command(C, "Close", { moneyOut: euros(310) }),
-  ], "synthetic-2");
+  let ledger = record(
+    EMPTY_LEDGER,
+    statement([
+      [A, "Synthetic Fund A", 1000],
+      [B, "Synthetic Fund B", 500],
+      [C, "Synthetic Fund C", 300],
+      [E, "Synthetic Fund E", 800],
+    ]),
+    "2026-01-31",
+    [
+      command(A, "Start", { openingNetInvested: euros(900) }),
+      command(B, "Start", { openingNetInvested: euros(450) }),
+      command(C, "Start", { openingNetInvested: euros(250) }),
+      command(E, "Start", { openingNetInvested: euros(700) }),
+    ],
+    "synthetic-1",
+  );
+  ledger = record(
+    ledger,
+    statement([
+      [A, "Synthetic Fund A", 1010],
+      [B, "Synthetic Fund B", 510],
+      [E, "Synthetic Fund E", 810],
+    ]),
+    "2026-02-28",
+    [command(A, "Keep"), command(B, "Keep"), command(E, "Keep"), command(C, "Close", { moneyOut: euros(310) })],
+    "synthetic-2",
+  );
   // March under review: A is absent, B is listed at zero, C reappears, E continues.
-  const march = statement([[B, "Synthetic Fund B", 0], [C, "Synthetic Fund C", 500], [E, "Synthetic Fund E", 820]]);
+  const march = statement([
+    [B, "Synthetic Fund B", 0],
+    [C, "Synthetic Fund C", 500],
+    [E, "Synthetic Fund E", 820],
+  ]);
   let recorded: LedgerState | null = null;
   const root = document.getElementById("root");
   if (root === null) throw new Error("Synthetic mount missing");
-  render(h(PrivacyProvider, { hidden: false, children: h(CashQuestions, {
-    statement: { ...march, categories: [], total: null, adjustments: [] },
-    date: day("2026-03-31"),
-    ledger,
-    createRevision: () => "synthetic-3",
-    onRecord: next => { recorded = next; },
-  }) }), root);
-  Object.assign(window, { syntheticSale: {
-    recorded: () => recorded !== null,
-    /** The recorded March holdings, reduced to what the audit asserts. */
-    march: () => {
-      const holdings = recorded?.snapshots.find(snapshot => snapshot.date === "2026-03-31")?.holdings;
-      return holdings === undefined ? null : Object.fromEntries(Object.entries(holdings).map(([isin, holding]) => [isin, { action: holding.action, status: holding.status, value: Number(holding.value), moneyOut: Number(holding.moneyOut), moneyIn: Number(holding.moneyIn) }]));
+  render(
+    h(PrivacyProvider, {
+      hidden: false,
+      children: h(CashQuestions, {
+        statement: { ...march, categories: [], total: null, adjustments: [] },
+        date: day("2026-03-31"),
+        ledger,
+        createRevision: () => "synthetic-3",
+        onRecord: (next) => {
+          recorded = next;
+        },
+      }),
+    }),
+    root,
+  );
+  Object.assign(window, {
+    syntheticSale: {
+      recorded: () => recorded !== null,
+      /** The recorded March holdings, reduced to what the audit asserts. */
+      march: () => {
+        const holdings = recorded?.snapshots.find((snapshot) => snapshot.date === "2026-03-31")?.holdings;
+        return holdings === undefined
+          ? null
+          : Object.fromEntries(
+              Object.entries(holdings).map(([isin, holding]) => [
+                isin,
+                {
+                  action: holding.action,
+                  status: holding.status,
+                  value: Number(holding.value),
+                  moneyOut: Number(holding.moneyOut),
+                  moneyIn: Number(holding.moneyIn),
+                },
+              ]),
+            );
+      },
+      /** What the recorded statement holds in total, summed independently of the screen, for checking the running summary against it. */
+      marchInvested: () => {
+        const holdings = recorded?.snapshots.find((snapshot) => snapshot.date === "2026-03-31")?.holdings;
+        return holdings === undefined
+          ? null
+          : Object.values(holdings).reduce((sum, holding) => sum + Number(holding.netInvested), 0);
+      },
+      isins: { A, B, C, E },
+      snapshots: () => recorded?.snapshots.length ?? ledger.snapshots.length,
     },
-    /** What the recorded statement holds in total, summed independently of the screen, for checking the running summary against it. */
-    marchInvested: () => {
-      const holdings = recorded?.snapshots.find(snapshot => snapshot.date === "2026-03-31")?.holdings;
-      return holdings === undefined ? null : Object.values(holdings).reduce((sum, holding) => sum + Number(holding.netInvested), 0);
-    },
-    isins: { A, B, C, E },
-    snapshots: () => recorded?.snapshots.length ?? ledger.snapshots.length,
-  } });
+  });
 }
-try { start(); } catch (error: unknown) {
+try {
+  start();
+} catch (error: unknown) {
   const root = document.getElementById("root");
   if (root !== null) root.textContent = `Synthetic setup error: ${error instanceof Error ? error.message : "unknown"}`;
 }

@@ -52,7 +52,8 @@ function parseCell(value: unknown): RawCell | undefined | "invalid" {
   if (typeof value !== "object" || Array.isArray(value)) return "invalid";
   const cell = value as Record<string, unknown>;
   if (cell["kind"] === "formula") return { kind: "formula" };
-  if (cell["kind"] === "text" && typeof cell["text"] === "string" && cell["text"].length <= MAX_TEXT) return { kind: "text", text: cell["text"] };
+  if (cell["kind"] === "text" && typeof cell["text"] === "string" && cell["text"].length <= MAX_TEXT)
+    return { kind: "text", text: cell["text"] };
   if (
     cell["kind"] === "number" &&
     typeof cell["text"] === "string" &&
@@ -71,7 +72,8 @@ function parseCell(value: unknown): RawCell | undefined | "invalid" {
 export function parseStoredSheet(value: unknown): RawSheet | null {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   const stored = value as Record<string, unknown>;
-  if (typeof stored["date1904"] !== "boolean" || !Array.isArray(stored["rows"]) || stored["rows"].length > MAX_ROWS) return null;
+  if (typeof stored["date1904"] !== "boolean" || !Array.isArray(stored["rows"]) || stored["rows"].length > MAX_ROWS)
+    return null;
   const rows: (RawCell | undefined)[][] = [];
   for (const line of stored["rows"] as unknown[]) {
     if (!Array.isArray(line) || line.length > MAX_COLUMNS) return null;

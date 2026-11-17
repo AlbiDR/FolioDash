@@ -7,15 +7,16 @@ import type { HoldingAction } from "../core/Ledger";
 import { type EuroCents, toEuroCents } from "../core/Money";
 
 export type ParsedRequest =
-  | { readonly ok: true; readonly request: CommitRequest }
-  | { readonly ok: false; readonly message: string };
+  { readonly ok: true; readonly request: CommitRequest } | { readonly ok: false; readonly message: string };
 
 const ACTIONS: readonly string[] = ["Start", "Add", "Keep", "Close", "Reopen", "Closed"];
 const MAX_TEXT = 500;
 const MAX_FUNDS = 500;
 
 function record(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 function cents(value: unknown): EuroCents | null {
@@ -54,7 +55,8 @@ export function parseCommitRequest(input: unknown): ParsedRequest {
     const isin = typeof fund?.["isin"] === "string" ? parseIsin(fund["isin"]) : null;
     const name = text(fund?.["name"], 160);
     const marketValue = cents(fund?.["marketValue"]);
-    if (isin === null || name === null || marketValue === null || marketValue < 0) return fail("A statement fund is invalid.");
+    if (isin === null || name === null || marketValue === null || marketValue < 0)
+      return fail("A statement fund is invalid.");
     funds.push({ isin, name, marketValue });
   }
   const fundsSubtotal = cents(statementInput["fundsSubtotal"]);
@@ -70,7 +72,14 @@ export function parseCommitRequest(input: unknown): ParsedRequest {
     const moneyIn = cents(item?.["moneyIn"]);
     const moneyOut = cents(item?.["moneyOut"]);
     const comment = text(item?.["comment"]);
-    if (isin === null || action === null || !ACTIONS.includes(action) || moneyIn === null || moneyOut === null || comment === null) {
+    if (
+      isin === null ||
+      action === null ||
+      !ACTIONS.includes(action) ||
+      moneyIn === null ||
+      moneyOut === null ||
+      comment === null
+    ) {
       return fail("A decision is invalid.");
     }
     const opening = item?.["openingNetInvested"];
@@ -98,5 +107,15 @@ export function parseCommitRequest(input: unknown): ParsedRequest {
     source = { sheetName, sheet };
   }
 
-  return { ok: true, request: { commandId, expectedRevision, statement: { funds, fundsSubtotal }, date, commands, ...(source === undefined ? {} : { source }) } };
+  return {
+    ok: true,
+    request: {
+      commandId,
+      expectedRevision,
+      statement: { funds, fundsSubtotal },
+      date,
+      commands,
+      ...(source === undefined ? {} : { source }),
+    },
+  };
 }

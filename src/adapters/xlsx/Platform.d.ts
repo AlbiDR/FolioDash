@@ -15,7 +15,10 @@ interface PlatformTransform {
 
 declare const DecompressionStream: new (format: "deflate-raw") => PlatformTransform;
 declare const CompressionStream: new (format: "deflate-raw") => PlatformTransform;
-declare const TextDecoder: new (label: string, options?: { fatal?: boolean }) => {
+declare const TextDecoder: new (
+  label: string,
+  options?: { fatal?: boolean },
+) => {
   decode(input: Uint8Array): string;
 };
 declare const TextEncoder: new () => { encode(input: string): Uint8Array };

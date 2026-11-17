@@ -11,7 +11,10 @@ import type { CheckpointMarker } from "../../../../core/Checkpoints";
 export const NO_MARKERS: readonly CheckpointMarker[] = [];
 
 /** The value-only observations to draw within the shown period. They are never part of the statements' figures. */
-export function checkpointSeries(markers: readonly CheckpointMarker[], from: IsoDate | null | undefined): ChartSeries | null {
+export function checkpointSeries(
+  markers: readonly CheckpointMarker[],
+  from: IsoDate | null | undefined,
+): ChartSeries | null {
   // Undefined means there is nothing to compare with (no statement); null means the period has no start.
   if (from === undefined) return null;
   const inside = markers.filter((marker) => from === null || marker.date >= from);
@@ -21,7 +24,11 @@ export function checkpointSeries(markers: readonly CheckpointMarker[], from: Iso
     label: "Checkpoint (value only)",
     slot: 2,
     markers: true,
-    points: inside.map((marker) => ({ time: utcTime(marker.date), value: marker.cents / 100, ...(marker.count > 1 ? { detail: `${String(marker.count)} checkpoints on this date` } : {}) })),
+    points: inside.map((marker) => ({
+      time: utcTime(marker.date),
+      value: marker.cents / 100,
+      ...(marker.count > 1 ? { detail: `${String(marker.count)} checkpoints on this date` } : {}),
+    })),
   };
 }
 
@@ -36,7 +43,9 @@ export interface AllocationSlice {
 /** The funds still held, largest first, with their share of what is held. Closed funds hold nothing and are left out. */
 export function allocation(model: OverviewModel): AllocationSlice[] {
   const held = model.funds.flatMap((fund) =>
-    fund.status === "closed" || fund.latest === null || fund.latest.value <= 0 ? [] : [{ isin: fund.isin, name: fund.name, value: fund.latest.value }],
+    fund.status === "closed" || fund.latest === null || fund.latest.value <= 0
+      ? []
+      : [{ isin: fund.isin, name: fund.name, value: fund.latest.value }],
   );
   const total = held.reduce((sum, fund) => sum + fund.value, 0);
   if (total <= 0) return [];
@@ -65,7 +74,11 @@ export function fundRanking(model: OverviewModel): RankedFund[] {
 export type MonthMetric = "gain" | "monthlyGain" | "yearToDateGain" | "yearOverYearGain";
 
 /** One metric of the monthly summary in euros, from the first shown statement on. A missing figure stays a gap. */
-export function metricSeries(months: readonly OverviewMonth[], start: number, metric: MonthMetric): { readonly date: IsoDate; readonly value: number | null }[] {
+export function metricSeries(
+  months: readonly OverviewMonth[],
+  start: number,
+  metric: MonthMetric,
+): { readonly date: IsoDate; readonly value: number | null }[] {
   return months.slice(start).map((month) => {
     const cents = month[metric];
     return { date: month.date, value: cents === null ? null : cents / 100 };
@@ -96,19 +109,42 @@ export interface Dashboard {
  * range. It is a pure function of those two inputs, so it is remembered and only
  * redone when one of them changes.
  */
-export function computeDashboard(model: OverviewModel, range: ChartRange, markers: readonly CheckpointMarker[] = NO_MARKERS): Dashboard {
+export function computeDashboard(
+  model: OverviewModel,
+  range: ChartRange,
+  markers: readonly CheckpointMarker[] = NO_MARKERS,
+): Dashboard {
   const { dates, funds, totals, months } = model;
   const start = rangeStart(dates, range);
   const shown = dates.slice(start);
-  const metricTrend = (metric: MonthMetric): (number | null)[] => metricSeries(months, start, metric).map((point) => point.value);
+  const metricTrend = (metric: MonthMetric): (number | null)[] =>
+    metricSeries(months, start, metric).map((point) => point.value);
   return {
     start,
     shownTimes: shown.map(utcTime),
     allTimes: dates.map(utcTime),
     totalSeries: [
-      { id: "value", label: "Portfolio value", points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.value ?? null) })) },
-      { id: "invested", label: "Net invested", dashed: true, points: shown.map((date, index) => ({ time: utcTime(date), value: euros(totals[start + index]?.invested ?? null) })) },
-      ...(() => { const extra = checkpointSeries(markers, shown.length === 0 ? undefined : rangeFromDate(dates, range)); return extra === null ? [] : [extra]; })(),
+      {
+        id: "value",
+        label: "Portfolio value",
+        points: shown.map((date, index) => ({
+          time: utcTime(date),
+          value: euros(totals[start + index]?.value ?? null),
+        })),
+      },
+      {
+        id: "invested",
+        label: "Net invested",
+        dashed: true,
+        points: shown.map((date, index) => ({
+          time: utcTime(date),
+          value: euros(totals[start + index]?.invested ?? null),
+        })),
+      },
+      ...(() => {
+        const extra = checkpointSeries(markers, shown.length === 0 ? undefined : rangeFromDate(dates, range));
+        return extra === null ? [] : [extra];
+      })(),
     ],
     // Each fund's money invested is drawn beneath its value, in the same colour, dotted and faded.
     fundSeries: [
@@ -117,7 +153,10 @@ export function computeDashboard(model: OverviewModel, range: ChartRange, marker
         label: `${fund.name}: net invested`,
         slot,
         muted: true,
-        points: shown.map((date, index) => ({ time: utcTime(date), value: euros(fund.netInvested[start + index] ?? null) })),
+        points: shown.map((date, index) => ({
+          time: utcTime(date),
+          value: euros(fund.netInvested[start + index] ?? null),
+        })),
       })),
       ...funds.map((fund, slot) => ({
         id: fund.isin,
@@ -130,7 +169,12 @@ export function computeDashboard(model: OverviewModel, range: ChartRange, marker
     ranking: fundRanking(model),
     bars: metricSeries(months, start, "monthlyGain").map((entry, index) => {
       const name = model.labels[start + index];
-      return { key: entry.date, label: name?.short ?? formatMonthShort(entry.date), detail: name?.detail ?? null, value: entry.value };
+      return {
+        key: entry.date,
+        label: name?.short ?? formatMonthShort(entry.date),
+        detail: name?.detail ?? null,
+        value: entry.value,
+      };
     }),
     heroTrend: shown.map((_, index) => euros(totals[start + index]?.value ?? null)),
     metricTrends: {

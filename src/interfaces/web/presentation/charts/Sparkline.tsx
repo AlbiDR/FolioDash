@@ -33,9 +33,16 @@ export function Sparkline(props: {
     return geometry.series[0];
   }, [times, values, width, height]);
   return (
-    <svg class={`sparkline ${tone}`} viewBox={`0 0 ${String(width)} ${String(height)}`} preserveAspectRatio="none" aria-hidden="true">
+    <svg
+      class={`sparkline ${tone}`}
+      viewBox={`0 0 ${String(width)} ${String(height)}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
       {props.area === true && series?.areas.map((area) => <path key={area} class="spark-area" d={area} />)}
-      {series?.paths.map((path) => <path key={path} class="spark-line" d={path} />)}
+      {series?.paths.map((path) => (
+        <path key={path} class="spark-line" d={path} />
+      ))}
     </svg>
   );
 }

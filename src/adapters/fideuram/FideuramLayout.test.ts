@@ -134,7 +134,10 @@ describe("fields that are not used in results never block an import", () => {
   it("accepts a grand total line that has no value", () => {
     const statement = interpretOk(withCell(syntheticSheet(), ROW.total, COL.M, undefined));
     expect(statement.total).toBeNull();
-    expect(statement.adjustments).toEqual([{ cell: "M10", message: "the grand total line has no value" }, { cell: null, message: "the file has no grand total line" }]);
+    expect(statement.adjustments).toEqual([
+      { cell: "M10", message: "the grand total line has no value" },
+      { cell: null, message: "the file has no grand total line" },
+    ]);
   });
 });
 

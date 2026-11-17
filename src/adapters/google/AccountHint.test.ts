@@ -14,7 +14,13 @@ describe("the account hint", () => {
     expect(await fetchAccountHint(google.client, "wrong-token")).toBeNull();
     google.faults.push({ match: /about/u, network: true });
     expect(await fetchAccountHint(google.client, google.token)).toBeNull();
-    for (const body of [{}, { user: {} }, { user: { emailAddress: 7 } }, { user: { emailAddress: "no-at-sign" } }, null]) {
+    for (const body of [
+      {},
+      { user: {} },
+      { user: { emailAddress: 7 } },
+      { user: { emailAddress: "no-at-sign" } },
+      null,
+    ]) {
       const odd = { status: 200, json: () => Promise.resolve(body) };
       expect(await fetchAccountHint(() => Promise.resolve(odd), "token")).toBeNull();
     }

@@ -63,12 +63,39 @@ export async function buildZip(entries: readonly ZipEntryInput[], options: ZipOp
     const size = entry.declaredSize ?? entry.data.length;
     const flags = entry.flags ?? 0;
     body.push(
-      u32(0x04034b50), u16(20), u16(flags), u16(method), u16(0), u16(0), u32(crc), u32(stored.length), u32(size),
-      u16(name.length), u16(0), name, stored,
+      u32(0x04034b50),
+      u16(20),
+      u16(flags),
+      u16(method),
+      u16(0),
+      u16(0),
+      u32(crc),
+      u32(stored.length),
+      u32(size),
+      u16(name.length),
+      u16(0),
+      name,
+      stored,
     );
     directory.push(
-      u32(0x02014b50), u16(20), u16(20), u16(flags), u16(method), u16(0), u16(0), u32(crc), u32(stored.length), u32(size),
-      u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset), name,
+      u32(0x02014b50),
+      u16(20),
+      u16(20),
+      u16(flags),
+      u16(method),
+      u16(0),
+      u16(0),
+      u32(crc),
+      u32(stored.length),
+      u32(size),
+      u16(name.length),
+      u16(0),
+      u16(0),
+      u16(0),
+      u16(0),
+      u32(0),
+      u32(offset),
+      name,
     );
     offset += 30 + name.length + stored.length;
   }
@@ -77,7 +104,14 @@ export async function buildZip(entries: readonly ZipEntryInput[], options: ZipOp
   return concat([
     ...body,
     directoryBytes,
-    u32(0x06054b50), u16(0), u16(0), u16(count), u16(count), u32(directoryBytes.length), u32(offset), u16(0),
+    u32(0x06054b50),
+    u16(0),
+    u16(0),
+    u16(count),
+    u16(count),
+    u32(directoryBytes.length),
+    u32(offset),
+    u16(0),
   ]);
 }
 

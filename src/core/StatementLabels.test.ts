@@ -14,17 +14,30 @@ function names(...texts: string[]): { short: string; long: string; kind: string 
 
 describe("statementLabels", () => {
   it("names an export taken on the 1st to 3rd after the month it closes", () => {
-    expect(names("2026-11-01")).toEqual([{ short: "Oct 26", long: "October 2026 close, exported 1 November 2026", kind: "closes-previous-month" }]);
-    expect(names("2026-11-03")[0]).toMatchObject({ short: "Oct 26", long: "October 2026 close, exported 3 November 2026" });
+    expect(names("2026-11-01")).toEqual([
+      { short: "Oct 26", long: "October 2026 close, exported 1 November 2026", kind: "closes-previous-month" },
+    ]);
+    expect(names("2026-11-03")[0]).toMatchObject({
+      short: "Oct 26",
+      long: "October 2026 close, exported 3 November 2026",
+    });
   });
 
   it("names an export from the first seven days after the month it closes", () => {
-    expect(names("2026-11-07")[0]).toMatchObject({ short: "Oct 26", long: "October 2026 close, exported 7 November 2026", kind: "closes-previous-month" });
+    expect(names("2026-11-07")[0]).toMatchObject({
+      short: "Oct 26",
+      long: "October 2026 close, exported 7 November 2026",
+      kind: "closes-previous-month",
+    });
     expect(names("2026-11-08")).toEqual([{ short: "Nov 26", long: "8 November 2026", kind: "unchanged" }]);
   });
 
   it("names a slightly early export in the last seven days as that month's close", () => {
-    expect(names("2026-10-25")[0]).toMatchObject({ short: "Oct 26", long: "October 2026 close, exported 25 October 2026", kind: "closes-month" });
+    expect(names("2026-10-25")[0]).toMatchObject({
+      short: "Oct 26",
+      long: "October 2026 close, exported 25 October 2026",
+      kind: "closes-month",
+    });
     expect(names("2026-10-31")[0]).toMatchObject({ short: "Oct 26", kind: "closes-month" });
     expect(names("2026-10-24")).toEqual([{ short: "Oct 26", long: "24 October 2026", kind: "unchanged" }]);
   });
@@ -53,13 +66,24 @@ describe("statementLabels", () => {
   it("lets a run of month-end exports, early and late, each close their own month", () => {
     const result = names("2026-09-29", "2026-11-01", "2026-11-30", "2027-01-02");
     expect(result.map((entry) => entry.short)).toEqual(["Sep 26", "Oct 26", "Nov 26", "Dec 26"]);
-    expect(result.map((entry) => entry.kind)).toEqual(["closes-month", "closes-previous-month", "closes-month", "closes-previous-month"]);
+    expect(result.map((entry) => entry.kind)).toEqual([
+      "closes-month",
+      "closes-previous-month",
+      "closes-month",
+      "closes-previous-month",
+    ]);
   });
 
   it("crosses year ends and leap years", () => {
-    expect(names("2026-01-01")[0]).toMatchObject({ short: "Dec 25", long: "December 2025 close, exported 1 January 2026" });
+    expect(names("2026-01-01")[0]).toMatchObject({
+      short: "Dec 25",
+      long: "December 2025 close, exported 1 January 2026",
+    });
     expect(names("2026-03-01")[0]).toMatchObject({ short: "Feb 26" });
-    expect(names("2028-03-01")[0]).toMatchObject({ short: "Feb 28", long: "February 2028 close, exported 1 March 2028" });
+    expect(names("2028-03-01")[0]).toMatchObject({
+      short: "Feb 28",
+      long: "February 2028 close, exported 1 March 2028",
+    });
   });
 
   it("gives a clashing statement a date-only name that claims no period", () => {
@@ -72,11 +96,18 @@ describe("statementLabels", () => {
   it("does not let one clash push later exports back to the old naming", () => {
     const result = names("2026-01-15", "2026-02-01", "2026-03-01", "2026-04-01");
     expect(result.map((entry) => entry.short)).toEqual(["Jan 26", "1 Feb 26", "Feb 26", "Mar 26"]);
-    expect(result[2]).toMatchObject({ long: "February 2026 close, exported 1 March 2026", kind: "closes-previous-month" });
+    expect(result[2]).toMatchObject({
+      long: "February 2026 close, exported 1 March 2026",
+      kind: "closes-previous-month",
+    });
   });
 
   it("names a series of 1st-of-month exports one month earlier throughout", () => {
-    expect(names("2025-07-01", "2025-08-01", "2025-09-01").map((entry) => entry.short)).toEqual(["Jun 25", "Jul 25", "Aug 25"]);
+    expect(names("2025-07-01", "2025-08-01", "2025-09-01").map((entry) => entry.short)).toEqual([
+      "Jun 25",
+      "Jul 25",
+      "Aug 25",
+    ]);
   });
 
   it("keeps the as-of date in every long name and returns one name per date in the order given", () => {

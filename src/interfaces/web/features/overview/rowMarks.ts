@@ -16,7 +16,9 @@ const NONE: RowMarks = { best: new Set(), worst: new Set() };
  * figure marks nothing.
  */
 export function rowMarks(values: readonly (number | null)[]): RowMarks {
-  const present = values.flatMap((value, position) => (value !== null && Number.isFinite(value) ? [{ value, position }] : []));
+  const present = values.flatMap((value, position) =>
+    value !== null && Number.isFinite(value) ? [{ value, position }] : [],
+  );
   if (present.length < MIN_MARKED_VALUES) return NONE;
   const high = Math.max(...present.map((entry) => entry.value));
   const low = Math.min(...present.map((entry) => entry.value));

@@ -4,10 +4,14 @@ import type { JSX } from "preact";
  * In-page orientation for a long screen: each item scrolls to a section heading and moves focus there.
  * It never changes the route, so the address bar and bookmarks stay as they are.
  */
-export function PageNav(props: { readonly items: readonly { readonly id: string; readonly label: string }[] }): JSX.Element {
+export function PageNav(props: {
+  readonly items: readonly { readonly id: string; readonly label: string }[];
+}): JSX.Element {
   return (
     <nav class="page-nav" aria-label="On this page">
-      <p class="page-nav-label" aria-hidden="true">Jump to</p>
+      <p class="page-nav-label" aria-hidden="true">
+        Jump to
+      </p>
       <ul>
         {props.items.map((item) => (
           <li key={item.id}>

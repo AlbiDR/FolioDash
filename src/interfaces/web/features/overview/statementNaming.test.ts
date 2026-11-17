@@ -45,7 +45,13 @@ function command(action: FundCommand["action"], extra: Partial<FundCommand> = {}
 function ledgerOn(...dates: string[]): LedgerState {
   let state = EMPTY_LEDGER;
   dates.forEach((on, index) => {
-    const result = applyImport(state, statement(1000 + index * 50), date(on), [index === 0 ? command("Start", { openingNetInvested: euros(900) }) : command("Keep")], on);
+    const result = applyImport(
+      state,
+      statement(1000 + index * 50),
+      date(on),
+      [index === 0 ? command("Start", { openingNetInvested: euros(900) }) : command("Keep")],
+      on,
+    );
     if (!result.ok) throw new Error(JSON.stringify(result.issues));
     state = result.state;
   });
@@ -84,7 +90,14 @@ describe("statement names in the overview model", () => {
   it("changes no figure: the same values on the 1st or the 15th give identical amounts", () => {
     const first = overviewFromLedger(ledgerOn("2026-09-01", "2026-10-01", "2026-11-01"), "recorded");
     const middle = overviewFromLedger(ledgerOn("2026-09-15", "2026-10-15", "2026-11-15"), "recorded");
-    const amounts = (model: typeof first): unknown => model.months.map(({ value, gain, monthlyGain, yearToDateGain, yearOverYearGain }) => ({ value, gain, monthlyGain, yearToDateGain, yearOverYearGain }));
+    const amounts = (model: typeof first): unknown =>
+      model.months.map(({ value, gain, monthlyGain, yearToDateGain, yearOverYearGain }) => ({
+        value,
+        gain,
+        monthlyGain,
+        yearToDateGain,
+        yearOverYearGain,
+      }));
     expect(amounts(first)).toEqual(amounts(middle));
     expect(first.labels.map((label) => label.short)).toEqual(["Aug 26", "Sep 26", "Oct 26"]);
     expect(middle.labels.map((label) => label.short)).toEqual(["Sep 26", "Oct 26", "Nov 26"]);

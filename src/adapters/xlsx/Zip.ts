@@ -138,7 +138,8 @@ export function openZip(bytes: Uint8Array, limits: XlsxLimits): ZipArchive {
     if (entries.has(name)) throw new XlsxError("corrupt", "The file contains the same part twice.");
     if (size > limits.maxEntryBytes) throw new XlsxError("limit-exceeded", "A part of the file is too large.");
     total += size;
-    if (total > limits.maxTotalBytes) throw new XlsxError("limit-exceeded", "The file expands to more than the supported size.");
+    if (total > limits.maxTotalBytes)
+      throw new XlsxError("limit-exceeded", "The file expands to more than the supported size.");
     entries.set(name, { name, method, crc, compressedSize, size, localOffset });
   }
 
@@ -162,7 +163,8 @@ export function openZip(bytes: Uint8Array, limits: XlsxLimits): ZipArchive {
       } else {
         content = await inflate(raw, entry.size);
       }
-      if (crc32(content) !== entry.crc) throw new XlsxError("corrupt", "A part of the file failed its integrity check.");
+      if (crc32(content) !== entry.crc)
+        throw new XlsxError("corrupt", "A part of the file failed its integrity check.");
       return content;
     },
   };

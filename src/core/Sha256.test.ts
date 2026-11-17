@@ -5,7 +5,10 @@ describe("sha256Hex", () => {
   it.each([
     ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
     ["abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"],
-    ["abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"],
+    [
+      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
+      "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1",
+    ],
     ["é€😀", "df9226927fd572c1ee66eec85de1bb139497614899f36e4e90474cb71f6ef9d0"],
     ["FolioDash ledger record", "3b99e03659ac6f90f8d2312035b02f10765d08f0d7ca31a2ffbd3855d7f1f181"],
   ])("matches the published value for %j", (text, expected) => {

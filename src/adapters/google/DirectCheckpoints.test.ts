@@ -7,7 +7,13 @@ import { type IsoDate, parseIsoDate } from "../../core/IsoDate";
 import { toEuroCents } from "../../core/Money";
 import { sha256Hex } from "../../core/Sha256";
 import { createWorkbook } from "./GoogleWorkbook";
-import { appendCheckpoint, CHECKPOINT_LOG_TITLE, checkCheckpoint, preflightCheckpoint, readCheckpoints } from "./DirectCheckpoints";
+import {
+  appendCheckpoint,
+  CHECKPOINT_LOG_TITLE,
+  checkCheckpoint,
+  preflightCheckpoint,
+  readCheckpoints,
+} from "./DirectCheckpoints";
 import { readExpenses } from "./DirectExpenses";
 import { LEDGER_TAB } from "./SheetsLayout";
 
@@ -19,8 +25,18 @@ function required<T>(value: T | null | undefined): T {
 }
 const date = (text: string): IsoDate => required(parseIsoDate(text));
 const TODAY = date("2026-11-16");
-const add = (name: string, on = "2026-11-14", euros = 1000): CheckpointCommand => ({ id: `${name}-0000000`.slice(0, 12), kind: "add", date: date(on), cents: required(toEuroCents(euros * 100)), note: "" });
-const voidOf = (name: string, target: string): CheckpointCommand => ({ id: `${name}-0000000`.slice(0, 12), kind: "void", target: `${target}-0000000`.slice(0, 12) });
+const add = (name: string, on = "2026-11-14", euros = 1000): CheckpointCommand => ({
+  id: `${name}-0000000`.slice(0, 12),
+  kind: "add",
+  date: date(on),
+  cents: required(toEuroCents(euros * 100)),
+  note: "",
+});
+const voidOf = (name: string, target: string): CheckpointCommand => ({
+  id: `${name}-0000000`.slice(0, 12),
+  kind: "void",
+  target: `${target}-0000000`.slice(0, 12),
+});
 
 async function setup(): Promise<{ google: FakeGoogle; id: string }> {
   const google = new FakeGoogle();
@@ -42,8 +58,12 @@ describe("direct checkpoint records", () => {
     const read = await readCheckpoints(google.client, google.token, id, true);
     expect(read.status === "ok" && read.commands.map((entry) => entry.id)).toEqual([add("a1").id]);
     // The fake does not model a tab's hidden flag, so the request is checked instead.
-    expect(JSON.stringify(google.requests)).toContain("\"hidden\":true");
-    expect(required(google.tab(id, LEDGER_TAB)).developerMetadata.some((entry) => entry["metadataKey"] === "foliodash.checkpoints")).toBe(true);
+    expect(JSON.stringify(google.requests)).toContain('"hidden":true');
+    expect(
+      required(google.tab(id, LEDGER_TAB)).developerMetadata.some(
+        (entry) => entry["metadataKey"] === "foliodash.checkpoints",
+      ),
+    ).toBe(true);
   });
 
   it("C2 keeps two checkpoints on one date", async () => {
@@ -68,7 +88,7 @@ describe("direct checkpoint records", () => {
   it("C5 reports an altered row as damaged", async () => {
     const { google, id } = await setup();
     await appendCheckpoint(google.client, google.token, id, add("a1"), TODAY);
-    required(google.tab(id, CHECKPOINT_LOG_TITLE)).rows.push(["1", "{\"tampered\":true}", "bad-checksum"]);
+    required(google.tab(id, CHECKPOINT_LOG_TITLE)).rows.push(["1", '{"tampered":true}', "bad-checksum"]);
     expect((await readCheckpoints(google.client, google.token, id, true)).status).toBe("damaged");
   });
 
@@ -129,28 +149,43 @@ describe("direct checkpoint records", () => {
   it("C8 voids a checkpoint; voiding it again is a no-op that writes nothing (B9c)", async () => {
     const { google, id } = await setup();
     await appendCheckpoint(google.client, google.token, id, add("a1"), TODAY);
-    expect((await appendCheckpoint(google.client, google.token, id, voidOf("v1", "a1"), TODAY, true)).status).toBe("saved");
+    expect((await appendCheckpoint(google.client, google.token, id, voidOf("v1", "a1"), TODAY, true)).status).toBe(
+      "saved",
+    );
     const rows = required(google.tab(id, CHECKPOINT_LOG_TITLE)).rows.length;
-    expect((await preflightCheckpoint(google.client, google.token, id, voidOf("v2", "a1"), TODAY, true)).status).toBe("no-op");
-    expect((await appendCheckpoint(google.client, google.token, id, voidOf("v2", "a1"), TODAY, true)).status).toBe("no-op");
+    expect((await preflightCheckpoint(google.client, google.token, id, voidOf("v2", "a1"), TODAY, true)).status).toBe(
+      "no-op",
+    );
+    expect((await appendCheckpoint(google.client, google.token, id, voidOf("v2", "a1"), TODAY, true)).status).toBe(
+      "no-op",
+    );
     expect(required(google.tab(id, CHECKPOINT_LOG_TITLE)).rows.length).toBe(rows);
   });
 
   it("refuses a void of a checkpoint that is not in the log", async () => {
     const { google, id } = await setup();
     await appendCheckpoint(google.client, google.token, id, add("a1"), TODAY);
-    expect((await appendCheckpoint(google.client, google.token, id, voidOf("v1", "zz"), TODAY, true)).status).toBe("refused");
+    expect((await appendCheckpoint(google.client, google.token, id, voidOf("v1", "zz"), TODAY, true)).status).toBe(
+      "refused",
+    );
   });
 
   it("C10 two devices adding concurrently both end up in a valid log", async () => {
     const { google, id } = await setup();
     await appendCheckpoint(google.client, google.token, id, add("a0"), TODAY);
     const reads = google.calls.filter((call) => call.startsWith("GET") && call.includes("/values/")).length;
-    google.afterRead = { count: reads + 1, run: () => { appendRaw(google, id, add("other")); } };
+    google.afterRead = {
+      count: reads + 1,
+      run: () => {
+        appendRaw(google, id, add("other"));
+      },
+    };
     const outcome = await appendCheckpoint(google.client, google.token, id, add("mine"), TODAY, true);
     expect(["saved", "unknown"]).toContain(outcome.status);
     const read = await readCheckpoints(google.client, google.token, id, true);
-    expect(read.status === "ok" && read.commands.map((entry) => entry.id).sort()).toEqual([add("a0").id, add("mine").id, add("other").id].sort());
+    expect(read.status === "ok" && read.commands.map((entry) => entry.id).sort()).toEqual(
+      [add("a0").id, add("mine").id, add("other").id].sort(),
+    );
   });
 
   it("B9a a competing void that lands before the append turns the later void into a no-op", async () => {
@@ -175,7 +210,13 @@ describe("direct checkpoint records", () => {
     await appendCheckpoint(google.client, google.token, id, add("a0"), TODAY);
     const tab = required(google.tab(id, CHECKPOINT_LOG_TITLE));
     for (let index = 0; index < ADD_ADMISSION_LIMIT - 2; index++) {
-      const text = canonicalJson({ id: `bulk-${String(index).padStart(8, "0")}`, kind: "add", date: "2026-11-14", cents: 100, note: "" });
+      const text = canonicalJson({
+        id: `bulk-${String(index).padStart(8, "0")}`,
+        kind: "add",
+        date: "2026-11-14",
+        cents: 100,
+        note: "",
+      });
       tab.rows.push(["1", text, sha256Hex(text)]);
     }
     appendRaw(google, id, add("twoA"));
@@ -183,6 +224,8 @@ describe("direct checkpoint records", () => {
     const read = await readCheckpoints(google.client, google.token, id, true);
     expect(read.status === "ok" && read.commands.length).toBe(ADD_ADMISSION_LIMIT + 1);
     expect((await appendCheckpoint(google.client, google.token, id, add("z9"), TODAY, true)).status).toBe("refused");
-    expect((await appendCheckpoint(google.client, google.token, id, voidOf("vtwoA", "twoA"), TODAY, true)).status).toBe("saved");
+    expect((await appendCheckpoint(google.client, google.token, id, voidOf("vtwoA", "twoA"), TODAY, true)).status).toBe(
+      "saved",
+    );
   });
 });

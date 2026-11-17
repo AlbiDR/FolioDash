@@ -5,7 +5,13 @@ export const EXPENSE_LABELS = ["Outbound Commute", "Lunch", "Inbound Commute", "
 /** Routine fields require amounts or zeroes unless an optional work cost is entered. */
 export const EXPENSE_REQUIRED_INDICES = [0, 1, 2] as const;
 export const EXPENSE_OPTIONAL_INDICES = [3, 4] as const;
-export type ExpenseAmounts = readonly [EuroCents | null, EuroCents | null, EuroCents | null, EuroCents | null, EuroCents | null];
+export type ExpenseAmounts = readonly [
+  EuroCents | null,
+  EuroCents | null,
+  EuroCents | null,
+  EuroCents | null,
+  EuroCents | null,
+];
 export const EMPTY_EXPENSE_AMOUNTS: ExpenseAmounts = [null, null, null, null, null];
 
 /** Expense revisions are independent of the portfolio ledger. Unentered values stay null; field policy determines review needs. */
@@ -41,7 +47,9 @@ function fromDayNumber(number: number): IsoDate | null {
   const z = number + 719468;
   const era = Math.floor(z / 146097);
   const dayOfEra = z - era * 146097;
-  const yearOfEra = Math.floor((dayOfEra - Math.floor(dayOfEra / 1460) + Math.floor(dayOfEra / 36524) - Math.floor(dayOfEra / 146096)) / 365);
+  const yearOfEra = Math.floor(
+    (dayOfEra - Math.floor(dayOfEra / 1460) + Math.floor(dayOfEra / 36524) - Math.floor(dayOfEra / 146096)) / 365,
+  );
   const year = yearOfEra + era * 400;
   const dayOfYear = dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100));
   const monthPart = Math.floor((5 * dayOfYear + 2) / 153);
@@ -52,7 +60,7 @@ function fromDayNumber(number: number): IsoDate | null {
 
 /** Monday is 0; Sunday is 6. */
 export function expenseWeekday(date: IsoDate): number {
-  return ((dayNumber(date) + 3) % 7 + 7) % 7;
+  return (((dayNumber(date) + 3) % 7) + 7) % 7;
 }
 
 export function isWorkday(date: IsoDate): boolean {
@@ -72,7 +80,9 @@ export function adjacentWorkday(date: IsoDate, direction: 1 | -1): IsoDate | nul
 /** The supported Monday-Friday dates of the date's calendar week, including at the supported year bounds. */
 export function weekDates(date: IsoDate): readonly IsoDate[] {
   const monday = dayNumber(date) - expenseWeekday(date);
-  return Array.from({ length: 5 }, (_, index) => fromDayNumber(monday + index)).filter((value): value is IsoDate => value !== null);
+  return Array.from({ length: 5 }, (_, index) => fromDayNumber(monday + index)).filter(
+    (value): value is IsoDate => value !== null,
+  );
 }
 
 function exactCents(value: bigint): EuroCents | null {
@@ -123,8 +133,15 @@ export function parseExpenseDay(value: unknown): ExpenseDay | null {
   const date = typeof record["date"] === "string" ? parseIsoDate(record["date"]) : null;
   const amounts = parseExpenseAmounts(record["amounts"]);
   const revision = record["revision"];
-  return date !== null && date === record["date"] && isWorkday(date) && amounts !== null && typeof revision === "string" && revision.length > 0 && revision.length <= 200
-    ? { date, amounts, revision } : null;
+  return date !== null &&
+    date === record["date"] &&
+    isWorkday(date) &&
+    amounts !== null &&
+    typeof revision === "string" &&
+    revision.length > 0 &&
+    revision.length <= 200
+    ? { date, amounts, revision }
+    : null;
 }
 
 export function parseExpenseCommand(value: unknown): ExpenseCommand | null {
@@ -132,13 +149,24 @@ export function parseExpenseCommand(value: unknown): ExpenseCommand | null {
   const record = value as Record<string, unknown>;
   const day = parseExpenseDay({ date: record["date"], amounts: record["amounts"], revision: record["id"] });
   const previous = record["expectedRevision"];
-  if (day === null || day.revision.startsWith("conflict:") || !(previous === null || (typeof previous === "string" && previous.length > 0 && previous.length <= 200))) return null;
+  if (
+    day === null ||
+    day.revision.startsWith("conflict:") ||
+    !(previous === null || (typeof previous === "string" && previous.length > 0 && previous.length <= 200))
+  )
+    return null;
   return { id: day.revision, date: day.date, amounts: day.amounts, expectedRevision: previous };
 }
 
-export type ExpenseDayKind = "complete" | "partial" | "no-work" | "not-entered" | "future" | "outside-history" | "weekend";
+export type ExpenseDayKind =
+  "complete" | "partial" | "no-work" | "not-entered" | "future" | "outside-history" | "weekend";
 
-export function expenseDayKind(day: ExpenseDay | undefined, date: IsoDate, today: IsoDate, startDate: IsoDate | null = null): ExpenseDayKind {
+export function expenseDayKind(
+  day: ExpenseDay | undefined,
+  date: IsoDate,
+  today: IsoDate,
+  startDate: IsoDate | null = null,
+): ExpenseDayKind {
   if (!isWorkday(date)) return "weekend";
   const status = expenseEntryStatus(day?.amounts ?? EMPTY_EXPENSE_AMOUNTS);
   if (date > today) return "future";
@@ -159,7 +187,9 @@ export interface ExpenseTotals {
 
 /** Sums known amounts only; callers retain the partial-day count instead of treating these as complete spending. */
 export function expenseTotals(days: readonly ExpenseDay[]): ExpenseTotals {
-  const categories = EXPENSE_LABELS.map((_, index) => days.reduce<bigint>((sum, day) => sum + BigInt(day.amounts[index] ?? 0), BigInt(0)));
+  const categories = EXPENSE_LABELS.map((_, index) =>
+    days.reduce<bigint>((sum, day) => sum + BigInt(day.amounts[index] ?? 0), BigInt(0)),
+  );
   const categoryTotals = categories.map(exactCents) as unknown as ExpenseAmounts;
   const total = exactCents(categories.reduce((sum, amount) => sum + amount, BigInt(0)));
   return {
@@ -175,7 +205,11 @@ export function sumExpenseDays(days: readonly ExpenseDay[]): EuroCents | null {
   return expenseTotals(days).total;
 }
 
-export function expenseWeek(days: readonly ExpenseDay[], date: IsoDate, today: IsoDate): ExpenseTotals & { readonly dates: readonly IsoDate[] } {
+export function expenseWeek(
+  days: readonly ExpenseDay[],
+  date: IsoDate,
+  today: IsoDate,
+): ExpenseTotals & { readonly dates: readonly IsoDate[] } {
   const dates = weekDates(date);
   return { ...expenseTotals(days.filter((day) => dates.includes(day.date) && day.date <= today)), dates };
 }
@@ -187,7 +221,10 @@ function roundedRatio(sum: bigint, numerator: number, denominator: number): Euro
 }
 
 function fullDaySum(days: readonly ExpenseDay[]): bigint {
-  return days.reduce((sum, day) => sum + day.amounts.reduce<bigint>((subtotal, amount) => subtotal + BigInt(amount ?? 0), BigInt(0)), BigInt(0));
+  return days.reduce(
+    (sum, day) => sum + day.amounts.reduce<bigint>((subtotal, amount) => subtotal + BigInt(amount ?? 0), BigInt(0)),
+    BigInt(0),
+  );
 }
 
 function monthEnd(date: IsoDate): IsoDate | null {
@@ -221,10 +258,16 @@ export interface ExpenseReport extends ExpenseTotals {
  * contain a complete workday and contain no partial day. Blank weekdays mean no work.
  * Typical periods and projection use the unrounded daily ratio, then round half up once.
  */
-export function expenseReport(days: readonly ExpenseDay[], year: number, today: IsoDate, policy: ExpenseAveragingPolicy = "completed-periods"): ExpenseReport {
+export function expenseReport(
+  days: readonly ExpenseDay[],
+  year: number,
+  today: IsoDate,
+  policy: ExpenseAveragingPolicy = "completed-periods",
+): ExpenseReport {
   const first = toIsoDate(year, 1, 1);
   const last = toIsoDate(year, 12, 31);
-  const startDate = [...days].sort((left, right) => left.date < right.date ? -1 : left.date > right.date ? 1 : 0)[0]?.date ?? null;
+  const startDate =
+    [...days].sort((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : 0))[0]?.date ?? null;
   const recorded = days.filter((day) => day.date.slice(0, 4) === String(year) && day.date <= today);
   const totals = expenseTotals(recorded);
   const complete = recorded.filter((day) => expenseEntryStatus(day.amounts).complete);
@@ -246,24 +289,72 @@ export function expenseReport(days: readonly ExpenseDay[], year: number, today: 
   const eligibleWeeks = [...weeks].filter(([monday, entries]) => {
     const dates = weekDates(monday as IsoDate);
     const friday = dates[4];
-    return dates.length === 5 && first !== null && last !== null && monday >= first && startDate !== null && monday >= startDate && friday !== undefined && friday <= last && friday < today && entries.some((entry) => expenseEntryStatus(entry.amounts).complete) && entries.every((entry) => !expenseEntryStatus(entry.amounts).partial);
+    return (
+      dates.length === 5 &&
+      first !== null &&
+      last !== null &&
+      monday >= first &&
+      startDate !== null &&
+      monday >= startDate &&
+      friday !== undefined &&
+      friday <= last &&
+      friday < today &&
+      entries.some((entry) => expenseEntryStatus(entry.amounts).complete) &&
+      entries.every((entry) => !expenseEntryStatus(entry.amounts).partial)
+    );
   });
   const eligibleMonths = [...months].filter(([month, entries]) => {
     const monthFirst = parseIsoDate(`${month}-01`);
     const end = monthFirst === null ? null : monthEnd(monthFirst);
-    return monthFirst !== null && startDate !== null && monthFirst >= startDate && end !== null && end < today && entries.some((entry) => expenseEntryStatus(entry.amounts).complete) && entries.every((entry) => !expenseEntryStatus(entry.amounts).partial);
+    return (
+      monthFirst !== null &&
+      startDate !== null &&
+      monthFirst >= startDate &&
+      end !== null &&
+      end < today &&
+      entries.some((entry) => expenseEntryStatus(entry.amounts).complete) &&
+      entries.every((entry) => !expenseEntryStatus(entry.amounts).partial)
+    );
   });
   let weekdaysInYear = 0;
   if (first !== null && last !== null) {
-    for (let serial = dayNumber(first); serial <= dayNumber(last); serial++) if (((serial + 3) % 7 + 7) % 7 < 5) weekdaysInYear++;
+    for (let serial = dayNumber(first); serial <= dayNumber(last); serial++)
+      if ((((serial + 3) % 7) + 7) % 7 < 5) weekdaysInYear++;
   }
   const weeklySum = eligibleWeeks.reduce((sum, [, entries]) => sum + fullDaySum(entries), BigInt(0));
   const monthlySum = eligibleMonths.reduce((sum, [, entries]) => sum + fullDaySum(entries), BigInt(0));
   const averageDaily = roundedRatio(completeSum, 1, complete.length);
-  const averageWeekly = policy === "typical-periods" ? roundedRatio(completeSum, 5, complete.length) : roundedRatio(weeklySum, 1, eligibleWeeks.length);
-  const averageMonthly = policy === "typical-periods" ? roundedRatio(completeSum, weekdaysInYear, complete.length * 12) : roundedRatio(monthlySum, 1, eligibleMonths.length);
+  const averageWeekly =
+    policy === "typical-periods"
+      ? roundedRatio(completeSum, 5, complete.length)
+      : roundedRatio(weeklySum, 1, eligibleWeeks.length);
+  const averageMonthly =
+    policy === "typical-periods"
+      ? roundedRatio(completeSum, weekdaysInYear, complete.length * 12)
+      : roundedRatio(monthlySum, 1, eligibleMonths.length);
   const yearlyProjection = roundedRatio(completeSum, weekdaysInYear, complete.length);
   const hasAmounts = recorded.some((day) => filledExpenseFields(day.amounts) > 0);
-  const arithmeticOverflow = complete.length > 0 && (averageDaily === null || yearlyProjection === null || (policy === "typical-periods" && (averageWeekly === null || averageMonthly === null)));
-  return { ...totals, overflow: totals.overflow || arithmeticOverflow, year, policy, startDate, averageDaily, averageWeekly, averageMonthly, totalYearly: hasAmounts ? totals.total : null, yearlyProjection, eligibleWeeks: eligibleWeeks.length, eligibleMonths: eligibleMonths.length, weekdaysInYear, excludedFutureDays: days.filter((day) => day.date.slice(0, 4) === String(year) && day.date > today && filledExpenseFields(day.amounts) > 0).length };
+  const arithmeticOverflow =
+    complete.length > 0 &&
+    (averageDaily === null ||
+      yearlyProjection === null ||
+      (policy === "typical-periods" && (averageWeekly === null || averageMonthly === null)));
+  return {
+    ...totals,
+    overflow: totals.overflow || arithmeticOverflow,
+    year,
+    policy,
+    startDate,
+    averageDaily,
+    averageWeekly,
+    averageMonthly,
+    totalYearly: hasAmounts ? totals.total : null,
+    yearlyProjection,
+    eligibleWeeks: eligibleWeeks.length,
+    eligibleMonths: eligibleMonths.length,
+    weekdaysInYear,
+    excludedFutureDays: days.filter(
+      (day) => day.date.slice(0, 4) === String(year) && day.date > today && filledExpenseFields(day.amounts) > 0,
+    ).length,
+  };
 }

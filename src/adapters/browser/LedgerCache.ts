@@ -32,7 +32,9 @@ export interface LedgerCache {
 }
 
 function record(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 export function createLedgerCache(open: () => KeyValueStore, key = KEY): LedgerCache {
@@ -52,7 +54,13 @@ export function createLedgerCache(open: () => KeyValueStore, key = KEY): LedgerC
         const workbook = record(stored?.["workbook"]);
         const ledger = parseLedgerState(stored?.["ledger"]);
         // A copy that is the wrong version, the wrong shape or breaks the ledger rules is thrown away, never shown.
-        if (stored?.["version"] !== VERSION || typeof workbook?.["id"] !== "string" || typeof workbook["url"] !== "string" || ledger === null || typeof stored["syncedAt"] !== "number") {
+        if (
+          stored?.["version"] !== VERSION ||
+          typeof workbook?.["id"] !== "string" ||
+          typeof workbook["url"] !== "string" ||
+          ledger === null ||
+          typeof stored["syncedAt"] !== "number"
+        ) {
           clear();
           return null;
         }
@@ -64,7 +72,12 @@ export function createLedgerCache(open: () => KeyValueStore, key = KEY): LedgerC
     },
     save(copy): boolean {
       try {
-        const text = JSON.stringify({ version: VERSION, workbook: copy.workbook, ledger: copy.ledger, syncedAt: copy.syncedAt });
+        const text = JSON.stringify({
+          version: VERSION,
+          workbook: copy.workbook,
+          ledger: copy.ledger,
+          syncedAt: copy.syncedAt,
+        });
         if (text.length > MAX_CHARACTERS) {
           clear();
           return false;

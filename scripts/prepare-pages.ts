@@ -33,10 +33,14 @@ export function framingProblems(layout: Layout): string[] {
   const problems: string[] = [];
   for (const [side, margin] of Object.entries(layout.margin)) {
     if (margin < MIN_MARGIN) problems.push(`content touches the ${side} edge, so something is cut off`);
-    else if (margin > MAX_MARGIN) problems.push(`the ${side} margin is ${String(Math.round(margin * 100))}% of the picture, so it is cropped too loosely`);
+    else if (margin > MAX_MARGIN)
+      problems.push(
+        `the ${side} margin is ${String(Math.round(margin * 100))}% of the picture, so it is cropped too loosely`,
+      );
   }
   const wider = Math.max(layout.bands.left, layout.bands.right);
-  if (wider > 0 && Math.min(layout.bands.left, layout.bands.right) / wider < MIN_BALANCE) problems.push("one side is much emptier than the other, so it looks lopsided");
+  if (wider > 0 && Math.min(layout.bands.left, layout.bands.right) / wider < MIN_BALANCE)
+    problems.push("one side is much emptier than the other, so it looks lopsided");
   return problems;
 }
 
@@ -58,9 +62,9 @@ export function layoutOf(rows: Buffer, width: number, height: number): Layout {
     const filter = rows[start] ?? 0;
     for (let index = 0; index < stride; index++) {
       const raw = rows[start + 1 + index] ?? 0;
-      const left = index >= 4 ? current[index - 4] ?? 0 : 0;
+      const left = index >= 4 ? (current[index - 4] ?? 0) : 0;
       const up = previous[index] ?? 0;
-      const upLeft = index >= 4 ? previous[index - 4] ?? 0 : 0;
+      const upLeft = index >= 4 ? (previous[index - 4] ?? 0) : 0;
       let predictor = 0;
       if (filter === 1) predictor = left;
       else if (filter === 2) predictor = up;
@@ -91,7 +95,14 @@ export function layoutOf(rows: Buffer, width: number, height: number): Layout {
   const painted = maxX >= 0;
   return {
     clear: clear / (width * height),
-    margin: painted ? { left: minX / width, top: minY / height, right: (width - 1 - maxX) / width, bottom: (height - 1 - maxY) / height } : { left: 1, top: 1, right: 1, bottom: 1 },
+    margin: painted
+      ? {
+          left: minX / width,
+          top: minY / height,
+          right: (width - 1 - maxX) / width,
+          bottom: (height - 1 - maxY) / height,
+        }
+      : { left: 1, top: 1, right: 1, bottom: 1 },
     bands: { left: leftBand / (band * height), right: rightBand / (band * height) },
   };
 }
@@ -118,33 +129,52 @@ export function readFiles(root: string): Map<string, Buffer> {
 }
 
 export function treeDigest(files: ReadonlyMap<string, Buffer>): string {
-  return sha256(Buffer.from(JSON.stringify([...files].sort(([left], [right]) => left.localeCompare(right, "en")).map(([name, bytes]) => [name, sha256(bytes)]))));
+  return sha256(
+    Buffer.from(
+      JSON.stringify(
+        [...files]
+          .sort(([left], [right]) => left.localeCompare(right, "en"))
+          .map(([name, bytes]) => [name, sha256(bytes)]),
+      ),
+    ),
+  );
 }
 
 function object(value: unknown): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error("Invalid screenshot receipt.");
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    throw new Error("Invalid screenshot receipt.");
   return value as Record<string, unknown>;
 }
 
 function keys(value: Record<string, unknown>, expected: readonly string[]): void {
-  if (JSON.stringify(Object.keys(value).sort()) !== JSON.stringify([...expected].sort())) throw new Error("Unexpected screenshot receipt fields.");
+  if (JSON.stringify(Object.keys(value).sort()) !== JSON.stringify([...expected].sort()))
+    throw new Error("Unexpected screenshot receipt fields.");
 }
 
 function images(root: string): { name: string; sha256: string; width: number; height: number }[] {
   if (!lstatSync(root).isDirectory()) throw new Error("Screenshot root must be an ordinary directory.");
   const names = readdirSync(root).sort();
-  if (JSON.stringify(names.filter(name => name !== RECEIPT)) !== JSON.stringify([...README_IMAGES].sort())) throw new Error("Screenshot folder does not hold exactly the images in scripts/readmeViews.ts.");
-  const result = README_IMAGES.map(name => {
+  if (JSON.stringify(names.filter((name) => name !== RECEIPT)) !== JSON.stringify([...README_IMAGES].sort()))
+    throw new Error("Screenshot folder does not hold exactly the images in scripts/readmeViews.ts.");
+  const result = README_IMAGES.map((name) => {
     const file = join(root, name);
     const stat = lstatSync(file);
-    if (!stat.isFile() || stat.size > 8 * 1024 * 1024) throw new Error("Screenshot must be an ordinary PNG file within its size limit.");
+    if (!stat.isFile() || stat.size > 8 * 1024 * 1024)
+      throw new Error("Screenshot must be an ordinary PNG file within its size limit.");
     const bytes = readFileSync(file);
-    if (bytes.length < 33 || bytes.toString("ascii", 12, 16) !== "IHDR" || bytes.readUInt32BE(8) !== 13) throw new Error("Missing PNG image header.");
+    if (bytes.length < 33 || bytes.toString("ascii", 12, 16) !== "IHDR" || bytes.readUInt32BE(8) !== 13)
+      throw new Error("Missing PNG image header.");
     const width = bytes.readUInt32BE(16);
     const height = bytes.readUInt32BE(20);
-    if (MOBILE_IMAGES.has(name) ? width !== 780 || height !== 1688 : width < 1600 || width > 2880 || width % 2 !== 0 || height < 800 || height > 4000 || height % 2 !== 0) throw new Error("Unexpected README screenshot dimensions.");
+    if (
+      MOBILE_IMAGES.has(name)
+        ? width !== 780 || height !== 1688
+        : width < 1600 || width > 2880 || width % 2 !== 0 || height < 800 || height > 4000 || height % 2 !== 0
+    )
+      throw new Error("Unexpected README screenshot dimensions.");
     const channels = bytes[25] === 2 ? 3 : bytes[25] === 6 ? 4 : 0;
-    if (bytes[24] !== 8 || channels === 0 || bytes[26] !== 0 || bytes[27] !== 0 || bytes[28] !== 0) throw new Error("Unsupported screenshot PNG encoding.");
+    if (bytes[24] !== 8 || channels === 0 || bytes[26] !== 0 || bytes[27] !== 0 || bytes[28] !== 0)
+      throw new Error("Unsupported screenshot PNG encoding.");
     const content = pngContent(bytes);
     let compressedSize = 0;
     for (let offset = 8; offset < bytes.length;) {
@@ -157,14 +187,17 @@ function images(root: string): { name: string; sha256: string; width: number; he
     if (pixels.length !== height * rowSize) throw new Error("Incomplete screenshot pixel rows.");
     // Every README image is drawn without a page background, so a real share of its pixels is fully transparent.
     const layout = channels === 4 ? layoutOf(pixels, width, height) : undefined;
-    if (layout === undefined || layout.clear < MIN_CLEAR_SHARE) throw new Error(`${name} must be drawn without a page background.`);
+    if (layout === undefined || layout.clear < MIN_CLEAR_SHARE)
+      throw new Error(`${name} must be drawn without a page background.`);
     const framing = MOBILE_IMAGES.has(name) ? [] : framingProblems(layout);
-    if (framing.length > 0) throw new Error(`${name} is framed badly: ${framing.join("; ")}. Adjust its crop in scripts/readmeViews.ts.`);
-    for (let row = 0; row < height; row++) if ((pixels[row * rowSize] ?? 255) > 4) throw new Error("Invalid screenshot row filter.");
+    if (framing.length > 0)
+      throw new Error(`${name} is framed badly: ${framing.join("; ")}. Adjust its crop in scripts/readmeViews.ts.`);
+    for (let row = 0; row < height; row++)
+      if ((pixels[row * rowSize] ?? 255) > 4) throw new Error("Invalid screenshot row filter.");
     return { name, sha256: sha256(bytes), width, height };
   });
-  for (const light of result.filter(image => image.name.endsWith("-light.png"))) {
-    const dark = result.find(image => image.name === light.name.replace("-light.png", "-dark.png"));
+  for (const light of result.filter((image) => image.name.endsWith("-light.png"))) {
+    const dark = result.find((image) => image.name === light.name.replace("-light.png", "-dark.png"));
     if (dark?.height !== light.height) throw new Error("Light and dark screenshot framing must match.");
   }
   return result;
@@ -179,11 +212,18 @@ export function writeCaptureReceipt(app: string, screenshots: string, appDigest:
 }
 
 export function preparePages(app: string, screenshots: string, output: string, revision: string): void {
-  const roots = [app, screenshots, output].map(root => resolve(root));
-  if (roots.some((left, index) => roots.some((right, other) => index !== other && (left === right || left.startsWith(`${right}${sep}`))))) throw new Error("Artifact input and output directories must be separate.");
+  const roots = [app, screenshots, output].map((root) => resolve(root));
+  if (
+    roots.some((left, index) =>
+      roots.some((right, other) => index !== other && (left === right || left.startsWith(`${right}${sep}`))),
+    )
+  )
+    throw new Error("Artifact input and output directories must be separate.");
   const appFiles = readFiles(app);
-  for (const required of ["index.html", "sw.js", "manifest.webmanifest"]) if (!appFiles.has(required)) throw new Error(`Checked app is missing ${required}.`);
-  if ([...appFiles.keys()].some(name => name === "readme" || name.startsWith("readme/"))) throw new Error("The app already owns the README asset path.");
+  for (const required of ["index.html", "sw.js", "manifest.webmanifest"])
+    if (!appFiles.has(required)) throw new Error(`Checked app is missing ${required}.`);
+  if ([...appFiles.keys()].some((name) => name === "readme" || name.startsWith("readme/")))
+    throw new Error("The app already owns the README asset path.");
   const imageRecords = images(screenshots);
   const receiptPath = join(screenshots, RECEIPT);
   if (!lstatSync(receiptPath).isFile()) throw new Error("Screenshot receipt must be an ordinary file.");
@@ -191,10 +231,18 @@ export function preparePages(app: string, screenshots: string, output: string, r
   if (receiptBytes.length > 8192) throw new Error("Screenshot receipt is too large.");
   const receipt = object(JSON.parse(receiptBytes.toString("utf8")) as unknown);
   keys(receipt, ["version", "synthetic", "revision", "appSha256", "images"]);
-  if (receipt["version"] !== 1 || receipt["synthetic"] !== true || typeof receipt["revision"] !== "string" || !/^[a-f0-9]{40,64}$/u.test(receipt["revision"])) throw new Error("Invalid synthetic screenshot provenance.");
+  if (
+    receipt["version"] !== 1 ||
+    receipt["synthetic"] !== true ||
+    typeof receipt["revision"] !== "string" ||
+    !/^[a-f0-9]{40,64}$/u.test(receipt["revision"])
+  )
+    throw new Error("Invalid synthetic screenshot provenance.");
   if (receipt["revision"] !== revision) throw new Error("Screenshots were captured for another revision.");
-  if (receipt["appSha256"] !== treeDigest(appFiles)) throw new Error("Checked app differs from the pre-capture receipt.");
-  if (JSON.stringify(receipt["images"]) !== JSON.stringify(imageRecords)) throw new Error("Screenshot bytes or dimensions differ from the capture receipt.");
+  if (receipt["appSha256"] !== treeDigest(appFiles))
+    throw new Error("Checked app differs from the pre-capture receipt.");
+  if (JSON.stringify(receipt["images"]) !== JSON.stringify(imageRecords))
+    throw new Error("Screenshot bytes or dimensions differ from the capture receipt.");
   const expected = new Map(appFiles);
   for (const name of [...README_IMAGES, RECEIPT]) expected.set(`readme/${name}`, readFileSync(join(screenshots, name)));
   rmSync(output, { recursive: true, force: true });
@@ -204,12 +252,19 @@ export function preparePages(app: string, screenshots: string, output: string, r
     writeFileSync(target, bytes);
   }
   const copied = readFiles(output);
-  if (copied.size !== expected.size || [...expected].some(([name, bytes]) => !copied.get(name)?.equals(bytes))) throw new Error("Pages composition changed a checked file or introduced an extra file.");
-  if (treeDigest(readFiles(app)) !== receipt["appSha256"]) throw new Error("The checked app changed during Pages composition.");
-  console.log(`Prepared Pages: ${String(appFiles.size)} byte-identical app files, ${String(README_IMAGES.length)} verified synthetic PNGs and their capture receipt.`);
+  if (copied.size !== expected.size || [...expected].some(([name, bytes]) => !copied.get(name)?.equals(bytes)))
+    throw new Error("Pages composition changed a checked file or introduced an extra file.");
+  if (treeDigest(readFiles(app)) !== receipt["appSha256"])
+    throw new Error("The checked app changed during Pages composition.");
+  console.log(
+    `Prepared Pages: ${String(appFiles.size)} byte-identical app files, ${String(README_IMAGES.length)} verified synthetic PNGs and their capture receipt.`,
+  );
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const revision = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  const revision = execFileSync("git", ["rev-parse", "HEAD"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
   preparePages(resolve("dist/web"), resolve("dist/readme"), resolve("dist/pages"), revision);
 }

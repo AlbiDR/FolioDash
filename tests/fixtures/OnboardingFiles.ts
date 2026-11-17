@@ -10,7 +10,8 @@ function valuedSheet(price: string, fundValue: string, subtotal: string, total: 
     [ROW.contractA, COL.M, number(fundValue)],
     [ROW.fundsCategory, COL.M, number(subtotal)],
     [ROW.total, COL.M, text(`${total}  € `)],
-  ] as const) sheet = withCell(sheet, row, column, cell);
+  ] as const)
+    sheet = withCell(sheet, row, column, cell);
   return sheet;
 }
 
@@ -23,32 +24,61 @@ export async function createOnboardingFixtures(): Promise<ReadonlyMap<string, Ui
   ] as const;
   const files = new Map<string, Uint8Array>();
   for (const month of months) {
-    files.set(`individual/synthetic-bank-${month.date}.xlsx`, await buildXlsx([{ name: "Il Mio Patrimonio", sheet: month.sheet }], { created: `${month.date}T12:00:00Z`, deflate: true }));
+    files.set(
+      `individual/synthetic-bank-${month.date}.xlsx`,
+      await buildXlsx([{ name: "Il Mio Patrimonio", sheet: month.sheet }], {
+        created: `${month.date}T12:00:00Z`,
+        deflate: true,
+      }),
+    );
   }
   const container = { created: "2026-11-04T12:00:00Z", deflate: true };
-  files.set("combined/synthetic-history.xlsx", await buildXlsx([
-    { name: "Bank 2026-03-31", sheet: months[2].sheet },
-    { name: "Bank 31-01-2026", sheet: months[0].sheet },
-    { name: "Bank 28-02-2026", sheet: months[1].sheet },
-    { name: "Notes", sheet: { date1904: false, rows: [[text("SYNTHETIC ACCEPTANCE DATA ONLY")]] } },
-  ], container));
-  files.set("validation/synthetic-missing-date.xlsx", await buildXlsx([
-    { name: "Bank 2026-01-31", sheet: months[0].sheet },
-    { name: "February", sheet: months[1].sheet },
-  ], container));
-  files.set("validation/synthetic-duplicate-month.xlsx", await buildXlsx([
-    { name: "Bank 2026-01-01", sheet: months[0].sheet },
-    { name: "Bank 2026-01-31", sheet: months[0].sheet },
-  ], container));
-  files.set("validation/synthetic-invalid-formula.xlsx", await buildXlsx([
-    { name: "Bank 2026-02-28", sheet: withCell(months[1].sheet, ROW.productA, COL.H, FORMULA) },
-  ], container));
+  files.set(
+    "combined/synthetic-history.xlsx",
+    await buildXlsx(
+      [
+        { name: "Bank 2026-03-31", sheet: months[2].sheet },
+        { name: "Bank 31-01-2026", sheet: months[0].sheet },
+        { name: "Bank 28-02-2026", sheet: months[1].sheet },
+        { name: "Notes", sheet: { date1904: false, rows: [[text("SYNTHETIC ACCEPTANCE DATA ONLY")]] } },
+      ],
+      container,
+    ),
+  );
+  files.set(
+    "validation/synthetic-missing-date.xlsx",
+    await buildXlsx(
+      [
+        { name: "Bank 2026-01-31", sheet: months[0].sheet },
+        { name: "February", sheet: months[1].sheet },
+      ],
+      container,
+    ),
+  );
+  files.set(
+    "validation/synthetic-duplicate-month.xlsx",
+    await buildXlsx(
+      [
+        { name: "Bank 2026-01-01", sheet: months[0].sheet },
+        { name: "Bank 2026-01-31", sheet: months[0].sheet },
+      ],
+      container,
+    ),
+  );
+  files.set(
+    "validation/synthetic-invalid-formula.xlsx",
+    await buildXlsx(
+      [{ name: "Bank 2026-02-28", sheet: withCell(months[1].sheet, ROW.productA, COL.H, FORMULA) }],
+      container,
+    ),
+  );
   return files;
 }
 
 export const ONBOARDING_EXPECTED = {
   data: "Invented acceptance data only. Use the isolated acceptance build and test workbook; never import into a real portfolio workbook.",
-  steps: "Use EITHER the individual files OR the combined workbook for a fresh-account save. They represent the same history. Set opening net invested to 1.000,00 for each fund, then answer No to cash movements for February and March.",
+  steps:
+    "Use EITHER the individual files OR the combined workbook for a fresh-account save. They represent the same history. Set opening net invested to 1.000,00 for each fund, then answer No to cash movements for February and March.",
   dates: ["2026-01-31", "2026-02-28", "2026-03-31"],
   funds: [ISIN_A, ISIN_B],
   fundsSubtotalCents: [285000, 290000, 300000],

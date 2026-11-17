@@ -69,7 +69,8 @@ function durationReadings(text: string): Decimal[] {
   const numerator = days.units * 1440n;
   const denominator = 10n ** BigInt(days.scale);
   const minutes = (2n * numerator + denominator) / (2n * denominator);
-  const residual = numerator > minutes * denominator ? numerator - minutes * denominator : minutes * denominator - numerator;
+  const residual =
+    numerator > minutes * denominator ? numerator - minutes * denominator : minutes * denominator - numerator;
   if (minutes < 0n || residual * 1_000_000n > denominator) return [];
   // The original text was hours + thousandths (for example 123.456), read as hours + minutes.
   const readings: Decimal[] = [];
@@ -86,7 +87,9 @@ export function readQuantity(cell: RawCell | undefined): ReadResult<Decimal> {
   if (cell === undefined || isMissing(cell)) return { status: "missing" };
   if (cell.kind === "number") {
     if (cell.format !== null && DURATION_FORMAT.test(cell.format)) {
-      return ok(durationReadings(cell.text).map((value) => ({ value, adjustment: "quantity stored as a time duration" })));
+      return ok(
+        durationReadings(cell.text).map((value) => ({ value, adjustment: "quantity stored as a time duration" })),
+      );
     }
     const value = parseDecimal(cell.text);
     return value && value.units >= 0n ? ok([{ value, adjustment: null }]) : { status: "unreadable" };

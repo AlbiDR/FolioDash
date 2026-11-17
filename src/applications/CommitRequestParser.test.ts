@@ -27,8 +27,21 @@ describe("parseCommitRequest", () => {
     const parsed = parseCommitRequest({ ...valid(), extra: "ignored" });
     expect(parsed.ok).toBe(true);
     if (parsed.ok) {
-      expect(parsed.request.commands[0]).toEqual({ isin: A, action: "Start", moneyIn: 0, moneyOut: 0, comment: "", openingNetInvested: 90000 });
-      expect(Object.keys(parsed.request).sort()).toEqual(["commandId", "commands", "date", "expectedRevision", "statement"]);
+      expect(parsed.request.commands[0]).toEqual({
+        isin: A,
+        action: "Start",
+        moneyIn: 0,
+        moneyOut: 0,
+        comment: "",
+        openingNetInvested: 90000,
+      });
+      expect(Object.keys(parsed.request).sort()).toEqual([
+        "commandId",
+        "commands",
+        "date",
+        "expectedRevision",
+        "statement",
+      ]);
     }
   });
 
@@ -48,19 +61,86 @@ describe("parseCommitRequest", () => {
   });
 
   it.each<[string, (body: Record<string, unknown>) => void]>([
-    ["a missing command id", (body) => { delete body["commandId"]; }],
-    ["a short command id", (body) => { body["commandId"] = "x"; }],
-    ["a missing expected revision", (body) => { delete body["expectedRevision"]; }],
-    ["an impossible date", (body) => { body["date"] = "2026-02-30"; }],
-    ["a date with a time", (body) => { body["date"] = "2026-01-15T10:00:00Z"; }],
-    ["a bad ISIN", (body) => { body["statement"] = { funds: [{ isin: "US0378331006", name: "x", marketValue: 1 }], fundsSubtotal: 1 }; }],
-    ["fractional cents", (body) => { body["statement"] = { funds: [{ isin: A, name: "x", marketValue: 1.5 }], fundsSubtotal: 1 }; }],
-    ["a negative value", (body) => { body["statement"] = { funds: [{ isin: A, name: "x", marketValue: -1 }], fundsSubtotal: 1 }; }],
-    ["a text amount", (body) => { body["statement"] = { funds: [{ isin: A, name: "x", marketValue: "100" }], fundsSubtotal: 1 }; }],
-    ["an unknown action", (body) => { body["commands"] = [{ isin: A, action: "Delete", moneyIn: 0, moneyOut: 0, comment: "" }]; }],
-    ["a missing comment", (body) => { body["commands"] = [{ isin: A, action: "Keep", moneyIn: 0, moneyOut: 0 }]; }],
-    ["a bad opening amount", (body) => { body["commands"] = [{ isin: A, action: "Start", moneyIn: 0, moneyOut: 0, comment: "", openingNetInvested: "9" }]; }],
-    ["decisions that are not a list", (body) => { body["commands"] = "none"; }],
+    [
+      "a missing command id",
+      (body) => {
+        delete body["commandId"];
+      },
+    ],
+    [
+      "a short command id",
+      (body) => {
+        body["commandId"] = "x";
+      },
+    ],
+    [
+      "a missing expected revision",
+      (body) => {
+        delete body["expectedRevision"];
+      },
+    ],
+    [
+      "an impossible date",
+      (body) => {
+        body["date"] = "2026-02-30";
+      },
+    ],
+    [
+      "a date with a time",
+      (body) => {
+        body["date"] = "2026-01-15T10:00:00Z";
+      },
+    ],
+    [
+      "a bad ISIN",
+      (body) => {
+        body["statement"] = { funds: [{ isin: "US0378331006", name: "x", marketValue: 1 }], fundsSubtotal: 1 };
+      },
+    ],
+    [
+      "fractional cents",
+      (body) => {
+        body["statement"] = { funds: [{ isin: A, name: "x", marketValue: 1.5 }], fundsSubtotal: 1 };
+      },
+    ],
+    [
+      "a negative value",
+      (body) => {
+        body["statement"] = { funds: [{ isin: A, name: "x", marketValue: -1 }], fundsSubtotal: 1 };
+      },
+    ],
+    [
+      "a text amount",
+      (body) => {
+        body["statement"] = { funds: [{ isin: A, name: "x", marketValue: "100" }], fundsSubtotal: 1 };
+      },
+    ],
+    [
+      "an unknown action",
+      (body) => {
+        body["commands"] = [{ isin: A, action: "Delete", moneyIn: 0, moneyOut: 0, comment: "" }];
+      },
+    ],
+    [
+      "a missing comment",
+      (body) => {
+        body["commands"] = [{ isin: A, action: "Keep", moneyIn: 0, moneyOut: 0 }];
+      },
+    ],
+    [
+      "a bad opening amount",
+      (body) => {
+        body["commands"] = [
+          { isin: A, action: "Start", moneyIn: 0, moneyOut: 0, comment: "", openingNetInvested: "9" },
+        ];
+      },
+    ],
+    [
+      "decisions that are not a list",
+      (body) => {
+        body["commands"] = "none";
+      },
+    ],
   ])("refuses %s", (_label, mutate) => {
     const body = valid();
     mutate(body);
@@ -83,7 +163,13 @@ describe("parseCommitRequest: the bank statement", () => {
   });
 
   it("reads a stored statement, treating an empty cell sent as null as an empty cell", () => {
-    const parsed = parseCommitRequest({ ...base(), source: { sheetName: "Il Mio Patrimonio", sheet: { date1904: false, rows: [[null, { kind: "text", text: "Fondi" }]] } } });
+    const parsed = parseCommitRequest({
+      ...base(),
+      source: {
+        sheetName: "Il Mio Patrimonio",
+        sheet: { date1904: false, rows: [[null, { kind: "text", text: "Fondi" }]] },
+      },
+    });
     expect(parsed.ok && parsed.request.source?.sheetName).toBe("Il Mio Patrimonio");
     expect(parsed.ok && parsed.request.source?.sheet.rows[0]).toEqual([undefined, { kind: "text", text: "Fondi" }]);
   });

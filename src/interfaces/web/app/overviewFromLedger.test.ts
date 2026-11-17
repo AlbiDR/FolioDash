@@ -15,7 +15,16 @@ describe("overviewFromLedger", () => {
     const bonds = model.funds.find((fund) => fund.name === "Demo Euro Bonds");
     expect(model.funds).toHaveLength(3);
     // Held for statements 0 to 4, closed on statement 5 (value zero), absent afterwards.
-    expect(closed?.values.map((value) => value === null)).toEqual([false, false, false, false, false, false, true, true]);
+    expect(closed?.values.map((value) => value === null)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+    ]);
     expect(closed?.values[5]).toBe(0);
     expect(closed?.status).toBe("closed");
     // Added on statement 2.
@@ -32,7 +41,12 @@ describe("overviewFromLedger", () => {
   it("reports six labelled figures and marks cash-dependent percentages as estimates", () => {
     const model = demoPortfolio("typical");
     expect(model.kpis.map((kpi) => kpi.label)).toEqual([
-      "Fund value", "Net invested", "Current gain", "Month on month", "Year to date", "Year on year",
+      "Fund value",
+      "Net invested",
+      "Current gain",
+      "Month on month",
+      "Year to date",
+      "Year on year",
     ]);
     expect(model.estimated).toBe(true);
     expect(model.kpis.every((kpi) => kpi.note.length > 0)).toBe(true);

@@ -12,13 +12,33 @@ function command(value: unknown): ExpenseCommand {
 
 const first = command({ id: "first", date: "2026-11-02", amounts: [100, null, 0, 0, 0], expectedRevision: null });
 const corrected = command({ id: "corrected", date: "2026-11-02", amounts: [0, 0, 0, 0, 0], expectedRevision: "first" });
-const cleared = command({ id: "cleared", date: "2026-11-02", amounts: [null, null, null, null, null], expectedRevision: "corrected" });
+const cleared = command({
+  id: "cleared",
+  date: "2026-11-02",
+  amounts: [null, null, null, null, null],
+  expectedRevision: "corrected",
+});
 const pending = command({ id: "pending", date: "2026-11-03", amounts: [0, 500, 0, 0, 0], expectedRevision: null });
-const copy: ExpenseCopy = { workbookId: "synthetic-workbook", initialized: true, commands: [first, corrected, cleared], pending, pendingRestore: null };
+const copy: ExpenseCopy = {
+  workbookId: "synthetic-workbook",
+  initialized: true,
+  commands: [first, corrected, cleared],
+  pending,
+  pendingRestore: null,
+};
 
 function memory(): KeyValueStore & { readonly data: Map<string, string> } {
   const data = new Map<string, string>();
-  return { data, getItem: (key) => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); }, removeItem: (key) => { data.delete(key); } };
+  return {
+    data,
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => {
+      data.set(key, value);
+    },
+    removeItem: (key) => {
+      data.delete(key);
+    },
+  };
 }
 
 function alter(store: ReturnType<typeof memory>, change: (value: Record<string, unknown>) => void): void {
@@ -43,7 +63,11 @@ describe("workbook-bound expense device copy", () => {
     const store = memory();
     const cache = createExpenseCache(() => store);
     cache.save(copy);
-    alter(store, (value) => { const backup = value["backup"] as { commands: { amounts: number[] }[] }; const item = backup.commands[0]; if (item !== undefined) item.amounts[0] = 999; });
+    alter(store, (value) => {
+      const backup = value["backup"] as { commands: { amounts: number[] }[] };
+      const item = backup.commands[0];
+      if (item !== undefined) item.amounts[0] = 999;
+    });
     expect(cache.load()).toBeNull();
   });
 
@@ -51,7 +75,9 @@ describe("workbook-bound expense device copy", () => {
     const store = memory();
     const cache = createExpenseCache(() => store);
     cache.save(copy);
-    alter(store, (value) => { value["pending"] = { ...pending, amounts: [0.5, 0, 0, 0, 0] }; });
+    alter(store, (value) => {
+      value["pending"] = { ...pending, amounts: [0.5, 0, 0, 0, 0] };
+    });
     expect(cache.load()).toBeNull();
   });
 
@@ -59,7 +85,9 @@ describe("workbook-bound expense device copy", () => {
     const store = memory();
     const cache = createExpenseCache(() => store);
     cache.save(copy);
-    alter(store, (value) => { value["initialized"] = false; });
+    alter(store, (value) => {
+      value["initialized"] = false;
+    });
     expect(cache.load()).toBeNull();
   });
 
@@ -67,10 +95,14 @@ describe("workbook-bound expense device copy", () => {
     const store = memory();
     const cache = createExpenseCache(() => store);
     cache.save(copy);
-    alter(store, (value) => { value["workbookId"] = ""; });
+    alter(store, (value) => {
+      value["workbookId"] = "";
+    });
     expect(cache.load()).toBeNull();
     cache.save(copy);
-    alter(store, (value) => { value["pending"] = { ...first, amounts: [900, 0, 0, 0, 0] }; });
+    alter(store, (value) => {
+      value["pending"] = { ...first, amounts: [900, 0, 0, 0, 0] };
+    });
     expect(cache.load()).toBeNull();
   });
 
@@ -98,10 +130,14 @@ describe("workbook-bound expense device copy", () => {
   });
 
   it("survives blocked storage and malformed JSON without promoting an unchecked copy", () => {
-    const blocked = createExpenseCache(() => { throw new Error("blocked"); });
+    const blocked = createExpenseCache(() => {
+      throw new Error("blocked");
+    });
     expect(blocked.save(copy)).toBe(false);
     expect(blocked.load()).toBeNull();
-    expect(() => { blocked.clear(); }).not.toThrow();
+    expect(() => {
+      blocked.clear();
+    }).not.toThrow();
     const store = memory();
     store.setItem("foliodash.expenses.v1", "{");
     expect(createExpenseCache(() => store).load()).toBeNull();

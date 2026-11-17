@@ -92,7 +92,8 @@ export function validateLedger(state: LedgerState): LedgerIssue[] {
       add("invalid-fund", fund.isin, "A fund has an invalid or repeated ISIN.");
     }
     known.add(fund.isin);
-    if (parseIsoDate(fund.firstDate) !== fund.firstDate) add("invalid-fund", fund.isin, "A fund has an invalid first date.");
+    if (parseIsoDate(fund.firstDate) !== fund.firstDate)
+      add("invalid-fund", fund.isin, "A fund has an invalid first date.");
     if (!isSafeFundName(fund.name) || !isSafeFundName(fund.fullName)) {
       add("invalid-fund", fund.isin, "A fund has an unsafe or empty name.");
     }
@@ -100,7 +101,10 @@ export function validateLedger(state: LedgerState): LedgerIssue[] {
 
   let previous: Snapshot | null = null;
   for (const snapshot of state.snapshots) {
-    if (parseIsoDate(snapshot.date) !== snapshot.date || (previous !== null && monthSerial(snapshot.date) <= monthSerial(previous.date))) {
+    if (
+      parseIsoDate(snapshot.date) !== snapshot.date ||
+      (previous !== null && monthSerial(snapshot.date) <= monthSerial(previous.date))
+    ) {
       add("invalid-history", null, `${snapshot.date}: statements must be in later calendar months, one per month.`);
     }
     const expected = state.funds.filter((fund) => fund.firstDate <= snapshot.date).map((fund) => fund.isin);
@@ -174,7 +178,8 @@ function checkLifecycle(
   } else if (before.status === "closed") {
     const reopened = holding.action === "Reopen" && holding.status === "active";
     const stayedClosed = holding.action === "Closed" && holding.status === "closed" && holding.moneyIn === 0;
-    if (!reopened && !stayedClosed) fail("a closed fund needs an explicit reopening before it can take cash or hold value.");
+    if (!reopened && !stayedClosed)
+      fail("a closed fund needs an explicit reopening before it can take cash or hold value.");
   } else {
     const kept = holding.action === "Keep" && holding.status === "active";
     const closed = holding.action === "Close" && holding.status === "closed";
@@ -217,7 +222,8 @@ function isWellFormedSnapshot(value: unknown): boolean {
 export function parseLedgerState(value: unknown): LedgerState | null {
   if (!isRecord(value)) return null;
   const state = value;
-  if (typeof state["revision"] !== "string" || !Array.isArray(state["funds"]) || !Array.isArray(state["snapshots"])) return null;
+  if (typeof state["revision"] !== "string" || !Array.isArray(state["funds"]) || !Array.isArray(state["snapshots"]))
+    return null;
   // Every nested field the validator reads must have its type, or validation would throw instead of refusing.
   if (!state["funds"].every(isWellFormedFund) || !state["snapshots"].every(isWellFormedSnapshot)) return null;
   const candidate = state as unknown as LedgerState;

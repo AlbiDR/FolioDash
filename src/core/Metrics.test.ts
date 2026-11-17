@@ -33,7 +33,11 @@ const A = isin("FUNDA");
 const B = isin("FUNDB");
 
 function statement(funds: readonly [string, number][]): StatementInput {
-  const listed = funds.map(([code, value]) => ({ isin: code, name: `Fund ${code.slice(2, 7)}`, marketValue: euros(value) }));
+  const listed = funds.map(([code, value]) => ({
+    isin: code,
+    name: `Fund ${code.slice(2, 7)}`,
+    marketValue: euros(value),
+  }));
   const subtotal = toEuroCents(listed.reduce((sum, fund) => sum + fund.marketValue, 0));
   if (subtotal === null) throw new Error("bad subtotal");
   return { funds: listed, fundsSubtotal: subtotal };
@@ -43,7 +47,12 @@ function command(code: string, action: FundCommand["action"], extra: Partial<Fun
   return { isin: code, action, moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "", ...extra };
 }
 
-function record(state: LedgerState, on: string, funds: readonly [string, number][], commands: FundCommand[]): LedgerState {
+function record(
+  state: LedgerState,
+  on: string,
+  funds: readonly [string, number][],
+  commands: FundCommand[],
+): LedgerState {
   const result = applyImport(state, statement(funds), date(on), commands, on);
   if (!result.ok) throw new Error(JSON.stringify(result.issues));
   return result.state;
@@ -51,14 +60,24 @@ function record(state: LedgerState, on: string, funds: readonly [string, number]
 
 /** January: A 1,000 (net 900) and B 500 (net 450). February: A 1,100 (+100 cash), B 520 (-50 cash). */
 function twoMonths(): LedgerState {
-  const january = record(EMPTY_LEDGER, "2026-01-15", [[A, 1000], [B, 500]], [
-    command(A, "Start", { openingNetInvested: euros(900) }),
-    command(B, "Start", { openingNetInvested: euros(450) }),
-  ]);
-  return record(january, "2026-02-14", [[A, 1100], [B, 520]], [
-    command(A, "Keep", { moneyIn: euros(100) }),
-    command(B, "Keep", { moneyOut: euros(50) }),
-  ]);
+  const january = record(
+    EMPTY_LEDGER,
+    "2026-01-15",
+    [
+      [A, 1000],
+      [B, 500],
+    ],
+    [command(A, "Start", { openingNetInvested: euros(900) }), command(B, "Start", { openingNetInvested: euros(450) })],
+  );
+  return record(
+    january,
+    "2026-02-14",
+    [
+      [A, 1100],
+      [B, 520],
+    ],
+    [command(A, "Keep", { moneyIn: euros(100) }), command(B, "Keep", { moneyOut: euros(50) })],
+  );
 }
 
 describe("computeMetrics", () => {
@@ -69,9 +88,16 @@ describe("computeMetrics", () => {
   it("opening statement: gain is value minus net invested and nothing is compared yet", () => {
     const [january] = computeMetrics(twoMonths());
     expect(january).toMatchObject({
-      total: euros(1500), invested: euros(1350), gain: euros(150), consecutive: false,
-      periodGain: null, monthlyGain: null, monthlyGainPercent: null,
-      yearToDateGain: null, yearOverYearGain: null, estimated: false,
+      total: euros(1500),
+      invested: euros(1350),
+      gain: euros(150),
+      consecutive: false,
+      periodGain: null,
+      monthlyGain: null,
+      monthlyGainPercent: null,
+      yearToDateGain: null,
+      yearOverYearGain: null,
+      estimated: false,
     });
     expect(january?.gainPercent).toBeCloseTo(150 / 1350, 12);
   });
@@ -79,8 +105,13 @@ describe("computeMetrics", () => {
   it("second month: gain 1,620 - 1,400 = 220, month on month 220 - 150 = 70", () => {
     const february = computeMetrics(twoMonths())[1];
     expect(february).toMatchObject({
-      total: euros(1620), invested: euros(1400), gain: euros(220),
-      consecutive: true, periodGain: euros(70), monthlyGain: euros(70), estimated: true,
+      total: euros(1620),
+      invested: euros(1400),
+      gain: euros(220),
+      consecutive: true,
+      periodGain: euros(70),
+      monthlyGain: euros(70),
+      estimated: true,
     });
     // Denominator: previous total 1,500 + net cash this period (1,400 - 1,350 = 50) = 1,550.
     expect(february?.monthlyGainPercent).toBeCloseTo(70 / 1550, 12);
@@ -109,18 +140,48 @@ describe("computeMetrics", () => {
   });
 
   it("a gap in months keeps the change since last statement but not month on month", () => {
-    const state = record(twoMonths(), "2026-05-10", [[A, 1200], [B, 540]], [command(A, "Keep"), command(B, "Keep")]);
+    const state = record(
+      twoMonths(),
+      "2026-05-10",
+      [
+        [A, 1200],
+        [B, 540],
+      ],
+      [command(A, "Keep"), command(B, "Keep")],
+    );
     const may = computeMetrics(state)[2];
     // Gain 1,740 - 1,400 = 340; was 220; change 120.
-    expect(may).toMatchObject({ gain: euros(340), consecutive: false, periodGain: euros(120), monthlyGain: null, monthlyGainPercent: null });
+    expect(may).toMatchObject({
+      gain: euros(340),
+      consecutive: false,
+      periodGain: euros(120),
+      monthlyGain: null,
+      monthlyGainPercent: null,
+    });
     expect(may?.funds[A]?.monthlyGain).toBeNull();
     expect(may?.yearToDateGain).toBe(euros(190));
   });
 
   it("year on year compares the same calendar month; year to date restarts each year", () => {
     let state = twoMonths();
-    state = record(state, "2027-01-20", [[A, 1300], [B, 600]], [command(A, "Keep"), command(B, "Keep")]);
-    state = record(state, "2027-02-18", [[A, 1350], [B, 610]], [command(A, "Keep"), command(B, "Keep")]);
+    state = record(
+      state,
+      "2027-01-20",
+      [
+        [A, 1300],
+        [B, 600],
+      ],
+      [command(A, "Keep"), command(B, "Keep")],
+    );
+    state = record(
+      state,
+      "2027-02-18",
+      [
+        [A, 1350],
+        [B, 610],
+      ],
+      [command(A, "Keep"), command(B, "Keep")],
+    );
     const [, february2026, january2027, february2027] = computeMetrics(state);
     // January 2027: gain 1,900 - 1,400 = 500 against January 2026 gain 150: change 350 on a base of 1,500.
     expect(january2027?.yearOverYearGain).toBe(euros(350));
@@ -137,11 +198,21 @@ describe("computeMetrics", () => {
 
   it("a sold fund keeps its realised result in the totals, and its percentage is unavailable", () => {
     // B is sold in March for 530 (net invested 400 - 530 = -130).
-    const state = record(twoMonths(), "2026-03-12", [[A, 1200]], [command(A, "Keep"), command(B, "Close", { moneyOut: euros(530) })]);
+    const state = record(
+      twoMonths(),
+      "2026-03-12",
+      [[A, 1200]],
+      [command(A, "Keep"), command(B, "Close", { moneyOut: euros(530) })],
+    );
     const march = computeMetrics(state)[2];
     // Invested 1,000 + (-130) = 870; gain 1,200 - 870 = 330 = A's 200 + B's realised 130.
     expect(march).toMatchObject({ total: euros(1200), invested: euros(870), gain: euros(330) });
-    expect(march?.funds[B]).toMatchObject({ value: ZERO_CENTS, netInvested: euros(-130), gain: euros(130), status: "closed" });
+    expect(march?.funds[B]).toMatchObject({
+      value: ZERO_CENTS,
+      netInvested: euros(-130),
+      gain: euros(130),
+      status: "closed",
+    });
     expect(march?.funds[B]?.gainPercent).toBeNull();
     expect(march?.funds[B]?.share).toBeCloseTo(0, 12);
     // Not comparable as a return: the fund is closed in March, so its month-on-month rate is unavailable.
@@ -150,14 +221,42 @@ describe("computeMetrics", () => {
 
   it("names the statement each comparison was made against, without changing any figure", () => {
     let state = twoMonths();
-    state = record(state, "2027-01-20", [[A, 1300], [B, 600]], [command(A, "Keep"), command(B, "Keep")]);
-    state = record(state, "2027-02-18", [[A, 1350], [B, 610]], [command(A, "Keep"), command(B, "Keep")]);
+    state = record(
+      state,
+      "2027-01-20",
+      [
+        [A, 1300],
+        [B, 600],
+      ],
+      [command(A, "Keep"), command(B, "Keep")],
+    );
+    state = record(
+      state,
+      "2027-02-18",
+      [
+        [A, 1350],
+        [B, 610],
+      ],
+      [command(A, "Keep"), command(B, "Keep")],
+    );
     const [january2026, february2026, january2027, february2027] = computeMetrics(state);
     expect(january2026).toMatchObject({ previousDate: null, yearToDateFrom: null, yearOverYearFrom: null });
-    expect(february2026).toMatchObject({ previousDate: date("2026-01-15"), yearToDateFrom: date("2026-01-15"), yearOverYearFrom: null });
+    expect(february2026).toMatchObject({
+      previousDate: date("2026-01-15"),
+      yearToDateFrom: date("2026-01-15"),
+      yearOverYearFrom: null,
+    });
     // The January 2027 statement is its own year's first, so there is no year-to-date baseline.
-    expect(january2027).toMatchObject({ previousDate: date("2026-02-14"), yearToDateFrom: null, yearOverYearFrom: date("2026-01-15") });
-    expect(february2027).toMatchObject({ previousDate: date("2027-01-20"), yearToDateFrom: date("2027-01-20"), yearOverYearFrom: date("2026-02-14") });
+    expect(january2027).toMatchObject({
+      previousDate: date("2026-02-14"),
+      yearToDateFrom: null,
+      yearOverYearFrom: date("2026-01-15"),
+    });
+    expect(february2027).toMatchObject({
+      previousDate: date("2027-01-20"),
+      yearToDateFrom: date("2027-01-20"),
+      yearOverYearFrom: date("2026-02-14"),
+    });
     // The figures beside those dates are the ones asserted above.
     expect(february2027?.yearOverYearGain).toBe(euros(340));
     expect(february2027?.yearToDateGain).toBe(euros(60));

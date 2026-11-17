@@ -16,10 +16,23 @@ const fund = { isin: "IE00000000000", name: "Fund", fullName: "Fund", firstDate:
 describe("parseLedgerState", () => {
   it.each([
     ["a null fund", { revision: "r", funds: [null], snapshots: [] }],
-    ["a snapshot without holdings", { revision: "r", funds: [], snapshots: [{ date: "2026-01-31", fundsSubtotal: 0 }] }],
+    [
+      "a snapshot without holdings",
+      { revision: "r", funds: [], snapshots: [{ date: "2026-01-31", fundsSubtotal: 0 }] },
+    ],
     ["a numeric snapshot date", { revision: "r", funds: [], snapshots: [{ date: 5, fundsSubtotal: 0, holdings: {} }] }],
-    ["a null holding", { revision: "r", funds: [], snapshots: [{ date: "2026-01-31", fundsSubtotal: 0, holdings: { X: null } }] }],
-    ["a holding without a comment", { revision: "r", funds: [], snapshots: [{ date: "2026-01-31", fundsSubtotal: 0, holdings: { X: { ...holding, comment: undefined } } }] }],
+    [
+      "a null holding",
+      { revision: "r", funds: [], snapshots: [{ date: "2026-01-31", fundsSubtotal: 0, holdings: { X: null } }] },
+    ],
+    [
+      "a holding without a comment",
+      {
+        revision: "r",
+        funds: [],
+        snapshots: [{ date: "2026-01-31", fundsSubtotal: 0, holdings: { X: { ...holding, comment: undefined } } }],
+      },
+    ],
     ["a numeric fund ISIN", { revision: "r", funds: [{ ...fund, isin: 5 }], snapshots: [] }],
   ])("refuses %s without throwing", (_label, value) => {
     expect(() => parseLedgerState(value)).not.toThrow();
@@ -32,6 +45,10 @@ describe("parseLedgerState", () => {
   });
 
   it("accepts an empty ledger", () => {
-    expect(parseLedgerState({ revision: "", funds: [], snapshots: [] })).toEqual({ revision: "", funds: [], snapshots: [] });
+    expect(parseLedgerState({ revision: "", funds: [], snapshots: [] })).toEqual({
+      revision: "",
+      funds: [],
+      snapshots: [],
+    });
   });
 });

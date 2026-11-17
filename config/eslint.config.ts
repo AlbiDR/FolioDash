@@ -10,7 +10,12 @@ export default defineConfig(
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parserOptions: {
-        project: ["./config/tsconfig.json", "./config/tsconfig.web.json", "./config/tsconfig.scripts.json", "./config/tsconfig.worker.json"],
+        project: [
+          "./config/tsconfig.json",
+          "./config/tsconfig.web.json",
+          "./config/tsconfig.scripts.json",
+          "./config/tsconfig.worker.json",
+        ],
         tsconfigRootDir: new URL("..", import.meta.url).pathname,
       },
     },

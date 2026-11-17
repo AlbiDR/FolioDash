@@ -6,7 +6,18 @@ import { sha256Hex } from "../../core/Sha256";
 import { isWorkday, shiftDate, parseExpenseAmounts, type ExpenseCommand } from "../../core/WorkExpenses";
 import { createWorkbook, writeGridTabs } from "./GoogleWorkbook";
 import { bufferedGrid, plainCell } from "../../applications/SheetGrid";
-import { checkExpense, decodeExpenseBackup, encodeExpenseBackup, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE, parseExpenseHistory, readExpenses, refreshExpenseView, restoreExpenses, saveExpense } from "./DirectExpenses";
+import {
+  checkExpense,
+  decodeExpenseBackup,
+  encodeExpenseBackup,
+  EXPENSE_LOG_TITLE,
+  EXPENSE_VIEW_TITLE,
+  parseExpenseHistory,
+  readExpenses,
+  refreshExpenseView,
+  restoreExpenses,
+  saveExpense,
+} from "./DirectExpenses";
 import type { RestClient } from "./Rest";
 import { LEDGER_TAB } from "./SheetsLayout";
 
@@ -15,8 +26,16 @@ function required<T>(value: T | null | undefined): T {
   return value;
 }
 
-const command = (id: string, date = "2026-11-04", previous: string | null = null, amounts: readonly (number | null)[] = [0, 1200, 0, 0, 200]): ExpenseCommand => ({
-  id, date: required(parseIsoDate(date)), expectedRevision: previous, amounts: required(parseExpenseAmounts(amounts)),
+const command = (
+  id: string,
+  date = "2026-11-04",
+  previous: string | null = null,
+  amounts: readonly (number | null)[] = [0, 1200, 0, 0, 200],
+): ExpenseCommand => ({
+  id,
+  date: required(parseIsoDate(date)),
+  expectedRevision: previous,
+  amounts: required(parseExpenseAmounts(amounts)),
 });
 async function setup(): Promise<{ google: FakeGoogle; id: string }> {
   const google = new FakeGoogle();
@@ -33,7 +52,15 @@ function syntheticRecovery(count = 220): ExpenseCommand[] {
   const entries: ExpenseCommand[] = [];
   let date = required(parseIsoDate("2024-01-01"));
   while (entries.length < count) {
-    if (isWorkday(date)) entries.push(command(`synthetic-recovery-${String(entries.length)}`, date, null, entries.length % 4 === 0 ? [null, null, null, null, null] : [0, 500, 0, null, null]));
+    if (isWorkday(date))
+      entries.push(
+        command(
+          `synthetic-recovery-${String(entries.length)}`,
+          date,
+          null,
+          entries.length % 4 === 0 ? [null, null, null, null, null] : [0, 500, 0, null, null],
+        ),
+      );
     date = required(shiftDate(date, 1));
   }
   return entries;
@@ -42,7 +69,9 @@ function syntheticRecovery(count = 220): ExpenseCommand[] {
 async function setupEmptyExpenseStore(): Promise<{ google: FakeGoogle; id: string }> {
   const fixture = await setup();
   fixture.google.faults.push({ match: /:append/u, status: 403 });
-  expect((await saveExpense(fixture.google.client, fixture.google.token, fixture.id, command("unsent-first-day"))).status).toBe("not-saved");
+  expect(
+    (await saveExpense(fixture.google.client, fixture.google.token, fixture.id, command("unsent-first-day"))).status,
+  ).toBe("not-saved");
   const checked = await readExpenses(fixture.google.client, fixture.google.token, fixture.id);
   expect(checked.status === "ok" && checked.commands).toEqual([]);
   return fixture;
@@ -51,20 +80,33 @@ async function setupEmptyExpenseStore(): Promise<{ google: FakeGoogle; id: strin
 describe("direct work expense records", () => {
   it("classifies old optional blanks through the current policy without changing committed records or backups", async () => {
     const { google, id } = await setup();
-    await saveExpense(google.client, google.token, id, command("required-only", "2026-11-02", null, [100, 700, 100, null, null]));
-    await saveExpense(google.client, google.token, id, command("extras-paid", "2026-11-03", null, [100, 500, 100, 300, 200]), true);
+    await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("required-only", "2026-11-02", null, [100, 700, 100, null, null]),
+    );
+    await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("extras-paid", "2026-11-03", null, [100, 500, 100, 300, 200]),
+      true,
+    );
     const before = await readExpenses(google.client, google.token, id, true);
     if (before.status !== "ok") throw new Error("Synthetic expense setup failed");
     const rowsBefore = canonicalJson(required(google.tab(id, EXPENSE_LOG_TITLE)).rows);
     const backupBefore = encodeExpenseBackup(before.commands);
-    expect(await refreshExpenseView(google.client, google.token, id, before.days, [], required(parseIsoDate("2026-11-05")))).toBe(true);
+    expect(
+      await refreshExpenseView(google.client, google.token, id, before.days, [], required(parseIsoDate("2026-11-05"))),
+    ).toBe(true);
     const view = required(google.tab(id, EXPENSE_VIEW_TITLE)).rows;
     expect(view[3]?.[5]).toBe("Dinner (optional)");
     expect(view[3]?.[6]).toBe("Other Expenses (optional)");
     expect(view[4]?.slice(2, 7)).toEqual([1, 7, 1, "", ""]);
     expect(view[4]?.[8]).toBe("Recorded workday");
-    expect(view.find(row => row[1] === "Average Daily")?.[2]).toBe(10.5);
-    expect(view.find(row => row[1] === "Total Yearly")?.[2]).toBe(21);
+    expect(view.find((row) => row[1] === "Average Daily")?.[2]).toBe(10.5);
+    expect(view.find((row) => row[1] === "Total Yearly")?.[2]).toBe(21);
     expect(canonicalJson(required(google.tab(id, EXPENSE_LOG_TITLE)).rows)).toBe(rowsBefore);
     const after = await readExpenses(google.client, google.token, id, true);
     expect(after.status === "ok" && encodeExpenseBackup(after.commands)).toBe(backupBefore);
@@ -72,19 +114,32 @@ describe("direct work expense records", () => {
   });
   it("shows optional-only days as recorded while retaining blanks and backup bytes", async () => {
     const { google, id } = await setup();
-    await saveExpense(google.client, google.token, id, command("dinner-only", "2026-11-02", null, [null, null, null, 1500, null]));
-    await saveExpense(google.client, google.token, id, command("other-zero", "2026-11-03", null, [null, null, null, null, 0]), true);
+    await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("dinner-only", "2026-11-02", null, [null, null, null, 1500, null]),
+    );
+    await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("other-zero", "2026-11-03", null, [null, null, null, null, 0]),
+      true,
+    );
     const before = await readExpenses(google.client, google.token, id, true);
     if (before.status !== "ok") throw new Error("Synthetic expense setup failed");
     const rowsBefore = canonicalJson(required(google.tab(id, EXPENSE_LOG_TITLE)).rows);
     const backupBefore = encodeExpenseBackup(before.commands);
-    expect(await refreshExpenseView(google.client, google.token, id, before.days, [], required(parseIsoDate("2026-11-05")))).toBe(true);
+    expect(
+      await refreshExpenseView(google.client, google.token, id, before.days, [], required(parseIsoDate("2026-11-05"))),
+    ).toBe(true);
     const view = required(google.tab(id, EXPENSE_VIEW_TITLE)).rows;
     expect(view[4]?.slice(2, 7)).toEqual(["", "", "", 15, ""]);
     expect(view[4]?.[8]).toBe("Recorded workday");
     expect(view[5]?.slice(2, 7)).toEqual(["", "", "", "", 0]);
     expect(view[5]?.[8]).toBe("Recorded workday");
-    expect(view.find(row => row[1] === "Average Daily")?.[2]).toBe(7.5);
+    expect(view.find((row) => row[1] === "Average Daily")?.[2]).toBe(7.5);
     expect(canonicalJson(required(google.tab(id, EXPENSE_LOG_TITLE)).rows)).toBe(rowsBefore);
     const after = await readExpenses(google.client, google.token, id, true);
     expect(after.status === "ok" && encodeExpenseBackup(after.commands)).toBe(backupBefore);
@@ -92,7 +147,14 @@ describe("direct work expense records", () => {
   it("refuses a future expense before creating or writing its records", async () => {
     const { google, id } = await setup();
     const before = google.calls.length;
-    const result = await saveExpense(google.client, google.token, id, command("future", "2026-11-06"), false, required(parseIsoDate("2026-11-05")));
+    const result = await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("future", "2026-11-06"),
+      false,
+      required(parseIsoDate("2026-11-05")),
+    );
     expect(result.status).toBe("not-saved");
     expect(google.calls.length).toBe(before);
     expect(await readExpenses(google.client, google.token, id)).toEqual({ status: "absent" });
@@ -121,7 +183,17 @@ describe("direct work expense records", () => {
   it("keeps partial blanks distinct from explicit zeroes and preserves correction history", async () => {
     const { google, id } = await setup();
     await saveExpense(google.client, google.token, id, command("one"));
-    expect((await saveExpense(google.client, google.token, id, command("two", undefined, "one", [null, 0, null, null, null]), true)).status).toBe("saved");
+    expect(
+      (
+        await saveExpense(
+          google.client,
+          google.token,
+          id,
+          command("two", undefined, "one", [null, 0, null, null, null]),
+          true,
+        )
+      ).status,
+    ).toBe("saved");
     const read = await readExpenses(google.client, google.token, id, true);
     expect(read.status === "ok" && read.commands.length).toBe(2);
     expect(read.status === "ok" && read.days[0]?.amounts).toEqual([null, 0, null, null, null]);
@@ -133,7 +205,10 @@ describe("direct work expense records", () => {
     await saveExpense(google.client, google.token, id, command("one"));
     const before = required(google.tab(id, EXPENSE_LOG_TITLE)).rows.length;
     expect((await saveExpense(google.client, google.token, id, command("stale"), true)).status).toBe("conflict");
-    expect((await saveExpense(google.client, google.token, id, command("one", undefined, null, [1, 0, 0, 0, 0]), true)).status).toBe("not-saved");
+    expect(
+      (await saveExpense(google.client, google.token, id, command("one", undefined, null, [1, 0, 0, 0, 0]), true))
+        .status,
+    ).toBe("not-saved");
     expect(required(google.tab(id, EXPENSE_LOG_TITLE)).rows.length).toBe(before);
   });
 
@@ -173,7 +248,10 @@ describe("direct work expense records", () => {
   it("never adopts an unowned records or view tab with the same name", async () => {
     const { google, id } = await setup();
     const grid = bufferedGrid([[plainCell("personal note")]]);
-    await writeGridTabs(google.client, google.token, id, [{ title: EXPENSE_LOG_TITLE, grid }, { title: EXPENSE_VIEW_TITLE, grid }]);
+    await writeGridTabs(google.client, google.token, id, [
+      { title: EXPENSE_LOG_TITLE, grid },
+      { title: EXPENSE_VIEW_TITLE, grid },
+    ]);
     const record = required(google.tab(id, EXPENSE_LOG_TITLE));
     const view = required(google.tab(id, EXPENSE_VIEW_TITLE));
     record.developerMetadata = [];
@@ -200,22 +278,51 @@ describe("direct work expense records", () => {
     const { google, id } = await setup();
     await saveExpense(google.client, google.token, id, command("one"));
     const tab = required(google.tab(id, EXPENSE_LOG_TITLE));
-    tab.developerMetadata.push({ metadataKey: "foliodash.view", metadataValue: EXPENSE_VIEW_TITLE, location: { sheetId: tab.id } });
+    tab.developerMetadata.push({
+      metadataKey: "foliodash.view",
+      metadataValue: EXPENSE_VIEW_TITLE,
+      location: { sheetId: tab.id },
+    });
     const before = tab.rows.map((row) => [...row]);
-    const written = await writeGridTabs(google.client, google.token, id, [{ title: EXPENSE_VIEW_TITLE, grid: bufferedGrid([[plainCell("replace")]]) }]);
+    const written = await writeGridTabs(google.client, google.token, id, [
+      { title: EXPENSE_VIEW_TITLE, grid: bufferedGrid([[plainCell("replace")]]) },
+    ]);
     expect(written.ok).toBe(false);
     expect(tab.rows).toEqual(before);
   });
 
   it("keeps no-work totals blank and writes the five canonical recap metrics when an as-of date is supplied", async () => {
     const { google, id } = await setup();
-    await saveExpense(google.client, google.token, id, command("blank", "2026-11-03", null, [null, null, null, null, null]));
-    expect((await saveExpense(google.client, google.token, id, command("zero", undefined, null, [0, 0, 0, 0, 0]), true, required(parseIsoDate("2026-11-05")))).status).toBe("saved");
+    await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("blank", "2026-11-03", null, [null, null, null, null, null]),
+    );
+    expect(
+      (
+        await saveExpense(
+          google.client,
+          google.token,
+          id,
+          command("zero", undefined, null, [0, 0, 0, 0, 0]),
+          true,
+          required(parseIsoDate("2026-11-05")),
+        )
+      ).status,
+    ).toBe("saved");
     const rows = required(google.tab(id, EXPENSE_VIEW_TITLE)).rows;
     expect(rows[4]?.[7]).toBe("");
     expect(rows[4]?.[8]).toBe("No onsite work");
     expect(rows[5]?.[7]).toBe(0);
-    for (const label of ["Average Daily", "Average Weekly", "Average Monthly", "Total Yearly", "Yearly Projection (estimate)"]) expect(rows.some((row) => row[1] === label)).toBe(true);
+    for (const label of [
+      "Average Daily",
+      "Average Weekly",
+      "Average Monthly",
+      "Total Yearly",
+      "Yearly Projection (estimate)",
+    ])
+      expect(rows.some((row) => row[1] === label)).toBe(true);
     expect(rows.find((row) => row[1] === "Average Daily")?.[2]).toBe(0);
   });
 
@@ -255,10 +362,14 @@ describe("direct work expense records", () => {
   it("distinguishes refused recovery from an unconfirmed lost recovery response", async () => {
     const first = await setup();
     first.google.faults.push({ match: /:batchUpdate/u, status: 403 });
-    expect((await restoreExpenses(first.google.client, first.google.token, first.id, [command("one")])).status).toBe("damaged");
+    expect((await restoreExpenses(first.google.client, first.google.token, first.id, [command("one")])).status).toBe(
+      "damaged",
+    );
     const second = await setup();
     second.google.faults.push({ match: /:batchUpdate/u, network: true });
-    expect((await restoreExpenses(second.google.client, second.google.token, second.id, [command("one")])).status).toBe("unavailable");
+    expect((await restoreExpenses(second.google.client, second.google.token, second.id, [command("one")])).status).toBe(
+      "unavailable",
+    );
   });
 
   it("discovers a renamed record tab by ownership and refuses ambiguous markers", async () => {
@@ -269,8 +380,14 @@ describe("direct work expense records", () => {
     tabs.delete(EXPENSE_LOG_TITLE);
     tabs.set("My renamed expense log", tab);
     expect((await readExpenses(google.client, google.token, id)).status).toBe("ok");
-    expect((await saveExpense(google.client, google.token, id, command("two", undefined, "one"), true)).status).toBe("saved");
-    tab.developerMetadata.push({ metadataKey: "foliodash.expenses", metadataValue: "records-v1", location: { sheetId: tab.id } });
+    expect((await saveExpense(google.client, google.token, id, command("two", undefined, "one"), true)).status).toBe(
+      "saved",
+    );
+    tab.developerMetadata.push({
+      metadataKey: "foliodash.expenses",
+      metadataValue: "records-v1",
+      location: { sheetId: tab.id },
+    });
     expect((await readExpenses(google.client, google.token, id)).status).toBe("damaged");
   });
 
@@ -281,20 +398,39 @@ describe("direct work expense records", () => {
     const rest: RestClient = async (request) => {
       if (!interleaved && request.method === "POST" && request.url.includes(":append")) {
         interleaved = true;
-        await saveExpense(google.client, google.token, id, command("other", undefined, "base", [0, 2000, 0, 0, 0]), true);
+        await saveExpense(
+          google.client,
+          google.token,
+          id,
+          command("other", undefined, "base", [0, 2000, 0, 0, 0]),
+          true,
+        );
       }
       return google.client(request);
     };
-    expect((await saveExpense(rest, google.token, id, command("mine", undefined, "base", [0, 3000, 0, 0, 0]), true)).status).toBe("conflict");
+    expect(
+      (await saveExpense(rest, google.token, id, command("mine", undefined, "base", [0, 3000, 0, 0, 0]), true)).status,
+    ).toBe("conflict");
     const conflicted = await readExpenses(google.client, google.token, id, true);
     if (conflicted.status !== "ok") throw new Error("Expected checked conflict history");
     expect(conflicted.days).toEqual([]);
     expect(conflicted.conflicts[0]?.versions).toHaveLength(2);
-    const resolved = await saveExpense(google.client, google.token, id, command("resolution", undefined, required(conflicted.conflicts[0]).revision, [0, 2500, 0, 0, 0]), true);
+    const resolved = await saveExpense(
+      google.client,
+      google.token,
+      id,
+      command("resolution", undefined, required(conflicted.conflicts[0]).revision, [0, 2500, 0, 0, 0]),
+      true,
+    );
     expect(resolved.status).toBe("saved");
     const read = await readExpenses(google.client, google.token, id, true);
     expect(read.status === "ok" && read.conflicts).toEqual([]);
-    expect(read.status === "ok" && read.commands.map((item) => item.id)).toEqual(["base", "other", "mine", "resolution"]);
+    expect(read.status === "ok" && read.commands.map((item) => item.id)).toEqual([
+      "base",
+      "other",
+      "mine",
+      "resolution",
+    ]);
   });
 
   it("preserves concurrent saves on different days without false conflict", async () => {
@@ -328,9 +464,13 @@ describe("direct work expense records", () => {
     const restored = await restoreExpenses(google.client, google.token, target.value.id, required(decoded).commands);
     expect(restored.status === "ok" && restored.commands).toEqual(original.commands);
     const writes = google.callsMatching(/:append|:batchUpdate/u).length;
-    expect((await restoreExpenses(google.client, google.token, target.value.id, required(decoded).commands)).status).toBe("ok");
+    expect(
+      (await restoreExpenses(google.client, google.token, target.value.id, required(decoded).commands)).status,
+    ).toBe("ok");
     expect(google.callsMatching(/:append|:batchUpdate/u)).toHaveLength(writes);
-    expect((await restoreExpenses(google.client, google.token, target.value.id, [command("different-recovery")])).status).toBe("damaged");
+    expect(
+      (await restoreExpenses(google.client, google.token, target.value.id, [command("different-recovery")])).status,
+    ).toBe("damaged");
   });
 
   it("restores all 220 synthetic commands into an owned empty log without resetting it", async () => {
@@ -347,7 +487,17 @@ describe("direct work expense records", () => {
     expect(required(google.tab(id, EXPENSE_LOG_TITLE)).rows[0]).toEqual(header);
     expect(required(google.tab(id, EXPENSE_LOG_TITLE)).rows).toHaveLength(221);
     expect(google.callsMatching(/:append/u)).toHaveLength(beforeAppend + 1);
-    expect(google.requests.slice(requests).some((request) => "addSheet" in request && (request["addSheet"] as { properties?: { title?: string } }).properties?.title?.startsWith(EXPENSE_LOG_TITLE))).toBe(false);
+    expect(
+      google.requests
+        .slice(requests)
+        .some(
+          (request) =>
+            "addSheet" in request &&
+            (request["addSheet"] as { properties?: { title?: string } }).properties?.title?.startsWith(
+              EXPENSE_LOG_TITLE,
+            ),
+        ),
+    ).toBe(false);
     const rechecked = await restoreExpenses(google.client, google.token, id, entries);
     expect(rechecked.status === "ok" && rechecked.commands).toEqual(entries);
     expect(google.callsMatching(/:append/u)).toHaveLength(beforeAppend + 1);
@@ -378,12 +528,16 @@ describe("direct work expense records", () => {
   it("distinguishes a refused bulk append from an unconfirmed lost response", async () => {
     const first = await setupEmptyExpenseStore();
     first.google.faults.push({ match: /:append/u, status: 403 });
-    expect((await restoreExpenses(first.google.client, first.google.token, first.id, syntheticRecovery())).status).toBe("damaged");
+    expect((await restoreExpenses(first.google.client, first.google.token, first.id, syntheticRecovery())).status).toBe(
+      "damaged",
+    );
     expect(required(first.google.tab(first.id, EXPENSE_LOG_TITLE)).rows).toHaveLength(1);
     const second = await setupEmptyExpenseStore();
     second.google.faults.push({ match: /:append/u, network: true });
     const before = second.google.callsMatching(/:append/u).length;
-    expect((await restoreExpenses(second.google.client, second.google.token, second.id, syntheticRecovery())).status).toBe("unavailable");
+    expect(
+      (await restoreExpenses(second.google.client, second.google.token, second.id, syntheticRecovery())).status,
+    ).toBe("unavailable");
     expect((await readExpenses(second.google.client, second.google.token, second.id)).status).toBe("ok");
     expect(second.google.callsMatching(/:append/u)).toHaveLength(before + 1);
   });
@@ -400,7 +554,10 @@ describe("direct work expense records", () => {
       return google.client(request);
     };
     const result = await restoreExpenses(rest, google.token, id, entries);
-    expect(result.status === "ok" && result.commands.map((item) => item.id)).toEqual(["concurrent-day", ...entries.map((entry) => entry.id)]);
+    expect(result.status === "ok" && result.commands.map((item) => item.id)).toEqual([
+      "concurrent-day",
+      ...entries.map((entry) => entry.id),
+    ]);
     expect(result.status === "ok" && result.conflicts).toEqual([]);
   });
 
@@ -411,13 +568,21 @@ describe("direct work expense records", () => {
     const rest: RestClient = async (request) => {
       if (!interleaved && request.method === "POST" && request.url.includes(":append")) {
         interleaved = true;
-        await saveExpense(google.client, google.token, id, command("concurrent-same-day", required(entries[0]).date), true);
+        await saveExpense(
+          google.client,
+          google.token,
+          id,
+          command("concurrent-same-day", required(entries[0]).date),
+          true,
+        );
       }
       return google.client(request);
     };
     const result = await restoreExpenses(rest, google.token, id, entries);
     expect(result.status === "ok" && result.commands).toHaveLength(221);
-    expect(result.status === "ok" && result.conflicts[0]?.versions.map((version) => version.revision).sort()).toEqual(["concurrent-same-day", required(entries[0]).id].sort());
+    expect(result.status === "ok" && result.conflicts[0]?.versions.map((version) => version.revision).sort()).toEqual(
+      ["concurrent-same-day", required(entries[0]).id].sort(),
+    );
     expect(result.status === "ok" && result.days).toHaveLength(219);
   });
 
@@ -440,9 +605,18 @@ describe("direct work expense records", () => {
     expect(parseExpenseHistory([command("one", undefined, "missing")])).toBeNull();
     expect(parseExpenseHistory([command("one"), command("one", undefined, null, [1, 0, 0, 0, 0])])).toBeNull();
     expect(parseExpenseHistory([{ ...command("one"), amounts: [0, 0] }])).toBeNull();
-    expect(decodeExpenseBackup({ format: "foliodash-work-expenses", version: 1, commands: [command("one")], checksum: "wrong" })).toBeNull();
+    expect(
+      decodeExpenseBackup({
+        format: "foliodash-work-expenses",
+        version: 1,
+        commands: [command("one")],
+        checksum: "wrong",
+      }),
+    ).toBeNull();
     expect(parseExpenseHistory([command("one"), command("one")])?.commands).toHaveLength(1);
-    expect(decodeExpenseBackup({ format: "foliodash-work-expenses", version: 1, commands: [{ unsupported: undefined }] })).toBeNull();
+    expect(
+      decodeExpenseBackup({ format: "foliodash-work-expenses", version: 1, commands: [{ unsupported: undefined }] }),
+    ).toBeNull();
     expect(parseExpenseHistory([command("conflict:reserved")])).toBeNull();
   });
 });

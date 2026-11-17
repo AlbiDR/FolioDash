@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  ADD_ADMISSION_LIMIT, MAX_PHYSICAL_ROWS, READ_SAFE_LIMIT, type CheckpointCommand, activeCheckpoints, admitCheckpoint, chartMarkers, isSafeNote, parseCheckpointCommand, parseCheckpointHistory,
+  ADD_ADMISSION_LIMIT,
+  MAX_PHYSICAL_ROWS,
+  READ_SAFE_LIMIT,
+  type CheckpointCommand,
+  activeCheckpoints,
+  admitCheckpoint,
+  chartMarkers,
+  isSafeNote,
+  parseCheckpointCommand,
+  parseCheckpointHistory,
 } from "./Checkpoints";
 import { type IsoDate, parseIsoDate } from "./IsoDate";
 import { type EuroCents, toEuroCents } from "./Money";
@@ -66,7 +75,14 @@ describe("parseCheckpointHistory (P2)", () => {
     expect(parseCheckpointHistory([{ nope: true }])).toBeNull();
   });
   it("is readable up to the read-safe limit and damaged beyond it", () => {
-    const many = (count: number): unknown[] => Array.from({ length: count }, (_, index) => ({ id: `cmd-${String(index).padStart(8, "0")}`, kind: "add", date: "2026-11-14", cents: 100, note: "" }));
+    const many = (count: number): unknown[] =>
+      Array.from({ length: count }, (_, index) => ({
+        id: `cmd-${String(index).padStart(8, "0")}`,
+        kind: "add",
+        date: "2026-11-14",
+        cents: 100,
+        note: "",
+      }));
     expect(parseCheckpointHistory(many(READ_SAFE_LIMIT))).not.toBeNull();
     expect(parseCheckpointHistory(many(READ_SAFE_LIMIT + 1))).toBeNull();
   });
@@ -90,9 +106,16 @@ describe("projection (P1)", () => {
     expect(activeCheckpoints(commands).map((entry) => entry.id)).toEqual([id("a2")]);
   });
   it("shows one marker per date: the latest active in log order, with the count", () => {
-    const active = activeCheckpoints([add("a1", "2026-11-14", 100), add("a2", "2026-11-14", 130), add("a3", "2026-11-10", 90)]);
+    const active = activeCheckpoints([
+      add("a1", "2026-11-14", 100),
+      add("a2", "2026-11-14", 130),
+      add("a3", "2026-11-10", 90),
+    ]);
     const markers = chartMarkers(active);
-    expect(markers.map((marker) => [marker.date, marker.cents, marker.count])).toEqual([[date("2026-11-10"), euros(90), 1], [date("2026-11-14"), euros(130), 2]]);
+    expect(markers.map((marker) => [marker.date, marker.cents, marker.count])).toEqual([
+      [date("2026-11-10"), euros(90), 1],
+      [date("2026-11-14"), euros(130), 2],
+    ]);
   });
   it("shows the earlier checkpoint again when the latest of a date is voided", () => {
     const active = activeCheckpoints([add("a1", "2026-11-14", 100), add("a2", "2026-11-14", 130), voidOf("v1", "a2")]);
@@ -116,9 +139,17 @@ describe("admitCheckpoint (P3)", () => {
     expect(admitCheckpoint([first], add("a1", "2026-11-14", 101), TODAY).status).toBe("refuse");
   });
   it("stops admitting adds at the limit but still admits a void of any active add", () => {
-    const full = Array.from({ length: ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({ id: `cmd-${String(index).padStart(8, "0")}`, kind: "add", date: date("2026-11-14"), cents: euros(1), note: "" }));
+    const full = Array.from({ length: ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({
+      id: `cmd-${String(index).padStart(8, "0")}`,
+      kind: "add",
+      date: date("2026-11-14"),
+      cents: euros(1),
+      note: "",
+    }));
     expect(admitCheckpoint(full, add("z1", "2026-11-14", 5), TODAY).status).toBe("refuse");
-    expect(admitCheckpoint(full, { id: "void-0000000", kind: "void", target: "cmd-00000007" }, TODAY).status).toBe("admit");
+    expect(admitCheckpoint(full, { id: "void-0000000", kind: "void", target: "cmd-00000007" }, TODAY).status).toBe(
+      "admit",
+    );
   });
   it("voids an active add, treats voiding an already-voided add as a no-op, and refuses an unknown target", () => {
     const base = [add("a1", "2026-11-14", 100)];
@@ -128,7 +159,13 @@ describe("admitCheckpoint (P3)", () => {
     expect(admitCheckpoint([...base, voidOf("v1", "a1")], voidOf("v3", "v1"), TODAY).status).toBe("refuse");
   });
   it("lets every remaining active checkpoint be voided after concurrent add overflow", () => {
-    const overflow = Array.from({ length: ADD_ADMISSION_LIMIT + 1 }, (_, index): CheckpointCommand => ({ id: `cmd-${String(index).padStart(8, "0")}`, kind: "add", date: date("2026-11-14"), cents: euros(1), note: "" }));
+    const overflow = Array.from({ length: ADD_ADMISSION_LIMIT + 1 }, (_, index): CheckpointCommand => ({
+      id: `cmd-${String(index).padStart(8, "0")}`,
+      kind: "add",
+      date: date("2026-11-14"),
+      cents: euros(1),
+      note: "",
+    }));
     expect(parseCheckpointHistory(overflow)).not.toBeNull();
     let log = [...overflow];
     for (const entry of overflow) {

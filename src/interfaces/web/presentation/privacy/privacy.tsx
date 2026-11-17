@@ -10,7 +10,10 @@ export function usePrivacy(): boolean {
   return useContext(PrivacyContext);
 }
 
-export function PrivacyProvider(props: { readonly hidden: boolean; readonly children: ComponentChildren }): JSX.Element {
+export function PrivacyProvider(props: {
+  readonly hidden: boolean;
+  readonly children: ComponentChildren;
+}): JSX.Element {
   return <PrivacyContext.Provider value={props.hidden}>{props.children}</PrivacyContext.Provider>;
 }
 
@@ -20,7 +23,11 @@ export function PrivacyProvider(props: { readonly hidden: boolean; readonly chil
  * move anything, and the width does not reveal how large the number is. A hidden
  * amount is announced as hidden, not read out.
  */
-export function Amount(props: { readonly cents: EuroCents | null; readonly signed?: boolean; readonly empty?: string }): JSX.Element {
+export function Amount(props: {
+  readonly cents: EuroCents | null;
+  readonly signed?: boolean;
+  readonly empty?: string;
+}): JSX.Element {
   const hidden = usePrivacy();
   const kind = props.signed === true ? "amount signed" : "amount";
   if (props.cents === null) return <span class={`${kind} empty`}>{props.empty ?? "-"}</span>;
@@ -34,7 +41,10 @@ export function Amount(props: { readonly cents: EuroCents | null; readonly signe
   return <span class={kind}>{amountText(props.cents, false, props.signed === true)}</span>;
 }
 
-export function PrivacyToggle(props: { readonly hidden: boolean; readonly onChange: (hidden: boolean) => void }): JSX.Element {
+export function PrivacyToggle(props: {
+  readonly hidden: boolean;
+  readonly onChange: (hidden: boolean) => void;
+}): JSX.Element {
   return (
     <button
       type="button"
@@ -44,7 +54,9 @@ export function PrivacyToggle(props: { readonly hidden: boolean; readonly onChan
         props.onChange(!props.hidden);
       }}
     >
-      <span key={props.hidden ? "hidden" : "shown"} class="privacy-icon"><Icon name={props.hidden ? "eye-off" : "eye"} size={18} /></span>
+      <span key={props.hidden ? "hidden" : "shown"} class="privacy-icon">
+        <Icon name={props.hidden ? "eye-off" : "eye"} size={18} />
+      </span>
       <span class="toggle-label">{props.hidden ? "Amounts hidden" : "Amounts shown"}</span>
       <span class="visually-hidden">. Press to {props.hidden ? "show" : "hide"} amounts.</span>
     </button>

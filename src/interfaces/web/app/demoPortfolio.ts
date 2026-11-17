@@ -60,7 +60,11 @@ function statementDates(count: number): IsoDate[] {
 }
 
 function valueAt(spec: DemoFundSpec, index: number): number {
-  return spec.startValue * (1 + spec.monthlyGrowth) ** (index - spec.startIndex) * (1 + (spec.swing ?? 0) * Math.sin(index * 1.7));
+  return (
+    spec.startValue *
+    (1 + spec.monthlyGrowth) ** (index - spec.startIndex) *
+    (1 + (spec.swing ?? 0) * Math.sin(index * 1.7))
+  );
 }
 
 function ledgerFor(specs: readonly DemoFundSpec[], count: number): LedgerState {
@@ -69,7 +73,11 @@ function ledgerFor(specs: readonly DemoFundSpec[], count: number): LedgerState {
     const listed = specs.filter(
       (spec) => index >= spec.startIndex && (spec.endIndex === null || index <= spec.endIndex),
     );
-    const funds = listed.map((spec) => ({ isin: demoIsin(spec.code), name: spec.name, marketValue: cents(valueAt(spec, index)) }));
+    const funds = listed.map((spec) => ({
+      isin: demoIsin(spec.code),
+      name: spec.name,
+      marketValue: cents(valueAt(spec, index)),
+    }));
     const subtotal = toEuroCents(funds.reduce((sum, fund) => sum + fund.marketValue, 0));
     if (subtotal === null) throw new Error("demo subtotal out of range");
     const statement: StatementInput = { funds, fundsSubtotal: subtotal };
@@ -104,22 +112,105 @@ function ledgerFor(specs: readonly DemoFundSpec[], count: number): LedgerState {
 }
 
 const TYPICAL: readonly DemoFundSpec[] = [
-  { name: "Demo Global Equity", code: "DEMOEQ", startIndex: 0, endIndex: null, startValue: 12000, monthlyGrowth: 0.008, invested: 11000 },
-  { name: "Demo Euro Bonds", code: "DEMOBD", startIndex: 2, endIndex: null, startValue: 8000, monthlyGrowth: 0.003, invested: 8000 },
-  { name: "Demo Tech Growth", code: "DEMOTC", startIndex: 0, endIndex: 4, startValue: 5000, monthlyGrowth: 0.015, invested: 4500 },
+  {
+    name: "Demo Global Equity",
+    code: "DEMOEQ",
+    startIndex: 0,
+    endIndex: null,
+    startValue: 12000,
+    monthlyGrowth: 0.008,
+    invested: 11000,
+  },
+  {
+    name: "Demo Euro Bonds",
+    code: "DEMOBD",
+    startIndex: 2,
+    endIndex: null,
+    startValue: 8000,
+    monthlyGrowth: 0.003,
+    invested: 8000,
+  },
+  {
+    name: "Demo Tech Growth",
+    code: "DEMOTC",
+    startIndex: 0,
+    endIndex: 4,
+    startValue: 5000,
+    monthlyGrowth: 0.015,
+    invested: 4500,
+  },
 ];
 
 const LONG: readonly DemoFundSpec[] = [
-  { name: "Demo Global Equity", code: "DEMOEQ", startIndex: 0, endIndex: null, startValue: 12000, monthlyGrowth: 0.006, invested: 11000, swing: 0.03 },
-  { name: "Demo Euro Bonds", code: "DEMOBD", startIndex: 0, endIndex: null, startValue: 8000, monthlyGrowth: 0.002, invested: 8000, swing: 0.008 },
-  { name: "Demo Small Caps", code: "DEMOSC", startIndex: 14, endIndex: null, startValue: 4000, monthlyGrowth: 0.004, invested: 3800, swing: 0.045 },
+  {
+    name: "Demo Global Equity",
+    code: "DEMOEQ",
+    startIndex: 0,
+    endIndex: null,
+    startValue: 12000,
+    monthlyGrowth: 0.006,
+    invested: 11000,
+    swing: 0.03,
+  },
+  {
+    name: "Demo Euro Bonds",
+    code: "DEMOBD",
+    startIndex: 0,
+    endIndex: null,
+    startValue: 8000,
+    monthlyGrowth: 0.002,
+    invested: 8000,
+    swing: 0.008,
+  },
+  {
+    name: "Demo Small Caps",
+    code: "DEMOSC",
+    startIndex: 14,
+    endIndex: null,
+    startValue: 4000,
+    monthlyGrowth: 0.004,
+    invested: 3800,
+    swing: 0.045,
+  },
 ];
 
 const DIFFERENT: readonly DemoFundSpec[] = [
-  { name: "Example Property Income", code: "EXPRO", startIndex: 0, endIndex: null, startValue: 30000, monthlyGrowth: 0.004, invested: 28000 },
-  { name: "Example Emerging Markets", code: "EXEMK", startIndex: 1, endIndex: 3, startValue: 9000, monthlyGrowth: -0.006, invested: 9500 },
-  { name: "Example Short Duration", code: "EXSHD", startIndex: 4, endIndex: null, startValue: 15000, monthlyGrowth: 0.002, invested: 15000 },
-  { name: "Example Climate Fund", code: "EXCLM", startIndex: 5, endIndex: null, startValue: 6000, monthlyGrowth: 0.011, invested: 5800 },
+  {
+    name: "Example Property Income",
+    code: "EXPRO",
+    startIndex: 0,
+    endIndex: null,
+    startValue: 30000,
+    monthlyGrowth: 0.004,
+    invested: 28000,
+  },
+  {
+    name: "Example Emerging Markets",
+    code: "EXEMK",
+    startIndex: 1,
+    endIndex: 3,
+    startValue: 9000,
+    monthlyGrowth: -0.006,
+    invested: 9500,
+  },
+  {
+    name: "Example Short Duration",
+    code: "EXSHD",
+    startIndex: 4,
+    endIndex: null,
+    startValue: 15000,
+    monthlyGrowth: 0.002,
+    invested: 15000,
+  },
+  {
+    name: "Example Climate Fund",
+    code: "EXCLM",
+    startIndex: 5,
+    endIndex: null,
+    startValue: 6000,
+    monthlyGrowth: 0.011,
+    invested: 5800,
+  },
 ];
 
 const MANY: readonly DemoFundSpec[] = Array.from({ length: 12 }, (_, index) => ({

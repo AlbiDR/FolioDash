@@ -81,7 +81,10 @@ export function flattenPath(d: string): Polygon[] {
       for (let step = 1; step <= CURVE_STEPS; step++) {
         const t = step / CURVE_STEPS;
         const u = 1 - t;
-        ring.push([u * u * here[0] + 2 * u * t * control[0] + t * t * end[0], u * u * here[1] + 2 * u * t * control[1] + t * t * end[1]]);
+        ring.push([
+          u * u * here[0] + 2 * u * t * control[0] + t * t * end[0],
+          u * u * here[1] + 2 * u * t * control[1] + t * t * end[1],
+        ]);
       }
       here = end;
     } else if (command === "A") {
@@ -128,10 +131,20 @@ function arc(from: Point, to: Point, radius: number, large: boolean, sweep: bool
 
 /** Maps polygons by a uniform scale and a shift. */
 export function place(polygons: readonly Polygon[], transform: Transform, resolution: number): Polygon[] {
-  return polygons.map((polygon) => polygon.map(([x, y]): Point => [(x * transform.scale + transform.dx) * resolution, (y * transform.scale + transform.dy) * resolution]));
+  return polygons.map((polygon) =>
+    polygon.map(([x, y]): Point => [
+      (x * transform.scale + transform.dx) * resolution,
+      (y * transform.scale + transform.dy) * resolution,
+    ]),
+  );
 }
 
-export function bounds(polygons: readonly Polygon[]): { readonly x: number; readonly y: number; readonly width: number; readonly height: number } {
+export function bounds(polygons: readonly Polygon[]): {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+} {
   let minX = FAR;
   let minY = FAR;
   let maxX = -FAR;
@@ -148,7 +161,11 @@ export function bounds(polygons: readonly Polygon[]): { readonly x: number; read
 }
 
 /** Anti-aliased coverage (0 to 1) of polygons on a square grid: exact horizontally, four samples vertically. */
-export function fillMask(polygons: readonly Polygon[], size: number, rule: "nonzero" | "evenodd" = "nonzero"): Float32Array {
+export function fillMask(
+  polygons: readonly Polygon[],
+  size: number,
+  rule: "nonzero" | "evenodd" = "nonzero",
+): Float32Array {
   const mask = new Float32Array(size * size);
   const edges: number[] = [];
   for (const polygon of polygons) {
@@ -251,7 +268,8 @@ export function boundaryDistance(polygons: readonly Polygon[], size: number, rea
 export function strokeCoverage(distance: Float32Array, width: number): Float32Array {
   const coverage = new Float32Array(distance.length);
   const half = width / 2;
-  for (let slot = 0; slot < distance.length; slot++) coverage[slot] = Math.max(0, Math.min(1, half - (distance[slot] ?? FAR) + 0.5));
+  for (let slot = 0; slot < distance.length; slot++)
+    coverage[slot] = Math.max(0, Math.min(1, half - (distance[slot] ?? FAR) + 0.5));
   return coverage;
 }
 
@@ -267,7 +285,7 @@ export function linear(x1: number, y1: number, x2: number, y2: number, stops: re
   const dy = y2 - y1;
   const length = dx * dx + dy * dy;
   return (x, y, out) => {
-    ramp(stops, Math.max(0, Math.min(1, (((x + 0.5 - x1) * dx + (y + 0.5 - y1) * dy) / length))), out);
+    ramp(stops, Math.max(0, Math.min(1, ((x + 0.5 - x1) * dx + (y + 0.5 - y1) * dy) / length)), out);
   };
 }
 
@@ -353,8 +371,16 @@ export function blur(mask: Float32Array, size: number, sigma: number): Float32Ar
   if (d < 1) return mask;
   const passes: readonly (readonly [number, number])[] =
     d % 2 === 1
-      ? [[(d - 1) / 2, (d - 1) / 2], [(d - 1) / 2, (d - 1) / 2], [(d - 1) / 2, (d - 1) / 2]]
-      : [[d / 2, d / 2 - 1], [d / 2 - 1, d / 2], [d / 2, d / 2]];
+      ? [
+          [(d - 1) / 2, (d - 1) / 2],
+          [(d - 1) / 2, (d - 1) / 2],
+          [(d - 1) / 2, (d - 1) / 2],
+        ]
+      : [
+          [d / 2, d / 2 - 1],
+          [d / 2 - 1, d / 2],
+          [d / 2, d / 2],
+        ];
   let current = mask;
   for (const [before, after] of passes) {
     current = box(box(current, size, before, after, true), size, before, after, false);
@@ -366,7 +392,8 @@ function box(source: Float32Array, size: number, before: number, after: number, 
   const result = new Float32Array(source.length);
   const width = before + after + 1;
   for (let line = 0; line < size; line++) {
-    const read = (index: number): number => (index < 0 || index >= size ? 0 : (source[horizontal ? line * size + index : index * size + line] ?? 0));
+    const read = (index: number): number =>
+      index < 0 || index >= size ? 0 : (source[horizontal ? line * size + index : index * size + line] ?? 0);
     let sum = 0;
     for (let index = -before; index <= after; index++) sum += read(index);
     for (let index = 0; index < size; index++) {
@@ -418,7 +445,8 @@ export function toBytes(premultiplied: Float32Array): Uint8Array {
   for (let slot = 0; slot < premultiplied.length; slot += 4) {
     const alpha = premultiplied[slot + 3] ?? 0;
     if (alpha <= 0) continue;
-    for (let channel = 0; channel < 3; channel++) bytes[slot + channel] = clamp(((premultiplied[slot + channel] ?? 0) / alpha) * 255);
+    for (let channel = 0; channel < 3; channel++)
+      bytes[slot + channel] = clamp(((premultiplied[slot + channel] ?? 0) / alpha) * 255);
     bytes[slot + 3] = clamp(alpha * 255);
   }
   return bytes;

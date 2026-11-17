@@ -12,7 +12,12 @@ import { OPENING, februarySheet, januarySheet } from "../../../../tests/fixtures
 import { ISIN_A, ISIN_B, syntheticSheet } from "../../../../tests/fixtures/SyntheticFideuramSheet";
 import type { AttachItem } from "../../../applications/LedgerService";
 import { planImport } from "../../../core/ImportPlan";
-import { LEDGER_TAB, VIEW_TAB, ORGANIZATION_METADATA_KEY, ORGANIZATION_VERSION } from "../../../adapters/google/SheetsLayout";
+import {
+  LEDGER_TAB,
+  VIEW_TAB,
+  ORGANIZATION_METADATA_KEY,
+  ORGANIZATION_VERSION,
+} from "../../../adapters/google/SheetsLayout";
 import type { FundCommand, StatementInput } from "../../../core/ImportPlan";
 import { type IsoDate, parseIsoDate } from "../../../core/IsoDate";
 import { parseIsin } from "../../../core/Isin";
@@ -34,15 +39,30 @@ const ISIN = (() => {
   }
   throw new Error("no check digit");
 })();
-const statement = (value: number): StatementInput => ({ funds: [{ isin: ISIN, name: "Synthetic Fund A", marketValue: cents(value) }], fundsSubtotal: cents(value) });
-const start: FundCommand = { isin: ISIN, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" };
+const statement = (value: number): StatementInput => ({
+  funds: [{ isin: ISIN, name: "Synthetic Fund A", marketValue: cents(value) }],
+  fundsSubtotal: cents(value),
+});
+const start: FundCommand = {
+  isin: ISIN,
+  action: "Start",
+  moneyIn: ZERO_CENTS,
+  moneyOut: ZERO_CENTS,
+  openingNetInvested: cents(1000),
+  comment: "",
+};
 const keep: FundCommand = { isin: ISIN, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" };
 const january: RecordRequest = { date: date("2026-01-31"), statement: statement(1000), commands: [start] };
 const february: RecordRequest = { date: date("2026-02-28"), statement: statement(1100), commands: [keep] };
 
 const memory = (): KeyValueStore & { data: Map<string, string> } => {
   const data = new Map<string, string>();
-  return { data, getItem: (key) => data.get(key) ?? null, setItem: (key, value) => void data.set(key, value), removeItem: (key) => void data.delete(key) };
+  return {
+    data,
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => void data.set(key, value),
+    removeItem: (key) => void data.delete(key),
+  };
 };
 
 function world(overrides: { google?: FakeGoogle; store?: ReturnType<typeof memory> } = {}) {
@@ -81,7 +101,11 @@ describe("starting from scratch", () => {
     await saved(normal, january);
     const normalCopy = store.data.get("foliodash.ledger.v1");
     const synthetic = make({
-      workbookIdentity: { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" },
+      workbookIdentity: {
+        title: "FolioDash SYNTHETIC ACCEPTANCE",
+        propertyKey: "foliodash-synthetic-acceptance",
+        propertyValue: "ledger-v1",
+      },
       cache: createLedgerCache(() => store, "foliodash.synthetic-acceptance.ledger.v1"),
     });
     expect(synthetic.state.mode).toBe("signed-out");
@@ -96,8 +120,15 @@ describe("starting from scratch", () => {
 
   it("keeps synthetic workbook identity when restoring a missing test workbook", async () => {
     const { google, make, store } = world();
-    const identity = { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" };
-    const session = make({ workbookIdentity: identity, cache: createLedgerCache(() => store, "foliodash.synthetic-acceptance.ledger.v1") });
+    const identity = {
+      title: "FolioDash SYNTHETIC ACCEPTANCE",
+      propertyKey: "foliodash-synthetic-acceptance",
+      propertyValue: "ledger-v1",
+    };
+    const session = make({
+      workbookIdentity: identity,
+      cache: createLedgerCache(() => store, "foliodash.synthetic-acceptance.ledger.v1"),
+    });
     await session.connect();
     await saved(session, january);
     await session.idle();
@@ -153,8 +184,16 @@ describe("starting from scratch", () => {
     ]);
     if (!prepared.ok) throw new Error("Synthetic manual statement failed");
     const request: RecordRequest = {
-      date: date("2026-11-15"), statement: prepared.statement,
-      commands: [ISIN_A, ISIN_B].map(isin => ({ isin: parseIsin(isin) as NonNullable<ReturnType<typeof parseIsin>>, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" })),
+      date: date("2026-11-15"),
+      statement: prepared.statement,
+      commands: [ISIN_A, ISIN_B].map((isin) => ({
+        isin: parseIsin(isin) as NonNullable<ReturnType<typeof parseIsin>>,
+        action: "Start",
+        moneyIn: ZERO_CENTS,
+        moneyOut: ZERO_CENTS,
+        openingNetInvested: cents(1000),
+        comment: "",
+      })),
     };
     expect((await saved(session, request)).status).toBe("recorded");
     await session.idle();
@@ -164,7 +203,10 @@ describe("starting from scratch", () => {
     expect(google.tab(workbook.id, LEDGER_TAB)?.hidden).toBe(true);
     expect(google.tab(workbook.id, VIEW_TAB)?.hidden).toBe(false);
     expect(session.state.ledger.snapshots[0]?.fundsSubtotal).toBe(cents(2200));
-    expect(Object.values(session.state.ledger.snapshots[0]?.holdings ?? {}).map(h => h.netInvested)).toEqual([cents(1000), cents(1000)]);
+    expect(Object.values(session.state.ledger.snapshots[0]?.holdings ?? {}).map((h) => h.netInvested)).toEqual([
+      cents(1000),
+      cents(1000),
+    ]);
     const secondDevice = world({ google }).make();
     expect(secondDevice.state.mode).toBe("signed-out");
     expect(await secondDevice.connect()).toMatchObject({ status: "connected", created: false, statements: 1 });
@@ -227,7 +269,9 @@ describe("the device copy", () => {
     await saved(phone, january);
     // A different device generates different ids, as real ones (random) would.
     let laptopIds = 0;
-    const laptop = world({ google, store: memory() }).make({ newId: () => `laptop-${String(++laptopIds).padStart(6, "0")}` });
+    const laptop = world({ google, store: memory() }).make({
+      newId: () => `laptop-${String(++laptopIds).padStart(6, "0")}`,
+    });
     await laptop.connect();
     expect((await saved(laptop, february)).status).toBe("recorded");
     expect(await phone.refresh()).toMatchObject({ status: "connected", changed: true, statements: 2 });
@@ -383,8 +427,20 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);
     if (!read.ok) throw new Error("setup failed");
-    const commands: FundCommand[] = [ISIN_A, ISIN_B].map((isin) => ({ isin, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" }));
-    return { date: date("2026-01-31"), statement: read.statement, commands, source: { sheetName: "Il Mio Patrimonio", sheet } };
+    const commands: FundCommand[] = [ISIN_A, ISIN_B].map((isin) => ({
+      isin,
+      action: "Start",
+      moneyIn: ZERO_CENTS,
+      moneyOut: ZERO_CENTS,
+      openingNetInvested: cents(1000),
+      comment: "",
+    }));
+    return {
+      date: date("2026-01-31"),
+      statement: read.statement,
+      commands,
+      source: { sheetName: "Il Mio Patrimonio", sheet },
+    };
   }
 
   it("saves the statement with the month, writes a readable tab for it, and proves the ledger rebuilds from it", async () => {
@@ -395,7 +451,10 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
-    expect(await session.verifyHistory()).toEqual({ status: "checked", report: { months: 1, matching: 1, withoutStatement: 0, differing: [], unreadable: [] } });
+    expect(await session.verifyHistory()).toEqual({
+      status: "checked",
+      report: { months: 1, matching: 1, withoutStatement: 0, differing: [], unreadable: [] },
+    });
   });
 
   it("counts a month saved without its statement as exactly that, not as an error", async () => {
@@ -403,7 +462,10 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     const session = make();
     await session.connect();
     await saved(session, january);
-    expect(await session.verifyHistory()).toMatchObject({ status: "checked", report: { months: 1, matching: 0, withoutStatement: 1 } });
+    expect(await session.verifyHistory()).toMatchObject({
+      status: "checked",
+      report: { months: 1, matching: 0, withoutStatement: 1 },
+    });
   });
 
   it("says plainly that a restored sheet holds the figures but not the statements", async () => {
@@ -414,7 +476,10 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     google.workbooks.delete(session.state.workbook?.id ?? "");
     await session.refresh();
     expect((await session.restoreFromDevice()).status).toBe("restored");
-    expect(await session.verifyHistory()).toMatchObject({ status: "checked", report: { months: 1, matching: 0, withoutStatement: 1 } });
+    expect(await session.verifyHistory()).toMatchObject({
+      status: "checked",
+      report: { months: 1, matching: 0, withoutStatement: 1 },
+    });
   });
 
   it("reports a stored statement that was altered by hand, and changes nothing", async () => {
@@ -423,7 +488,9 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     await session.connect();
     await saved(session, withStatement());
     const before = store.data.get("foliodash.ledger.v1");
-    const piece = (google.tab(session.state.workbook?.id ?? "", "_FolioDash ledger")?.rows ?? []).find((row) => row[1] === "SOURCE");
+    const piece = (google.tab(session.state.workbook?.id ?? "", "_FolioDash ledger")?.rows ?? []).find(
+      (row) => row[1] === "SOURCE",
+    );
     if (piece !== undefined) piece[2] = String(piece[2]).replace("EXAMPLE", "EXAMPLX");
     expect(await session.verifyHistory()).toMatchObject({ status: "needs-attention" });
     expect(store.data.get("foliodash.ledger.v1")).toBe(before);
@@ -435,13 +502,25 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     let reads = 0;
     let release: (() => void) | undefined;
     let entered: (() => void) | undefined;
-    const barrier = new Promise<void>(resolve => { release = resolve; });
-    const started = new Promise<void>(resolve => { entered = resolve; });
-    const session = make({ rest: async request => {
-      if (hold && request.method === "GET" && request.url.includes("/values/")) { reads++; entered?.(); await barrier; }
-      return google.client(request);
-    } });
-    await session.connect(); await saved(session, january); await session.idle();
+    const barrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const started = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const session = make({
+      rest: async (request) => {
+        if (hold && request.method === "GET" && request.url.includes("/values/")) {
+          reads++;
+          entered?.();
+          await barrier;
+        }
+        return google.client(request);
+      },
+    });
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
     hold = true;
     const first = session.verifyHistory();
     const second = session.verifyHistory();
@@ -458,9 +537,15 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
   it("releases a failed history check so a later explicit check can recover", async () => {
     const { make, google, store } = world();
     let fail = false;
-    const session = make({ rest: request => fail && request.method === "GET" && request.url.includes("/values/")
-      ? Promise.resolve({ status: 503, json: () => Promise.resolve({}) }) : google.client(request) });
-    await session.connect(); await saved(session, january); await session.idle();
+    const session = make({
+      rest: (request) =>
+        fail && request.method === "GET" && request.url.includes("/values/")
+          ? Promise.resolve({ status: 503, json: () => Promise.resolve({}) })
+          : google.client(request),
+    });
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
     const copy = store.data.get("foliodash.ledger.v1");
     fail = true;
     expect(await session.verifyHistory()).toMatchObject({ status: "failed" });
@@ -474,13 +559,24 @@ describe("the sheet keeps the bank statements, and can prove it", () => {
     let hold = false;
     let release: (() => void) | undefined;
     let entered: (() => void) | undefined;
-    const barrier = new Promise<void>(resolve => { release = resolve; });
-    const started = new Promise<void>(resolve => { entered = resolve; });
-    const session = make({ rest: async request => {
-      if (hold && request.method === "GET" && request.url.includes("/values/")) { entered?.(); await barrier; }
-      return google.client(request);
-    } });
-    await session.connect(); await saved(session, january); await session.idle();
+    const barrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const started = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const session = make({
+      rest: async (request) => {
+        if (hold && request.method === "GET" && request.url.includes("/values/")) {
+          entered?.();
+          await barrier;
+        }
+        return google.client(request);
+      },
+    });
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
     hold = true;
     const checking = session.verifyHistory();
     await started;
@@ -513,11 +609,27 @@ describe("attaching statements to months saved earlier, through the session", ()
       return result.statement;
     };
     await saved(session, { date: date("2026-01-31"), statement: read(januarySheet()), commands: OPENING });
-    const keeps = planImport(session.state.ledger, read(februarySheet())).map((row): FundCommand => ({ isin: row.isin, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" }));
+    const keeps = planImport(session.state.ledger, read(februarySheet())).map((row): FundCommand => ({
+      isin: row.isin,
+      action: "Keep",
+      moneyIn: ZERO_CENTS,
+      moneyOut: ZERO_CENTS,
+      comment: "",
+    }));
     await saved(session, { date: date("2026-02-28"), statement: read(februarySheet()), commands: keeps });
     const items: AttachItem[] = [
-      { date: date("2026-01-31"), statement: read(januarySheet()), commands: OPENING, source: { sheetName: "Il Mio Patrimonio", sheet: januarySheet() } },
-      { date: date("2026-02-28"), statement: read(februarySheet()), commands: keeps, source: { sheetName: "Il Mio Patrimonio", sheet: februarySheet() } },
+      {
+        date: date("2026-01-31"),
+        statement: read(januarySheet()),
+        commands: OPENING,
+        source: { sheetName: "Il Mio Patrimonio", sheet: januarySheet() },
+      },
+      {
+        date: date("2026-02-28"),
+        statement: read(februarySheet()),
+        commands: keeps,
+        source: { sheetName: "Il Mio Patrimonio", sheet: februarySheet() },
+      },
     ];
     return { ...w, session, items };
   }
@@ -535,12 +647,21 @@ describe("attaching statements to months saved earlier, through the session", ()
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
     expect(google.tab(id, "Bank 2026-02-28")?.rows.length).toBeGreaterThan(5);
     expect(await session.save.statementDates()).toEqual(new Set(["2026-01-31", "2026-02-28"]));
-    expect(await session.verifyHistory()).toEqual({ status: "checked", report: { months: 2, matching: 2, withoutStatement: 0, differing: [], unreadable: [] } });
+    expect(await session.verifyHistory()).toEqual({
+      status: "checked",
+      report: { months: 2, matching: 2, withoutStatement: 0, differing: [], unreadable: [] },
+    });
   });
 
   it("refuses a statement for the wrong month and leaves the sheet as it was", async () => {
     const { google, session, items } = await twoMonthsWithoutStatements();
-    const swapped: AttachItem[] = [{ ...(items[0] as AttachItem), source: (items[1] as AttachItem).source, statement: (items[1] as AttachItem).statement }];
+    const swapped: AttachItem[] = [
+      {
+        ...(items[0] as AttachItem),
+        source: (items[1] as AttachItem).source,
+        statement: (items[1] as AttachItem).statement,
+      },
+    ];
     const rows = google.tab(session.state.workbook?.id ?? "", "_FolioDash ledger")?.rows.length;
     const result = await session.save.attach(swapped, session.save.newCommandId(), session.state.ledger.revision);
     expect(result.status).toBe("rejected");
@@ -573,7 +694,12 @@ describe("tidying the sheet", () => {
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);
     if (!read.ok) throw new Error("setup failed");
-    await saved(session, { date: date("2026-01-31"), statement: read.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await saved(session, {
+      date: date("2026-01-31"),
+      statement: read.statement,
+      commands: OPENING,
+      source: { sheetName: "S", sheet },
+    });
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     // A person (or an older build) left the tab bare and oversized.
@@ -588,7 +714,9 @@ describe("tidying the sheet", () => {
     expect(outcome).toEqual({ status: "tidied", months: 1, withoutStatement: 0 });
     expect(tab?.columnCount).toBeLessThan(26);
     expect(tab?.rowCount).toBe(tab?.rows.length);
-    const patterns = (tab?.formats ?? []).flat().map((format) => (format?.["numberFormat"] as { pattern?: string } | undefined)?.pattern);
+    const patterns = (tab?.formats ?? [])
+      .flat()
+      .map((format) => (format?.["numberFormat"] as { pattern?: string } | undefined)?.pattern);
     expect(patterns).toContain("dd/mm/yyyy");
     expect(JSON.stringify(google.tab(id, "_FolioDash ledger")?.rows)).toBe(ledgerBefore);
   });
@@ -602,7 +730,16 @@ describe("tidying the sheet", () => {
     const id = session.state.workbook?.id ?? "";
     const amounts = parseExpenseAmounts([100, 500, 100, null, null]);
     if (amounts === null) throw new Error("setup failed");
-    expect((await saveExpense(google.client, google.token, id, { id: "expense", date: date("2023-11-13"), expectedRevision: null, amounts })).status).toBe("saved");
+    expect(
+      (
+        await saveExpense(google.client, google.token, id, {
+          id: "expense",
+          date: date("2023-11-13"),
+          expectedRevision: null,
+          amounts,
+        })
+      ).status,
+    ).toBe("saved");
     const before = [LEDGER_TAB, EXPENSE_LOG_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows));
     const count = google.workbooks.get(id)?.size;
     const batches = google.batches.length;
@@ -612,7 +749,12 @@ describe("tidying the sheet", () => {
     expect([LEDGER_TAB, EXPENSE_LOG_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows))).toEqual(before);
     expect(google.tab(id, EXPENSE_VIEW_TITLE)?.rows.flat()).toContain("Work expenses");
     expect(google.tab(id, EXPENSE_LOG_TITLE)?.hidden).toBe(true);
-    expect([...google.workbooks.get(id)?.keys() ?? []]).toEqual([VIEW_TAB, EXPENSE_VIEW_TITLE, LEDGER_TAB, EXPENSE_LOG_TITLE]);
+    expect([...(google.workbooks.get(id)?.keys() ?? [])]).toEqual([
+      VIEW_TAB,
+      EXPENSE_VIEW_TITLE,
+      LEDGER_TAB,
+      EXPENSE_LOG_TITLE,
+    ]);
     const views = [VIEW_TAB, EXPENSE_VIEW_TITLE].map((title) => JSON.stringify(google.tab(id, title)?.rows));
     google.faults.push({ match: /:batchUpdate$/u, status: 400 });
     expect((await session.tidySheet()).status).toBe("failed");
@@ -627,7 +769,12 @@ describe("tidying the sheet", () => {
     const id = session.state.workbook?.id ?? "";
     const amounts = parseExpenseAmounts([100, 500, 100, null, null]);
     if (amounts === null) throw new Error("setup failed");
-    await saveExpense(google.client, google.token, id, { id: "expense", date: date("2023-11-13"), expectedRevision: null, amounts });
+    await saveExpense(google.client, google.token, id, {
+      id: "expense",
+      date: date("2023-11-13"),
+      expectedRevision: null,
+      amounts,
+    });
     const records = google.tab(id, EXPENSE_LOG_TITLE);
     if (records?.rows[1] === undefined) throw new Error("setup failed");
     records.rows[1][2] = "damaged";
@@ -643,7 +790,12 @@ describe("tidying the sheet", () => {
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);
     if (!read.ok) throw new Error("setup failed");
-    await saved(session, { date: date("2026-01-31"), statement: read.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await saved(session, {
+      date: date("2026-01-31"),
+      statement: read.statement,
+      commands: OPENING,
+      source: { sheetName: "S", sheet },
+    });
     await session.idle();
     google.faults.push({ match: /:batchUpdate$/u, status: 503 });
     expect((await session.tidySheet()).status).toBe("failed");
@@ -657,7 +809,9 @@ describe("automatic spreadsheet organization", () => {
     await session.connect();
     await session.idle();
     const id = session.state.workbook?.id ?? "";
-    expect(google.spreadsheetMetadata.get(id)).toContainEqual(expect.objectContaining({ metadataKey: ORGANIZATION_METADATA_KEY, metadataValue: ORGANIZATION_VERSION }));
+    expect(google.spreadsheetMetadata.get(id)).toContainEqual(
+      expect.objectContaining({ metadataKey: ORGANIZATION_METADATA_KEY, metadataValue: ORGANIZATION_VERSION }),
+    );
     expect(session.state.organization?.status).toBe("current");
     const batches = google.batches.length;
     await session.refresh();
@@ -666,7 +820,9 @@ describe("automatic spreadsheet organization", () => {
     const returning = make();
     await returning.connect();
     await returning.idle();
-    expect(google.batches.filter((batch) => batch.some((request) => request["updateCells"] !== undefined))).toHaveLength(1);
+    expect(
+      google.batches.filter((batch) => batch.some((request) => request["updateCells"] !== undefined)),
+    ).toHaveLength(1);
     const signIns = log.signIns;
     log.clock += 31_000;
     await returning.refreshIfNeeded();
@@ -685,10 +841,16 @@ describe("automatic spreadsheet organization", () => {
     const original = google.tab(id, VIEW_TAB);
     const tabs = google.workbooks.get(id);
     if (original === undefined || tabs === undefined) throw new Error("setup failed");
-    tabs.set(`${VIEW_TAB} (2)`, { ...original, id: 2000, developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })) });
+    tabs.set(`${VIEW_TAB} (2)`, {
+      ...original,
+      id: 2000,
+      developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })),
+    });
     original.developerMetadata = [];
     original.rows = legacyJanuarySummary(ISIN);
-    google.spreadsheetMetadata.set(id, [{ metadataKey: ORGANIZATION_METADATA_KEY, metadataValue: "3", location: { spreadsheet: true } }]);
+    google.spreadsheetMetadata.set(id, [
+      { metadataKey: ORGANIZATION_METADATA_KEY, metadataValue: "3", location: { spreadsheet: true } },
+    ]);
     const records = JSON.stringify(google.tab(id, LEDGER_TAB)?.rows);
     const returning = make();
     await returning.connect();
@@ -712,19 +874,28 @@ describe("automatic spreadsheet organization", () => {
     const sheet = syntheticSheet();
     const interpreted = interpretStatement(sheet);
     if (!interpreted.ok) throw new Error("setup failed");
-    await saved(session, { date: date("2026-01-31"), statement: interpreted.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await saved(session, {
+      date: date("2026-01-31"),
+      statement: interpreted.statement,
+      commands: OPENING,
+      source: { sheetName: "S", sheet },
+    });
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     const title = "Bank 2026-01-31";
     const original = google.tab(id, title);
     const tabs = google.workbooks.get(id);
     if (original === undefined || tabs === undefined) throw new Error("setup failed");
-    tabs.set(`${title} (2)`, { ...original, id: 2000, developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })) });
+    tabs.set(`${title} (2)`, {
+      ...original,
+      id: 2000,
+      developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })),
+    });
     original.developerMetadata = [];
     // The legacy original still contains the bank's raw strings and padding.
     original.rows = rawGrid(sheet).cells.map((row) => row.map((cell) => cell.value));
     const records = JSON.stringify(google.tab(id, LEDGER_TAB)?.rows);
-    const guards = [...google.namedRanges.get(id) ?? []];
+    const guards = [...(google.namedRanges.get(id) ?? [])];
     google.spreadsheetMetadata.set(id, []);
     const returning = make();
     await returning.connect();
@@ -732,7 +903,7 @@ describe("automatic spreadsheet organization", () => {
     expect(tabs.has(`${title} (2)`)).toBe(false);
     expect(google.tab(id, title)?.id).toBe(original.id);
     expect(JSON.stringify(google.tab(id, LEDGER_TAB)?.rows)).toBe(records);
-    expect([...google.namedRanges.get(id) ?? []]).toEqual(guards);
+    expect([...(google.namedRanges.get(id) ?? [])]).toEqual(guards);
     expect(returning.state.organization?.status).toBe("current");
   });
 
@@ -744,7 +915,9 @@ describe("automatic spreadsheet organization", () => {
     await session.expenses.refresh();
     const amounts = parseExpenseAmounts([100, 500, 100, null, null]);
     if (amounts === null) throw new Error("setup failed");
-    expect((await session.expenses.save({ date: date("2023-11-13"), amounts, expectedRevision: null })).status).toBe("saved");
+    expect((await session.expenses.save({ date: date("2023-11-13"), amounts, expectedRevision: null })).status).toBe(
+      "saved",
+    );
     google.faults.push({ match: /:batchUpdate$/u, status: 429 });
     const outcome = await session.expenses.save({ date: date("2023-11-14"), amounts, expectedRevision: null });
     expect(outcome).toMatchObject({ status: "saved", viewUpdated: false });
@@ -762,12 +935,16 @@ describe("automatic spreadsheet organization", () => {
     const { google, make } = world();
     let hold = false;
     let release: (() => void) | undefined;
-    const session = make({ rest: async (request) => {
-      if (hold && request.method === "POST" && request.body?.includes(ORGANIZATION_METADATA_KEY)) {
-        await new Promise<void>((resolve) => { release = resolve; });
-      }
-      return google.client(request);
-    } });
+    const session = make({
+      rest: async (request) => {
+        if (hold && request.method === "POST" && request.body?.includes(ORGANIZATION_METADATA_KEY)) {
+          await new Promise<void>((resolve) => {
+            release = resolve;
+          });
+        }
+        return google.client(request);
+      },
+    });
     await session.connect();
     await session.idle();
     await session.expenses.refresh();
@@ -780,7 +957,9 @@ describe("automatic spreadsheet organization", () => {
     for (let step = 0; step < 100 && release === undefined; step++) await Promise.resolve();
     const finish = release;
     if (finish === undefined) throw new Error("Organization did not reach its layout batch");
-    expect((await session.expenses.save({ date: date("2023-11-14"), amounts: second, expectedRevision: null })).status).toBe("saved");
+    expect(
+      (await session.expenses.save({ date: date("2023-11-14"), amounts: second, expectedRevision: null })).status,
+    ).toBe("saved");
     hold = false;
     finish();
     await organizing;
@@ -816,13 +995,31 @@ describe("the readable tabs and summary are written once after a run of saves", 
     const first = interpretStatement(januarySheet());
     const second = interpretStatement(februarySheet());
     if (!first.ok || !second.ok) throw new Error("setup failed");
-    await saved(session, { date: date("2026-01-31"), statement: first.statement, commands: OPENING, source: { sheetName: "S", sheet: januarySheet() } });
-    const keeps = planImport(session.state.ledger, second.statement).map((row): FundCommand => ({ isin: row.isin, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" }));
-    await saved(session, { date: date("2026-02-28"), statement: second.statement, commands: keeps, source: { sheetName: "S", sheet: februarySheet() } });
+    await saved(session, {
+      date: date("2026-01-31"),
+      statement: first.statement,
+      commands: OPENING,
+      source: { sheetName: "S", sheet: januarySheet() },
+    });
+    const keeps = planImport(session.state.ledger, second.statement).map((row): FundCommand => ({
+      isin: row.isin,
+      action: "Keep",
+      moneyIn: ZERO_CENTS,
+      moneyOut: ZERO_CENTS,
+      comment: "",
+    }));
+    await saved(session, {
+      date: date("2026-02-28"),
+      statement: second.statement,
+      commands: keeps,
+      source: { sheetName: "S", sheet: februarySheet() },
+    });
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     // Both months and the summary share one batch after the run of saves.
-    expect(google.batches.filter((batch) => batch.some((request) => request["updateCells"] !== undefined))).toHaveLength(1);
+    expect(
+      google.batches.filter((batch) => batch.some((request) => request["updateCells"] !== undefined)),
+    ).toHaveLength(1);
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
     expect(google.tab(id, "Bank 2026-02-28")?.rows.length).toBeGreaterThan(5);
   });
@@ -836,7 +1033,12 @@ describe("the readable tabs and summary are written once after a run of saves", 
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);
     if (!read.ok) throw new Error("setup failed");
-    await saved(session, { date: date("2026-01-31"), statement: read.statement, commands: OPENING, source: { sheetName: "S", sheet } });
+    await saved(session, {
+      date: date("2026-01-31"),
+      statement: read.statement,
+      commands: OPENING,
+      source: { sheetName: "S", sheet },
+    });
     await session.idle();
     const id = session.state.workbook?.id ?? "";
     expect(google.tab(id, "Bank 2026-01-31")?.rows ?? []).toHaveLength(0);
@@ -844,7 +1046,6 @@ describe("the readable tabs and summary are written once after a run of saves", 
     expect(google.tab(id, "Bank 2026-01-31")?.rows.length).toBeGreaterThan(5);
   });
 });
-
 
 describe("connection authentication resilience", () => {
   it("shares concurrent connection attempts and creates only one workbook", async () => {
@@ -889,37 +1090,52 @@ describe("connection authentication resilience", () => {
     await sessionA.expenses.refresh();
     const expenseAmounts = parseExpenseAmounts([100, 500, 100, null, null]);
     if (expenseAmounts === null) throw new Error("Invalid synthetic amounts");
-    expect((await sessionA.expenses.save({ date: date("2023-11-13"), amounts: expenseAmounts, expectedRevision: null })).status).toBe("saved");
+    expect(
+      (await sessionA.expenses.save({ date: date("2023-11-13"), amounts: expenseAmounts, expectedRevision: null }))
+        .status,
+    ).toBe("saved");
     expect(expenseCache.load()?.commands).toHaveLength(1);
     const original = sessionA.state.workbook;
     if (original === null) throw new Error("Missing original synthetic workbook");
     const accountB = new FakeGoogle();
     accountB.token = "synthetic-account-b-token";
-    const unrelated = world({ google: accountB }).make({ workbookIdentity: { title: "Unrelated synthetic workbook", propertyKey: "unrelated", propertyValue: "v1" } });
-    await unrelated.connect(); await unrelated.idle();
+    const unrelated = world({ google: accountB }).make({
+      workbookIdentity: { title: "Unrelated synthetic workbook", propertyKey: "unrelated", propertyValue: "v1" },
+    });
+    await unrelated.connect();
+    await unrelated.idle();
     const requestsFromB: string[] = [];
-    const session = make({ googleSession, expenseCache, rest: request => {
-      if (request.headers["Authorization"] !== `Bearer ${accountB.token}`) return google.client(request);
-      requestsFromB.push(request.url);
-      // The former workbook is shared with B: Google access alone must not select it.
-      return request.url.includes(`/spreadsheets/${original.id}`)
-        ? google.client({ ...request, headers: { ...request.headers, Authorization: `Bearer ${google.token}` } })
-        : accountB.client(request);
-    }, signIn: (_client, _scope, options) => {
-      expect(options).toEqual({ prompt: "select_account" });
-      expect(session.state.ledger.snapshots).toEqual([]);
-      expect(session.state.workbook).toBeNull();
-      expect(session.expenses.state.commands).toEqual([]);
-      expect(expenseCache.load()).toBeNull();
-      expect(store.data.get("foliodash.ledger.v1")).toBeUndefined();
-      expect(accessStore.data.size).toBe(0);
-      return Promise.resolve({ ok: true, accessToken: accountB.token, expiresInSeconds: 3600 });
-    } });
-    expect(await session.reconnect({ differentAccount: true })).toMatchObject({ status: "connected", created: true, statements: 0 });
+    const session = make({
+      googleSession,
+      expenseCache,
+      rest: (request) => {
+        if (request.headers["Authorization"] !== `Bearer ${accountB.token}`) return google.client(request);
+        requestsFromB.push(request.url);
+        // The former workbook is shared with B: Google access alone must not select it.
+        return request.url.includes(`/spreadsheets/${original.id}`)
+          ? google.client({ ...request, headers: { ...request.headers, Authorization: `Bearer ${google.token}` } })
+          : accountB.client(request);
+      },
+      signIn: (_client, _scope, options) => {
+        expect(options).toEqual({ prompt: "select_account" });
+        expect(session.state.ledger.snapshots).toEqual([]);
+        expect(session.state.workbook).toBeNull();
+        expect(session.expenses.state.commands).toEqual([]);
+        expect(expenseCache.load()).toBeNull();
+        expect(store.data.get("foliodash.ledger.v1")).toBeUndefined();
+        expect(accessStore.data.size).toBe(0);
+        return Promise.resolve({ ok: true, accessToken: accountB.token, expiresInSeconds: 3600 });
+      },
+    });
+    expect(await session.reconnect({ differentAccount: true })).toMatchObject({
+      status: "connected",
+      created: true,
+      statements: 0,
+    });
     await session.idle();
     expect(session.state.workbook?.id).not.toBe(original.id);
     expect(session.state.ledger.snapshots).toEqual([]);
-    expect(requestsFromB.some(url => url.includes(`/spreadsheets/${original.id}`))).toBe(false);
+    expect(requestsFromB.some((url) => url.includes(`/spreadsheets/${original.id}`))).toBe(false);
     expect(sessionA.state.ledger.snapshots).toHaveLength(1);
     expect(google.files.size).toBe(1);
   });
@@ -927,9 +1143,14 @@ describe("connection authentication resilience", () => {
   it("keeps the previous account hidden when choosing another account is cancelled", async () => {
     const { make, store } = world();
     const original = make();
-    await original.connect(); await saved(original, january); await original.idle();
+    await original.connect();
+    await saved(original, january);
+    await original.idle();
     const switching = make({ signIn: () => Promise.resolve({ ok: false, reason: "closed" }) });
-    expect(await switching.reconnect({ differentAccount: true })).toEqual({ status: "sign-in-failed", reason: "closed" });
+    expect(await switching.reconnect({ differentAccount: true })).toEqual({
+      status: "sign-in-failed",
+      reason: "closed",
+    });
     expect(switching.state.workbook).toBeNull();
     expect(switching.state.ledger.snapshots).toEqual([]);
     expect(store.data.size).toBe(0);
@@ -940,14 +1161,31 @@ describe("connection authentication resilience", () => {
     let blocked = false;
     let release: (() => void) | undefined;
     let entered: (() => void) | undefined;
-    const barrier = new Promise<void>(resolve => { release = resolve; });
-    const started = new Promise<void>(resolve => { entered = resolve; });
+    const barrier = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const started = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
     let cancelling = false;
-    const session = make({ rest: async request => {
-      if (blocked && request.method === "GET" && request.url.includes("/v4/spreadsheets/")) { entered?.(); await barrier; }
-      return google.client(request);
-    }, signIn: () => Promise.resolve(cancelling ? { ok: false, reason: "closed" } : { ok: true, accessToken: google.token, expiresInSeconds: 3600 }) });
-    await session.connect(); await saved(session, january); await session.idle();
+    const session = make({
+      rest: async (request) => {
+        if (blocked && request.method === "GET" && request.url.includes("/v4/spreadsheets/")) {
+          entered?.();
+          await barrier;
+        }
+        return google.client(request);
+      },
+      signIn: () =>
+        Promise.resolve(
+          cancelling
+            ? { ok: false, reason: "closed" }
+            : { ok: true, accessToken: google.token, expiresInSeconds: 3600 },
+        ),
+    });
+    await session.connect();
+    await saved(session, january);
+    await session.idle();
     blocked = true;
     const refresh = session.refresh();
     await started;
@@ -963,8 +1201,16 @@ describe("connection authentication resilience", () => {
   it("does not submit a suspended old-account save after account switching", async () => {
     const { make, google } = world();
     let cancelling = false;
-    const session = make({ signIn: () => Promise.resolve(cancelling ? { ok: false, reason: "closed" } : { ok: true, accessToken: google.token, expiresInSeconds: 3600 }) });
-    await session.connect(); await session.idle();
+    const session = make({
+      signIn: () =>
+        Promise.resolve(
+          cancelling
+            ? { ok: false, reason: "closed" }
+            : { ok: true, accessToken: google.token, expiresInSeconds: 3600 },
+        ),
+    });
+    await session.connect();
+    await session.idle();
     const before = google.calls.length;
     const saving = saved(session, january);
     cancelling = true;
@@ -994,11 +1240,13 @@ describe("connection authentication resilience", () => {
   it("survives a throwing sign-in provider and allows another attempt", async () => {
     const { make } = world();
     let attempts = 0;
-    const session = make({ signIn: () => {
-      attempts++;
-      if (attempts === 1) throw new Error("unavailable");
-      return Promise.resolve({ ok: false, reason: "closed" });
-    } });
+    const session = make({
+      signIn: () => {
+        attempts++;
+        if (attempts === 1) throw new Error("unavailable");
+        return Promise.resolve({ ok: false, reason: "closed" });
+      },
+    });
     expect(await session.connect()).toEqual({ status: "sign-in-failed", reason: "unavailable" });
     expect(await session.connect()).toEqual({ status: "sign-in-failed", reason: "closed" });
   });
@@ -1006,7 +1254,12 @@ describe("connection authentication resilience", () => {
   it("does not accept a sign-in that completes after forgetting the device", async () => {
     const { make } = world();
     let complete: ((result: SignInResult) => void) | undefined;
-    const session = make({ signIn: () => new Promise((resolve) => { complete = resolve; }) });
+    const session = make({
+      signIn: () =>
+        new Promise((resolve) => {
+          complete = resolve;
+        }),
+    });
     const connection = session.connect();
     session.forget();
     complete?.({ ok: true, accessToken: "synthetic-token", expiresInSeconds: 3600 });
@@ -1014,7 +1267,6 @@ describe("connection authentication resilience", () => {
     expect(session.state.mode).toBe("signed-out");
   });
 });
-
 
 describe("persistent Google access and two-device freshness", () => {
   it("reuses the tab session after reload and refreshes another device's saved history without signing in", async () => {
@@ -1090,17 +1342,23 @@ describe("out-of-order Google reads", () => {
     let delayNext = false;
     let entered: (() => void) | undefined;
     let release: (() => void) | undefined;
-    const reading = new Promise<void>(resolve => { entered = resolve; });
-    const gate = new Promise<void>(resolve => { release = resolve; });
-    const session = make({ rest: async request => {
-      const response = await google.client(request);
-      if (delayNext && request.method === "GET" && request.url.includes("/values/")) {
-        delayNext = false;
-        entered?.();
-        await gate;
-      }
-      return response;
-    } });
+    const reading = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const session = make({
+      rest: async (request) => {
+        const response = await google.client(request);
+        if (delayNext && request.method === "GET" && request.url.includes("/values/")) {
+          delayNext = false;
+          entered?.();
+          await gate;
+        }
+        return response;
+      },
+    });
     await session.connect();
     await session.idle();
     delayNext = true;
@@ -1117,17 +1375,23 @@ describe("out-of-order Google reads", () => {
     let delayNext = false;
     let entered: (() => void) | undefined;
     let release: (() => void) | undefined;
-    const reading = new Promise<void>((resolve) => { entered = resolve; });
-    const gate = new Promise<void>((resolve) => { release = resolve; });
-    const session = make({ rest: async (request) => {
-      const response = await google.client(request);
-      if (delayNext && request.method === "GET" && request.url.includes("/values/")) {
-        delayNext = false;
-        entered?.();
-        await gate;
-      }
-      return response;
-    } });
+    const reading = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const session = make({
+      rest: async (request) => {
+        const response = await google.client(request);
+        if (delayNext && request.method === "GET" && request.url.includes("/values/")) {
+          delayNext = false;
+          entered?.();
+          await gate;
+        }
+        return response;
+      },
+    });
     await session.connect();
     await saved(session, january);
     await session.idle();
@@ -1146,7 +1410,6 @@ describe("out-of-order Google reads", () => {
   });
 });
 
-
 describe("a remembered connection that stays connected", () => {
   const TOKEN_KEY = "foliodash.google-session.v1";
   const HOUR = 3_600_000;
@@ -1158,11 +1421,13 @@ describe("a remembered connection that stays connected", () => {
     const googleSession = createGoogleSessionStore(() => storage);
     const accountHint = createAccountHintStore(() => storage, "hint");
     const asked: (SignInOptions | undefined)[] = [];
-    const answering = (answer: (index: number) => SignInResult) => (_client: string, _scope: string, options?: SignInOptions): Promise<SignInResult> => {
-      w.log.signIns++;
-      asked.push(options);
-      return Promise.resolve(answer(asked.length - 1));
-    };
+    const answering =
+      (answer: (index: number) => SignInResult) =>
+      (_client: string, _scope: string, options?: SignInOptions): Promise<SignInResult> => {
+        w.log.signIns++;
+        asked.push(options);
+        return Promise.resolve(answer(asked.length - 1));
+      };
     const granted = (): SignInResult => ({ ok: true, accessToken: w.google.token, expiresInSeconds: 3600 });
     return { ...w, storage, googleSession, accountHint, asked, answering, granted };
   }
@@ -1180,7 +1445,11 @@ describe("a remembered connection that stays connected", () => {
     await connectedWithHistory(b);
     expect(b.storage.data.get("hint")).toContain("person@example.test");
     b.log.clock += 2 * HOUR;
-    const reopened = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, signIn: b.answering(b.granted) });
+    const reopened = b.make({
+      googleSession: b.googleSession,
+      accountHint: b.accountHint,
+      signIn: b.answering(b.granted),
+    });
     // The saved copy opens at once, and the connection says what the next tap will do.
     expect(reopened.state).toMatchObject({ mode: "device-copy", connection: "waiting" });
     expect(reopened.state.ledger.snapshots).toHaveLength(1);
@@ -1198,7 +1467,11 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     await connectedWithHistory(b);
     b.log.clock += 5 * 60_000;
-    const reopened = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, signIn: b.answering(b.granted) });
+    const reopened = b.make({
+      googleSession: b.googleSession,
+      accountHint: b.accountHint,
+      signIn: b.answering(b.granted),
+    });
     expect(reopened.needsRenewal()).toBe(false);
     await reopened.refreshIfNeeded();
     expect(reopened.state).toMatchObject({ mode: "online", connection: "connected" });
@@ -1209,13 +1482,20 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     let finish: ((result: SignInResult) => void) | undefined;
     let gate: Promise<SignInResult> | null = null;
-    const session = b.make({ signIn: () => { b.log.signIns++; return gate ?? Promise.resolve(b.granted()); } });
+    const session = b.make({
+      signIn: () => {
+        b.log.signIns++;
+        return gate ?? Promise.resolve(b.granted());
+      },
+    });
     await session.connect();
     await session.idle();
     // Six minutes of access left: inside the ten-minute window, outside the eight needed to save.
     b.log.clock += 3_480_000 - 360_000;
     expect(session.needsRenewal()).toBe(true);
-    gate = new Promise((resolve) => { finish = resolve; });
+    gate = new Promise((resolve) => {
+      finish = resolve;
+    });
     const renewing = session.renewFromGesture({ sync: false });
     expect(session.state.connection).toBe("connected");
     expect(session.needsRenewal()).toBe(false);
@@ -1239,7 +1519,11 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     await connectedWithHistory(b);
     b.log.clock += 2 * HOUR;
-    const reopened = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, signIn: b.answering(() => ({ ok: false, reason: "closed" })) });
+    const reopened = b.make({
+      googleSession: b.googleSession,
+      accountHint: b.accountHint,
+      signIn: b.answering(() => ({ ok: false, reason: "closed" })),
+    });
     expect(await reopened.renewFromGesture({ sync: true })).toBe(false);
     expect(reopened.state.connection).toBe("waiting");
     expect(reopened.needsRenewal()).toBe(false);
@@ -1258,7 +1542,11 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     await connectedWithHistory(b);
     b.log.clock += 2 * HOUR;
-    const reopened = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, signIn: b.answering(() => ({ ok: false, reason: "blocked" })) });
+    const reopened = b.make({
+      googleSession: b.googleSession,
+      accountHint: b.accountHint,
+      signIn: b.answering(() => ({ ok: false, reason: "blocked" })),
+    });
     expect(await reopened.renewFromGesture({ sync: true })).toBe(false);
     expect(reopened.state.connection).toBe("reconnect");
     expect(reopened.needsRenewal()).toBe(false);
@@ -1269,7 +1557,10 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     await connectedWithHistory(b);
     b.log.clock += 2 * HOUR;
-    const reopened = b.make({ googleSession: b.googleSession, signIn: b.answering(() => ({ ok: false, reason: "unavailable" })) });
+    const reopened = b.make({
+      googleSession: b.googleSession,
+      signIn: b.answering(() => ({ ok: false, reason: "unavailable" })),
+    });
     await reopened.renewFromGesture({ sync: true });
     b.log.clock += 31_000;
     await reopened.renewFromGesture({ sync: true });
@@ -1282,7 +1573,11 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     await connectedWithHistory(b);
     b.google.account = "other@example.test";
-    const session = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, signIn: b.answering(b.granted) });
+    const session = b.make({
+      googleSession: b.googleSession,
+      accountHint: b.accountHint,
+      signIn: b.answering(b.granted),
+    });
     await session.reconnect({ differentAccount: true });
     await session.idle();
     expect(b.asked[0]).toEqual({ prompt: "select_account" });
@@ -1302,7 +1597,10 @@ describe("a remembered connection that stays connected", () => {
 
     b.log.clock += 3_480_000 - 300_000;
     const calls = b.google.calls.length;
-    const refusing = b.make({ googleSession: b.googleSession, signIn: b.answering(() => ({ ok: false, reason: "closed" })) });
+    const refusing = b.make({
+      googleSession: b.googleSession,
+      signIn: b.answering(() => ({ ok: false, reason: "closed" })),
+    });
     expect(refusing.state.ledger.snapshots).toHaveLength(2);
     const march: RecordRequest = { date: date("2026-03-31"), statement: statement(1200), commands: [keep] };
     const refused = await saved(refusing, march);
@@ -1317,7 +1615,13 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     const session = await connectedWithHistory(b);
     b.google.faults.push({ match: /./u, status: 401 });
-    const newer = { clientId: "client", workbookId: session.state.workbook?.id ?? "", scope: "https://www.googleapis.com/auth/drive.file", accessToken: "newer-token", validUntil: b.log.clock + 3_000_000 };
+    const newer = {
+      clientId: "client",
+      workbookId: session.state.workbook?.id ?? "",
+      scope: "https://www.googleapis.com/auth/drive.file",
+      accessToken: "newer-token",
+      validUntil: b.log.clock + 3_000_000,
+    };
     b.googleSession.save(newer);
     await session.refresh();
     expect(b.googleSession.load("client", newer.workbookId, b.log.clock)).toEqual(newer);
@@ -1330,7 +1634,13 @@ describe("a remembered connection that stays connected", () => {
     const reopened = b.make({ googleSession: b.googleSession, signIn: b.answering(b.granted) });
     expect(reopened.state.connection).toBe("waiting");
     expect(reopened.adoptStoredAccess()).toBe(false);
-    b.googleSession.save({ clientId: "client", workbookId: session.state.workbook?.id ?? "", scope: "https://www.googleapis.com/auth/drive.file", accessToken: b.google.token, validUntil: b.log.clock + 3_000_000 });
+    b.googleSession.save({
+      clientId: "client",
+      workbookId: session.state.workbook?.id ?? "",
+      scope: "https://www.googleapis.com/auth/drive.file",
+      accessToken: b.google.token,
+      validUntil: b.log.clock + 3_000_000,
+    });
     expect(reopened.adoptStoredAccess()).toBe(true);
     expect(reopened.state.connection).toBeUndefined();
     expect(reopened.adoptStoredAccess()).toBe(false);
@@ -1345,7 +1655,18 @@ describe("a remembered connection that stays connected", () => {
     b.log.clock += 2 * HOUR;
     let elsewhere = true;
     const events: string[] = [];
-    const coordination: RenewalCoordination = { heldElsewhere: () => elsewhere, claim: () => { events.push("claim"); }, release: () => { events.push("release"); }, announceForgotten: () => { events.push("forgotten"); } };
+    const coordination: RenewalCoordination = {
+      heldElsewhere: () => elsewhere,
+      claim: () => {
+        events.push("claim");
+      },
+      release: () => {
+        events.push("release");
+      },
+      announceForgotten: () => {
+        events.push("forgotten");
+      },
+    };
     const reopened = b.make({ googleSession: b.googleSession, coordination, signIn: b.answering(b.granted) });
     expect(reopened.needsRenewal()).toBe(false);
     expect(await reopened.renewFromGesture({ sync: true })).toBe(false);
@@ -1359,7 +1680,14 @@ describe("a remembered connection that stays connected", () => {
     const b = browser();
     await connectedWithHistory(b);
     const events: string[] = [];
-    const coordination: RenewalCoordination = { heldElsewhere: () => false, claim: () => undefined, release: () => undefined, announceForgotten: () => { events.push("forgotten"); } };
+    const coordination: RenewalCoordination = {
+      heldElsewhere: () => false,
+      claim: () => undefined,
+      release: () => undefined,
+      announceForgotten: () => {
+        events.push("forgotten");
+      },
+    };
     const here = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, coordination });
     await here.refresh();
     here.forget();
@@ -1375,7 +1703,14 @@ describe("a remembered connection that stays connected", () => {
   it("does not revoke access or announce when a device is forgotten from another window", async () => {
     const b = browser();
     const events: string[] = [];
-    const coordination: RenewalCoordination = { heldElsewhere: () => false, claim: () => undefined, release: () => undefined, announceForgotten: () => { events.push("forgotten"); } };
+    const coordination: RenewalCoordination = {
+      heldElsewhere: () => false,
+      claim: () => undefined,
+      release: () => undefined,
+      announceForgotten: () => {
+        events.push("forgotten");
+      },
+    };
     const session = b.make({ googleSession: b.googleSession, accountHint: b.accountHint, coordination });
     await session.connect();
     await session.idle();
@@ -1398,13 +1733,37 @@ describe("earlier history and recovery through the session", () => {
     const insert = session.save.backfill?.bind(session.save);
     const recover = session.save.recoverRevision?.bind(session.save);
     if (insert === undefined || recover === undefined) throw new Error("missing capability");
-    expect((await insert([{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], [keep], session.save.newCommandId(), januaryRevision, workbookId)).status).toBe("recorded");
+    expect(
+      (
+        await insert(
+          [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+          [keep],
+          session.save.newCommandId(),
+          januaryRevision,
+          workbookId,
+        )
+      ).status,
+    ).toBe("recorded");
     const decemberRevision = session.state.ledger.revision;
-    expect((await insert([{ date: date("2025-11-30"), statement: statement(1000), commands: [start] }], [keep], session.save.newCommandId(), decemberRevision, workbookId)).status).toBe("recorded");
-    expect((await recover(decemberRevision, session.save.newCommandId(), session.state.ledger.revision, workbookId)).status).toBe("recorded");
+    expect(
+      (
+        await insert(
+          [{ date: date("2025-11-30"), statement: statement(1000), commands: [start] }],
+          [keep],
+          session.save.newCommandId(),
+          decemberRevision,
+          workbookId,
+        )
+      ).status,
+    ).toBe("recorded");
+    expect(
+      (await recover(decemberRevision, session.save.newCommandId(), session.state.ledger.revision, workbookId)).status,
+    ).toBe("recorded");
     expect(session.state.recoveryTarget).toBe(januaryRevision);
-    expect((await recover(januaryRevision, session.save.newCommandId(), session.state.ledger.revision, workbookId)).status).toBe("recorded");
-    expect(session.state.ledger.snapshots.map(snapshot => snapshot.date)).toEqual(["2026-01-31"]);
+    expect(
+      (await recover(januaryRevision, session.save.newCommandId(), session.state.ledger.revision, workbookId)).status,
+    ).toBe("recorded");
+    expect(session.state.ledger.snapshots.map((snapshot) => snapshot.date)).toEqual(["2026-01-31"]);
     await session.idle();
   });
 
@@ -1417,7 +1776,13 @@ describe("earlier history and recovery through the session", () => {
     const insert = session.save.backfill?.bind(session.save);
     if (insert === undefined) throw new Error("missing capability");
     const requestsBefore = google.requests.length;
-    const result = await insert([{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], [keep], session.save.newCommandId(), session.state.ledger.revision, "another-workbook");
+    const result = await insert(
+      [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+      [keep],
+      session.save.newCommandId(),
+      session.state.ledger.revision,
+      "another-workbook",
+    );
     expect(result.status).toBe("stale");
     expect((await session.save.check("some-command", "another-workbook")).status).toBe("cannot-tell");
     expect(google.requests.length).toBe(requestsBefore);
@@ -1433,15 +1798,26 @@ describe("earlier history and recovery through the session", () => {
     const recovery = session.save.recoverRevision?.bind(session.save);
     if (operation === undefined || recovery === undefined) throw new Error("missing capability");
     const earlier = [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }];
-    const inserted = await operation(earlier, [keep], session.save.newCommandId(), original.revision, session.state.workbook?.id ?? "");
+    const inserted = await operation(
+      earlier,
+      [keep],
+      session.save.newCommandId(),
+      original.revision,
+      session.state.workbook?.id ?? "",
+    );
     expect(inserted.status).toBe("recorded");
-    expect(session.state.ledger.snapshots.map(snapshot => snapshot.date)).toEqual(["2025-12-31", "2026-01-31"]);
+    expect(session.state.ledger.snapshots.map((snapshot) => snapshot.date)).toEqual(["2025-12-31", "2026-01-31"]);
     expect(session.state.recoveryTarget).toBe(original.revision);
     expect((await saved(session, february)).status).toBe("recorded");
     const reloaded = make();
     await reloaded.connect();
     expect(reloaded.state.recoveryTarget).toBe(original.revision);
-    const restored = await recovery(original.revision, session.save.newCommandId(), session.state.ledger.revision, session.state.workbook?.id ?? "");
+    const restored = await recovery(
+      original.revision,
+      session.save.newCommandId(),
+      session.state.ledger.revision,
+      session.state.workbook?.id ?? "",
+    );
     expect(restored.status).toBe("recorded");
     expect(session.state.ledger.snapshots).toEqual(original.snapshots);
     expect(session.state.recoveryTarget).toBeNull();
@@ -1459,7 +1835,17 @@ describe("earlier history and recovery through the session", () => {
     if (insert === undefined) throw new Error("missing capability");
     const commandId = session.save.newCommandId();
     google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
-    expect((await insert([{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], [keep], commandId, session.state.ledger.revision, session.state.workbook?.id ?? "")).status).toBe("unknown");
+    expect(
+      (
+        await insert(
+          [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+          [keep],
+          commandId,
+          session.state.ledger.revision,
+          session.state.workbook?.id ?? "",
+        )
+      ).status,
+    ).toBe("unknown");
     const reloaded = make();
     expect(reloaded.state.pendingRevision).toBe(commandId);
     await reloaded.connect();
@@ -1476,10 +1862,16 @@ describe("earlier history and recovery through the session", () => {
     const { google, make } = world();
     let intercept = false;
     const delayed: { request?: Parameters<SessionDeps["rest"]>[0] } = {};
-    const session = make({ rest: async request => {
-      if (intercept && request.body?.includes('"appendCells"')) { intercept = false; delayed.request = request; throw new Error("lost response"); }
-      return google.client(request);
-    } });
+    const session = make({
+      rest: async (request) => {
+        if (intercept && request.body?.includes('"appendCells"')) {
+          intercept = false;
+          delayed.request = request;
+          throw new Error("lost response");
+        }
+        return google.client(request);
+      },
+    });
     await session.connect();
     await saved(session, january);
     await session.idle();
@@ -1487,7 +1879,17 @@ describe("earlier history and recovery through the session", () => {
     if (insert === undefined) throw new Error("missing capability");
     const id = session.save.newCommandId();
     intercept = true;
-    expect((await insert([{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], [keep], id, session.state.ledger.revision, session.state.workbook?.id ?? "")).status).toBe("unknown");
+    expect(
+      (
+        await insert(
+          [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+          [keep],
+          id,
+          session.state.ledger.revision,
+          session.state.workbook?.id ?? "",
+        )
+      ).status,
+    ).toBe("unknown");
     expect((await session.save.check(id)).status).toBe("not-recorded");
     expect(session.state.pendingRevision).toBeNull();
     if (delayed.request === undefined) throw new Error("the delayed request was not captured");
@@ -1505,7 +1907,17 @@ describe("earlier history and recovery through the session", () => {
     if (insert === undefined) throw new Error("missing capability");
     const id = session.save.newCommandId();
     google.faults.push({ match: /:batchUpdate$/u, network: true });
-    expect((await insert([{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], [keep], id, session.state.ledger.revision, session.state.workbook?.id ?? "")).status).toBe("unknown");
+    expect(
+      (
+        await insert(
+          [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+          [keep],
+          id,
+          session.state.ledger.revision,
+          session.state.workbook?.id ?? "",
+        )
+      ).status,
+    ).toBe("unknown");
     google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
     expect((await session.save.check(id)).status).toBe("cannot-tell");
     expect(session.state.pendingRevision).toBe(id);

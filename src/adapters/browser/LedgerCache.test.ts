@@ -5,7 +5,12 @@ import { type DeviceCopy, type KeyValueStore, createLedgerCache } from "./Ledger
 
 const memory = (): KeyValueStore & { data: Map<string, string> } => {
   const data = new Map<string, string>();
-  return { data, getItem: (key) => data.get(key) ?? null, setItem: (key, value) => void data.set(key, value), removeItem: (key) => void data.delete(key) };
+  return {
+    data,
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => void data.set(key, value),
+    removeItem: (key) => void data.delete(key),
+  };
 };
 const blocked = (): KeyValueStore => {
   throw new Error("blocked");
@@ -57,9 +62,20 @@ describe("ledger cache", () => {
 
   it.each([
     ["not JSON", "{"],
-    ["the wrong version", JSON.stringify({ version: 99, workbook: { id: "a", url: "b" }, ledger: EMPTY_LEDGER, syncedAt: 1 })],
+    [
+      "the wrong version",
+      JSON.stringify({ version: 99, workbook: { id: "a", url: "b" }, ledger: EMPTY_LEDGER, syncedAt: 1 }),
+    ],
     ["no workbook", JSON.stringify({ version: 1, ledger: EMPTY_LEDGER, syncedAt: 1 })],
-    ["a ledger that breaks the rules", JSON.stringify({ version: 1, workbook: { id: "a", url: "b" }, ledger: { revision: "r", funds: [{ isin: "BAD" }], snapshots: [] }, syncedAt: 1 })],
+    [
+      "a ledger that breaks the rules",
+      JSON.stringify({
+        version: 1,
+        workbook: { id: "a", url: "b" },
+        ledger: { revision: "r", funds: [{ isin: "BAD" }], snapshots: [] },
+        syncedAt: 1,
+      }),
+    ],
     ["no sync time", JSON.stringify({ version: 1, workbook: { id: "a", url: "b" }, ledger: EMPTY_LEDGER })],
   ])("throws away a stored copy that is %s, and removes it", (_name, text) => {
     const store = memory();

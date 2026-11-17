@@ -1,6 +1,12 @@
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { type HistoryStatement, parseHistory, planAttach, planHistory, runHistory } from "../../../../applications/HistoryImport";
+import {
+  type HistoryStatement,
+  parseHistory,
+  planAttach,
+  planHistory,
+  runHistory,
+} from "../../../../applications/HistoryImport";
 import { formatDateLong } from "../../../../core/IsoDate";
 import type { LedgerState } from "../../../../core/Ledger";
 import type { RecordResult, RemoteSave } from "../../../../applications/ImportModel";
@@ -9,12 +15,28 @@ type Phase =
   | { readonly name: "idle" }
   | { readonly name: "reading" }
   | { readonly name: "problem"; readonly message: string }
-  | { readonly name: "ready"; readonly statements: readonly HistoryStatement[]; readonly alreadyRecorded: number; readonly toSave: readonly HistoryStatement[] }
+  | {
+      readonly name: "ready";
+      readonly statements: readonly HistoryStatement[];
+      readonly alreadyRecorded: number;
+      readonly toSave: readonly HistoryStatement[];
+    }
   | { readonly name: "attaching" }
-  | { readonly name: "attach-stopped"; readonly failure: RecordResult; readonly commandId: string; readonly statements: readonly HistoryStatement[] }
+  | {
+      readonly name: "attach-stopped";
+      readonly failure: RecordResult;
+      readonly commandId: string;
+      readonly statements: readonly HistoryStatement[];
+    }
   | { readonly name: "saving"; readonly saved: number; readonly total: number }
   | { readonly name: "done"; readonly saved: number; readonly total: number; readonly attached: number }
-  | { readonly name: "stopped"; readonly saved: number; readonly statement: HistoryStatement; readonly failure: RecordResult; readonly statements: readonly HistoryStatement[] }
+  | {
+      readonly name: "stopped";
+      readonly saved: number;
+      readonly statement: HistoryStatement;
+      readonly failure: RecordResult;
+      readonly statements: readonly HistoryStatement[];
+    }
   | { readonly name: "checked"; readonly message: string };
 
 function describeFailure(failure: RecordResult): string {
@@ -55,7 +77,11 @@ export function HistoryView(props: {
   function plan(statements: readonly HistoryStatement[], ledger: LedgerState): void {
     setCheckMessage("");
     const planned = planHistory(ledger, statements);
-    setPhase(planned.ok ? { name: "ready", statements, alreadyRecorded: planned.alreadyRecorded, toSave: planned.toSave } : { name: "problem", message: planned.message });
+    setPhase(
+      planned.ok
+        ? { name: "ready", statements, alreadyRecorded: planned.alreadyRecorded, toSave: planned.toSave }
+        : { name: "problem", message: planned.message },
+    );
   }
 
   async function choose(file: File): Promise<void> {
@@ -74,7 +100,11 @@ export function HistoryView(props: {
     else plan(parsed.statements, props.ledger);
   }
 
-  async function start(save: RemoteSave, statements: readonly HistoryStatement[], toSave: readonly HistoryStatement[]): Promise<void> {
+  async function start(
+    save: RemoteSave,
+    statements: readonly HistoryStatement[],
+    toSave: readonly HistoryStatement[],
+  ): Promise<void> {
     let latest = props.ledger;
     let attached = 0;
     try {
@@ -83,7 +113,11 @@ export function HistoryView(props: {
         setPhase({ name: "attaching" });
         const have = await save.statementDates();
         if (have === null) {
-          setPhase({ name: "problem", message: "Your Google Sheet could not be read to check which bank statements are stored, so nothing was changed. Try again." });
+          setPhase({
+            name: "problem",
+            message:
+              "Your Google Sheet could not be read to check which bank statements are stored, so nothing was changed. Try again.",
+          });
           return;
         }
         const items = planAttach(props.ledger, statements, have);
@@ -93,7 +127,10 @@ export function HistoryView(props: {
           try {
             attachedResult = await save.attach(items, commandId, props.ledger.revision);
           } catch {
-            attachedResult = { status: "unknown", message: "The attachment response was lost. Check what happened before continuing." };
+            attachedResult = {
+              status: "unknown",
+              message: "The attachment response was lost. Check what happened before continuing.",
+            };
           }
           if (attachedResult.status !== "recorded") {
             setPhase({ name: "attach-stopped", failure: attachedResult, commandId, statements });
@@ -108,10 +145,25 @@ export function HistoryView(props: {
       const run = await runHistory<RecordResult>(
         async (item, expectedRevision) => {
           try {
-            const result = await save.record({ date: item.date, statement: item.statement, commands: item.commands, ...(item.source === undefined ? {} : { source: item.source }) }, item.commandId, expectedRevision);
+            const result = await save.record(
+              {
+                date: item.date,
+                statement: item.statement,
+                commands: item.commands,
+                ...(item.source === undefined ? {} : { source: item.source }),
+              },
+              item.commandId,
+              expectedRevision,
+            );
             return result.status === "recorded" ? { ok: true, ledger: result.ledger } : { ok: false, failure: result };
           } catch {
-            return { ok: false, failure: { status: "unknown", message: "The save response was lost. Check what happened before continuing." } };
+            return {
+              ok: false,
+              failure: {
+                status: "unknown",
+                message: "The save response was lost. Check what happened before continuing.",
+              },
+            };
           }
         },
         latest,
@@ -122,14 +174,32 @@ export function HistoryView(props: {
       );
       latest = run.ledger;
       props.onLedger(run.ledger);
-      setPhase(run.stopped === null ? { name: "done", saved: run.saved, total: toSave.length, attached } : { name: "stopped", saved: run.saved, statement: run.stopped.statement, failure: run.stopped.failure, statements });
+      setPhase(
+        run.stopped === null
+          ? { name: "done", saved: run.saved, total: toSave.length, attached }
+          : {
+              name: "stopped",
+              saved: run.saved,
+              statement: run.stopped.statement,
+              failure: run.stopped.failure,
+              statements,
+            },
+      );
     } catch {
       props.onLedger(latest);
-      setPhase({ name: "problem", message: "Something went wrong. Nothing more was sent. Reload, connect again, and choose the file again to resume." });
+      setPhase({
+        name: "problem",
+        message:
+          "Something went wrong. Nothing more was sent. Reload, connect again, and choose the file again to resume.",
+      });
     }
   }
 
-  async function checkAttach(save: RemoteSave, commandId: string, statements: readonly HistoryStatement[]): Promise<void> {
+  async function checkAttach(
+    save: RemoteSave,
+    commandId: string,
+    statements: readonly HistoryStatement[],
+  ): Promise<void> {
     if (checking) return;
     setChecking(true);
     setCheckMessage("Checking your spreadsheet without writing…");
@@ -140,9 +210,14 @@ export function HistoryView(props: {
         plan(statements, result.ledger);
       } else if (result.status === "not-recorded") {
         setCheckMessage("");
-        setPhase({ name: "checked", message: "The spreadsheet shows the bank statements were not attached. Choose the file again to try again." });
+        setPhase({
+          name: "checked",
+          message: "The spreadsheet shows the bank statements were not attached. Choose the file again to try again.",
+        });
       } else if (result.status === "saved-not-reloaded") {
-        setCheckMessage("The bank statements were attached, but the ledger could not be read back. Check again before continuing.");
+        setCheckMessage(
+          "The bank statements were attached, but the ledger could not be read back. Check again before continuing.",
+        );
       } else {
         setCheckMessage(result.message);
       }
@@ -153,7 +228,11 @@ export function HistoryView(props: {
     }
   }
 
-  async function check(save: RemoteSave, statement: HistoryStatement, statements: readonly HistoryStatement[]): Promise<void> {
+  async function check(
+    save: RemoteSave,
+    statement: HistoryStatement,
+    statements: readonly HistoryStatement[],
+  ): Promise<void> {
     if (checking) return;
     setChecking(true);
     setCheckMessage("Checking your spreadsheet without writing…");
@@ -164,9 +243,14 @@ export function HistoryView(props: {
         plan(statements, result.ledger);
       } else if (result.status === "not-recorded") {
         setCheckMessage("");
-        setPhase({ name: "checked", message: "The spreadsheet shows that statement was not recorded. Choose the file again to resume from there." });
+        setPhase({
+          name: "checked",
+          message: "The spreadsheet shows that statement was not recorded. Choose the file again to resume from there.",
+        });
       } else if (result.status === "saved-not-reloaded") {
-        setCheckMessage("That statement was recorded, but the ledger could not be read back. Check again before continuing.");
+        setCheckMessage(
+          "That statement was recorded, but the ledger could not be read back. Check again before continuing.",
+        );
       } else {
         setCheckMessage(result.message);
       }
@@ -178,13 +262,24 @@ export function HistoryView(props: {
   }
 
   const busy = phase.name === "reading" || phase.name === "saving" || phase.name === "attaching" || checking;
-  const uncertain = (phase.name === "stopped" || phase.name === "attach-stopped") && (phase.failure.status === "unknown" || phase.failure.status === "saved-not-reloaded");
+  const uncertain =
+    (phase.name === "stopped" || phase.name === "attach-stopped") &&
+    (phase.failure.status === "unknown" || phase.failure.status === "saved-not-reloaded");
   const locked = phase.name === "saving" || phase.name === "attaching" || checking || uncertain;
-  useEffect(() => { props.onWorkflowLock?.(locked); }, [locked, props.onWorkflowLock]);
-  useEffect(() => () => { props.onWorkflowLock?.(false); }, [props.onWorkflowLock]);
+  useEffect(() => {
+    props.onWorkflowLock?.(locked);
+  }, [locked, props.onWorkflowLock]);
+  useEffect(
+    () => () => {
+      props.onWorkflowLock?.(false);
+    },
+    [props.onWorkflowLock],
+  );
   return (
     <section aria-labelledby="history-heading" class="import">
-      <h2 id="history-heading" class="card-title">Import history</h2>
+      <h2 id="history-heading" class="card-title">
+        Import history
+      </h2>
       <p>
         Saves a whole history file to your connected spreadsheet, one statement at a time, in order. Each statement is
         checked with the same rules as a single import, and each save is read back. It can be repeated safely: it
@@ -213,30 +308,44 @@ export function HistoryView(props: {
 
       {phase.name === "problem" && (
         <div class="review-problem" role="alert">
-          <h3 ref={resultHeading} tabIndex={-1}>This cannot be imported</h3>
+          <h3 ref={resultHeading} tabIndex={-1}>
+            This cannot be imported
+          </h3>
           <p>{phase.message}</p>
         </div>
       )}
       {phase.name === "ready" && (
         <div class="review-adjustments" role="status">
-          <h3 ref={resultHeading} tabIndex={-1}>Ready</h3>
+          <h3 ref={resultHeading} tabIndex={-1}>
+            Ready
+          </h3>
           <p>
-            {fileName} holds {phase.statements.length} statements, from {formatDateLong(phase.statements[0]?.date as never)} to{" "}
-            {formatDateLong(phase.statements[phase.statements.length - 1]?.date as never)}. Your spreadsheet already holds{" "}
-            {phase.alreadyRecorded}; {phase.toSave.length} new {phase.toSave.length === 1 ? "month" : "months"} will be saved.
+            {fileName} holds {phase.statements.length} statements, from{" "}
+            {formatDateLong(phase.statements[0]?.date as never)} to{" "}
+            {formatDateLong(phase.statements[phase.statements.length - 1]?.date as never)}. Your spreadsheet already
+            holds {phase.alreadyRecorded}; {phase.toSave.length} new {phase.toSave.length === 1 ? "month" : "months"}{" "}
+            will be saved.
           </p>
           {phase.statements.some((statement) => statement.source !== undefined) && (
             <p>
-              Each month in this file carries its exact bank statement. Any month your spreadsheet holds without its statement gets it attached, in one
-              step. The figures already saved do not change, and a statement that does not reproduce its month is refused.
+              Each month in this file carries its exact bank statement. Any month your spreadsheet holds without its
+              statement gets it attached, in one step. The figures already saved do not change, and a statement that
+              does not reproduce its month is refused.
             </p>
           )}
-          {phase.toSave.length === 0 && !(phase.alreadyRecorded > 0 && phase.statements.some((statement) => statement.source !== undefined)) ? (
+          {phase.toSave.length === 0 &&
+          !(phase.alreadyRecorded > 0 && phase.statements.some((statement) => statement.source !== undefined)) ? (
             <p>Nothing to do: the spreadsheet already holds this whole history.</p>
           ) : (
             props.save !== undefined && (
-              <button type="button" class="primary" onClick={() => void start(props.save as RemoteSave, phase.statements, phase.toSave)}>
-                {phase.toSave.length > 0 ? `Save ${String(phase.toSave.length)} new ${phase.toSave.length === 1 ? "month" : "months"} and attach bank statements` : "Check and attach bank statements"}
+              <button
+                type="button"
+                class="primary"
+                onClick={() => void start(props.save as RemoteSave, phase.statements, phase.toSave)}
+              >
+                {phase.toSave.length > 0
+                  ? `Save ${String(phase.toSave.length)} new ${phase.toSave.length === 1 ? "month" : "months"} and attach bank statements`
+                  : "Check and attach bank statements"}
               </button>
             )
           )}
@@ -245,20 +354,30 @@ export function HistoryView(props: {
       <div aria-live="polite" class="status" data-busy={busy}>
         {phase.name === "reading" && <p>Reading and checking your history file…</p>}
         {checkMessage !== "" && <p>{checkMessage}</p>}
-        {phase.name === "attaching" && <p>Checking which bank statements are stored, and attaching the missing ones… Keep this page open.</p>}
+        {phase.name === "attaching" && (
+          <p>Checking which bank statements are stored, and attaching the missing ones… Keep this page open.</p>
+        )}
         {phase.name === "saving" && (
           <div>
-          <p>
-            Saving… {phase.saved} of {phase.total} saved. Keep this page open.
-          </p>
-          <div class="history-progress" role="progressbar" aria-label="Statements confirmed saved" aria-valuemin={0} aria-valuemax={Math.max(1, phase.total)} aria-valuenow={phase.saved} style={{ "--completion": `${String((phase.saved / Math.max(1, phase.total)) * 100)}%` }} />
+            <p>
+              Saving… {phase.saved} of {phase.total} saved. Keep this page open.
+            </p>
+            <div
+              class="history-progress"
+              role="progressbar"
+              aria-label="Statements confirmed saved"
+              aria-valuemin={0}
+              aria-valuemax={Math.max(1, phase.total)}
+              aria-valuenow={phase.saved}
+              style={{ "--completion": `${String((phase.saved / Math.max(1, phase.total)) * 100)}%` }}
+            />
           </div>
         )}
         {phase.name === "done" && (
           <p>
             Done: {phase.attached > 0 ? `${String(phase.attached)} bank statements attached, ` : ""}
-            {phase.saved} {phase.saved === 1 ? "month" : "months"} saved to your spreadsheet and read back. The Overview now shows the ledger the spreadsheet
-            holds.
+            {phase.saved} {phase.saved === 1 ? "month" : "months"} saved to your spreadsheet and read back. The Overview
+            now shows the ledger the spreadsheet holds.
           </p>
         )}
       </div>
@@ -266,12 +385,23 @@ export function HistoryView(props: {
         <div class="review-problem" role="alert">
           <h3>Stopped after {phase.saved} saved</h3>
           <p>
-            Statement dated {formatDateLong(phase.statement.date)}: {describeFailure(phase.failure)} Nothing after it was attempted.
+            Statement dated {formatDateLong(phase.statement.date)}: {describeFailure(phase.failure)} Nothing after it
+            was attempted.
           </p>
           {uncertain && props.save !== undefined && (
             <>
               <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
-              <button type="button" disabled={checking} onClick={() => void check(props.save as RemoteSave, (phase as { statement: HistoryStatement }).statement, phase.statements)}>
+              <button
+                type="button"
+                disabled={checking}
+                onClick={() =>
+                  void check(
+                    props.save as RemoteSave,
+                    (phase as { statement: HistoryStatement }).statement,
+                    phase.statements,
+                  )
+                }
+              >
                 {checking ? "Checking the save…" : "Check what happened"}
               </button>
             </>
@@ -286,7 +416,11 @@ export function HistoryView(props: {
           {uncertain && props.save !== undefined ? (
             <>
               <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
-              <button type="button" disabled={checking} onClick={() => void checkAttach(props.save as RemoteSave, phase.commandId, phase.statements)}>
+              <button
+                type="button"
+                disabled={checking}
+                onClick={() => void checkAttach(props.save as RemoteSave, phase.commandId, phase.statements)}
+              >
                 {checking ? "Checking the save…" : "Check what happened"}
               </button>
             </>

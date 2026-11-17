@@ -6,9 +6,13 @@ function memory(): KeyValueStore & { readonly values: Map<string, string> } {
   const values = new Map<string, string>();
   return {
     values,
-    getItem: key => values.get(key) ?? null,
-    setItem: (key, value) => { values.set(key, value); },
-    removeItem: key => { values.delete(key); },
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => {
+      values.set(key, value);
+    },
+    removeItem: (key) => {
+      values.delete(key);
+    },
   };
 }
 
@@ -35,7 +39,9 @@ describe("revision pending receipts", () => {
     expect(receipts.load("first")).toEqual({ ok: false });
     expect(receipts.begin("first", "another")).toBe(false);
     expect(receipts.clear("first", "pending")).toBe(false);
-    const blocked = createRevisionPendingStore(() => { throw new Error("blocked"); });
+    const blocked = createRevisionPendingStore(() => {
+      throw new Error("blocked");
+    });
     expect(blocked.load("first")).toEqual({ ok: false });
     expect(blocked.begin("first", "command")).toBe(false);
   });

@@ -38,7 +38,11 @@ const A = isin("FUNDA");
 const B = isin("FUNDB");
 
 function statement(funds: readonly [string, number][]): StatementInput {
-  const listed = funds.map(([code, value]) => ({ isin: code, name: `Fund ${code.slice(2, 7)}`, marketValue: euros(value) }));
+  const listed = funds.map(([code, value]) => ({
+    isin: code,
+    name: `Fund ${code.slice(2, 7)}`,
+    marketValue: euros(value),
+  }));
   const subtotal = toEuroCents(listed.reduce((sum, fund) => sum + fund.marketValue, 0));
   if (subtotal === null) throw new Error("bad subtotal");
   return { funds: listed, fundsSubtotal: subtotal };
@@ -93,9 +97,15 @@ function january(commandId = "cmd-1"): CommitRequest {
   return {
     commandId,
     expectedRevision: EMPTY_LEDGER.revision,
-    statement: statement([[A, 1000], [B, 500]]),
+    statement: statement([
+      [A, 1000],
+      [B, 500],
+    ]),
     date: date("2026-01-15"),
-    commands: [command(A, "Start", { openingNetInvested: euros(900) }), command(B, "Start", { openingNetInvested: euros(450) })],
+    commands: [
+      command(A, "Start", { openingNetInvested: euros(900) }),
+      command(B, "Start", { openingNetInvested: euros(450) }),
+    ],
   };
 }
 
@@ -103,7 +113,10 @@ function february(expectedRevision: string, commandId = "cmd-2"): CommitRequest 
   return {
     commandId,
     expectedRevision,
-    statement: statement([[A, 1100], [B, 520]]),
+    statement: statement([
+      [A, 1100],
+      [B, 520],
+    ]),
     date: date("2026-02-10"),
     commands: [command(A, "Keep", { moneyIn: euros(100) }), command(B, "Keep")],
   };
@@ -127,7 +140,10 @@ describe("committing a statement", () => {
     expect(sheet.rows.filter((row) => row.type === "SNAPSHOT")).toHaveLength(2);
     expect(sheet.rows.filter((row) => row.type === "COMMIT")).toHaveLength(2);
     const loaded = readLedger(environment);
-    expect(loaded.status === "ok" && loaded.state.snapshots.map((snapshot) => snapshot.date)).toEqual(["2026-01-15", "2026-02-10"]);
+    expect(loaded.status === "ok" && loaded.state.snapshots.map((snapshot) => snapshot.date)).toEqual([
+      "2026-01-15",
+      "2026-02-10",
+    ]);
     expect(loaded.status === "ok" && loaded.state.revision).toBe("rev-2");
   });
 
@@ -228,46 +244,72 @@ describe("a damaged ledger", () => {
     return harness;
   }
 
-  function tamper(sheet: FakeSheet, predicate: (row: LedgerRow) => boolean, change: (row: LedgerRow) => LedgerRow): void {
+  function tamper(
+    sheet: FakeSheet,
+    predicate: (row: LedgerRow) => boolean,
+    change: (row: LedgerRow) => LedgerRow,
+  ): void {
     sheet.rows = sheet.rows.map((row) => (predicate(row) ? change(row) : row));
   }
 
   it("is detected when a snapshot record was edited, and refuses further writes", () => {
     const { sheet, environment } = committedTwice();
-    tamper(sheet, (row) => row.type === "SNAPSHOT" && row.revision === "rev-1", (row) => ({ ...row, payload: row.payload.replace("2026-01-15", "2026-01-16") }));
+    tamper(
+      sheet,
+      (row) => row.type === "SNAPSHOT" && row.revision === "rev-1",
+      (row) => ({ ...row, payload: row.payload.replace("2026-01-15", "2026-01-16") }),
+    );
     expect(readLedger(environment).status).toBe("damaged");
     const rowsBefore = sheet.rows.length;
-    expect(commitStatement(environment, { ...february("rev-2", "cmd-3"), date: date("2026-03-10") }).status).toBe("damaged");
+    expect(commitStatement(environment, { ...february("rev-2", "cmd-3"), date: date("2026-03-10") }).status).toBe(
+      "damaged",
+    );
     expect(sheet.rows).toHaveLength(rowsBefore);
   });
 
   it("is detected when the commit record no longer matches its revision", () => {
     const { sheet, environment } = committedTwice();
-    tamper(sheet, (row) => row.type === "COMMIT" && row.revision === "rev-2", (row) => ({ ...row, checksum: "0".repeat(64) }));
+    tamper(
+      sheet,
+      (row) => row.type === "COMMIT" && row.revision === "rev-2",
+      (row) => ({ ...row, checksum: "0".repeat(64) }),
+    );
     expect(readLedger(environment).status).toBe("damaged");
   });
 
   it("is detected when the header record was edited", () => {
     const { sheet, environment } = committedTwice();
-    tamper(sheet, (row) => row.type === "META" && row.revision === "rev-2", (row) => ({ ...row, payload: row.payload.replace("Fund FUNDA", "Fund FUNDX") }));
+    tamper(
+      sheet,
+      (row) => row.type === "META" && row.revision === "rev-2",
+      (row) => ({ ...row, payload: row.payload.replace("Fund FUNDA", "Fund FUNDX") }),
+    );
     expect(readLedger(environment).status).toBe("damaged");
   });
 
   it("is detected when a timeline reference is redirected", () => {
     const { sheet, environment } = committedTwice();
-    tamper(sheet, (row) => row.type === "TIMELINE" && row.revision === "rev-2", (row) => {
-      const refs = JSON.parse(row.payload) as [number, string][];
-      const [first, second] = refs;
-      if (first === undefined || second === undefined) return row;
-      const payload = canonicalJson([second, first]);
-      return { ...row, payload, checksum: row.checksum };
-    });
+    tamper(
+      sheet,
+      (row) => row.type === "TIMELINE" && row.revision === "rev-2",
+      (row) => {
+        const refs = JSON.parse(row.payload) as [number, string][];
+        const [first, second] = refs;
+        if (first === undefined || second === undefined) return row;
+        const payload = canonicalJson([second, first]);
+        return { ...row, payload, checksum: row.checksum };
+      },
+    );
     expect(readLedger(environment).status).toBe("damaged");
   });
 
   it("never reinitialises itself from current data", () => {
     const { sheet, environment } = committedTwice();
-    tamper(sheet, (row) => row.type === "SNAPSHOT", (row) => ({ ...row, payload: "{}" }));
+    tamper(
+      sheet,
+      (row) => row.type === "SNAPSHOT",
+      (row) => ({ ...row, payload: "{}" }),
+    );
     expect(readLedger(environment).status).toBe("damaged");
     expect(sheet.rows.length).toBeGreaterThan(0);
   });

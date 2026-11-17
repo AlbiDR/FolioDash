@@ -5,9 +5,15 @@ function target() {
   const listeners = new Set<(event: Event) => void>();
   return {
     listeners,
-    addEventListener: (_type: "click", listener: (event: Event) => void) => { listeners.add(listener); },
-    removeEventListener: (_type: "click", listener: (event: Event) => void) => { listeners.delete(listener); },
-    click: (isTrusted = true) => { for (const listener of [...listeners]) listener({ isTrusted } as Event); },
+    addEventListener: (_type: "click", listener: (event: Event) => void) => {
+      listeners.add(listener);
+    },
+    removeEventListener: (_type: "click", listener: (event: Event) => void) => {
+      listeners.delete(listener);
+    },
+    click: (isTrusted = true) => {
+      for (const listener of [...listeners]) listener({ isTrusted } as Event);
+    },
   };
 }
 
@@ -35,7 +41,9 @@ describe("renewing Google access on the person's next click", () => {
   it("does not renew a second time when the first renewal already started", () => {
     const page = target();
     let needed = true;
-    const renew = vi.fn(() => { needed = false; });
+    const renew = vi.fn(() => {
+      needed = false;
+    });
     armGestureRenewal(page, { needed: () => needed, renew });
     page.click();
     page.click();

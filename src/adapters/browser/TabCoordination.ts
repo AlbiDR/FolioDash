@@ -54,7 +54,9 @@ export function createSharedConnection(options: {
       const text = storage()?.getItem(keys.claim) ?? null;
       if (text === null) return null;
       const value = JSON.parse(text) as { id?: unknown; at?: unknown } | null;
-      return value !== null && typeof value.id === "string" && typeof value.at === "number" ? { id: value.id, at: value.at } : null;
+      return value !== null && typeof value.id === "string" && typeof value.at === "number"
+        ? { id: value.id, at: value.at }
+        : null;
     } catch {
       return null;
     }
@@ -91,7 +93,9 @@ export function createSharedConnection(options: {
         else if (event.key === keys.forgotten && event.newValue !== null) handlers.forgotten();
       };
       options.source.addEventListener("storage", onStorage);
-      return () => { options.source.removeEventListener("storage", onStorage); };
+      return () => {
+        options.source.removeEventListener("storage", onStorage);
+      };
     },
   };
 }

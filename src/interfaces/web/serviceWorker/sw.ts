@@ -42,7 +42,10 @@ self.addEventListener("fetch", (event) => {
       // Every page load gets the saved app, which then reads its data from the device copy or Google,
       // except a standalone page such as the privacy policy, which gets its own saved file.
       // The saved files are fixed per build, so a Vary header from the host must not stop a match.
-      const cached = await cache.match(isPageLoad(request.mode) ? (standalonePageKey(request.url, scopeUrl()) ?? scopeUrl()) : request, { ignoreVary: true });
+      const cached = await cache.match(
+        isPageLoad(request.mode) ? (standalonePageKey(request.url, scopeUrl()) ?? scopeUrl()) : request,
+        { ignoreVary: true },
+      );
       if (cached !== undefined) return cached;
       try {
         const fresh = await fetch(request);

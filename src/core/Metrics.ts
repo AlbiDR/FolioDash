@@ -118,7 +118,11 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
       const baselineGain = baseline >= 0 ? gains[baseline] : undefined;
       const baselineSnapshot = baseline >= 0 ? state.snapshots[baseline] : undefined;
       if (baselineGain === undefined || baselineSnapshot === undefined) return null;
-      return { gain: exact(subtractCents(gain, baselineGain)), base: baselineSnapshot.fundsSubtotal, from: baselineSnapshot.date };
+      return {
+        gain: exact(subtractCents(gain, baselineGain)),
+        base: baselineSnapshot.fundsSubtotal,
+        from: baselineSnapshot.date,
+      };
     };
     const yearToDate = change(january);
     const yearOverYear = change(lastYear);
@@ -127,11 +131,11 @@ export function computeMetrics(state: LedgerState): StatementMetrics[] {
     for (const [isin, holding] of Object.entries(snapshot.holdings)) {
       const before = previous?.holdings[isin];
       const fundGain = exact(subtractCents(holding.value, holding.netInvested));
-      const priorGain =
-        before === undefined ? ZERO_CENTS : exact(subtractCents(before.value, before.netInvested));
+      const priorGain = before === undefined ? ZERO_CENTS : exact(subtractCents(before.value, before.netInvested));
       const fundPeriod = previous === undefined ? null : exact(subtractCents(fundGain, priorGain));
       const fundMonthly = consecutive ? fundPeriod : null;
-      const comparable = before !== undefined && before.status === "active" && holding.status === "active" ? before : null;
+      const comparable =
+        before !== undefined && before.status === "active" && holding.status === "active" ? before : null;
       funds[isin] = {
         value: holding.value,
         netInvested: holding.netInvested,

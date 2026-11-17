@@ -50,7 +50,10 @@ const isEmpty = (cell: GridCell | undefined): boolean => cell === undefined || c
  * are added when the data touches the edge, and one more of each closes the far
  * sides. The buffer columns are narrow. Nothing else is kept, so tabs stay lean.
  */
-export function bufferedGrid(rows: readonly (readonly (GridCell | undefined)[])[], widths: readonly number[] = []): Grid {
+export function bufferedGrid(
+  rows: readonly (readonly (GridCell | undefined)[])[],
+  widths: readonly number[] = [],
+): Grid {
   let lastRow = -1;
   let lastColumn = -1;
   rows.forEach((row, rowIndex) => {

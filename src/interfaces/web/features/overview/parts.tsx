@@ -27,7 +27,11 @@ export function Pill(props: { readonly ratio: number | null; readonly signed?: b
 
 export function Percent(props: { readonly ratio: number | null; readonly signed?: boolean }): JSX.Element {
   return (
-    <span class={[props.signed === true ? tone(props.ratio) : "", props.ratio === null ? "empty" : ""].filter((name) => name !== "").join(" ")}>
+    <span
+      class={[props.signed === true ? tone(props.ratio) : "", props.ratio === null ? "empty" : ""]
+        .filter((name) => name !== "")
+        .join(" ")}
+    >
       {formatPercent(props.ratio, props.signed === true ? { signed: true } : {})}
     </span>
   );

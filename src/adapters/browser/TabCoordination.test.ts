@@ -9,11 +9,18 @@ function windows() {
   const clock = { now: 1_700_000_000_000 };
   const listeners = new Set<(event: StorageEvent) => void>();
   const source = {
-    addEventListener: (_type: "storage", listener: (event: StorageEvent) => void) => { listeners.add(listener); },
-    removeEventListener: (_type: "storage", listener: (event: StorageEvent) => void) => { listeners.delete(listener); },
+    addEventListener: (_type: "storage", listener: (event: StorageEvent) => void) => {
+      listeners.add(listener);
+    },
+    removeEventListener: (_type: "storage", listener: (event: StorageEvent) => void) => {
+      listeners.delete(listener);
+    },
   };
-  const open = (windowId: string) => createSharedConnection({ open: () => store, keys, windowId, now: () => clock.now, source });
-  const emit = (key: string | null, newValue: string | null) => { for (const listener of [...listeners]) listener({ key, newValue } as StorageEvent); };
+  const open = (windowId: string) =>
+    createSharedConnection({ open: () => store, keys, windowId, now: () => clock.now, source });
+  const emit = (key: string | null, newValue: string | null) => {
+    for (const listener of [...listeners]) listener({ key, newValue } as StorageEvent);
+  };
   return { store, clock, open, emit, listeners };
 }
 
@@ -76,8 +83,20 @@ describe("windows of one browser sharing a connection", () => {
   });
 
   it("does nothing, and breaks nothing, when storage is blocked", () => {
-    const connection = createSharedConnection({ open: () => { throw new Error("blocked"); }, keys, windowId: "only", now: () => 0, source: { addEventListener: () => undefined, removeEventListener: () => undefined } });
-    expect(() => { connection.claim(); connection.release(); connection.announceForgotten(); }).not.toThrow();
+    const connection = createSharedConnection({
+      open: () => {
+        throw new Error("blocked");
+      },
+      keys,
+      windowId: "only",
+      now: () => 0,
+      source: { addEventListener: () => undefined, removeEventListener: () => undefined },
+    });
+    expect(() => {
+      connection.claim();
+      connection.release();
+      connection.announceForgotten();
+    }).not.toThrow();
     expect(connection.heldElsewhere()).toBe(false);
   });
 });

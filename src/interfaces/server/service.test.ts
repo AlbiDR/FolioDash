@@ -6,9 +6,15 @@ import { createService } from "./service";
 
 class MemorySheet implements RowSheet {
   rows: LedgerRow[] = [];
-  readRows(): readonly LedgerRow[] { return [...this.rows]; }
-  appendRows(rows: readonly LedgerRow[]): void { this.rows.push(...rows); }
-  flush(): void { /* nothing to flush */ }
+  readRows(): readonly LedgerRow[] {
+    return [...this.rows];
+  }
+  appendRows(rows: readonly LedgerRow[]): void {
+    this.rows.push(...rows);
+  }
+  flush(): void {
+    /* nothing to flush */
+  }
 }
 
 function isin(code: string): string {
@@ -50,7 +56,10 @@ function request(): Record<string, unknown> {
 describe("the service operations", () => {
   it("commit, read and outcome work end to end on plain JSON", () => {
     const { service } = serviceWith(new MemorySheet());
-    expect(service.commit(WORKBOOK, request())).toEqual({ ok: true, value: { status: "committed", revision: "rev-1" } });
+    expect(service.commit(WORKBOOK, request())).toEqual({
+      ok: true,
+      value: { status: "committed", revision: "rev-1" },
+    });
     const read = service.read(WORKBOOK);
     expect(read.ok && read.value.status === "ok" && read.value.state.snapshots).toHaveLength(1);
     const outcome = service.outcome(WORKBOOK, "command-0001");
@@ -78,7 +87,11 @@ describe("the service operations", () => {
       throw new Error("secret spreadsheet title and id leaked in an error");
     });
     const result = service.read(WORKBOOK);
-    expect(result).toEqual({ ok: false, error: "unavailable", message: "The workbook could not be opened or read with your access." });
+    expect(result).toEqual({
+      ok: false,
+      error: "unavailable",
+      message: "The workbook could not be opened or read with your access.",
+    });
     expect(JSON.stringify(result)).not.toContain("secret");
   });
 

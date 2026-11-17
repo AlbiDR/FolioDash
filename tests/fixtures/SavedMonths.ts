@@ -15,7 +15,17 @@ export const date = (value: string): IsoDate => parseIsoDate(value) as IsoDate;
 export const interpret: InterpretStatement = (sheet) => {
   const result = interpretFideuramSheet(sheet);
   return result.ok
-    ? { ok: true, statement: { funds: result.statement.funds.map((fund) => ({ isin: fund.isin, name: fund.name, marketValue: fund.marketValue })), fundsSubtotal: result.statement.fundsSubtotal } }
+    ? {
+        ok: true,
+        statement: {
+          funds: result.statement.funds.map((fund) => ({
+            isin: fund.isin,
+            name: fund.name,
+            marketValue: fund.marketValue,
+          })),
+          fundsSubtotal: result.statement.fundsSubtotal,
+        },
+      }
     : { ok: false, message: result.issues[0]?.message ?? "unreadable" };
 };
 
@@ -46,14 +56,25 @@ export function februarySheet(): RawSheet {
   return withCell(sheet, ROW.total, COL.M, text("3.400,00  € "));
 }
 
-export const OPENING: FundCommand[] = [ISIN_A, ISIN_B].map((isin) => ({ isin, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" }));
+export const OPENING: FundCommand[] = [ISIN_A, ISIN_B].map((isin) => ({
+  isin,
+  action: "Start",
+  moneyIn: ZERO_CENTS,
+  moneyOut: ZERO_CENTS,
+  openingNetInvested: cents(1000),
+  comment: "",
+}));
 
 /** Saves two months through the real rules, with their statements or, like older saves, without. */
 export function twoSavedMonths(withStatements = true) {
   const sheet = new MemorySheet();
   const store = new RowLedgerStore(sheet);
   let counter = 0;
-  const environment: ServiceEnvironment = { store, withLock: (action) => action(), newRevision: () => `revision-${String(++counter).padStart(3, "0")}` };
+  const environment: ServiceEnvironment = {
+    store,
+    withLock: (action) => action(),
+    newRevision: () => `revision-${String(++counter).padStart(3, "0")}`,
+  };
   const send = (raw: RawSheet, when: string, revision: string, id: string, commands: FundCommand[]) => {
     const read = interpret(raw);
     if (!read.ok) throw new Error("setup failed");
@@ -72,7 +93,13 @@ export function twoSavedMonths(withStatements = true) {
   if (afterFirst.status !== "ok") throw new Error("setup failed");
   const second = interpret(februarySheet());
   if (!second.ok) throw new Error("setup failed");
-  const keeps: FundCommand[] = planImport(afterFirst.state, second.statement).map((row) => ({ isin: row.isin, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" }));
+  const keeps: FundCommand[] = planImport(afterFirst.state, second.statement).map((row) => ({
+    isin: row.isin,
+    action: "Keep",
+    moneyIn: ZERO_CENTS,
+    moneyOut: ZERO_CENTS,
+    comment: "",
+  }));
   send(februarySheet(), "2026-02-28", afterFirst.state.revision, "command-february", keeps);
   const ledger = store.load();
   const sources = store.loadSources();

@@ -59,10 +59,16 @@ for (const field of ["name", "short_name", "start_url", "scope", "id"] as const)
   check(typeof manifest[field] === "string" && manifest[field] !== "", `the manifest has no ${field}`);
 }
 // Relative values keep the app working from a sub-folder such as a GitHub Pages project site.
-check(manifest.start_url === "./" && manifest.scope === "./", "start_url and scope must be ./ so the app works under a sub-folder");
+check(
+  manifest.start_url === "./" && manifest.scope === "./",
+  "start_url and scope must be ./ so the app works under a sub-folder",
+);
 check(manifest.display === "standalone", "display must be standalone for the app to open without browser chrome");
 for (const field of ["theme_color", "background_color"] as const) {
-  check(typeof manifest[field] === "string" && /^#[0-9a-f]{6}$/iu.test(manifest[field]), `${field} must be a six-digit hex colour`);
+  check(
+    typeof manifest[field] === "string" && /^#[0-9a-f]{6}$/iu.test(manifest[field]),
+    `${field} must be a six-digit hex colour`,
+  );
 }
 
 const icons = Array.isArray(manifest.icons) ? (manifest.icons as Icon[]) : [];
@@ -76,9 +82,13 @@ for (const icon of icons) {
   check(icon.type === "image/png", `the icon ${src} must declare type image/png`);
   check(pngSize(file) === icon.sizes, `the icon ${src} is not ${String(icon.sizes)}`);
 }
-const has = (size: string, purpose: string): boolean => icons.some((icon) => icon.sizes === size && icon.purpose === purpose);
+const has = (size: string, purpose: string): boolean =>
+  icons.some((icon) => icon.sizes === size && icon.purpose === purpose);
 check(has("192x192", "any") && has("512x512", "any"), "the manifest needs 192 and 512 pixel icons");
-check(has("192x192", "maskable") && has("512x512", "maskable"), "the manifest needs 192 and 512 pixel maskable icons so Android can shape it");
+check(
+  has("192x192", "maskable") && has("512x512", "maskable"),
+  "the manifest needs 192 and 512 pixel maskable icons so Android can shape it",
+);
 check(pngSize(`${PUBLIC}/icons/favicon-48.png`) === "48x48", "the PNG favicon must be 48x48");
 check(pngSize(`${PUBLIC}/icons/apple-touch-icon.png`) === "180x180", "the Apple touch icon must be 180x180");
 
@@ -92,11 +102,21 @@ if (!existsSync(`${DIST}/sw.js`)) {
   for (const file of built) check(worker.includes(`"${file}"`), `the service worker does not list ${file}`);
   for (const file of built.filter((name) => name.endsWith(".js"))) {
     const source = readFileSync(join(DIST, file), "utf8");
-    check(!source.includes("foliodash-synthetic-acceptance") && !source.includes("foliodash.synthetic-acceptance.ledger.v1"), `the production asset ${file} contains synthetic acceptance configuration`);
+    check(
+      !source.includes("foliodash-synthetic-acceptance") &&
+        !source.includes("foliodash.synthetic-acceptance.ledger.v1"),
+      `the production asset ${file} contains synthetic acceptance configuration`,
+    );
   }
-  check(!/googleapis|accounts\.google/u.test(worker), "the service worker must not mention Google: it never handles those requests");
+  check(
+    !/googleapis|accounts\.google/u.test(worker),
+    "the service worker must not mention Google: it never handles those requests",
+  );
   const page = readFileSync(`${DIST}/index.html`, "utf8");
-  check((page.match(/name="theme-color"/gu) ?? []).length === 1, "the page needs one theme-color tag for Android Chrome");
+  check(
+    (page.match(/name="theme-color"/gu) ?? []).length === 1,
+    "the page needs one theme-color tag for Android Chrome",
+  );
   check(page.includes("icons/favicon-48.png"), "the page must link the PNG favicon fallback");
   check(/rel="manifest"/u.test(page), "the page does not link the manifest");
   check(/rel="apple-touch-icon"/u.test(page), "the page does not link the Apple touch icon");
@@ -104,19 +124,34 @@ if (!existsSync(`${DIST}/sw.js`)) {
   const site = "https://albidr.github.io/FolioDash/";
   const socialImage = `${site}social/preview.png`;
   const meta = (key: string): string | undefined => {
-    const tags = [...page.matchAll(/<meta\s+(?:property|name)="([^"]+)"\s+content="([^"]*)"\s*\/?>/gu)].filter(match => match[1] === key);
+    const tags = [...page.matchAll(/<meta\s+(?:property|name)="([^"]+)"\s+content="([^"]*)"\s*\/?>/gu)].filter(
+      (match) => match[1] === key,
+    );
     check(tags.length === 1, `expected one static ${key} tag`);
     return tags[0]?.[2];
   };
   check(page.includes(`<link rel="canonical" href="${site}"`), "the page needs the public app canonical URL");
   check(meta("og:type") === "website", "social previews must describe the public application");
-  check(meta("og:site_name") === "FolioDash" && meta("og:title") === "FolioDash", "social previews need the product name");
+  check(
+    meta("og:site_name") === "FolioDash" && meta("og:title") === "FolioDash",
+    "social previews need the product name",
+  );
   check(meta("og:url") === site, "social previews must point to the public app, without account or route parameters");
-  check(meta("og:image") === socialImage && meta("twitter:image") === socialImage, "social cards need the absolute public PNG URL including the Pages subpath");
+  check(
+    meta("og:image") === socialImage && meta("twitter:image") === socialImage,
+    "social cards need the absolute public PNG URL including the Pages subpath",
+  );
   check(meta("og:image:type") === "image/png", "social cards must declare their image type");
-  check(meta("og:image:width") === "1200" && meta("og:image:height") === "630", "social card dimensions must match the artwork");
-  check(meta("twitter:card") === "summary_large_image" && meta("twitter:title") === "FolioDash", "social cards must request the large product preview");
-  for (const key of ["og:description", "og:image:alt", "twitter:description", "twitter:image:alt"]) check((meta(key)?.length ?? 0) > 0, `social cards need ${key}`);
+  check(
+    meta("og:image:width") === "1200" && meta("og:image:height") === "630",
+    "social card dimensions must match the artwork",
+  );
+  check(
+    meta("twitter:card") === "summary_large_image" && meta("twitter:title") === "FolioDash",
+    "social cards must request the large product preview",
+  );
+  for (const key of ["og:description", "og:image:alt", "twitter:description", "twitter:image:alt"])
+    check((meta(key)?.length ?? 0) > 0, `social cards need ${key}`);
   check(pngSize(`${DIST}/social/preview.png`) === "1200x630", "the built social banner must be a 1200x630 PNG");
   // The privacy policy is a standalone page Google's consent screen links to. It must ship, stay static
   // (the policy says there is no tracking), carry the public contact and be reachable from the app.
@@ -125,20 +160,31 @@ if (!existsSync(`${DIST}/sw.js`)) {
   } else {
     const policy = readFileSync(`${DIST}/privacy/index.html`, "utf8");
     check(!/<script/iu.test(policy), "the privacy page must contain no script");
-    check(policy.includes('<link rel="canonical" href="https://albidr.github.io/FolioDash/privacy/"'), "the privacy page needs its public canonical URL");
+    check(
+      policy.includes('<link rel="canonical" href="https://albidr.github.io/FolioDash/privacy/"'),
+      "the privacy page needs its public canonical URL",
+    );
     check(policy.includes("aalbi97+foliodash@gmail.com"), "the privacy page must carry the public contact");
     check(policy.includes('href="../"'), "the privacy page must link back to the app with a relative link");
-    check(!/https?:\/\/(?!albidr\.github\.io|policies\.google\.com|developers\.google\.com|myaccount\.google\.com|docs\.github\.com|github\.com)/u.test(policy.replace(/<link[^>]*>/gu, "")), "the privacy page links an unexpected site");
-    const linked = filesUnder(DIST).filter((file) => file.endsWith(".js") && file !== `${DIST}/sw.js`).some((file) => readFileSync(file, "utf8").includes("./privacy/"));
+    check(
+      !/https?:\/\/(?!albidr\.github\.io|policies\.google\.com|developers\.google\.com|myaccount\.google\.com|docs\.github\.com|github\.com)/u.test(
+        policy.replace(/<link[^>]*>/gu, ""),
+      ),
+      "the privacy page links an unexpected site",
+    );
+    const linked = filesUnder(DIST)
+      .filter((file) => file.endsWith(".js") && file !== `${DIST}/sw.js`)
+      .some((file) => readFileSync(file, "utf8").includes("./privacy/"));
     check(linked, "no app script links to the privacy page");
   }
   pngContent(readFileSync(`${DIST}/social/preview.png`));
-
 }
 
 if (failures.length > 0) {
   process.stderr.write(`PWA check failed:\n${failures.map((entry) => `- ${entry}`).join("\n")}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`PWA check passed (${String(icons.length)} manifest icons, service worker lists the built files).\n`);
+  process.stdout.write(
+    `PWA check passed (${String(icons.length)} manifest icons, service worker lists the built files).\n`,
+  );
 }

@@ -46,8 +46,7 @@ export interface FundCommand {
 }
 
 export type ApplyResult =
-  | { readonly ok: true; readonly state: LedgerState }
-  | { readonly ok: false; readonly issues: readonly LedgerIssue[] };
+  { readonly ok: true; readonly state: LedgerState } | { readonly ok: false; readonly issues: readonly LedgerIssue[] };
 
 const ALLOWED_ACTIONS: Readonly<Record<Detection, readonly HoldingAction[]>> = {
   Opening: ["Start"],
@@ -111,7 +110,11 @@ export function planImport(state: LedgerState, statement: StatementInput): PlanR
 /** The current monthly append rule, shared by preflight and the actual financial write. */
 export function statementDateIssue(date: IsoDate, previous: IsoDate | undefined): LedgerIssue | null {
   return previous !== undefined && monthSerial(date) <= monthSerial(previous)
-    ? { code: "date-not-later", isin: null, message: "That month is already recorded. A statement must fall in a later calendar month." }
+    ? {
+        code: "date-not-later",
+        isin: null,
+        message: "That month is already recorded. A statement must fall in a later calendar month.",
+      }
     : null;
 }
 
@@ -138,7 +141,11 @@ export function applyImport(
 
   const plan = planImport(state, statement);
   const byIsin = new Map(commands.map((command) => [command.isin, command]));
-  if (byIsin.size !== commands.length || commands.length !== plan.length || !plan.every((row) => byIsin.has(row.isin))) {
+  if (
+    byIsin.size !== commands.length ||
+    commands.length !== plan.length ||
+    !plan.every((row) => byIsin.has(row.isin))
+  ) {
     add("invalid-command", null, "The decisions do not match the funds in this statement. Prepare the import again.");
     return { ok: false, issues };
   }
@@ -148,13 +155,19 @@ export function applyImport(
   for (const row of plan) {
     const command = byIsin.get(row.isin);
     if (command === undefined) continue;
-    const holding = decide(row, command, statement.funds.some(fund => fund.isin === row.isin), add);
+    const holding = decide(
+      row,
+      command,
+      statement.funds.some((fund) => fund.isin === row.isin),
+      add,
+    );
     if (holding === null) continue;
     holdings[row.isin] = holding;
     if (row.detected === "Opening" || row.detected === "New") {
       const fullName = statement.funds.find((fund) => fund.isin === row.isin)?.name ?? row.name;
       const name = command.name ?? row.name;
-      if (!isSafeFundName(name)) add("invalid-command", row.isin, "The fund name must be plain text, up to 160 characters.");
+      if (!isSafeFundName(name))
+        add("invalid-command", row.isin, "The fund name must be plain text, up to 160 characters.");
       newFunds.push({ isin: row.isin, name, fullName, firstDate: date });
     }
   }
@@ -191,7 +204,12 @@ function decide(
         : `choose ${allowed}.`,
     );
   }
-  if (!Number.isSafeInteger(command.moneyIn) || !Number.isSafeInteger(command.moneyOut) || command.moneyIn < 0 || command.moneyOut < 0) {
+  if (
+    !Number.isSafeInteger(command.moneyIn) ||
+    !Number.isSafeInteger(command.moneyOut) ||
+    command.moneyIn < 0 ||
+    command.moneyOut < 0
+  ) {
     return fail("money in and out must be non-negative amounts, including an explicit zero.");
   }
   if (command.comment.length > MAX_COMMENT_LENGTH) return fail("the comment is too long.");
@@ -209,7 +227,8 @@ function decide(
     if (command.openingNetInvested === undefined || !Number.isSafeInteger(command.openingNetInvested)) {
       return fail("enter the opening net invested for the statement date.");
     }
-    if (command.moneyIn !== 0 || command.moneyOut !== 0) return fail("the first statement uses opening balances, not cash movements.");
+    if (command.moneyIn !== 0 || command.moneyOut !== 0)
+      return fail("the first statement uses opening balances, not cash movements.");
     netInvested = command.openingNetInvested;
   } else {
     const carried = addCents(row.priorNetInvested, command.moneyIn);

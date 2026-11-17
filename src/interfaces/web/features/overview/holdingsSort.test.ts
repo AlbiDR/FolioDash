@@ -9,14 +9,40 @@ function cents(value: number): EuroCents {
   return result;
 }
 
-function fund(name: string, status: "active" | "closed", value: number | null, percent: number | null = null): OverviewFund {
+function fund(
+  name: string,
+  status: "active" | "closed",
+  value: number | null,
+  percent: number | null = null,
+): OverviewFund {
   return {
-    isin: name, name, status, values: [], netInvested: [],
-    latest: value === null ? null : { value: cents(value), netInvested: cents(1000), gain: cents(value - 1000), gainPercent: percent, monthlyGain: null, monthlyGainPercent: null, share: value / 10000 },
+    isin: name,
+    name,
+    status,
+    values: [],
+    netInvested: [],
+    latest:
+      value === null
+        ? null
+        : {
+            value: cents(value),
+            netInvested: cents(1000),
+            gain: cents(value - 1000),
+            gainPercent: percent,
+            monthlyGain: null,
+            monthlyGainPercent: null,
+            share: value / 10000,
+          },
   };
 }
 
-const funds = [fund("Beta", "active", 3000, 0.1), fund("Alpha", "active", 5000, 0.3), fund("Gamma", "active", 1000, null), fund("Old", "closed", 9000, 0.5), fund("Empty", "active", null)];
+const funds = [
+  fund("Beta", "active", 3000, 0.1),
+  fund("Alpha", "active", 5000, 0.3),
+  fund("Gamma", "active", 1000, null),
+  fund("Old", "closed", 9000, 0.5),
+  fund("Empty", "active", null),
+];
 const names = (sorted: readonly OverviewFund[]): string[] => sorted.map((entry) => entry.name);
 
 describe("holdings sort", () => {
@@ -27,17 +53,47 @@ describe("holdings sort", () => {
   });
 
   it("sorts figures high to low and reverses them, keeping sold funds and missing figures last", () => {
-    expect(names(sortHoldings(funds, { key: "value", direction: "desc" }))).toEqual(["Alpha", "Beta", "Gamma", "Empty", "Old"]);
-    expect(names(sortHoldings(funds, { key: "value", direction: "asc" }))).toEqual(["Gamma", "Beta", "Alpha", "Empty", "Old"]);
+    expect(names(sortHoldings(funds, { key: "value", direction: "desc" }))).toEqual([
+      "Alpha",
+      "Beta",
+      "Gamma",
+      "Empty",
+      "Old",
+    ]);
+    expect(names(sortHoldings(funds, { key: "value", direction: "asc" }))).toEqual([
+      "Gamma",
+      "Beta",
+      "Alpha",
+      "Empty",
+      "Old",
+    ]);
   });
 
   it("puts a fund without a percentage after those that have one in either direction", () => {
-    expect(names(sortHoldings(funds, { key: "gainPercent", direction: "desc" }))).toEqual(["Alpha", "Beta", "Gamma", "Empty", "Old"]);
-    expect(names(sortHoldings(funds, { key: "gainPercent", direction: "asc" }))).toEqual(["Beta", "Alpha", "Gamma", "Empty", "Old"]);
+    expect(names(sortHoldings(funds, { key: "gainPercent", direction: "desc" }))).toEqual([
+      "Alpha",
+      "Beta",
+      "Gamma",
+      "Empty",
+      "Old",
+    ]);
+    expect(names(sortHoldings(funds, { key: "gainPercent", direction: "asc" }))).toEqual([
+      "Beta",
+      "Alpha",
+      "Gamma",
+      "Empty",
+      "Old",
+    ]);
   });
 
   it("sorts names alphabetically", () => {
-    expect(names(sortHoldings(funds, { key: "name", direction: "asc" }))).toEqual(["Alpha", "Beta", "Empty", "Gamma", "Old"]);
+    expect(names(sortHoldings(funds, { key: "name", direction: "asc" }))).toEqual([
+      "Alpha",
+      "Beta",
+      "Empty",
+      "Gamma",
+      "Old",
+    ]);
   });
 
   it("cycles a column through its first direction, the reverse and the default order", () => {

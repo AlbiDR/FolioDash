@@ -6,7 +6,11 @@ const sheet: RawSheet = {
   date1904: false,
   rows: [
     [undefined, { kind: "text", text: "Fondi" }, undefined],
-    [{ kind: "number", text: "652.289", format: "0.000" }, { kind: "number", text: "10", format: null }, { kind: "formula" }],
+    [
+      { kind: "number", text: "652.289", format: "0.000" },
+      { kind: "number", text: "10", format: null },
+      { kind: "formula" },
+    ],
   ],
 };
 

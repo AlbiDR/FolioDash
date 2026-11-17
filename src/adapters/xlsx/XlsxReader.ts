@@ -123,7 +123,8 @@ function parseSheet(
   let rowIndex = -1;
   for (const row of sheetData ? childElements(sheetData, "row") : []) {
     rowIndex = row.attrs["r"] !== undefined ? Number(row.attrs["r"]) - 1 : rowIndex + 1;
-    if (!Number.isInteger(rowIndex) || rowIndex < 0) throw new XlsxError("corrupt", "A sheet has an invalid row number.");
+    if (!Number.isInteger(rowIndex) || rowIndex < 0)
+      throw new XlsxError("corrupt", "A sheet has an invalid row number.");
     if (rowIndex >= limits.maxRows) throw new XlsxError("limit-exceeded", "A sheet has more rows than supported.");
     let columnCursor = -1;
     for (const cell of childElements(row, "c")) {
@@ -207,7 +208,10 @@ export async function readXlsx(bytes: Uint8Array, limits: XlsxLimits = XLSX_LIMI
     const workbook = await readXml(archive, WORKBOOK, limits);
     const relationships = await readXml(archive, WORKBOOK_RELATIONSHIPS, limits);
     const targets = new Map(
-      childElements(relationships, "Relationship").map((entry) => [entry.attrs["Id"] ?? "", entry.attrs["Target"] ?? ""]),
+      childElements(relationships, "Relationship").map((entry) => [
+        entry.attrs["Id"] ?? "",
+        entry.attrs["Target"] ?? "",
+      ]),
     );
     const properties = firstChild(workbook, "workbookPr");
     const date1904 = ["1", "true"].includes(properties?.attrs["date1904"] ?? "");

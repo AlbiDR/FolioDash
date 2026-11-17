@@ -3,7 +3,9 @@ import { canonicalJson } from "./CanonicalJson";
 
 describe("canonicalJson", () => {
   it("sorts keys at every depth, whatever order the object was built in", () => {
-    expect(canonicalJson({ b: 1, a: { d: [3, { z: 1, y: 2 }], c: null } })).toBe('{"a":{"c":null,"d":[3,{"y":2,"z":1}]},"b":1}');
+    expect(canonicalJson({ b: 1, a: { d: [3, { z: 1, y: 2 }], c: null } })).toBe(
+      '{"a":{"c":null,"d":[3,{"y":2,"z":1}]},"b":1}',
+    );
     expect(canonicalJson({ a: 1, b: 2 })).toBe(canonicalJson({ b: 2, a: 1 }));
   });
 

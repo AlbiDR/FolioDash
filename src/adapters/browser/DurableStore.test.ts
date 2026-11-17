@@ -2,8 +2,16 @@ import { describe, expect, it } from "vitest";
 import { createDurableStore, createMemoryStore } from "./DurableStore";
 import type { KeyValueStore } from "./LedgerCache";
 
-const blocked = (): KeyValueStore => { throw new Error("storage is blocked"); };
-const full = (): KeyValueStore => ({ getItem: () => null, setItem: () => { throw new Error("quota"); }, removeItem: () => undefined });
+const blocked = (): KeyValueStore => {
+  throw new Error("storage is blocked");
+};
+const full = (): KeyValueStore => ({
+  getItem: () => null,
+  setItem: () => {
+    throw new Error("quota");
+  },
+  removeItem: () => undefined,
+});
 
 describe("a connection that outlasts what the browser allows", () => {
   it("writes to the first store that accepts the value and reads it back from there", () => {
@@ -30,7 +38,16 @@ describe("a connection that outlasts what the browser allows", () => {
     const first = createMemoryStore();
     first.setItem("key", "old");
     let accepting = true;
-    const flaky: KeyValueStore = { getItem: (key) => first.getItem(key), setItem: (key, value) => { if (!accepting) throw new Error("quota"); first.setItem(key, value); }, removeItem: (key) => { first.removeItem(key); } };
+    const flaky: KeyValueStore = {
+      getItem: (key) => first.getItem(key),
+      setItem: (key, value) => {
+        if (!accepting) throw new Error("quota");
+        first.setItem(key, value);
+      },
+      removeItem: (key) => {
+        first.removeItem(key);
+      },
+    };
     const second = createMemoryStore();
     const store = createDurableStore([() => flaky, () => second]);
     accepting = false;
@@ -54,6 +71,8 @@ describe("a connection that outlasts what the browser allows", () => {
   it("survives every store being unreadable", () => {
     const store = createDurableStore([blocked, blocked]);
     expect(store.getItem("missing")).toBeNull();
-    expect(() => { store.removeItem("missing"); }).not.toThrow();
+    expect(() => {
+      store.removeItem("missing");
+    }).not.toThrow();
   });
 });

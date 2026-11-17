@@ -28,10 +28,15 @@ export function PerformanceBars(props: { readonly rows: readonly PerformanceRow[
               <span class="perf-track" aria-hidden="true">
                 <span
                   class={`perf-bar ${row.ratio >= 0 ? "gain" : "loss"}`}
-                  style={{ width: `${length.toFixed(2)}%`, left: row.ratio >= 0 ? "50%" : `${(50 - length).toFixed(2)}%` }}
+                  style={{
+                    width: `${length.toFixed(2)}%`,
+                    left: row.ratio >= 0 ? "50%" : `${(50 - length).toFixed(2)}%`,
+                  }}
                 />
               </span>
-              <span class={`perf-value ${row.ratio >= 0 ? "gain" : "loss"}`}>{formatPercent(row.ratio, { signed: true })}</span>
+              <span class={`perf-value ${row.ratio >= 0 ? "gain" : "loss"}`}>
+                {formatPercent(row.ratio, { signed: true })}
+              </span>
             </a>
           </li>
         );

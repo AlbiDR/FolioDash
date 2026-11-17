@@ -10,37 +10,63 @@ async function setup(reply: (config: Config) => void) {
   vi.useFakeTimers();
   const request = vi.fn();
   vi.stubGlobal("window", {
-    setTimeout, clearTimeout,
-    google: { accounts: { oauth2: {
-      initTokenClient: (config: Config) => ({ requestAccessToken: (options: unknown) => { request(options); reply(config); } }),
-      revoke: vi.fn(),
-    } } },
+    setTimeout,
+    clearTimeout,
+    google: {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: Config) => ({
+            requestAccessToken: (options: unknown) => {
+              request(options);
+              reply(config);
+            },
+          }),
+          revoke: vi.fn(),
+        },
+      },
+    },
   });
   const { signIn } = await import("./GoogleIdentity");
   return { signIn, request };
 }
 
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 describe("Google sign-in recovery", () => {
   it("reuses Google's existing grant without forcing account selection", async () => {
-    const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
-    expect(await signIn("synthetic-client", SCOPE)).toEqual({ ok: true, accessToken: "synthetic-token", expiresInSeconds: 3600 });
+    const { signIn, request } = await setup((config) => {
+      config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE });
+    });
+    expect(await signIn("synthetic-client", SCOPE)).toEqual({
+      ok: true,
+      accessToken: "synthetic-token",
+      expiresInSeconds: 3600,
+    });
     expect(request).toHaveBeenCalledWith({ prompt: "" });
     expect(vi.getTimerCount()).toBe(0);
   });
 
   it("opens account selection when asked for another account", async () => {
-    const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
+    const { signIn, request } = await setup((config) => {
+      config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE });
+    });
     expect(await signIn("synthetic-client", SCOPE, { prompt: "select_account" })).toMatchObject({ ok: true });
     expect(request).toHaveBeenCalledWith({ prompt: "select_account" });
   });
 
   it("never substitutes an in-flight quiet token for an explicit account chooser", async () => {
     let callback: Config["callback"] | undefined;
-    const { signIn, request } = await setup(config => { callback = config.callback; });
+    const { signIn, request } = await setup((config) => {
+      callback = config.callback;
+    });
     const quiet = signIn("synthetic-client", SCOPE, { prompt: "", loginHint: "first@example.test" });
-    expect(await signIn("synthetic-client", SCOPE, { prompt: "select_account" })).toEqual({ ok: false, reason: "unavailable" });
+    expect(await signIn("synthetic-client", SCOPE, { prompt: "select_account" })).toEqual({
+      ok: false,
+      reason: "unavailable",
+    });
     expect(request).toHaveBeenCalledOnce();
     if (callback === undefined) throw new Error("Missing synthetic callback");
     callback({ access_token: "first-account-token", expires_in: "3600", scope: SCOPE });
@@ -52,9 +78,15 @@ describe("Google sign-in recovery", () => {
   });
 
   it("names the remembered account so Google can skip its chooser", async () => {
-    const { signIn, request } = await setup((config) => { config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE }); });
+    const { signIn, request } = await setup((config) => {
+      config.callback({ access_token: "synthetic-token", expires_in: "3600", scope: SCOPE });
+    });
     await signIn("synthetic-client", SCOPE, { prompt: "", loginHint: "person@example.test" });
-    expect(request).toHaveBeenCalledWith({ prompt: "", hint: "person@example.test", login_hint: "person@example.test" });
+    expect(request).toHaveBeenCalledWith({
+      prompt: "",
+      hint: "person@example.test",
+      login_hint: "person@example.test",
+    });
   });
 
   it("opens Google's window in the same call stack as the click once the client is ready", async () => {
@@ -71,8 +103,20 @@ describe("Google sign-in recovery", () => {
     const request = vi.fn();
     let pending: Config | undefined;
     vi.stubGlobal("window", {
-      setTimeout, clearTimeout,
-      google: { accounts: { oauth2: { initTokenClient: (config: Config) => { init(); pending = config; return { requestAccessToken: request }; }, revoke: vi.fn() } } },
+      setTimeout,
+      clearTimeout,
+      google: {
+        accounts: {
+          oauth2: {
+            initTokenClient: (config: Config) => {
+              init();
+              pending = config;
+              return { requestAccessToken: request };
+            },
+            revoke: vi.fn(),
+          },
+        },
+      },
     });
     const { signIn } = await import("./GoogleIdentity");
     const first = signIn("synthetic-client", SCOPE);
@@ -95,34 +139,57 @@ describe("Google sign-in recovery", () => {
     const win: Record<string, unknown> = { setTimeout, clearTimeout };
     vi.stubGlobal("window", win);
     vi.stubGlobal("document", {
-      createElement: () => { const script = { remove: vi.fn(), onload: null as (() => void) | null, onerror: null }; scripts.push(script); return script; },
+      createElement: () => {
+        const script = { remove: vi.fn(), onload: null as (() => void) | null, onerror: null };
+        scripts.push(script);
+        return script;
+      },
       head: { append },
     });
     const { prepareGoogleIdentity } = await import("./GoogleIdentity");
     prepareGoogleIdentity("synthetic-client", SCOPE);
     prepareGoogleIdentity("synthetic-client", SCOPE);
     expect(scripts).toHaveLength(1);
-    win["google"] = { accounts: { oauth2: { initTokenClient: () => { init(); return { requestAccessToken: vi.fn() }; }, revoke: vi.fn() } } };
+    win["google"] = {
+      accounts: {
+        oauth2: {
+          initTokenClient: () => {
+            init();
+            return { requestAccessToken: vi.fn() };
+          },
+          revoke: vi.fn(),
+        },
+      },
+    };
     scripts[0]?.onload?.();
     await vi.advanceTimersByTimeAsync(0);
     expect(init).toHaveBeenCalledOnce();
   });
 
   it("refuses tokens that do not grant the required permission", async () => {
-    const { signIn } = await setup((config) => { config.callback({ access_token: "synthetic-token", scope: "unrelated" }); });
+    const { signIn } = await setup((config) => {
+      config.callback({ access_token: "synthetic-token", scope: "unrelated" });
+    });
     expect(await signIn("client", SCOPE)).toEqual({ ok: false, reason: "denied" });
   });
 
   it("distinguishes blocked pop-ups from a closed window", async () => {
-    for (const [type, reason] of [["popup_failed_to_open", "blocked"], ["popup_closed", "closed"]]) {
-      const { signIn } = await setup((config) => { config.error_callback?.({ type: type ?? "" }); });
+    for (const [type, reason] of [
+      ["popup_failed_to_open", "blocked"],
+      ["popup_closed", "closed"],
+    ]) {
+      const { signIn } = await setup((config) => {
+        config.error_callback?.({ type: type ?? "" });
+      });
       expect(await signIn("client", SCOPE)).toEqual({ ok: false, reason });
     }
   });
 
   it("ends a stuck sign-in and ignores its late callback", async () => {
     let pending: Config | undefined;
-    const { signIn } = await setup((config) => { pending = config; });
+    const { signIn } = await setup((config) => {
+      pending = config;
+    });
     const result = signIn("client", SCOPE);
     await vi.advanceTimersByTimeAsync(120_000);
     expect(await result).toEqual({ ok: false, reason: "timeout" });
@@ -131,17 +198,24 @@ describe("Google sign-in recovery", () => {
   });
 
   it("recovers from provider exceptions without leaving a timer running", async () => {
-    const { signIn } = await setup(() => { throw new Error("provider unavailable"); });
+    const { signIn } = await setup(() => {
+      throw new Error("provider unavailable");
+    });
     expect(await signIn("client", SCOPE)).toEqual({ ok: false, reason: "unavailable" });
     expect(vi.getTimerCount()).toBe(0);
   });
 
   it("removes a timed-out script so the next attempt can load it again", async () => {
     const { signIn } = await setup(() => {});
-    const scripts: { remove: ReturnType<typeof vi.fn>; onload: (() => void) | null; onerror: (() => void) | null }[] = [];
+    const scripts: { remove: ReturnType<typeof vi.fn>; onload: (() => void) | null; onerror: (() => void) | null }[] =
+      [];
     vi.stubGlobal("window", { setTimeout, clearTimeout });
     vi.stubGlobal("document", {
-      createElement: () => { const script = { remove: vi.fn(), onload: null, onerror: null }; scripts.push(script); return script; },
+      createElement: () => {
+        const script = { remove: vi.fn(), onload: null, onerror: null };
+        scripts.push(script);
+        return script;
+      },
       head: { append: vi.fn() },
     });
     const first = signIn("client", SCOPE);

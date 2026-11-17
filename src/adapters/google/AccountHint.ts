@@ -12,5 +12,7 @@ export async function fetchAccountHint(rest: RestClient, accessToken: string): P
   if (!result.ok) return null;
   const user = (result.value as { user?: { emailAddress?: unknown } } | null)?.user;
   const address = user?.emailAddress;
-  return typeof address === "string" && address.length > 0 && address.length <= 254 && address.includes("@") ? address : null;
+  return typeof address === "string" && address.length > 0 && address.length <= 254 && address.includes("@")
+    ? address
+    : null;
 }

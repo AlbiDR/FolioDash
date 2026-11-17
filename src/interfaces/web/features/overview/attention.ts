@@ -35,12 +35,22 @@ export function portfolioAttention(input: {
   if (input.source !== "recorded") return [];
   const items: AttentionItem[] = [];
   if (input.pendingChange) {
-    items.push({ id: "pending-change", message: "A history change needs checking before you save another statement.", action: "Check it", href: "#connection" });
+    items.push({
+      id: "pending-change",
+      message: "A history change needs checking before you save another statement.",
+      action: "Check it",
+      href: "#connection",
+    });
   }
   if (input.lastStatement !== undefined) {
     const age = daysBetween(input.lastStatement, input.today);
     if (age > STATEMENT_DUE_AFTER_DAYS) {
-      items.push({ id: "statement-due", message: `Your latest statement is ${String(age)} days old (${formatDateLong(input.lastStatement)}). Add the next one to keep these figures current.`, action: "Add statement", href: "#import" });
+      items.push({
+        id: "statement-due",
+        message: `Your latest statement is ${String(age)} days old (${formatDateLong(input.lastStatement)}). Add the next one to keep these figures current.`,
+        action: "Add statement",
+        href: "#import",
+      });
     }
   }
   return items;

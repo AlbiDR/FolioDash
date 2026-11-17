@@ -24,7 +24,9 @@ function firstDirection(key: HoldingsSortKey): "asc" | "desc" {
 /** Choosing a column sorts it, choosing it again reverses it, and a third time returns to the saved order. */
 export function nextSort(current: HoldingsSort | null, key: HoldingsSortKey): HoldingsSort | null {
   if (current === null || current.key !== key) return { key, direction: firstDirection(key) };
-  return current.direction === firstDirection(key) ? { key, direction: current.direction === "asc" ? "desc" : "asc" } : null;
+  return current.direction === firstDirection(key)
+    ? { key, direction: current.direction === "asc" ? "desc" : "asc" }
+    : null;
 }
 
 /** The words a sort announces and the phone's list shows, for example "Value, highest first". */
@@ -38,11 +40,16 @@ function figure(fund: OverviewFund, key: Exclude<HoldingsSortKey, "name">): numb
   const latest = fund.latest;
   if (latest === null) return null;
   switch (key) {
-    case "value": return Number(latest.value);
-    case "share": return latest.share;
-    case "gainPercent": return latest.gainPercent;
-    case "gain": return Number(latest.gain);
-    case "netInvested": return Number(latest.netInvested);
+    case "value":
+      return Number(latest.value);
+    case "share":
+      return latest.share;
+    case "gainPercent":
+      return latest.gainPercent;
+    case "gain":
+      return Number(latest.gain);
+    case "netInvested":
+      return Number(latest.netInvested);
   }
 }
 

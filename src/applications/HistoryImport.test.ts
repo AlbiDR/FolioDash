@@ -12,17 +12,31 @@ const cents = (value: number): EuroCents => value as EuroCents;
 
 function statement(commandId: string, date: string, value: number, first: boolean): HistoryStatement {
   const command: FundCommand = first
-    ? { isin: ISIN_A, action: "Start", moneyIn: cents(0), moneyOut: cents(0), openingNetInvested: cents(1000), comment: "" }
+    ? {
+        isin: ISIN_A,
+        action: "Start",
+        moneyIn: cents(0),
+        moneyOut: cents(0),
+        openingNetInvested: cents(1000),
+        comment: "",
+      }
     : { isin: ISIN_A, action: "Keep", moneyIn: cents(0), moneyOut: cents(0), comment: "" };
   return {
     commandId,
     date: parseIsoDate(date) as never,
-    statement: { funds: [{ isin: ISIN_A, name: "Synthetic Fund", marketValue: cents(value) }], fundsSubtotal: cents(value) },
+    statement: {
+      funds: [{ isin: ISIN_A, name: "Synthetic Fund", marketValue: cents(value) }],
+      fundsSubtotal: cents(value),
+    },
     commands: [command],
   };
 }
 
-const three = [statement("history-2026-01", "2026-01-31", 1000, true), statement("history-2026-02", "2026-02-28", 1100, false), statement("history-2026-03", "2026-03-31", 1200, false)];
+const three = [
+  statement("history-2026-01", "2026-01-31", 1000, true),
+  statement("history-2026-02", "2026-02-28", 1100, false),
+  statement("history-2026-03", "2026-03-31", 1200, false),
+];
 
 function ledgerAfter(count: number): LedgerState {
   let state = EMPTY_LEDGER;
@@ -39,7 +53,11 @@ describe("parseHistory", () => {
 
   it("accepts a file whose statements pass the same validation as a single save", () => {
     const parsed = parseHistory(file(three));
-    expect(parsed.ok && parsed.statements.map((s) => s.commandId)).toEqual(["history-2026-01", "history-2026-02", "history-2026-03"]);
+    expect(parsed.ok && parsed.statements.map((s) => s.commandId)).toEqual([
+      "history-2026-01",
+      "history-2026-02",
+      "history-2026-03",
+    ]);
   });
 
   it.each([
@@ -55,21 +73,36 @@ describe("parseHistory", () => {
 });
 
 describe("parseHistory: bank statements", () => {
-  const stored = { sheetName: "Bank 2026-01-31", sheet: { date1904: false, rows: [[null, { kind: "text", text: "Fondi" }]] } };
+  const stored = {
+    sheetName: "Bank 2026-01-31",
+    sheet: { date1904: false, rows: [[null, { kind: "text", text: "Fondi" }]] },
+  };
   const file = (statements: unknown) => JSON.stringify({ kind: "foliodash-history", version: 1, statements });
 
   it("keeps each month's bank statement, so a history import saves it and the ledger stays rebuildable", () => {
-    const parsed = parseHistory(file([{ ...three[0], source: stored }, { ...three[1], source: stored, commandId: "history-2026-02" }]));
+    const parsed = parseHistory(
+      file([
+        { ...three[0], source: stored },
+        { ...three[1], source: stored, commandId: "history-2026-02" },
+      ]),
+    );
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(parsed.statements.map((statement) => statement.source?.sheetName)).toEqual(["Bank 2026-01-31", "Bank 2026-01-31"]);
+    expect(parsed.statements.map((statement) => statement.source?.sheetName)).toEqual([
+      "Bank 2026-01-31",
+      "Bank 2026-01-31",
+    ]);
     expect(parsed.statements[0]?.source?.sheet.rows[0]).toEqual([undefined, { kind: "text", text: "Fondi" }]);
   });
 
   it("still accepts a month with no statement, and refuses a statement that is not readable", () => {
     const parsed = parseHistory(file([three[0]]));
     expect(parsed.ok && parsed.statements[0]?.source).toBeUndefined();
-    expect(parseHistory(file([{ ...three[0], source: { sheetName: "x", sheet: { rows: [[{ kind: "image" }]], date1904: false } } }])).ok).toBe(false);
+    expect(
+      parseHistory(
+        file([{ ...three[0], source: { sheetName: "x", sheet: { rows: [[{ kind: "image" }]], date1904: false } } }]),
+      ).ok,
+    ).toBe(false);
   });
 });
 
@@ -96,7 +129,10 @@ describe("planHistory", () => {
   });
 
   it("finds a statement the rules would not accept before anything is saved", () => {
-    const broken = [three[0] as HistoryStatement, { ...(three[1] as HistoryStatement), statement: { funds: [], fundsSubtotal: cents(0) } }];
+    const broken = [
+      three[0] as HistoryStatement,
+      { ...(three[1] as HistoryStatement), statement: { funds: [], fundsSubtotal: cents(0) } },
+    ];
     const plan = planHistory(EMPTY_LEDGER, broken);
     expect(plan.ok).toBe(false);
   });
@@ -114,7 +150,11 @@ describe("runHistory", () => {
       three,
       () => undefined,
     );
-    expect(seen).toEqual([["history-2026-01", ""], ["history-2026-02", "after-history-2026-01"], ["history-2026-03", "after-history-2026-02"]]);
+    expect(seen).toEqual([
+      ["history-2026-01", ""],
+      ["history-2026-02", "after-history-2026-01"],
+      ["history-2026-03", "after-history-2026-02"],
+    ]);
     expect(run.saved).toBe(3);
     expect(run.stopped).toBeNull();
   });
@@ -125,7 +165,9 @@ describe("runHistory", () => {
     const run = await runHistory<string>(
       (item) => {
         attempted.push(item.commandId);
-        return Promise.resolve(item.commandId === "history-2026-02" ? { ok: false, failure: "unknown" } : { ok: true, ledger: EMPTY_LEDGER });
+        return Promise.resolve(
+          item.commandId === "history-2026-02" ? { ok: false, failure: "unknown" } : { ok: true, ledger: EMPTY_LEDGER },
+        );
       },
       EMPTY_LEDGER,
       three,
@@ -149,7 +191,9 @@ describe("planAttach", () => {
   });
 
   it("leaves out months that already have a stored statement, months not saved yet, and months the file has no statement for", () => {
-    expect(planAttach(ledgerAfter(2), withSource, new Set([date("2026-01-31")])).map((item) => item.date)).toEqual(["2026-02-28"]);
+    expect(planAttach(ledgerAfter(2), withSource, new Set([date("2026-01-31")])).map((item) => item.date)).toEqual([
+      "2026-02-28",
+    ]);
     expect(planAttach(ledgerAfter(1), withSource, new Set()).map((item) => item.date)).toEqual(["2026-01-31"]);
     expect(planAttach(ledgerAfter(2), three, new Set())).toEqual([]);
   });
