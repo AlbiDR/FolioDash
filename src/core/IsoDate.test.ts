@@ -115,7 +115,9 @@ describe("display", () => {
   });
 
   it("spells every month", () => {
-    const names = Array.from({ length: 12 }, (_, index) => formatMonthYear(date(`2026-${String(index + 1).padStart(2, "0")}-01`)));
+    const names = Array.from({ length: 12 }, (_, index) =>
+      formatMonthYear(date(`2026-${String(index + 1).padStart(2, "0")}-01`)),
+    );
     expect(names).toEqual([
       "January 2026",
       "February 2026",

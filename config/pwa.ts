@@ -23,7 +23,8 @@ export function serviceWorkerPlugin(): Plugin {
     apply: "build",
     async writeBundle(options) {
       const outDir = options.dir;
-      if (outDir === undefined) throw new Error("The build has no output folder, so the service worker cannot be written.");
+      if (outDir === undefined)
+        throw new Error("The build has no output folder, so the service worker cannot be written.");
       const files = filesUnder(outDir)
         .map((path) => relative(outDir, path).split("\\").join("/"))
         .filter((file) => file !== "sw.js" && !file.endsWith(".map"))
@@ -40,7 +41,10 @@ export function serviceWorkerPlugin(): Plugin {
         minify: true,
         legalComments: "none",
         logLevel: "error",
-        define: { __PRECACHE__: JSON.stringify(["./", ...files.filter((file) => file !== "index.html")]), __BUILD__: JSON.stringify(hash.digest("hex").slice(0, 12)) },
+        define: {
+          __PRECACHE__: JSON.stringify(["./", ...files.filter((file) => file !== "index.html")]),
+          __BUILD__: JSON.stringify(hash.digest("hex").slice(0, 12)),
+        },
       });
       writeFileSync(join(outDir, "sw.js"), result.outputFiles[0]?.text ?? "");
     },

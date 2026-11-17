@@ -19,16 +19,36 @@ function day(text: string): IsoDate {
 let apply: (change: { today?: IsoDate; pending?: boolean }) => void = () => undefined;
 
 function Harness() {
-  const [state, setState] = useState<{ today: IsoDate; pending: boolean }>({ today: day("2027-08-01"), pending: false });
-  apply = (change) => { setState((current) => ({ today: change.today ?? current.today, pending: change.pending ?? current.pending })); };
-  return h(PrivacyProvider, { hidden: false, children: h(OverviewView, { model, range: "All", onRangeChange: () => undefined, today: state.today, pendingChange: state.pending }) });
+  const [state, setState] = useState<{ today: IsoDate; pending: boolean }>({
+    today: day("2027-08-01"),
+    pending: false,
+  });
+  apply = (change) => {
+    setState((current) => ({ today: change.today ?? current.today, pending: change.pending ?? current.pending }));
+  };
+  return h(PrivacyProvider, {
+    hidden: false,
+    children: h(OverviewView, {
+      model,
+      range: "All",
+      onRangeChange: () => undefined,
+      today: state.today,
+      pendingChange: state.pending,
+    }),
+  });
 }
 
 const root = document.getElementById("root");
 if (root === null) throw new Error("Synthetic mount missing");
 render(h(Harness, {}), root);
-Object.assign(window, { syntheticOverview: {
-  lastStatement,
-  setToday: (text: string) => { apply({ today: day(text) }); },
-  setPending: (pending: boolean) => { apply({ pending }); },
-} });
+Object.assign(window, {
+  syntheticOverview: {
+    lastStatement,
+    setToday: (text: string) => {
+      apply({ today: day(text) });
+    },
+    setPending: (pending: boolean) => {
+      apply({ pending });
+    },
+  },
+});

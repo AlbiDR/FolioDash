@@ -76,7 +76,14 @@ const SPARK = "#ffb02e";
 // ---------------------------------------------------------------------------------------------------------------
 // Paths
 
-const hex = (colour: readonly [number, number, number]): string => `#${colour.map((channel) => Math.round(channel * 255).toString(16).padStart(2, "0")).join("")}`;
+const hex = (colour: readonly [number, number, number]): string =>
+  `#${colour
+    .map((channel) =>
+      Math.round(channel * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
 const tenth = (value: number): string => String(Math.round(value * 10) / 10);
 const at2 = (point: Point): string => `${tenth(point[0])} ${tenth(point[1])}`;
 
@@ -84,13 +91,21 @@ interface Node {
   readonly p: Point;
   readonly r: number;
 }
-type Edge = { readonly kind: "line" } | { readonly kind: "arc"; readonly centre: Point; readonly radius: number; readonly clockwise: boolean };
+type Edge =
+  | { readonly kind: "line" }
+  | { readonly kind: "arc"; readonly centre: Point; readonly radius: number; readonly clockwise: boolean };
 const LINE: Edge = { kind: "line" };
-const arcAround = (centre: Point, radius: number, clockwise: boolean): Edge => ({ kind: "arc", centre, radius, clockwise });
+const arcAround = (centre: Point, radius: number, clockwise: boolean): Edge => ({
+  kind: "arc",
+  centre,
+  radius,
+  clockwise,
+});
 const corner = (x: number, y: number, r = FILLET): Node => ({ p: [x, y], r });
 const smooth = (x: number, y: number): Node => ({ p: [x, y], r: 0 });
 
-const wrap = <T>(items: readonly T[], index: number): T => at(items, ((index % items.length) + items.length) % items.length);
+const wrap = <T>(items: readonly T[], index: number): T =>
+  at(items, ((index % items.length) + items.length) % items.length);
 const unit = (from: Point, to: Point): Point => {
   const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
   return [(to[0] - from[0]) / length, (to[1] - from[1]) / length];
@@ -98,7 +113,12 @@ const unit = (from: Point, to: Point): Point => {
 const turn = (a: Point, b: Point): number => a[0] * b[1] - a[1] * b[0];
 
 /** The fillet circle between a straight edge and an arc, as the points where it touches each. */
-function filletLineArc(corner: Point, direction: Point, arcEdge: Extract<Edge, { kind: "arc" }>, r: number): { readonly onLine: Point; readonly onArc: Point } {
+function filletLineArc(
+  corner: Point,
+  direction: Point,
+  arcEdge: Extract<Edge, { kind: "arc" }>,
+  r: number,
+): { readonly onLine: Point; readonly onArc: Point } {
   const inward: Point = [-direction[1], direction[0]];
   const target = arcEdge.clockwise ? arcEdge.radius - r : arcEdge.radius + r;
   const w: Point = [corner[0] + r * inward[0] - arcEdge.centre[0], corner[1] + r * inward[1] - arcEdge.centre[1]];
@@ -111,7 +131,10 @@ function filletLineArc(corner: Point, direction: Point, arcEdge: Extract<Edge, {
   const scale = arcEdge.radius / Math.hypot(centre[0] - arcEdge.centre[0], centre[1] - arcEdge.centre[1]);
   return {
     onLine: [centre[0] - r * inward[0], centre[1] - r * inward[1]],
-    onArc: [arcEdge.centre[0] + (centre[0] - arcEdge.centre[0]) * scale, arcEdge.centre[1] + (centre[1] - arcEdge.centre[1]) * scale],
+    onArc: [
+      arcEdge.centre[0] + (centre[0] - arcEdge.centre[0]) * scale,
+      arcEdge.centre[1] + (centre[1] - arcEdge.centre[1]) * scale,
+    ],
   };
 }
 
@@ -149,7 +172,10 @@ function outline(nodes: readonly Node[], edges: readonly Edge[]): string {
   for (let index = 0; index < nodes.length; index++) {
     const edge = at(edges, index);
     const next = wrap(corners, index + 1);
-    path += edge.kind === "line" ? `L${at2(next.into)}` : `A${tenth(edge.radius)} ${tenth(edge.radius)} 0 0 ${edge.clockwise ? "1" : "0"} ${at2(next.into)}`;
+    path +=
+      edge.kind === "line"
+        ? `L${at2(next.into)}`
+        : `A${tenth(edge.radius)} ${tenth(edge.radius)} 0 0 ${edge.clockwise ? "1" : "0"} ${at2(next.into)}`;
     if (next.r > 0) path += `A${String(next.r)} ${String(next.r)} 0 0 ${String(next.sweep)} ${at2(next.out)}`;
   }
   return `${path}Z`;
@@ -157,13 +183,26 @@ function outline(nodes: readonly Node[], edges: readonly Edge[]): string {
 
 const upper: Point = [M.bowlX, M.upperY];
 const lower: Point = [M.bowlX, M.lowerY];
-const onCircle = (centreY: number, radius: number, y: number): number => M.bowlX + Math.sqrt(radius * radius - (y - centreY) * (y - centreY));
-const aboveCentre = (radius: number, x: number): number => M.upperY - Math.sqrt(radius * radius - (x - M.bowlX) * (x - M.bowlX));
+const onCircle = (centreY: number, radius: number, y: number): number =>
+  M.bowlX + Math.sqrt(radius * radius - (y - centreY) * (y - centreY));
+const aboveCentre = (radius: number, x: number): number =>
+  M.upperY - Math.sqrt(radius * radius - (x - M.bowlX) * (x - M.bowlX));
 
 /** The F: its stem, its middle arm and the whole top bar, up to the vertical gap. */
 const letterF = (): string =>
   outline(
-    [corner(M.left, M.top), corner(CUT_X.from, M.top), corner(CUT_X.from, M.barBottom), corner(M.stemRight, M.barBottom), corner(M.stemRight, M.armTop), corner(M.armEnd, M.armTop), corner(M.armEnd, M.armBottom), corner(M.stemRight, M.armBottom), corner(M.stemRight, M.bottom), corner(M.left, M.bottom)],
+    [
+      corner(M.left, M.top),
+      corner(CUT_X.from, M.top),
+      corner(CUT_X.from, M.barBottom),
+      corner(M.stemRight, M.barBottom),
+      corner(M.stemRight, M.armTop),
+      corner(M.armEnd, M.armTop),
+      corner(M.armEnd, M.armBottom),
+      corner(M.stemRight, M.armBottom),
+      corner(M.stemRight, M.bottom),
+      corner(M.left, M.bottom),
+    ],
     Array.from({ length: 10 }, () => LINE),
   );
 
@@ -184,7 +223,20 @@ const letterD = (): string =>
       smooth(M.bowlX, M.bottom),
       corner(M.dStemLeft, M.bottom),
     ],
-    [LINE, LINE, LINE, arcAround(lower, M.inner, false), LINE, arcAround(upper, M.inner, false), LINE, arcAround(upper, M.outer, true), LINE, arcAround(lower, M.outer, true), LINE, LINE],
+    [
+      LINE,
+      LINE,
+      LINE,
+      arcAround(lower, M.inner, false),
+      LINE,
+      arcAround(upper, M.inner, false),
+      LINE,
+      arcAround(upper, M.outer, true),
+      LINE,
+      arcAround(lower, M.outer, true),
+      LINE,
+      LINE,
+    ],
   );
 
 /** The D's shoulder, the one amber piece: the bowl's upper arc, between the two gaps. */
@@ -200,9 +252,16 @@ const shoulder = (): string =>
   );
 
 /** A rectangle with its own radius at each corner, clockwise from the top left. A radius of zero is a square corner. */
-function roundRect(x0: number, y0: number, x1: number, y1: number, radii: readonly [number, number, number, number]): string {
+function roundRect(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  radii: readonly [number, number, number, number],
+): string {
   const [tl, tr, br, bl] = radii;
-  const arcTo = (radius: number, x: number, y: number): string => (radius > 0 ? `A${tenth(radius)} ${tenth(radius)} 0 0 1 ${tenth(x)} ${tenth(y)}` : "");
+  const arcTo = (radius: number, x: number, y: number): string =>
+    radius > 0 ? `A${tenth(radius)} ${tenth(radius)} 0 0 1 ${tenth(x)} ${tenth(y)}` : "";
   return `M${tenth(x0 + tl)} ${tenth(y0)}H${tenth(x1 - tr)}${arcTo(tr, x1, y0 + tr)}V${tenth(y1 - br)}${arcTo(br, x1 - br, y1)}H${tenth(x0 + bl)}${arcTo(bl, x0, y1 - bl)}V${tenth(y0 + tl)}${arcTo(tl, x0 + tl, y0)}Z`;
 }
 
@@ -229,28 +288,100 @@ interface Shadow {
   readonly alpha: number;
 }
 type SceneNode =
-  | { readonly type: "fill"; readonly path: string; readonly paint: PaintSpec; readonly opacity: number; readonly clip: "tile" | "none"; readonly place: Transform | null }
-  | { readonly type: "stroke"; readonly path: string; readonly width: number; readonly paint: PaintSpec; readonly opacity: number; readonly clip: "tile" | "self"; readonly place: Transform | null }
-  | { readonly type: "halo"; readonly path: string; readonly blur: number; readonly colour: string; readonly alpha: number; readonly place: Transform }
-  | { readonly type: "lifted"; readonly shadows: readonly Shadow[]; readonly members: readonly { readonly path: string; readonly paint: PaintSpec }[]; readonly place: Transform };
+  | {
+      readonly type: "fill";
+      readonly path: string;
+      readonly paint: PaintSpec;
+      readonly opacity: number;
+      readonly clip: "tile" | "none";
+      readonly place: Transform | null;
+    }
+  | {
+      readonly type: "stroke";
+      readonly path: string;
+      readonly width: number;
+      readonly paint: PaintSpec;
+      readonly opacity: number;
+      readonly clip: "tile" | "self";
+      readonly place: Transform | null;
+    }
+  | {
+      readonly type: "halo";
+      readonly path: string;
+      readonly blur: number;
+      readonly colour: string;
+      readonly alpha: number;
+      readonly place: Transform;
+    }
+  | {
+      readonly type: "lifted";
+      readonly shadows: readonly Shadow[];
+      readonly members: readonly { readonly path: string; readonly paint: PaintSpec }[];
+      readonly place: Transform;
+    };
 
 const stop = (offset: number, hex: string, alpha = 1): Stop => ({ offset, colour: parseColour(hex), alpha });
-const gradient = (kind: "linear" | "radial", units: "box" | "user", coords: readonly number[], stops: readonly Stop[]): PaintSpec => ({ kind, units, coords, stops });
+const gradient = (
+  kind: "linear" | "radial",
+  units: "box" | "user",
+  coords: readonly number[],
+  stops: readonly Stop[],
+): PaintSpec => ({ kind, units, coords, stops });
 const flat = (colour: string, alpha = 1): PaintSpec => ({ kind: "solid", colour, alpha });
 
 // Transparent stops carry the colour of their neighbour, so every renderer interpolates them the same way.
-const TILE = gradient("linear", "box", [0.15, 0, 0.55, 1], [stop(0, "#5fa0ff"), stop(0.5, "#2c5ff2"), stop(1, "#0c32c0")]);
-const EDGE = gradient("linear", "box", [0, 0, 0, 1], [stop(0, "#ffffff", 0.65), stop(0.22, "#ffffff", 0.08), stop(0.7, "#010a38", 0), stop(1, "#010a38", 0.5)]);
-const GLOW = gradient("radial", "box", [0.22, 0.04, 0.85], [stop(0, "#ffffff", 0.34), stop(0.6, "#ffffff", 0.04), stop(1, "#ffffff", 0)]);
+const TILE = gradient(
+  "linear",
+  "box",
+  [0.15, 0, 0.55, 1],
+  [stop(0, "#5fa0ff"), stop(0.5, "#2c5ff2"), stop(1, "#0c32c0")],
+);
+const EDGE = gradient(
+  "linear",
+  "box",
+  [0, 0, 0, 1],
+  [stop(0, "#ffffff", 0.65), stop(0.22, "#ffffff", 0.08), stop(0.7, "#010a38", 0), stop(1, "#010a38", 0.5)],
+);
+const GLOW = gradient(
+  "radial",
+  "box",
+  [0.22, 0.04, 0.85],
+  [stop(0, "#ffffff", 0.34), stop(0.6, "#ffffff", 0.04), stop(1, "#ffffff", 0)],
+);
 const VIGNETTE = gradient("radial", "box", [0.5, 0.42, 0.78], [stop(0.55, "#021046", 0), stop(1, "#021046", 0.42)]);
 const SHEEN = gradient("linear", "box", [0, 0, 0, 1], [stop(0, "#ffffff", 0.22), stop(1, "#ffffff", 0)]);
-const INK = gradient("linear", "user", [0, M.top, 0, M.bottom], [stop(0, "#ffffff"), stop(0.55, "#f1f6ff"), stop(1, "#c9daff")]);
-const AMBER = gradient("linear", "user", [0, M.top, 0, CUT_Y.from], [stop(0, "#ffe49a"), stop(0.5, "#ffbe3d"), stop(1, "#ff9a0f")]);
-const RIM = gradient("linear", "box", [0, 0, 0, 1], [stop(0, "#ffffff", 0.95), stop(0.3, "#ffffff", 0), stop(0.7, "#0a2a9c", 0), stop(1, "#0a2a9c", 0.38)]);
-const RIM_AMBER = gradient("linear", "box", [0, 0, 0, 1], [stop(0, "#ffffff", 0.95), stop(0.35, "#b85a00", 0), stop(1, "#b85a00", 0.45)]);
+const INK = gradient(
+  "linear",
+  "user",
+  [0, M.top, 0, M.bottom],
+  [stop(0, "#ffffff"), stop(0.55, "#f1f6ff"), stop(1, "#c9daff")],
+);
+const AMBER = gradient(
+  "linear",
+  "user",
+  [0, M.top, 0, CUT_Y.from],
+  [stop(0, "#ffe49a"), stop(0.5, "#ffbe3d"), stop(1, "#ff9a0f")],
+);
+const RIM = gradient(
+  "linear",
+  "box",
+  [0, 0, 0, 1],
+  [stop(0, "#ffffff", 0.95), stop(0.3, "#ffffff", 0), stop(0.7, "#0a2a9c", 0), stop(1, "#0a2a9c", 0.38)],
+);
+const RIM_AMBER = gradient(
+  "linear",
+  "box",
+  [0, 0, 0, 1],
+  [stop(0, "#ffffff", 0.95), stop(0.35, "#b85a00", 0), stop(1, "#b85a00", 0.45)],
+);
 
 // Each card is a vertical gradient of its own, so the cards differ in tone across the seams.
-const CARD_TONES: readonly (readonly [string, string])[] = [["#5a9bff", "#2f64f2"], ["#4f8dff", "#2559ea"], ["#3f78f6", "#1a46d6"], ["#356ff0", "#153fcf"]];
+const CARD_TONES: readonly (readonly [string, string])[] = [
+  ["#5a9bff", "#2f64f2"],
+  ["#4f8dff", "#2559ea"],
+  ["#3f78f6", "#1a46d6"],
+  ["#356ff0", "#153fcf"],
+];
 
 /** Every layer of the mark, bottom to top. `outer` is the tile's corner radius: 112 for rounded icons, 0 for full-bleed ones. */
 function scene(outer: number): readonly SceneNode[] {
@@ -266,9 +397,17 @@ function scene(outer: number): readonly SceneNode[] {
     roundRect(0, y1, x0, CANVAS, [r, r, r, outer]),
     roundRect(x1, y1, CANVAS, CANVAS, [r, r, outer, r]),
   ];
-  const sheenEdge = outer > 0 ? `M0 ${String(outer)}A${String(outer)} ${String(outer)} 0 0 1 ${String(outer)} 0H${String(CANVAS - outer)}A${String(outer)} ${String(outer)} 0 0 1 ${String(CANVAS)} ${String(outer)}` : `M0 0H${String(CANVAS)}`;
+  const sheenEdge =
+    outer > 0
+      ? `M0 ${String(outer)}A${String(outer)} ${String(outer)} 0 0 1 ${String(outer)} 0H${String(CANVAS - outer)}A${String(outer)} ${String(outer)} 0 0 1 ${String(CANVAS)} ${String(outer)}`
+      : `M0 0H${String(CANVAS)}`;
   const sheen = `${sheenEdge}V196Q${String(CANVAS / 2)} 250 0 196Z`;
-  const rim = roundRect(1.5, 1.5, CANVAS - 1.5, CANVAS - 1.5, [Math.max(0, outer - 1.5), Math.max(0, outer - 1.5), Math.max(0, outer - 1.5), Math.max(0, outer - 1.5)]);
+  const rim = roundRect(1.5, 1.5, CANVAS - 1.5, CANVAS - 1.5, [
+    Math.max(0, outer - 1.5),
+    Math.max(0, outer - 1.5),
+    Math.max(0, outer - 1.5),
+    Math.max(0, outer - 1.5),
+  ]);
   const f = letterF();
   const d = letterD();
   const s = shoulder();
@@ -279,7 +418,14 @@ function scene(outer: number): readonly SceneNode[] {
   ];
   cards.forEach((path, index) => {
     const [top, bottom] = at(CARD_TONES, index);
-    nodes.push({ type: "fill", path, paint: gradient("linear", "box", [0, 0, 0, 1], [stop(0, top), stop(1, bottom)]), opacity: 1, clip: "tile", place: null });
+    nodes.push({
+      type: "fill",
+      path,
+      paint: gradient("linear", "box", [0, 0, 0, 1], [stop(0, top), stop(1, bottom)]),
+      opacity: 1,
+      clip: "tile",
+      place: null,
+    });
     nodes.push({ type: "stroke", path, width: 3, paint: EDGE, opacity: GRID_STRENGTH, clip: "tile", place: null });
   });
   nodes.push(
@@ -318,13 +464,19 @@ export function markSvgBody(outer: number, prefix: string): string {
   let counter = 0;
   const identify = (kind: string): string => `${prefix}${kind}${String(++counter)}`;
   const tileId = `${prefix}tile`;
-  defs.push(`<clipPath id="${tileId}"><path d="${roundRect(0, 0, CANVAS, CANVAS, [outer, outer, outer, outer])}"/></clipPath>`);
+  defs.push(
+    `<clipPath id="${tileId}"><path d="${roundRect(0, 0, CANVAS, CANVAS, [outer, outer, outer, outer])}"/></clipPath>`,
+  );
   const stopsSvg = (stops: readonly Stop[]): string =>
     stops
-      .map((s) => `<stop offset="${String(s.offset)}" stop-color="${hex(s.colour)}"${s.alpha < 1 ? ` stop-opacity="${String(s.alpha)}"` : ""}/>`)
+      .map(
+        (s) =>
+          `<stop offset="${String(s.offset)}" stop-color="${hex(s.colour)}"${s.alpha < 1 ? ` stop-opacity="${String(s.alpha)}"` : ""}/>`,
+      )
       .join("");
   const paintAttr = (paint: PaintSpec, attribute: "fill" | "stroke"): string => {
-    if (paint.kind === "solid") return `${attribute}="${paint.colour}"${paint.alpha < 1 ? ` ${attribute}-opacity="${String(paint.alpha)}"` : ""}`;
+    if (paint.kind === "solid")
+      return `${attribute}="${paint.colour}"${paint.alpha < 1 ? ` ${attribute}-opacity="${String(paint.alpha)}"` : ""}`;
     const id = identify("g");
     const units = paint.units === "user" ? ' gradientUnits="userSpaceOnUse"' : "";
     const [a = 0, b = 0, c = 0, e = 0] = paint.coords;
@@ -335,7 +487,10 @@ export function markSvgBody(outer: number, prefix: string): string {
     );
     return `${attribute}="url(#${id})"`;
   };
-  const withPlace = (transform: Transform | null, content: string): string => (transform === null ? content : `<g transform="translate(${String(transform.dx)} ${String(transform.dy)}) scale(${String(transform.scale)})">${content}</g>`);
+  const withPlace = (transform: Transform | null, content: string): string =>
+    transform === null
+      ? content
+      : `<g transform="translate(${String(transform.dx)} ${String(transform.dy)}) scale(${String(transform.scale)})">${content}</g>`;
   for (const node of scene(outer)) {
     if (node.type === "fill") {
       const opacity = node.opacity < 1 ? ` opacity="${String(node.opacity)}"` : "";
@@ -349,7 +504,12 @@ export function markSvgBody(outer: number, prefix: string): string {
         defs.push(`<clipPath id="${id}"><path d="${node.path}"/></clipPath>`);
         clip = ` clip-path="url(#${id})"`;
       }
-      body.push(withPlace(node.place, `<path d="${node.path}" fill="none" ${paintAttr(node.paint, "stroke")} stroke-width="${String(node.width)}"${opacity}${clip}/>`));
+      body.push(
+        withPlace(
+          node.place,
+          `<path d="${node.path}" fill="none" ${paintAttr(node.paint, "stroke")} stroke-width="${String(node.width)}"${opacity}${clip}/>`,
+        ),
+      );
     } else if (node.type === "halo") {
       const id = identify("h");
       defs.push(
@@ -365,8 +525,12 @@ export function markSvgBody(outer: number, prefix: string): string {
         )
         .join("");
       const merge = `${node.shadows.map((_shadow, index) => `<feMergeNode in="s${String(index)}"/>`).join("")}<feMergeNode in="SourceGraphic"/>`;
-      defs.push(`<filter id="${id}" x="-25%" y="-25%" width="150%" height="160%" color-interpolation-filters="sRGB">${layers}<feMerge>${merge}</feMerge></filter>`);
-      const members = node.members.map((member) => `<path d="${member.path}" ${paintAttr(member.paint, "fill")}/>`).join("");
+      defs.push(
+        `<filter id="${id}" x="-25%" y="-25%" width="150%" height="160%" color-interpolation-filters="sRGB">${layers}<feMerge>${merge}</feMerge></filter>`,
+      );
+      const members = node.members
+        .map((member) => `<path d="${member.path}" ${paintAttr(member.paint, "fill")}/>`)
+        .join("");
       body.push(withPlace(node.place, `<g filter="url(#${id})">${members}</g>`));
     }
   }
@@ -384,8 +548,14 @@ export function markSvg(): string {
 function paintOf(spec: PaintSpec, shape: readonly Polygon[], transform: Transform | null): Paint {
   if (spec.kind === "solid") return solid(parseColour(spec.colour), spec.alpha);
   const box = bounds(shape);
-  const mapX = (value: number): number => (spec.units === "box" ? box.x + value * box.width : ((transform === null ? value : value * transform.scale + transform.dx) * RESOLUTION));
-  const mapY = (value: number): number => (spec.units === "box" ? box.y + value * box.height : ((transform === null ? value : value * transform.scale + transform.dy) * RESOLUTION));
+  const mapX = (value: number): number =>
+    spec.units === "box"
+      ? box.x + value * box.width
+      : (transform === null ? value : value * transform.scale + transform.dx) * RESOLUTION;
+  const mapY = (value: number): number =>
+    spec.units === "box"
+      ? box.y + value * box.height
+      : (transform === null ? value : value * transform.scale + transform.dy) * RESOLUTION;
   const [a = 0, b = 0, c = 0, e = 0] = spec.coords;
   if (spec.kind === "linear") return linear(mapX(a), mapY(b), mapX(c), mapY(e), spec.stops);
   return radial(mapX(a), mapY(b), spec.units === "box" ? c * box.width : c * RESOLUTION, spec.stops);
@@ -400,12 +570,18 @@ export const MASTER = CANVAS * RESOLUTION;
 export function renderMark(outer: number): Float32Array {
   const working = MASTER;
   const canvas = new Canvas(working);
-  const shapeOf = (path: string, transform: Transform | null): Polygon[] => place(flattenPath(path), transform ?? IDENTITY, RESOLUTION);
+  const shapeOf = (path: string, transform: Transform | null): Polygon[] =>
+    place(flattenPath(path), transform ?? IDENTITY, RESOLUTION);
   const tileMask = fillMask(shapeOf(roundRect(0, 0, CANVAS, CANVAS, [outer, outer, outer, outer]), null), working);
   for (const node of scene(outer)) {
     if (node.type === "fill") {
       const shape = shapeOf(node.path, node.place);
-      canvas.paint(fillMask(shape, working), paintOf(node.paint, shape, node.place), node.opacity, node.clip === "tile" ? tileMask : undefined);
+      canvas.paint(
+        fillMask(shape, working),
+        paintOf(node.paint, shape, node.place),
+        node.opacity,
+        node.clip === "tile" ? tileMask : undefined,
+      );
     } else if (node.type === "stroke") {
       const shape = shapeOf(node.path, node.place);
       const scale = (node.place?.scale ?? 1) * RESOLUTION;

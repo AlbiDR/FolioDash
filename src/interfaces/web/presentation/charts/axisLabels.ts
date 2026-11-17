@@ -16,7 +16,7 @@ export function positionAxisLabels(
   right: number,
   gap: number,
 ): readonly PositionedAxisLabel[] {
-  const positioned = labels.map(label => {
+  const positioned = labels.map((label) => {
     const width = widths[label.key] ?? label.text.length * gap;
     const fits = Number.isFinite(width) && width >= 0 && width <= right - left;
     const x = fits ? Math.max(left + width / 2, Math.min(right - width / 2, label.x)) : label.x;

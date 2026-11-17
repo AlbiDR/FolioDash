@@ -8,7 +8,9 @@ import { preparePages, readFiles, README_IMAGES, treeDigest, writeCaptureReceipt
 
 const REVISION = "a".repeat(40);
 const temporary: string[] = [];
-afterEach(() => { for (const root of temporary.splice(0)) rmSync(root, { recursive: true, force: true }); });
+afterEach(() => {
+  for (const root of temporary.splice(0)) rmSync(root, { recursive: true, force: true });
+});
 
 function chunk(type: string, data: Buffer): Buffer {
   const result = Buffer.alloc(data.length + 12);
@@ -30,10 +32,16 @@ function png(width: number, height: number, box?: readonly [number, number, numb
   const rows = Buffer.alloc(height * stride);
   if (box !== undefined) {
     for (let row = Math.floor(box[1] * height); row < Math.floor(box[3] * height); row++) {
-      for (let pixel = Math.floor(box[0] * width); pixel < Math.floor(box[2] * width); pixel++) rows[row * stride + 1 + pixel * 4 + 3] = 255;
+      for (let pixel = Math.floor(box[0] * width); pixel < Math.floor(box[2] * width); pixel++)
+        rows[row * stride + 1 + pixel * 4 + 3] = 255;
     }
   }
-  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", deflateSync(rows)), chunk("IEND", Buffer.alloc(0))]);
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(rows)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
 }
 
 const FRAMED = [0.03, 0.04, 0.97, 0.96] as const;
@@ -52,7 +60,8 @@ function fixture(): { app: string; screenshots: string; output: string } {
   writeFileSync(join(paths.app, "sw.js"), "Synthetic checked service worker");
   writeFileSync(join(paths.app, "manifest.webmanifest"), "{}");
   writeFileSync(join(paths.app, "assets", "main.js"), "Synthetic checked module");
-  for (const name of README_IMAGES) writeFileSync(join(paths.screenshots, name), name === "portfolio-mobile.png" ? mobile : clear);
+  for (const name of README_IMAGES)
+    writeFileSync(join(paths.screenshots, name), name === "portfolio-mobile.png" ? mobile : clear);
   writeCaptureReceipt(paths.app, paths.screenshots, treeDigest(readFiles(paths.app)), REVISION);
   return paths;
 }
@@ -65,21 +74,29 @@ void describe("checked Pages composition", () => {
     assert.equal(treeDigest(readFiles(app)), before);
     const composed = readFiles(output);
     for (const [name, bytes] of readFiles(app)) assert.equal(composed.get(name)?.equals(bytes), true);
-    assert.deepEqual([...composed.keys()].sort(), [...readFiles(app).keys(), ...README_IMAGES.map(name => `readme/${name}`), "readme/screenshots.json"].sort());
+    assert.deepEqual(
+      [...composed.keys()].sort(),
+      [...readFiles(app).keys(), ...README_IMAGES.map((name) => `readme/${name}`), "readme/screenshots.json"].sort(),
+    );
   });
 
-  for (const name of ["unexpected.js", "unexpected.html"]) void it(`rejects an unexpected presentation file: ${name}`, () => {
-    const { app, screenshots, output } = fixture();
-    writeFileSync(join(screenshots, name), "Synthetic extra file");
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /exactly the images/u);
-  });
+  for (const name of ["unexpected.js", "unexpected.html"])
+    void it(`rejects an unexpected presentation file: ${name}`, () => {
+      const { app, screenshots, output } = fixture();
+      writeFileSync(join(screenshots, name), "Synthetic extra file");
+      assert.throws(() => {
+        preparePages(app, screenshots, output, REVISION);
+      }, /exactly the images/u);
+    });
 
   void it("rejects app mutation after capture and leaves the last composed artifact intact", () => {
     const { app, screenshots, output } = fixture();
     preparePages(app, screenshots, output, REVISION);
     const before = treeDigest(readFiles(output));
     writeFileSync(join(app, "sw.js"), "Changed worker");
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /pre-capture/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /pre-capture/u);
     assert.equal(treeDigest(readFiles(output)), before);
   });
 
@@ -87,17 +104,30 @@ void describe("checked Pages composition", () => {
     const { app, screenshots } = fixture();
     const before = treeDigest(readFiles(app));
     writeFileSync(join(app, "index.html"), "Changed app");
-    assert.throws(() => { writeCaptureReceipt(app, screenshots, before, REVISION); }, /changed during/u);
+    assert.throws(() => {
+      writeCaptureReceipt(app, screenshots, before, REVISION);
+    }, /changed during/u);
   });
 
   void it("rejects a valid but replaced PNG from another generation", () => {
     const { app, screenshots, output } = fixture();
     writeFileSync(join(screenshots, "portfolio-mobile.png"), png(780, 1688 + 2));
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /dimensions/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /dimensions/u);
     const changed = Buffer.from(mobile);
     // A changed harmless ancillary chunk preserves a valid PNG but changes its receipt hash.
-    writeFileSync(join(screenshots, "portfolio-mobile.png"), Buffer.concat([changed.subarray(0, -12), chunk("tEXt", Buffer.from("Synthetic generation change")), changed.subarray(-12)]));
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /capture receipt/u);
+    writeFileSync(
+      join(screenshots, "portfolio-mobile.png"),
+      Buffer.concat([
+        changed.subarray(0, -12),
+        chunk("tEXt", Buffer.from("Synthetic generation change")),
+        changed.subarray(-12),
+      ]),
+    );
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /capture receipt/u);
   });
 
   void it("rejects corrupted PNG checksums and truncated image content", () => {
@@ -105,9 +135,13 @@ void describe("checked Pages composition", () => {
     const damaged = Buffer.from(mobile);
     damaged[40] = (damaged[40] ?? 0) ^ 1;
     writeFileSync(join(screenshots, "portfolio-mobile.png"), damaged);
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /checksum/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /checksum/u);
     writeFileSync(join(screenshots, "portfolio-mobile.png"), mobile.subarray(0, -12));
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /Incomplete PNG/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /Incomplete PNG/u);
   });
 
   void it("rejects symlinks in both input compartments", () => {
@@ -115,39 +149,59 @@ void describe("checked Pages composition", () => {
     const image = join(screenshots, "hero-light.png");
     rmSync(image);
     symlinkSync(join(screenshots, "hero-dark.png"), image);
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /ordinary PNG/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /ordinary PNG/u);
     rmSync(image);
     writeFileSync(image, desktop);
     const linkedRoot = `${screenshots}-link`;
     symlinkSync(screenshots, linkedRoot, "dir");
-    assert.throws(() => { preparePages(app, linkedRoot, output, REVISION); }, /ordinary directory/u);
+    assert.throws(() => {
+      preparePages(app, linkedRoot, output, REVISION);
+    }, /ordinary directory/u);
     symlinkSync(join(app, "index.html"), join(app, "assets", "linked.html"));
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /symlink/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /symlink/u);
   });
 
   void it("rejects an image that is drawn on an opaque page background", () => {
     const { app, screenshots, output } = fixture();
     writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, [0, 0, 1, 1]));
-    assert.throws(() => { writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION); }, /without a page background/u);
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /without a page background/u);
+    assert.throws(() => {
+      writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION);
+    }, /without a page background/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /without a page background/u);
   });
 
   for (const [problem, box, pattern] of [
     ["content cut off at an edge", [0.03, 0.04, 0.97, 1], /touches the bottom edge/u],
     ["a crop that is far too loose", [0.2, 0.2, 0.8, 0.8], /cropped too loosely/u],
     ["a picture that fills only one side", [0.03, 0.04, 0.55, 0.96], /lopsided/u],
-  ] as const) void it(`rejects ${problem}`, () => {
-    const { app, screenshots } = fixture();
-    writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, box));
-    assert.throws(() => { writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION); }, pattern);
-  });
+  ] as const)
+    void it(`rejects ${problem}`, () => {
+      const { app, screenshots } = fixture();
+      writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, box));
+      assert.throws(() => {
+        writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION);
+      }, pattern);
+    });
 
   void it("rejects receipts for another revision or carrying extra fields", () => {
     const { app, screenshots, output } = fixture();
-    assert.throws(() => { preparePages(app, screenshots, output, "b".repeat(40)); }, /another revision/u);
+    assert.throws(() => {
+      preparePages(app, screenshots, output, "b".repeat(40));
+    }, /another revision/u);
     const receiptPath = join(screenshots, "screenshots.json");
     const receipt: unknown = JSON.parse(readFileSync(receiptPath, "utf8"));
-    writeFileSync(receiptPath, JSON.stringify({ ...(receipt as Record<string, unknown>), unexpected: "Synthetic extra field" }));
-    assert.throws(() => { preparePages(app, screenshots, output, REVISION); }, /Unexpected screenshot receipt fields/u);
+    writeFileSync(
+      receiptPath,
+      JSON.stringify({ ...(receipt as Record<string, unknown>), unexpected: "Synthetic extra field" }),
+    );
+    assert.throws(() => {
+      preparePages(app, screenshots, output, REVISION);
+    }, /Unexpected screenshot receipt fields/u);
   });
 });

@@ -12,9 +12,9 @@ interface Human {
   readonly emails?: unknown;
 }
 
-const policy = JSON.parse(
-  readFileSync(new URL("../.github/allowed-contributors.json", import.meta.url), "utf8"),
-) as { readonly humans?: unknown };
+const policy = JSON.parse(readFileSync(new URL("../.github/allowed-contributors.json", import.meta.url), "utf8")) as {
+  readonly humans?: unknown;
+};
 
 if (!Array.isArray(policy.humans) || policy.humans.length === 0) {
   throw new Error("Contributor policy must contain at least one explicitly allowed human.");
@@ -32,18 +32,15 @@ const allowedIdentities = new Set<string>(
 const forbiddenAutomationIdentity =
   /(?:\b(?:ai|bot)\b|claude|codex|copilot|chatgpt|openai|anthropic|gemini|dependabot|github-actions|cursor)/iu;
 
-const log = execFileSync(
-  "git",
-  ["log", "--all", "--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x00%x1e"],
-  { encoding: "utf8" },
-);
+const log = execFileSync("git", ["log", "--all", "--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x00%x1e"], {
+  encoding: "utf8",
+});
 
 const violations: string[] = [];
 for (const record of log.split("\u001e")) {
   const normalized = record.replace(/^\s+|\s+$/gu, "");
   if (normalized.length === 0) continue;
-  const [sha, authorName, authorEmail, committerName, committerEmail, ...messageParts] =
-    normalized.split("\u0000");
+  const [sha, authorName, authorEmail, committerName, committerEmail, ...messageParts] = normalized.split("\u0000");
   const message = messageParts.join("\u0000");
   if (!sha || !authorName || !authorEmail || !committerName || !committerEmail) {
     violations.push("Unable to parse a commit attribution record.");

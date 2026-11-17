@@ -79,7 +79,13 @@ function commitOf(text: string): CommitPayload {
   const value = parseJson(text);
   if (!isRecord(value)) return damaged("A commit record is not in the expected form.");
   const { count, commandId, requestHash } = value;
-  if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0 || typeof commandId !== "string" || typeof requestHash !== "string") {
+  if (
+    typeof count !== "number" ||
+    !Number.isSafeInteger(count) ||
+    count < 0 ||
+    typeof commandId !== "string" ||
+    typeof requestHash !== "string"
+  ) {
     return damaged("A commit record is not in the expected form.");
   }
   return { count, commandId, requestHash };
@@ -91,13 +97,16 @@ function metaOf(text: string): Meta {
     return damaged("The ledger header is not in the expected form.");
   }
   const recovery = value["recoveryTarget"];
-  if (recovery !== undefined && recovery !== null && (typeof recovery !== "string" || recovery.length === 0)) return damaged("The recovery reference is invalid.");
+  if (recovery !== undefined && recovery !== null && (typeof recovery !== "string" || recovery.length === 0))
+    return damaged("The recovery reference is invalid.");
   return { schema: value["schema"], funds: value["funds"] as Fund[], recoveryTarget: recovery ?? null };
 }
 
 function referencesOf(text: string): Reference[] {
   const value = parseJson(text);
-  const valid = Array.isArray(value) && value.every((entry) => Array.isArray(entry) && entry.length === 2 && typeof entry[1] === "string");
+  const valid =
+    Array.isArray(value) &&
+    value.every((entry) => Array.isArray(entry) && entry.length === 2 && typeof entry[1] === "string");
   if (!valid) return damaged("The ledger timeline is not in the expected form.");
   return value as Reference[];
 }
@@ -113,7 +122,8 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
     commitOf(row.payload);
     commitIndex = index;
   });
-  if (commitIndex < 0) return { state: EMPTY_LEDGER, references: [], trailing: rows.length, schema: SCHEMA, recoveryTarget: null };
+  if (commitIndex < 0)
+    return { state: EMPTY_LEDGER, references: [], trailing: rows.length, schema: SCHEMA, recoveryTarget: null };
 
   const commit = rows[commitIndex];
   if (commit === undefined) return damaged("The commit record is missing.");
@@ -126,7 +136,10 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
   }
   const first = payload[0];
   if (first?.type !== "META") return damaged("The committed revision has no header record.");
-  if (!payload.slice(1).every((row) => row.type === "SNAPSHOT" || row.type === "TIMELINE" || row.type === "SOURCE") || !payload.some((row) => row.type === "TIMELINE")) {
+  if (
+    !payload.slice(1).every((row) => row.type === "SNAPSHOT" || row.type === "TIMELINE" || row.type === "SOURCE") ||
+    !payload.some((row) => row.type === "TIMELINE")
+  ) {
     return damaged("The committed revision has an invalid structure.");
   }
   const commitPayload = commitOf(commit.payload);
@@ -135,7 +148,8 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
   }
 
   const meta = metaOf(first.payload);
-  if (meta.schema !== SCHEMA && meta.schema !== REVISION_SOURCES_SCHEMA) return damaged("The ledger uses an unsupported format version.");
+  if (meta.schema !== SCHEMA && meta.schema !== REVISION_SOURCES_SCHEMA)
+    return damaged("The ledger uses an unsupported format version.");
   if (meta.schema === SCHEMA) {
     // A stale older client could have prepared an append before the upgrade.
     // Never accept a subsequent legacy revision as a silent format downgrade.
@@ -143,29 +157,44 @@ function decodeRows(rows: readonly LedgerRow[]): Decoded {
     for (let index = 0; index <= start; index++) {
       const row = rows[index];
       if (row?.type === "META") header = row;
-      if (row?.type === "COMMIT" && header?.revision === row.revision && metaOf(header.payload).schema === REVISION_SOURCES_SCHEMA) return damaged("The ledger was changed by an older version after its format was upgraded. Recovery is required.");
+      if (
+        row?.type === "COMMIT" &&
+        header?.revision === row.revision &&
+        metaOf(header.payload).schema === REVISION_SOURCES_SCHEMA
+      )
+        return damaged(
+          "The ledger was changed by an older version after its format was upgraded. Recovery is required.",
+        );
     }
   }
-  const references = payload
-    .filter((row) => row.type === "TIMELINE")
-    .flatMap((row) => referencesOf(row.payload));
+  const references = payload.filter((row) => row.type === "TIMELINE").flatMap((row) => referencesOf(row.payload));
   const snapshots: Snapshot[] = references.map(([index, checksum]) => {
     const row = rows[index];
     // References point only at earlier snapshot records that were committed.
     if (!Number.isInteger(index) || index < 0 || index >= commitIndex || row?.type !== "SNAPSHOT") {
       return damaged("A snapshot reference is invalid.");
     }
-    if (row.checksum !== checksum || sha256Hex(row.payload) !== checksum) return damaged("A snapshot record failed its checksum.");
+    if (row.checksum !== checksum || sha256Hex(row.payload) !== checksum)
+      return damaged("A snapshot record failed its checksum.");
     return parseJson(row.payload) as Snapshot;
   });
 
   const state: LedgerState = { revision: commit.revision, funds: meta.funds, snapshots };
   const issues = validateLedger(state);
   if (issues.length > 0) return damaged("The committed ledger breaks its own rules.");
-  return { state, references, trailing: rows.length - commitIndex - 1, schema: meta.schema, recoveryTarget: meta.recoveryTarget };
+  return {
+    state,
+    references,
+    trailing: rows.length - commitIndex - 1,
+    schema: meta.schema,
+    recoveryTarget: meta.recoveryTarget,
+  };
 }
 
-function decodeSourceHistory(rows: readonly LedgerRow[]): { readonly sources: SourceRecord[]; readonly references: ReadonlyMap<string, number> } {
+function decodeSourceHistory(rows: readonly LedgerRow[]): {
+  readonly sources: SourceRecord[];
+  readonly references: ReadonlyMap<string, number>;
+} {
   const found: SourceRecord[] = [];
   const references = new Map<string, number>();
   const byIndex = new Map<number, { readonly source: SourceRecord; readonly hash: string }>();
@@ -177,8 +206,9 @@ function decodeSourceHistory(rows: readonly LedgerRow[]): { readonly sources: So
     const header = block[0];
     if (header?.type !== "META") return damaged("A source revision has no ledger header.");
     const meta = metaOf(header.payload);
-    if (meta.schema !== SCHEMA && meta.schema !== REVISION_SOURCES_SCHEMA) return damaged("The ledger uses an unsupported format version.");
-    const pieces = block.flatMap((row, index) => row.type === "SOURCE" ? [{ row, index: start + 1 + index }] : []);
+    if (meta.schema !== SCHEMA && meta.schema !== REVISION_SOURCES_SCHEMA)
+      return damaged("The ledger uses an unsupported format version.");
+    const pieces = block.flatMap((row, index) => (row.type === "SOURCE" ? [{ row, index: start + 1 + index }] : []));
     if (pieces.length === 0 && meta.schema === SCHEMA) return;
     // The revision these pieces belong to must itself be intact.
     for (const row of block) {
@@ -195,45 +225,82 @@ function decodeSourceHistory(rows: readonly LedgerRow[]): { readonly sources: So
     let at = 0;
     while (at < parsed.length) {
       const current = parsed[at];
-      if (current === undefined || !isRecord(current.value)) return damaged("A stored statement is not in the expected form.");
+      if (current === undefined || !isRecord(current.value))
+        return damaged("A stored statement is not in the expected form.");
       if ("r" in current.value) {
-        if (meta.schema !== REVISION_SOURCES_SCHEMA || !Number.isSafeInteger(current.value["r"]) || typeof current.value["h"] !== "string") return damaged("A stored statement reference is invalid.");
+        if (
+          meta.schema !== REVISION_SOURCES_SCHEMA ||
+          !Number.isSafeInteger(current.value["r"]) ||
+          typeof current.value["h"] !== "string"
+        )
+          return damaged("A stored statement reference is invalid.");
         const reference = byIndex.get(current.value["r"] as number);
-        if (reference === undefined || reference.hash !== current.value["h"] || (current.value["r"] as number) >= current.index) return damaged("A stored statement reference is invalid.");
+        if (
+          reference === undefined ||
+          reference.hash !== current.value["h"] ||
+          (current.value["r"] as number) >= current.index
+        )
+          return damaged("A stored statement reference is invalid.");
         found.push(reference.source);
         at++;
         continue;
       }
       const count = current.value["n"];
-      if (typeof count !== "number" || !Number.isInteger(count) || count < 1 || at + count > parsed.length) return damaged("A stored statement is missing a piece.");
+      if (typeof count !== "number" || !Number.isInteger(count) || count < 1 || at + count > parsed.length)
+        return damaged("A stored statement is missing a piece.");
       const group = parsed.slice(at, at + count);
-      if (!group.every((piece, index) => isRecord(piece.value) && piece.value["k"] === index && piece.value["n"] === count && typeof piece.value["d"] === "string")) return damaged("A stored statement is missing a piece.");
+      if (
+        !group.every(
+          (piece, index) =>
+            isRecord(piece.value) &&
+            piece.value["k"] === index &&
+            piece.value["n"] === count &&
+            typeof piece.value["d"] === "string",
+        )
+      )
+        return damaged("A stored statement is missing a piece.");
       at += count;
-      const value = parseJson(group.map(piece => String((piece.value as Record<string, unknown>)["d"])).join(""));
+      const value = parseJson(group.map((piece) => String((piece.value as Record<string, unknown>)["d"])).join(""));
       if (!isRecord(value)) return damaged("A stored statement is not in the expected form.");
       const date = typeof value["date"] === "string" ? parseIsoDate(value["date"]) : null;
       const sheet = parseStoredSheet(value["sheet"]);
-      if (date === null || sheet === null || typeof value["commandId"] !== "string" || typeof value["sheetName"] !== "string" || !Array.isArray(value["commands"])) {
+      if (
+        date === null ||
+        sheet === null ||
+        typeof value["commandId"] !== "string" ||
+        typeof value["sheetName"] !== "string" ||
+        !Array.isArray(value["commands"])
+      ) {
         return damaged("A stored statement is not in the expected form.");
       }
-      const source = { date, commandId: value["commandId"], sheetName: value["sheetName"], commands: value["commands"] as FundCommand[], sheet: value["sheet"] as StoredSheet };
+      const source = {
+        date,
+        commandId: value["commandId"],
+        sheetName: value["sheetName"],
+        commands: value["commands"] as FundCommand[],
+        sheet: value["sheet"] as StoredSheet,
+      };
       found.push(source);
       const hash = sha256Hex(canonicalJson(source));
       byIndex.set(current.index, { source, hash });
       references.set(hash, current.index);
     }
-    if (meta.schema === REVISION_SOURCES_SCHEMA && new Set(found.map(source => source.date)).size !== found.length) return damaged("The revision contains multiple sources for the same date.");
+    if (meta.schema === REVISION_SOURCES_SCHEMA && new Set(found.map((source) => source.date)).size !== found.length)
+      return damaged("The revision contains multiple sources for the same date.");
   });
   return { sources: found, references };
 }
 
-function decodeSources(rows: readonly LedgerRow[]): SourceRecord[] { return decodeSourceHistory(rows).sources; }
+function decodeSources(rows: readonly LedgerRow[]): SourceRecord[] {
+  return decodeSourceHistory(rows).sources;
+}
 
 function checkedSources(rows: readonly LedgerRow[], decoded: Decoded): SourceRecord[] {
   const sources = decodeSources(rows);
   if (decoded.schema === REVISION_SOURCES_SCHEMA) {
-    const dates = new Set(decoded.state.snapshots.map(snapshot => snapshot.date));
-    if (sources.some(source => !dates.has(source.date))) return damaged("A stored bank statement does not belong to this revision.");
+    const dates = new Set(decoded.state.snapshots.map((snapshot) => snapshot.date));
+    if (sources.some((source) => !dates.has(source.date)))
+      return damaged("A stored bank statement does not belong to this revision.");
   }
   return sources;
 }
@@ -278,14 +345,27 @@ export class RowLedgerStore implements LedgerStore {
   }
 
   /** Read a complete committed revision and its then-effective sources without writing. */
-  loadRevision(revision: string): { readonly status: "ok"; readonly state: LedgerState; readonly sources: readonly SourceRecord[]; readonly recoveryTarget?: string } | { readonly status: "damaged"; readonly message: string } {
+  loadRevision(revision: string):
+    | {
+        readonly status: "ok";
+        readonly state: LedgerState;
+        readonly sources: readonly SourceRecord[];
+        readonly recoveryTarget?: string;
+      }
+    | { readonly status: "damaged"; readonly message: string } {
     try {
       const rows = this.sheet.readRows();
-      const matches = rows.flatMap((row, index) => row.type === "COMMIT" && row.revision === revision ? [index] : []);
-      if (matches.length !== 1 || matches[0] === undefined) return { status: "damaged", message: "The requested revision is missing or ambiguous." };
+      const matches = rows.flatMap((row, index) => (row.type === "COMMIT" && row.revision === revision ? [index] : []));
+      if (matches.length !== 1 || matches[0] === undefined)
+        return { status: "damaged", message: "The requested revision is missing or ambiguous." };
       const prefix = rows.slice(0, matches[0] + 1);
       const decoded = decodeRows(prefix);
-      return { status: "ok", state: decoded.state, sources: checkedSources(prefix, decoded), ...(decoded.recoveryTarget === null ? {} : { recoveryTarget: decoded.recoveryTarget }) };
+      return {
+        status: "ok",
+        state: decoded.state,
+        sources: checkedSources(prefix, decoded),
+        ...(decoded.recoveryTarget === null ? {} : { recoveryTarget: decoded.recoveryTarget }),
+      };
     } catch (error) {
       if (error instanceof DamagedLedger) return { status: "damaged", message: error.message };
       throw error;
@@ -301,7 +381,8 @@ export class RowLedgerStore implements LedgerStore {
     for (const row of this.sheet.readRows()) {
       if (row.type !== "COMMIT") continue;
       const payload = commitOf(row.payload);
-      if (payload.commandId === commandId) return { commandId, revision: row.revision, requestHash: payload.requestHash };
+      if (payload.commandId === commandId)
+        return { commandId, revision: row.revision, requestHash: payload.requestHash };
     }
     return null;
   }
@@ -311,23 +392,58 @@ export class RowLedgerStore implements LedgerStore {
   }
 
   /** Publish a reviewed replacement with its complete set of effective sources. */
-  publishWithSources(next: LedgerState, receipt: CommandReceipt, sources: readonly SourceRecord[], recoveryTarget?: string | null): void {
-    if (validateLedger(next).length > 0 || receipt.revision !== next.revision || next.revision === "") throw new Error("The replacement revision is invalid.");
+  publishWithSources(
+    next: LedgerState,
+    receipt: CommandReceipt,
+    sources: readonly SourceRecord[],
+    recoveryTarget?: string | null,
+  ): void {
+    if (validateLedger(next).length > 0 || receipt.revision !== next.revision || next.revision === "")
+      throw new Error("The replacement revision is invalid.");
     this.publishRevision(next, receipt, sources, true, recoveryTarget);
   }
 
-  private publishRevision(next: LedgerState, receipt: CommandReceipt, sources: readonly SourceRecord[], replaceSources: boolean, recoveryTarget?: string | null): void {
+  private publishRevision(
+    next: LedgerState,
+    receipt: CommandReceipt,
+    sources: readonly SourceRecord[],
+    replaceSources: boolean,
+    recoveryTarget?: string | null,
+  ): void {
     const existing = this.sheet.readRows();
     const decoded = decodeRows(existing);
     const schema = replaceSources ? REVISION_SOURCES_SCHEMA : decoded.schema;
     const sourceHistory = schema === REVISION_SOURCES_SCHEMA ? decodeSourceHistory(existing) : null;
-    const effectiveSources = schema === REVISION_SOURCES_SCHEMA && !replaceSources ? [...(sourceHistory?.sources ?? []), ...sources] : sources;
-    if (schema === REVISION_SOURCES_SCHEMA && new Set(effectiveSources.map(source => source.date)).size !== effectiveSources.length) throw new Error("A revision cannot contain multiple sources for one date.");
-    if (schema === REVISION_SOURCES_SCHEMA && effectiveSources.some(source => !next.snapshots.some(snapshot => snapshot.date === source.date))) throw new Error("A source does not belong to the revision.");
-    const previousByDate = new Map(decoded.state.snapshots.map((snapshot, index) => [snapshot.date, { snapshot, reference: decoded.references[index] }]));
+    const effectiveSources =
+      schema === REVISION_SOURCES_SCHEMA && !replaceSources ? [...(sourceHistory?.sources ?? []), ...sources] : sources;
+    if (
+      schema === REVISION_SOURCES_SCHEMA &&
+      new Set(effectiveSources.map((source) => source.date)).size !== effectiveSources.length
+    )
+      throw new Error("A revision cannot contain multiple sources for one date.");
+    if (
+      schema === REVISION_SOURCES_SCHEMA &&
+      effectiveSources.some((source) => !next.snapshots.some((snapshot) => snapshot.date === source.date))
+    )
+      throw new Error("A source does not belong to the revision.");
+    const previousByDate = new Map(
+      decoded.state.snapshots.map((snapshot, index) => [
+        snapshot.date,
+        { snapshot, reference: decoded.references[index] },
+      ]),
+    );
 
     const records: { type: LedgerRow["type"]; payload: string }[] = [
-      { type: "META", payload: canonicalJson({ schema, funds: next.funds, ...(schema === REVISION_SOURCES_SCHEMA ? { recoveryTarget: recoveryTarget === undefined ? decoded.recoveryTarget : recoveryTarget } : {}) }) },
+      {
+        type: "META",
+        payload: canonicalJson({
+          schema,
+          funds: next.funds,
+          ...(schema === REVISION_SOURCES_SCHEMA
+            ? { recoveryTarget: recoveryTarget === undefined ? decoded.recoveryTarget : recoveryTarget }
+            : {}),
+        }),
+      },
     ];
     const references: Reference[] = [];
     for (const snapshot of next.snapshots) {
@@ -353,7 +469,8 @@ export class RowLedgerStore implements LedgerStore {
         continue;
       }
       const pieces: string[] = [];
-      for (let offset = 0; offset < text.length; offset += SOURCE_PIECE) pieces.push(text.slice(offset, offset + SOURCE_PIECE));
+      for (let offset = 0; offset < text.length; offset += SOURCE_PIECE)
+        pieces.push(text.slice(offset, offset + SOURCE_PIECE));
       pieces.forEach((piece, index) => {
         records.push({ type: "SOURCE", payload: canonicalJson({ d: piece, k: index, n: pieces.length }) });
       });
@@ -371,9 +488,18 @@ export class RowLedgerStore implements LedgerStore {
     this.sheet.appendRows(rows);
     this.sheet.flush();
 
-    const commitPayload: CommitPayload = { count: rows.length, commandId: receipt.commandId, requestHash: receipt.requestHash };
+    const commitPayload: CommitPayload = {
+      count: rows.length,
+      commandId: receipt.commandId,
+      requestHash: receipt.requestHash,
+    };
     this.sheet.appendRows([
-      { revision: next.revision, type: "COMMIT", payload: canonicalJson(commitPayload), checksum: recordsChecksum(rows) },
+      {
+        revision: next.revision,
+        type: "COMMIT",
+        payload: canonicalJson(commitPayload),
+        checksum: recordsChecksum(rows),
+      },
     ]);
     this.sheet.flush();
   }

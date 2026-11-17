@@ -11,7 +11,14 @@ const ALL_RANGES: readonly { readonly id: ChartRange; readonly label: string }[]
   { id: "All", label: "All" },
 ];
 
-const MONTHS: Readonly<Record<ChartRange, number | null>> = { "3M": 3, "6M": 6, YTD: null, "1Y": 12, "3Y": 36, All: null };
+const MONTHS: Readonly<Record<ChartRange, number | null>> = {
+  "3M": 3,
+  "6M": 6,
+  YTD: null,
+  "1Y": 12,
+  "3Y": 36,
+  All: null,
+};
 
 function ytdStart(dates: readonly IsoDate[]): number {
   const latest = dates[dates.length - 1];
@@ -26,7 +33,9 @@ function ytdStart(dates: readonly IsoDate[]): number {
  * history spans at least that many calendar months; YTD only when it would show at
  * least two statements and differ from All. All is always offered.
  */
-export function availableRanges(dates: readonly IsoDate[]): readonly { readonly id: ChartRange; readonly label: string }[] {
+export function availableRanges(
+  dates: readonly IsoDate[],
+): readonly { readonly id: ChartRange; readonly label: string }[] {
   const first = dates[0];
   const latest = dates[dates.length - 1];
   const span = first === undefined || latest === undefined ? 0 : monthSerial(latest) - monthSerial(first);
@@ -52,7 +61,8 @@ export function resolveRange(range: ChartRange, dates: readonly IsoDate[]): Char
 export function rangeFromDate(dates: readonly IsoDate[], range: ChartRange): IsoDate | null {
   const latest = dates[dates.length - 1];
   if (latest === undefined || range === "All") return null;
-  const serial = range === "YTD" ? monthSerial(latest) - (monthSerial(latest) % 12) : monthSerial(latest) - (MONTHS[range] ?? 0);
+  const serial =
+    range === "YTD" ? monthSerial(latest) - (monthSerial(latest) % 12) : monthSerial(latest) - (MONTHS[range] ?? 0);
   return toIsoDate(Math.floor(serial / 12), (serial % 12) + 1, 1);
 }
 

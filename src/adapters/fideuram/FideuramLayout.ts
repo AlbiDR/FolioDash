@@ -378,7 +378,10 @@ function checkCategory(
       only.risk !== null &&
       !risksEqual(contract.risk, only.risk)
     ) {
-      note(cellRef(contract.row, COLUMN.L), "the contract and its product show different risk figures (risk is not used)");
+      note(
+        cellRef(contract.row, COLUMN.L),
+        "the contract and its product show different risk figures (risk is not used)",
+      );
     }
   }
 }
@@ -395,7 +398,11 @@ function readProduct(
 ): { fund: FundPosition; risk: Decimal | null; adjustments: readonly string[] } | null {
   const name = textOf(sheet, row, COLUMN.B);
   if (!isSafeFundName(name)) {
-    addIssue("unreadable-value", cellRef(row, COLUMN.B), "The product name is empty, too long or starts with a formula character.");
+    addIssue(
+      "unreadable-value",
+      cellRef(row, COLUMN.B),
+      "The product name is empty, too long or starts with a formula character.",
+    );
     return null;
   }
   const rawIsin = cellAt(sheet, row, COLUMN.E);
@@ -446,4 +453,3 @@ function readProduct(
     adjustments: outcome.values.adjustments,
   };
 }
-

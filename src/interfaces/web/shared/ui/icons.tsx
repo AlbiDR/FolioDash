@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 
-export type IconName = "overview" | "expenses" | "import" | "history" | "connection" | "chevron" | "back" | "eye" | "eye-off" | "sidebar";
+export type IconName =
+  "overview" | "expenses" | "import" | "history" | "connection" | "chevron" | "back" | "eye" | "eye-off" | "sidebar";
 
 const PATHS: Readonly<Record<IconName, string>> = {
   expenses: "M7 3h10a2 2 0 0 1 2 2v16l-3-2-4 2-4-2-3 2V5a2 2 0 0 1 2-2M8 8h8M8 12h5",
@@ -12,7 +13,8 @@ const PATHS: Readonly<Record<IconName, string>> = {
   back: "M15 6l-6 6 6 6",
   sidebar: "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6M9 4v16",
   eye: "M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12M9 12a3 3 0 1 0 6 0 3 3 0 1 0-6 0",
-  "eye-off": "M3 3l18 18M10.6 6a9.4 9.4 0 0 1 1.4-.1c6.4 0 10 6.1 10 6.1a17 17 0 0 1-3.2 3.9M6.5 7.2A16.6 16.6 0 0 0 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2",
+  "eye-off":
+    "M3 3l18 18M10.6 6a9.4 9.4 0 0 1 1.4-.1c6.4 0 10 6.1 10 6.1a17 17 0 0 1-3.2 3.9M6.5 7.2A16.6 16.6 0 0 0 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2",
 };
 
 /** A small outline icon that takes its colour from the text. Decorative: the label beside it carries the meaning. */

@@ -7,7 +7,8 @@ export interface Workbook {
 }
 
 /** Why a call failed before or instead of an answer. A subset applies to any one route. */
-export type CallFailure = "unauthorised" | "forbidden" | "not-found" | "unavailable" | "network" | "unexpected" | "script-error";
+export type CallFailure =
+  "unauthorised" | "forbidden" | "not-found" | "unavailable" | "network" | "unexpected" | "script-error";
 
 /** "" lets Google reuse an existing grant and session; "select_account" always shows its account chooser. */
 export type SignInPrompt = "" | "select_account";
@@ -21,7 +22,11 @@ export interface SignInOptions {
 export type SignInFailure = "denied" | "closed" | "blocked" | "timeout" | "unavailable";
 
 export type SignInResult =
-  | { readonly ok: true; readonly accessToken: string; /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number }
+  | {
+      readonly ok: true;
+      readonly accessToken: string;
+      /** How long Google says the token lasts, when it said. */ readonly expiresInSeconds?: number;
+    }
   | { readonly ok: false; readonly reason: SignInFailure };
 
 /** Short-lived Google access kept on this device, bound to the connected workbook. */
@@ -92,7 +97,10 @@ export interface SessionState {
   /** When the ledger was last confirmed against the spreadsheet, in milliseconds since 1970. */
   readonly syncedAt: number | null;
   readonly sheet: SheetStatus;
-  readonly organization?: { readonly status: "pending" | "organizing" | "current" | "needs-attention"; readonly message: string };
+  readonly organization?: {
+    readonly status: "pending" | "organizing" | "current" | "needs-attention";
+    readonly message: string;
+  };
   /** Rows after the last commit: an interrupted write, ignored and harmless. */
   readonly trailingRows: number;
   /** Prior history available for explicit recovery after an earlier insertion. */
@@ -108,7 +116,11 @@ export type ConnectOutcome =
   | { readonly status: "sign-in-failed"; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }
   | { readonly status: "call-failed"; readonly failure: CallFailure }
   /** The sheet needs the person's attention; the device copy was left exactly as it was. */
-  | { readonly status: "needs-attention"; readonly sheet: Exclude<SheetStatus, "unchecked" | "ok">; readonly message: string };
+  | {
+      readonly status: "needs-attention";
+      readonly sheet: Exclude<SheetStatus, "unchecked" | "ok">;
+      readonly message: string;
+    };
 
 export type RestoreOutcome =
   | { readonly status: "restored"; readonly workbook: Workbook }
@@ -124,7 +136,13 @@ export type VerifyOutcome =
   | { readonly status: "failed"; readonly message: string };
 
 export type TidyOutcome =
-  | { readonly status: "tidied"; readonly months: number; readonly withoutStatement: number; readonly consolidatedTabs?: number; readonly preservedTabs?: number }
+  | {
+      readonly status: "tidied";
+      readonly months: number;
+      readonly withoutStatement: number;
+      readonly consolidatedTabs?: number;
+      readonly preservedTabs?: number;
+    }
   | { readonly status: "sign-in-failed"; readonly reason: Extract<SignInResult, { ok: false }>["reason"] }
   | { readonly status: "needs-attention"; readonly message: string }
   | { readonly status: "failed"; readonly message: string };

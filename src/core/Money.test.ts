@@ -53,12 +53,21 @@ describe("parseItalianAmount", () => {
     expect(Object.is(parseItalianAmount("-0,00"), 0)).toBe(true);
   });
 
-  it.each(["", "1,000.50", "1.5", "12,345", "1.00", "abc", "1..000", "1.0000,00", "12,", ",50", "99999999999999999999,99"])(
-    "rejects %j",
-    (text) => {
-      expect(parseItalianAmount(text)).toBeNull();
-    },
-  );
+  it.each([
+    "",
+    "1,000.50",
+    "1.5",
+    "12,345",
+    "1.00",
+    "abc",
+    "1..000",
+    "1.0000,00",
+    "12,",
+    ",50",
+    "99999999999999999999,99",
+  ])("rejects %j", (text) => {
+    expect(parseItalianAmount(text)).toBeNull();
+  });
 });
 
 describe("parseUsAmount", () => {

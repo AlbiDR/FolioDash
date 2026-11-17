@@ -60,7 +60,9 @@ function loadIdentityScript(): Promise<boolean> {
       if (!loaded) script.remove();
       resolve(loaded);
     };
-    const timer = window.setTimeout(() => { finish(false); }, LOAD_TIMEOUT_MILLISECONDS);
+    const timer = window.setTimeout(() => {
+      finish(false);
+    }, LOAD_TIMEOUT_MILLISECONDS);
     script.src = IDENTITY_SCRIPT;
     script.async = true;
     script.onload = () => {
@@ -94,7 +96,11 @@ function interpret(response: TokenResponse, scope: string): SignInResult {
     const granted = new Set((response.scope ?? "").split(/\s+/u));
     if (!scope.split(/\s+/u).every((item) => granted.has(item))) return { ok: false, reason: "denied" };
     const lifetime = Number(response.expires_in);
-    return { ok: true, accessToken: response.access_token, ...(Number.isFinite(lifetime) && lifetime > 0 ? { expiresInSeconds: lifetime } : {}) };
+    return {
+      ok: true,
+      accessToken: response.access_token,
+      ...(Number.isFinite(lifetime) && lifetime > 0 ? { expiresInSeconds: lifetime } : {}),
+    };
   }
   return { ok: false, reason: response.error === "access_denied" ? "denied" : "unavailable" };
 }
@@ -105,9 +111,15 @@ function clientFor(identity: GoogleIdentity, clientId: string, scope: string): P
   const client = identity.accounts.oauth2.initTokenClient({
     client_id: clientId,
     scope,
-    callback: (response) => { holder.current?.settle?.(interpret(response, scope)); },
+    callback: (response) => {
+      holder.current?.settle?.(interpret(response, scope));
+    },
     error_callback: (error) => {
-      holder.current?.settle?.({ ok: false, reason: error.type === "popup_closed" ? "closed" : error.type === "popup_failed_to_open" ? "blocked" : "unavailable" });
+      holder.current?.settle?.({
+        ok: false,
+        reason:
+          error.type === "popup_closed" ? "closed" : error.type === "popup_failed_to_open" ? "blocked" : "unavailable",
+      });
     },
   });
   holder.current = { clientId, scope, client, settle: null };
@@ -116,7 +128,12 @@ function clientFor(identity: GoogleIdentity, clientId: string, scope: string): P
 }
 
 /** Starts the request in the current call stack, which is what keeps the person's click valid for Google's window. */
-function request(identity: GoogleIdentity, clientId: string, scope: string, options: SignInOptions | undefined): Promise<SignInResult> {
+function request(
+  identity: GoogleIdentity,
+  clientId: string,
+  scope: string,
+  options: SignInOptions | undefined,
+): Promise<SignInResult> {
   return new Promise<SignInResult>((resolve) => {
     let state: PreparedClient | null = null;
     const finish = (result: SignInResult): void => {
@@ -124,13 +141,18 @@ function request(identity: GoogleIdentity, clientId: string, scope: string, opti
       if (state !== null && state.settle === finish) state.settle = null;
       resolve(result);
     };
-    const timer = window.setTimeout(() => { finish({ ok: false, reason: "timeout" }); }, SIGN_IN_TIMEOUT_MILLISECONDS);
+    const timer = window.setTimeout(() => {
+      finish({ ok: false, reason: "timeout" });
+    }, SIGN_IN_TIMEOUT_MILLISECONDS);
     try {
       state = clientFor(identity, clientId, scope);
       state.settle = finish;
       const hint = options?.loginHint;
       // "" lets Google reuse existing consent instead of forcing its default account picker.
-      state.client.requestAccessToken({ prompt: options?.prompt ?? "", ...(hint === undefined ? {} : { hint, login_hint: hint }) });
+      state.client.requestAccessToken({
+        prompt: options?.prompt ?? "",
+        ...(hint === undefined ? {} : { hint, login_hint: hint }),
+      });
     } catch {
       finish({ ok: false, reason: "unavailable" });
     }
@@ -160,11 +182,18 @@ export function signIn(clientId: string, scope: string, options?: SignInOptions)
     return inFlight;
   }
   const identity = window.google;
-  const work = identity === undefined
-    ? loadIdentityScript().then((loaded): Promise<SignInResult> | SignInResult => (loaded && window.google !== undefined ? request(window.google, clientId, scope, options) : { ok: false, reason: "unavailable" }))
-    : request(identity, clientId, scope, options);
+  const work =
+    identity === undefined
+      ? loadIdentityScript().then((loaded): Promise<SignInResult> | SignInResult =>
+          loaded && window.google !== undefined
+            ? request(window.google, clientId, scope, options)
+            : { ok: false, reason: "unavailable" },
+        )
+      : request(identity, clientId, scope, options);
   inFlight = work;
-  void work.finally(() => { if (inFlight === work) inFlight = null; });
+  void work.finally(() => {
+    if (inFlight === work) inFlight = null;
+  });
   return work;
 }
 

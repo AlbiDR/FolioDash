@@ -57,19 +57,22 @@ function rejected(state: LedgerState, input: StatementInput, on: string, command
 function january(): LedgerState {
   return applied(
     EMPTY_LEDGER,
-    statement([[A, "Fund A", 1000], [B, "Fund B", 500]]),
+    statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 500],
+    ]),
     "2026-01-15",
-    [
-      command(A, "Start", { openingNetInvested: euros(900) }),
-      command(B, "Start", { openingNetInvested: euros(450) }),
-    ],
+    [command(A, "Start", { openingNetInvested: euros(900) }), command(B, "Start", { openingNetInvested: euros(450) })],
     "r1",
   );
 }
 
 describe("the first statement", () => {
   it("plans every fund as an opening and records opening net invested", () => {
-    const input = statement([[A, "Fund A", 1000], [B, "Fund B", 500]]);
+    const input = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 500],
+    ]);
     expect(planImport(EMPTY_LEDGER, input).map((row) => row.detected)).toEqual(["Opening", "Opening"]);
     const state = january();
     expect(state.revision).toBe("r1");
@@ -77,15 +80,24 @@ describe("the first statement", () => {
       [A, "Fund A", "2026-01-15"],
       [B, "Fund B", "2026-01-15"],
     ]);
-    expect(state.snapshots[0]?.holdings[A]).toMatchObject({ value: euros(1000), netInvested: euros(900), action: "Start", status: "active" });
+    expect(state.snapshots[0]?.holdings[A]).toMatchObject({
+      value: euros(1000),
+      netInvested: euros(900),
+      action: "Start",
+      status: "active",
+    });
     expect(validateLedger(state)).toEqual([]);
   });
 
   it("requires the opening amount and no cash movements", () => {
     const input = statement([[A, "Fund A", 1000]]);
-    expect(rejected(EMPTY_LEDGER, input, "2026-01-15", [command(A, "Start")]).map((issue) => issue.code)).toEqual(["invalid-command"]);
+    expect(rejected(EMPTY_LEDGER, input, "2026-01-15", [command(A, "Start")]).map((issue) => issue.code)).toEqual([
+      "invalid-command",
+    ]);
     expect(
-      rejected(EMPTY_LEDGER, input, "2026-01-15", [command(A, "Start", { openingNetInvested: euros(900), moneyIn: euros(5) })]),
+      rejected(EMPTY_LEDGER, input, "2026-01-15", [
+        command(A, "Start", { openingNetInvested: euros(900), moneyIn: euros(5) }),
+      ]),
     ).toHaveLength(1);
   });
 });
@@ -94,7 +106,10 @@ describe("a later statement", () => {
   it("explains net invested through cash in and out", () => {
     const next = applied(
       january(),
-      statement([[A, "Fund A", 1100], [B, "Fund B", 520]]),
+      statement([
+        [A, "Fund A", 1100],
+        [B, "Fund B", 520],
+      ]),
       "2026-02-10",
       [
         command(A, "Keep", { moneyIn: euros(100) }),
@@ -107,7 +122,10 @@ describe("a later statement", () => {
   });
 
   it("allows a gap of months and rejects the same or an earlier month", () => {
-    const input = statement([[A, "Fund A", 1000], [B, "Fund B", 500]]);
+    const input = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 500],
+    ]);
     const keeps = [command(A, "Keep"), command(B, "Keep")];
     expect(applied(january(), input, "2026-06-01", keeps).snapshots).toHaveLength(2);
     expect(rejected(january(), input, "2026-01-31", keeps).map((issue) => issue.code)).toContain("date-not-later");
@@ -115,45 +133,87 @@ describe("a later statement", () => {
   });
 
   it("detects a new fund and requires it to be added", () => {
-    const input = statement([[A, "Fund A", 1000], [B, "Fund B", 500], [C, "Fund C", 300]]);
+    const input = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 500],
+      [C, "Fund C", 300],
+    ]);
     expect(planImport(january(), input).map((row) => row.detected)).toEqual(["Held", "Held", "New"]);
     const next = applied(january(), input, "2026-02-10", [
       command(A, "Keep"),
       command(B, "Keep"),
       command(C, "Add", { moneyIn: euros(290), name: "My climate fund" }),
     ]);
-    expect(next.funds.find((fund) => fund.isin === C)).toMatchObject({ name: "My climate fund", fullName: "Fund C", firstDate: "2026-02-10" });
+    expect(next.funds.find((fund) => fund.isin === C)).toMatchObject({
+      name: "My climate fund",
+      fullName: "Fund C",
+      firstDate: "2026-02-10",
+    });
     expect(next.snapshots[1]?.holdings[C]).toMatchObject({ netInvested: euros(290), action: "Add" });
-    expect(rejected(january(), input, "2026-02-10", [command(A, "Keep"), command(B, "Keep"), command(C, "Keep")])).toHaveLength(1);
+    expect(
+      rejected(january(), input, "2026-02-10", [command(A, "Keep"), command(B, "Keep"), command(C, "Keep")]),
+    ).toHaveLength(1);
   });
 
   it("never treats a missing fund as sold: it needs an explicit Close with the proceeds", () => {
     const input = statement([[A, "Fund A", 1000]]);
-    expect(planImport(january(), input).map((row) => [row.isin, row.detected])).toEqual([[A, "Held"], [B, "Missing"]]);
+    expect(planImport(january(), input).map((row) => [row.isin, row.detected])).toEqual([
+      [A, "Held"],
+      [B, "Missing"],
+    ]);
     expect(rejected(january(), input, "2026-02-10", [command(A, "Keep"), command(B, "Keep")])).toHaveLength(1);
-    const next = applied(january(), input, "2026-02-10", [command(A, "Keep"), command(B, "Close", { moneyOut: euros(510) })]);
-    expect(next.snapshots[1]?.holdings[B]).toMatchObject({ status: "closed", value: ZERO_CENTS, netInvested: euros(-60), action: "Close" });
+    const next = applied(january(), input, "2026-02-10", [
+      command(A, "Keep"),
+      command(B, "Close", { moneyOut: euros(510) }),
+    ]);
+    expect(next.snapshots[1]?.holdings[B]).toMatchObject({
+      status: "closed",
+      value: ZERO_CENTS,
+      netInvested: euros(-60),
+      action: "Close",
+    });
     expect(validateLedger(next)).toEqual([]);
   });
 
   it("refuses to close a fund that still has value, but lets a zero position stay or close", () => {
-    const withValue = statement([[A, "Fund A", 1000], [B, "Fund B", 500]]);
+    const withValue = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 500],
+    ]);
     expect(rejected(january(), withValue, "2026-02-10", [command(A, "Keep"), command(B, "Close")])).toHaveLength(1);
-    const zero = statement([[A, "Fund A", 1000], [B, "Fund B", 0]]);
-    expect(applied(january(), zero, "2026-02-10", [command(A, "Keep"), command(B, "Keep")]).snapshots[1]?.holdings[B]?.status).toBe("active");
-    expect(applied(january(), zero, "2026-02-10", [command(A, "Keep"), command(B, "Close", { moneyOut: euros(450) })]).snapshots[1]?.holdings[B]?.status).toBe("closed");
+    const zero = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 0],
+    ]);
+    expect(
+      applied(january(), zero, "2026-02-10", [command(A, "Keep"), command(B, "Keep")]).snapshots[1]?.holdings[B]
+        ?.status,
+    ).toBe("active");
+    expect(
+      applied(january(), zero, "2026-02-10", [command(A, "Keep"), command(B, "Close", { moneyOut: euros(450) })])
+        .snapshots[1]?.holdings[B]?.status,
+    ).toBe("closed");
   });
 });
 
 describe("a closed fund", () => {
   function closedB(): LedgerState {
-    return applied(january(), statement([[A, "Fund A", 1000]]), "2026-02-10", [command(A, "Keep"), command(B, "Close", { moneyOut: euros(510) })]);
+    return applied(january(), statement([[A, "Fund A", 1000]]), "2026-02-10", [
+      command(A, "Keep"),
+      command(B, "Close", { moneyOut: euros(510) }),
+    ]);
   }
 
   it("stays closed when absent or listed at zero, and keeps its history", () => {
     const absent = statement([[A, "Fund A", 1000]]);
-    expect(planImport(closedB(), absent).map((row) => [row.isin, row.detected])).toEqual([[A, "Held"], [B, "Closed"]]);
-    const zeroListed = statement([[A, "Fund A", 1000], [B, "Fund B", 0]]);
+    expect(planImport(closedB(), absent).map((row) => [row.isin, row.detected])).toEqual([
+      [A, "Held"],
+      [B, "Closed"],
+    ]);
+    const zeroListed = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 0],
+    ]);
     expect(planImport(closedB(), zeroListed).map((row) => row.detected)).toEqual(["Held", "Closed"]);
     const next = applied(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Closed")]);
     expect(next.funds.map((fund) => fund.isin)).toEqual([A, B]);
@@ -161,15 +221,28 @@ describe("a closed fund", () => {
   });
 
   it("needs an explicit Reopen when value returns", () => {
-    const back = statement([[A, "Fund A", 1000], [B, "Fund B", 200]]);
+    const back = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 200],
+    ]);
     expect(planImport(closedB(), back).map((row) => row.detected)).toEqual(["Held", "Reappeared"]);
     expect(rejected(closedB(), back, "2026-03-10", [command(A, "Keep"), command(B, "Keep")])).toHaveLength(1);
-    const next = applied(closedB(), back, "2026-03-10", [command(A, "Keep"), command(B, "Reopen", { moneyIn: euros(190) })]);
-    expect(next.snapshots[2]?.holdings[B]).toMatchObject({ status: "active", action: "Reopen", netInvested: euros(130) });
+    const next = applied(closedB(), back, "2026-03-10", [
+      command(A, "Keep"),
+      command(B, "Reopen", { moneyIn: euros(190) }),
+    ]);
+    expect(next.snapshots[2]?.holdings[B]).toMatchObject({
+      status: "active",
+      action: "Reopen",
+      netInvested: euros(130),
+    });
   });
 
   it("permits an explicit reopening at zero only when the fund is listed", () => {
-    const listed = statement([[A, "Fund A", 1000], [B, "Fund B", 0]]);
+    const listed = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 0],
+    ]);
     const absent = statement([[A, "Fund A", 1000]]);
     const next = applied(closedB(), listed, "2026-03-10", [command(A, "Keep"), command(B, "Reopen")]);
     expect(next.snapshots[2]?.holdings[B]).toMatchObject({ status: "active", action: "Reopen", value: ZERO_CENTS });
@@ -178,8 +251,12 @@ describe("a closed fund", () => {
 
   it("takes no new money, and explains late proceeds", () => {
     const absent = statement([[A, "Fund A", 1000]]);
-    expect(rejected(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Closed", { moneyIn: euros(1) })])).toHaveLength(1);
-    expect(rejected(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Closed", { moneyOut: euros(5) })])).toHaveLength(1);
+    expect(
+      rejected(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Closed", { moneyIn: euros(1) })]),
+    ).toHaveLength(1);
+    expect(
+      rejected(closedB(), absent, "2026-03-10", [command(A, "Keep"), command(B, "Closed", { moneyOut: euros(5) })]),
+    ).toHaveLength(1);
     const next = applied(closedB(), absent, "2026-03-10", [
       command(A, "Keep"),
       command(B, "Closed", { moneyOut: euros(5), comment: "final settlement" }),
@@ -189,12 +266,17 @@ describe("a closed fund", () => {
 });
 
 describe("rejecting bad input", () => {
-  const input = statement([[A, "Fund A", 1000], [B, "Fund B", 500]]);
+  const input = statement([
+    [A, "Fund A", 1000],
+    [B, "Fund B", 500],
+  ]);
 
   it("rejects decisions that do not match the funds, by ISIN", () => {
     expect(rejected(january(), input, "2026-02-10", [command(A, "Keep")])).toHaveLength(1);
     expect(rejected(january(), input, "2026-02-10", [command(A, "Keep"), command(A, "Keep")])).toHaveLength(1);
-    expect(rejected(january(), input, "2026-02-10", [command(A, "Keep"), command(B, "Keep"), command(C, "Add")])).toHaveLength(1);
+    expect(
+      rejected(january(), input, "2026-02-10", [command(A, "Keep"), command(B, "Keep"), command(C, "Add")]),
+    ).toHaveLength(1);
   });
 
   it("rejects negative or fractional money", () => {
@@ -211,7 +293,11 @@ describe("rejecting bad input", () => {
   });
 
   it("rejects an unsafe name for a new fund", () => {
-    const withNew = statement([[A, "Fund A", 1000], [B, "Fund B", 500], [C, "Fund C", 300]]);
+    const withNew = statement([
+      [A, "Fund A", 1000],
+      [B, "Fund B", 500],
+      [C, "Fund C", 300],
+    ]);
     const issues = rejected(january(), withNew, "2026-02-10", [
       command(A, "Keep"),
       command(B, "Keep"),
@@ -244,16 +330,24 @@ describe("validateLedger", () => {
   });
 
   it("catches a broken cash chain between statements", () => {
-    const next = applied(january(), statement([[A, "Fund A", 1000], [B, "Fund B", 500]]), "2026-02-10", [
-      command(A, "Keep", { moneyIn: euros(10) }),
-      command(B, "Keep"),
-    ]);
+    const next = applied(
+      january(),
+      statement([
+        [A, "Fund A", 1000],
+        [B, "Fund B", 500],
+      ]),
+      "2026-02-10",
+      [command(A, "Keep", { moneyIn: euros(10) }), command(B, "Keep")],
+    );
     const second = next.snapshots[1];
     const holding = second?.holdings[A];
     if (second === undefined || holding === undefined) throw new Error("missing");
     const tampered: LedgerState = {
       ...next,
-      snapshots: [next.snapshots[0] ?? second, { ...second, holdings: { ...second.holdings, [A]: { ...holding, netInvested: euros(5) } } }],
+      snapshots: [
+        next.snapshots[0] ?? second,
+        { ...second, holdings: { ...second.holdings, [A]: { ...holding, netInvested: euros(5) } } },
+      ],
     };
     expect(validateLedger(tampered).map((issue) => issue.code)).toContain("invalid-cash");
   });

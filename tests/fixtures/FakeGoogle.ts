@@ -19,10 +19,15 @@ function parseUrl(text: string): ParsedUrl {
         return [decodeURIComponent(key), decodeURIComponent(value)] as const;
       }),
   );
-  return { pathname, query: (name) => pairs.get(name) ?? null, queryAll: (name) => search.split("&").flatMap((pair) => {
-    const [key = "", value = ""] = pair.split("=");
-    return decodeURIComponent(key) === name ? [decodeURIComponent(value)] : [];
-  }) };
+  return {
+    pathname,
+    query: (name) => pairs.get(name) ?? null,
+    queryAll: (name) =>
+      search.split("&").flatMap((pair) => {
+        const [key = "", value = ""] = pair.split("=");
+        return decodeURIComponent(key) === name ? [decodeURIComponent(value)] : [];
+      }),
+  };
 }
 
 /** The tab named by a range such as 'Bank 2026-01-31'!A1 or _FolioDash ledger!A1:D, with its quotes removed. */
@@ -61,7 +66,16 @@ interface GridSize {
 }
 
 function newTab(id: number, hidden: boolean, size: GridSize | undefined): FakeTab {
-  return { id, hidden, rows: [], rowCount: size?.rowCount ?? 1000, columnCount: size?.columnCount ?? 26, formats: [], widths: new Map(), developerMetadata: [] };
+  return {
+    id,
+    hidden,
+    rows: [],
+    rowCount: size?.rowCount ?? 1000,
+    columnCount: size?.columnCount ?? 26,
+    formats: [],
+    widths: new Map(),
+    developerMetadata: [],
+  };
 }
 
 interface Fault {
@@ -119,10 +133,15 @@ export class FakeGoogle {
   private handle(request: RestRequest): Promise<RestResponse> {
     const url = parseUrl(request.url);
     this.calls.push(`${request.method} ${url.pathname}`);
-    if (request.headers["Authorization"] !== `Bearer ${this.token}`) return Promise.resolve(this.respond(401, { error: "unauthenticated" }));
+    if (request.headers["Authorization"] !== `Bearer ${this.token}`)
+      return Promise.resolve(this.respond(401, { error: "unauthenticated" }));
 
     const label = `${request.method} ${decodeURIComponent(url.pathname)}`;
-    const faultIndex = this.faults.findIndex((fault) => fault.match.test(label) && (fault.append === undefined || fault.append === (request.body?.includes("\"appendCells\"") === true)));
+    const faultIndex = this.faults.findIndex(
+      (fault) =>
+        fault.match.test(label) &&
+        (fault.append === undefined || fault.append === (request.body?.includes('"appendCells"') === true)),
+    );
     const fault = faultIndex >= 0 ? this.faults.splice(faultIndex, 1)[0] : undefined;
     try {
       if (fault !== undefined && fault.applyFirst !== true) return Promise.resolve(this.fail(fault));
@@ -144,7 +163,8 @@ export class FakeGoogle {
     const path = decodeURIComponent(url.pathname);
     const body = request.body === undefined ? null : (JSON.parse(request.body) as Record<string, unknown>);
 
-    if (request.method === "GET" && path === "/drive/v3/about") return this.respond(200, { user: { emailAddress: this.account } });
+    if (request.method === "GET" && path === "/drive/v3/about")
+      return this.respond(200, { user: { emailAddress: this.account } });
     if (request.method === "GET" && path === "/drive/v3/files") return this.listFiles(url.query("q") ?? "");
     const patch = /^\/drive\/v3\/files\/([^/]+)$/u.exec(path);
     if (request.method === "PATCH" && patch !== null) {
@@ -160,7 +180,15 @@ export class FakeGoogle {
       if (tabs === undefined) return this.respond(404, {});
       return this.respond(200, {
         developerMetadata: this.spreadsheetMetadata.get(info[1] ?? "") ?? [],
-        sheets: [...tabs.entries()].map(([title, tab]) => ({ properties: { sheetId: tab.id, title, hidden: tab.hidden, gridProperties: { rowCount: tab.rowCount, columnCount: tab.columnCount } }, developerMetadata: tab.developerMetadata })),
+        sheets: [...tabs.entries()].map(([title, tab]) => ({
+          properties: {
+            sheetId: tab.id,
+            title,
+            hidden: tab.hidden,
+            gridProperties: { rowCount: tab.rowCount, columnCount: tab.columnCount },
+          },
+          developerMetadata: tab.developerMetadata,
+        })),
       });
     }
     const readBatch = /^\/v4\/spreadsheets\/([^/]+)\/values:batchGet$/u.exec(path);
@@ -169,7 +197,9 @@ export class FakeGoogle {
       if (tabs === undefined) return this.respond(404, {});
       const ranges = url.queryAll("ranges");
       if (ranges.some((range) => !tabs.has(tabNameOf(range)))) return this.respond(400, {});
-      return this.respond(200, { valueRanges: ranges.map((range) => ({ range, values: tabs.get(tabNameOf(range))?.rows })) });
+      return this.respond(200, {
+        valueRanges: ranges.map((range) => ({ range, values: tabs.get(tabNameOf(range))?.rows })),
+      });
     }
     const bulk = /^\/v4\/spreadsheets\/([^/]+)\/values:(batchClear|batchUpdate)$/u.exec(path);
     if (request.method === "POST" && bulk !== null) return this.bulkValues(bulk[1] ?? "", bulk[2] ?? "", body);
@@ -212,7 +242,13 @@ export class FakeGoogle {
     const requests = (body?.["requests"] as Record<string, unknown>[] | undefined) ?? [];
     this.batches.push(requests);
     // Google applies a batch whole or not at all, so work on copies and keep them only if every step succeeds.
-    const copy = (tab: FakeTab): FakeTab => ({ ...tab, rows: tab.rows.map((row) => [...row]), formats: tab.formats.map((row) => [...row]), widths: new Map(tab.widths), developerMetadata: [...tab.developerMetadata] });
+    const copy = (tab: FakeTab): FakeTab => ({
+      ...tab,
+      rows: tab.rows.map((row) => [...row]),
+      formats: tab.formats.map((row) => [...row]),
+      widths: new Map(tab.widths),
+      developerMetadata: [...tab.developerMetadata],
+    });
     const backup = new Map([...tabs.entries()].map(([title, tab]) => [title, copy(tab)] as const));
     const restore = (): void => {
       this.spreadsheetMetadata.set(id, metadataBefore);
@@ -223,15 +259,25 @@ export class FakeGoogle {
       this.requests.push(request);
       const named = request["addNamedRange"] as { namedRange: { namedRangeId: string } } | undefined;
       if (named !== undefined) {
-        if (markers.has(named.namedRange.namedRangeId)) { restore(); return this.respond(400, { error: "Named range ID already exists" }); }
+        if (markers.has(named.namedRange.namedRangeId)) {
+          restore();
+          return this.respond(400, { error: "Named range ID already exists" });
+        }
         markers.add(named.namedRange.namedRangeId);
       }
-      const addMetadata = request["createDeveloperMetadata"] as { developerMetadata: Record<string, unknown> & { location?: { spreadsheet?: boolean } } } | undefined;
-      const removeMetadata = request["deleteDeveloperMetadata"] as { dataFilter: { developerMetadataLookup: { metadataKey: string } } } | undefined;
+      const addMetadata = request["createDeveloperMetadata"] as
+        { developerMetadata: Record<string, unknown> & { location?: { spreadsheet?: boolean } } } | undefined;
+      const removeMetadata = request["deleteDeveloperMetadata"] as
+        { dataFilter: { developerMetadataLookup: { metadataKey: string } } } | undefined;
       if (removeMetadata !== undefined) {
-        for (let index = metadata.length - 1; index >= 0; index--) if (metadata[index]?.["metadataKey"] === removeMetadata.dataFilter.developerMetadataLookup.metadataKey) metadata.splice(index, 1);
+        for (let index = metadata.length - 1; index >= 0; index--)
+          if (metadata[index]?.["metadataKey"] === removeMetadata.dataFilter.developerMetadataLookup.metadataKey)
+            metadata.splice(index, 1);
       }
-      if (addMetadata?.developerMetadata.location?.spreadsheet === true) { metadata.push(addMetadata.developerMetadata); continue; }
+      if (addMetadata?.developerMetadata.location?.spreadsheet === true) {
+        metadata.push(addMetadata.developerMetadata);
+        continue;
+      }
       const problem = this.applyRequest(tabs, request);
       if (problem !== null) {
         restore();
@@ -244,15 +290,18 @@ export class FakeGoogle {
   }
 
   private applyRequest(tabs: Map<string, FakeTab>, request: Record<string, unknown>): string | null {
-    const byId = (sheetId: unknown): FakeTab | undefined => [...tabs.values()].find((candidate) => candidate.id === sheetId);
-    const append = request["appendCells"] as { sheetId: number; rows: { values: { userEnteredValue: { stringValue: string } }[] }[] } | undefined;
+    const byId = (sheetId: unknown): FakeTab | undefined =>
+      [...tabs.values()].find((candidate) => candidate.id === sheetId);
+    const append = request["appendCells"] as
+      { sheetId: number; rows: { values: { userEnteredValue: { stringValue: string } }[] }[] } | undefined;
     if (append !== undefined) {
       const tab = byId(append.sheetId);
       if (tab === undefined) return "No such sheet";
       for (const row of append.rows) tab.rows.push(row.values.map((cell) => cell.userEnteredValue.stringValue));
       tab.rowCount = Math.max(tab.rowCount, tab.rows.length);
     }
-    const add = request["addSheet"] as { properties: { title: string; sheetId?: number; gridProperties?: GridSize } } | undefined;
+    const add = request["addSheet"] as
+      { properties: { title: string; sheetId?: number; gridProperties?: GridSize } } | undefined;
     if (add !== undefined) {
       // Google refuses a second tab with the same name or id.
       if (tabs.has(add.properties.title)) return "A sheet with the name already exists";
@@ -268,20 +317,36 @@ export class FakeGoogle {
       if (entry === undefined) return "No such sheet";
       tabs.delete(entry[0]);
     }
-    const metadata = request["createDeveloperMetadata"] as { developerMetadata: Record<string, unknown> & { location: { sheetId: number } } } | undefined;
+    const metadata = request["createDeveloperMetadata"] as
+      { developerMetadata: Record<string, unknown> & { location: { sheetId: number } } } | undefined;
     if (metadata !== undefined) {
       const tab = byId(metadata.developerMetadata.location.sheetId);
       if (tab === undefined) return "No such sheet";
       tab.developerMetadata.push(metadata.developerMetadata);
     }
-    const update = request["updateSheetProperties"] as { properties: { sheetId: number; title?: string; hidden?: boolean; index?: number; tabColorStyle?: unknown; gridProperties?: GridSize & { frozenRowCount?: number; hideGridlines?: boolean } }; fields: string } | undefined;
+    const update = request["updateSheetProperties"] as
+      | {
+          properties: {
+            sheetId: number;
+            title?: string;
+            hidden?: boolean;
+            index?: number;
+            tabColorStyle?: unknown;
+            gridProperties?: GridSize & { frozenRowCount?: number; hideGridlines?: boolean };
+          };
+          fields: string;
+        }
+      | undefined;
     if (update !== undefined) {
       const tab = byId(update.properties.sheetId);
       if (tab === undefined) return "No such sheet";
       if (update.properties.title !== undefined) {
         const old = [...tabs.entries()].find(([, candidate]) => candidate.id === tab.id)?.[0];
-        if (tabs.has(update.properties.title) && old !== update.properties.title) return "A sheet with the name already exists";
-        const entries = [...tabs.entries()].map(([title, value]) => [title === old ? update.properties.title ?? title : title, value] as const);
+        if (tabs.has(update.properties.title) && old !== update.properties.title)
+          return "A sheet with the name already exists";
+        const entries = [...tabs.entries()].map(
+          ([title, value]) => [title === old ? (update.properties.title ?? title) : title, value] as const,
+        );
         tabs.clear();
         for (const [title, value] of entries) tabs.set(title, value);
       }
@@ -304,7 +369,8 @@ export class FakeGoogle {
       if (grid?.rowCount !== undefined) this.resize(tab, grid.rowCount, tab.columnCount);
       if (grid?.columnCount !== undefined) this.resize(tab, tab.rowCount, grid.columnCount);
     }
-    const remove = request["deleteDimension"] as { range: { sheetId: number; dimension: string; startIndex: number; endIndex: number } } | undefined;
+    const remove = request["deleteDimension"] as
+      { range: { sheetId: number; dimension: string; startIndex: number; endIndex: number } } | undefined;
     if (remove !== undefined) {
       const tab = byId(remove.range.sheetId);
       if (tab === undefined) return "No such sheet";
@@ -326,24 +392,44 @@ export class FakeGoogle {
       const tab = byId(reset.range.sheetId);
       if (tab === undefined) return "No such sheet";
       if (reset.fields.includes("userEnteredValue")) tab.rows = [];
-      if (reset.fields === "userEnteredValue,userEnteredFormat" || reset.fields === "userEnteredFormat") tab.formats = [];
+      if (reset.fields === "userEnteredValue,userEnteredFormat" || reset.fields === "userEnteredFormat")
+        tab.formats = [];
     }
-    const width = request["updateDimensionProperties"] as { range: { sheetId: number; dimension: string; startIndex: number; endIndex: number }; properties: { pixelSize: number } } | undefined;
+    const width = request["updateDimensionProperties"] as
+      | {
+          range: { sheetId: number; dimension: string; startIndex: number; endIndex: number };
+          properties: { pixelSize: number };
+        }
+      | undefined;
     if (width !== undefined) {
       const tab = byId(width.range.sheetId);
       if (tab === undefined) return "No such sheet";
       if (width.range.dimension === "ROWS") return null;
       if (width.range.endIndex > tab.columnCount) return "Range exceeds grid limits";
-      for (let column = width.range.startIndex; column < width.range.endIndex; column++) tab.widths.set(column, width.properties.pixelSize);
+      for (let column = width.range.startIndex; column < width.range.endIndex; column++)
+        tab.widths.set(column, width.properties.pixelSize);
     }
-    const cells = request["updateCells"] as { start: { sheetId: number; rowIndex: number; columnIndex: number }; rows: { values: { userEnteredValue?: { numberValue?: number; stringValue?: string }; userEnteredFormat?: Record<string, unknown> }[] }[] } | undefined;
+    const cells = request["updateCells"] as
+      | {
+          start: { sheetId: number; rowIndex: number; columnIndex: number };
+          rows: {
+            values: {
+              userEnteredValue?: { numberValue?: number; stringValue?: string };
+              userEnteredFormat?: Record<string, unknown>;
+            }[];
+          }[];
+        }
+      | undefined;
     if (cells !== undefined) {
       const tab = byId(cells.start.sheetId);
       if (tab === undefined) return "No such sheet";
       for (const [rowOffset, row] of cells.rows.entries()) {
         const rowIndex = cells.start.rowIndex + rowOffset;
-        if (rowIndex >= tab.rowCount || cells.start.columnIndex + row.values.length > tab.columnCount) return "Range exceeds grid limits";
-        tab.rows[rowIndex] = row.values.map((cell) => cell.userEnteredValue?.numberValue ?? cell.userEnteredValue?.stringValue ?? "");
+        if (rowIndex >= tab.rowCount || cells.start.columnIndex + row.values.length > tab.columnCount)
+          return "Range exceeds grid limits";
+        tab.rows[rowIndex] = row.values.map(
+          (cell) => cell.userEnteredValue?.numberValue ?? cell.userEnteredValue?.stringValue ?? "",
+        );
         tab.formats[rowIndex] = row.values.map((cell) => cell.userEnteredFormat ?? null);
       }
     }
@@ -373,22 +459,33 @@ export class FakeGoogle {
 
   private createSpreadsheet(body: Record<string, unknown> | null): RestResponse {
     const id = `workbook-${String(this.nextId++)}`;
-    const title = ((body?.["properties"] as Record<string, unknown> | undefined)?.["title"] as string | undefined) ?? "Untitled";
+    const title =
+      ((body?.["properties"] as Record<string, unknown> | undefined)?.["title"] as string | undefined) ?? "Untitled";
     const tabs = new Map<string, FakeTab>();
     type CreateSheet = {
       properties: { title: string; sheetId?: number; hidden?: boolean; gridProperties?: GridSize };
       developerMetadata?: Record<string, unknown>[];
-      data?: { startRow?: number; startColumn?: number; rowData?: { values: { userEnteredValue?: { stringValue?: string; numberValue?: number } }[] }[] }[];
+      data?: {
+        startRow?: number;
+        startColumn?: number;
+        rowData?: { values: { userEnteredValue?: { stringValue?: string; numberValue?: number } }[] }[];
+      }[];
     };
     for (const sheet of (body?.["sheets"] as CreateSheet[] | undefined) ?? []) {
       const sheetId = sheet.properties.sheetId ?? this.nextTabId++;
       this.nextTabId = Math.max(this.nextTabId, sheetId + 1);
-      const tab = newTab(sheetId, this.ignoreHiddenOnCreate ? false : sheet.properties.hidden === true, sheet.properties.gridProperties);
+      const tab = newTab(
+        sheetId,
+        this.ignoreHiddenOnCreate ? false : sheet.properties.hidden === true,
+        sheet.properties.gridProperties,
+      );
       tab.developerMetadata = [...(sheet.developerMetadata ?? [])];
       for (const data of sheet.data ?? []) {
         (data.rowData ?? []).forEach((row, index) => {
           const values: unknown[] = Array.from({ length: data.startColumn ?? 0 }, () => "");
-          values.push(...row.values.map((cell) => cell.userEnteredValue?.stringValue ?? cell.userEnteredValue?.numberValue ?? ""));
+          values.push(
+            ...row.values.map((cell) => cell.userEnteredValue?.stringValue ?? cell.userEnteredValue?.numberValue ?? ""),
+          );
           tab.rows[(data.startRow ?? 0) + index] = values;
         });
       }
@@ -399,7 +496,13 @@ export class FakeGoogle {
     return this.respond(200, { spreadsheetId: id });
   }
 
-  private values(request: RestRequest, body: Record<string, unknown> | null, id: string, range: string, action: string): RestResponse {
+  private values(
+    request: RestRequest,
+    body: Record<string, unknown> | null,
+    id: string,
+    range: string,
+    action: string,
+  ): RestResponse {
     const tabs = this.workbooks.get(id);
     if (tabs === undefined) return this.respond(404, {});
     const tab = tabs.get(tabNameOf(range));

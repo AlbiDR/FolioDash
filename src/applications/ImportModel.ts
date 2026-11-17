@@ -109,8 +109,19 @@ export type CheckResult =
 export interface RemoteSave {
   newCommandId(): string;
   record(request: RecordRequest, commandId: string, expectedRevision: string): Promise<RecordResult>;
-  backfill?(earlier: readonly BackfillStatement[], boundary: readonly FundCommand[], commandId: string, expectedRevision: string, expectedWorkbookId: string): Promise<RecordResult>;
-  recoverRevision?(targetRevision: string, commandId: string, expectedRevision: string, expectedWorkbookId: string): Promise<RecordResult>;
+  backfill?(
+    earlier: readonly BackfillStatement[],
+    boundary: readonly FundCommand[],
+    commandId: string,
+    expectedRevision: string,
+    expectedWorkbookId: string,
+  ): Promise<RecordResult>;
+  recoverRevision?(
+    targetRevision: string,
+    commandId: string,
+    expectedRevision: string,
+    expectedWorkbookId: string,
+  ): Promise<RecordResult>;
   /** Resolves a save whose result was lost, without writing anything. */
   check(commandId: string, expectedWorkbookId?: string): Promise<CheckResult>;
   /**

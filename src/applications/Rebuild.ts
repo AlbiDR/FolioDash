@@ -6,7 +6,9 @@ import { EMPTY_LEDGER, type LedgerState, type Snapshot } from "../core/Ledger";
 import { type RawSheet, parseStoredSheet } from "../core/RawSheet";
 
 /** Reads a bank statement sheet into what the ledger needs. The bank adapter provides it; this layer does not know the bank. */
-export type InterpretStatement = (sheet: RawSheet) => { readonly ok: true; readonly statement: StatementInput } | { readonly ok: false; readonly message: string };
+export type InterpretStatement = (
+  sheet: RawSheet,
+) => { readonly ok: true; readonly statement: StatementInput } | { readonly ok: false; readonly message: string };
 
 export interface RebuildReport {
   /** Months in the saved ledger. */
@@ -36,7 +38,13 @@ export function before(ledger: LedgerState, index: number): LedgerState {
  * The month that a statement and its decisions produce, replayed from the saved
  * month before it with today's rules. Undefined when the rules refuse it.
  */
-export function replayedMonth(ledger: LedgerState, index: number, statement: StatementInput, date: IsoDate, commands: readonly FundCommand[]): Snapshot | undefined {
+export function replayedMonth(
+  ledger: LedgerState,
+  index: number,
+  statement: StatementInput,
+  date: IsoDate,
+  commands: readonly FundCommand[],
+): Snapshot | undefined {
   const replayed = applyImport(before(ledger, index), statement, date, commands, "replay");
   return replayed.ok ? replayed.state.snapshots[index] : undefined;
 }
@@ -46,7 +54,11 @@ export function replayedMonth(ledger: LedgerState, index: number, statement: Sta
  * statements and decisions produce under today's rules. Each month is replayed
  * from the saved month before it, so one missing statement does not hide the rest.
  */
-export function verifyRebuild(ledger: LedgerState, sources: readonly SourceRecord[], interpret: InterpretStatement): RebuildReport {
+export function verifyRebuild(
+  ledger: LedgerState,
+  sources: readonly SourceRecord[],
+  interpret: InterpretStatement,
+): RebuildReport {
   const byDate = new Map(sources.map((source) => [source.date, source]));
   let matching = 0;
   let withoutStatement = 0;
@@ -83,15 +95,21 @@ export type RebuildResult =
  * Re-creates the whole ledger from nothing but the stored bank statements and
  * decisions, in order. This is the proof that the sheet is complete.
  */
-export function rebuildLedger(sources: readonly SourceRecord[], interpret: InterpretStatement, newRevision: () => string): RebuildResult {
+export function rebuildLedger(
+  sources: readonly SourceRecord[],
+  interpret: InterpretStatement,
+  newRevision: () => string,
+): RebuildResult {
   let state = EMPTY_LEDGER;
   for (const source of [...sources].sort((left, right) => left.date.localeCompare(right.date))) {
     const sheet = parseStoredSheet(source.sheet);
-    if (sheet === null) return { status: "failed", date: source.date, message: "The stored statement could not be read." };
+    if (sheet === null)
+      return { status: "failed", date: source.date, message: "The stored statement could not be read." };
     const read = interpret(sheet);
     if (!read.ok) return { status: "failed", date: source.date, message: read.message };
     const applied = applyImport(state, read.statement, source.date, source.commands, newRevision());
-    if (!applied.ok) return { status: "failed", date: source.date, message: applied.issues[0]?.message ?? "A rule was not met." };
+    if (!applied.ok)
+      return { status: "failed", date: source.date, message: applied.issues[0]?.message ?? "A rule was not met." };
     state = applied.state;
   }
   return { status: "rebuilt", ledger: state };

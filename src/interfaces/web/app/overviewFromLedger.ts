@@ -29,17 +29,18 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
         const holding = snapshot.holdings[fund.isin];
         return holding === undefined || holding.action === "Closed" ? null : holding.netInvested;
       }),
-      latest: current === undefined
-        ? null
-        : {
-            value: current.value,
-            netInvested: current.netInvested,
-            gain: current.gain,
-            gainPercent: current.gainPercent,
-            monthlyGain: current.monthlyGain,
-            monthlyGainPercent: current.monthlyGainPercent,
-            share: current.share,
-          },
+      latest:
+        current === undefined
+          ? null
+          : {
+              value: current.value,
+              netInvested: current.netInvested,
+              gain: current.gain,
+              gainPercent: current.gainPercent,
+              monthlyGain: current.monthlyGain,
+              monthlyGainPercent: current.monthlyGainPercent,
+              share: current.share,
+            },
     };
   });
 
@@ -47,12 +48,51 @@ export function overviewFromLedger(state: LedgerState, source: OverviewModel["so
     latest === undefined
       ? []
       : [
-          { label: "Fund value", amount: latest.total, percent: null, signed: false, note: "The bank's funds-only total. Account cash is not included." },
-          { label: "Net invested", amount: latest.invested, percent: null, signed: false, note: "Cash paid in minus full proceeds received, including funds you have sold." },
-          { label: "Current gain", amount: latest.gain, percent: latest.gainPercent, signed: true, note: "Value minus net invested. Includes results already realised from sold funds. The percentage is on net invested; it is not annualised." },
-          { label: "Month on month", amount: latest.monthlyGain, percent: latest.monthlyGainPercent, signed: true, note: "Change in gain since the previous statement, only when that was the month before. Cash you moved is excluded.", comparedWith: latest.monthlyGain === null ? null : latest.previousDate },
-          { label: "Year to date", amount: latest.yearToDateGain, percent: latest.yearToDatePercent, signed: true, note: "Change in gain since this year's January statement. This is not a return since 1 January.", comparedWith: latest.yearToDateFrom },
-          { label: "Year on year", amount: latest.yearOverYearGain, percent: latest.yearOverYearPercent, signed: true, note: "Change in gain against the statement from the same month last year.", comparedWith: latest.yearOverYearFrom },
+          {
+            label: "Fund value",
+            amount: latest.total,
+            percent: null,
+            signed: false,
+            note: "The bank's funds-only total. Account cash is not included.",
+          },
+          {
+            label: "Net invested",
+            amount: latest.invested,
+            percent: null,
+            signed: false,
+            note: "Cash paid in minus full proceeds received, including funds you have sold.",
+          },
+          {
+            label: "Current gain",
+            amount: latest.gain,
+            percent: latest.gainPercent,
+            signed: true,
+            note: "Value minus net invested. Includes results already realised from sold funds. The percentage is on net invested; it is not annualised.",
+          },
+          {
+            label: "Month on month",
+            amount: latest.monthlyGain,
+            percent: latest.monthlyGainPercent,
+            signed: true,
+            note: "Change in gain since the previous statement, only when that was the month before. Cash you moved is excluded.",
+            comparedWith: latest.monthlyGain === null ? null : latest.previousDate,
+          },
+          {
+            label: "Year to date",
+            amount: latest.yearToDateGain,
+            percent: latest.yearToDatePercent,
+            signed: true,
+            note: "Change in gain since this year's January statement. This is not a return since 1 January.",
+            comparedWith: latest.yearToDateFrom,
+          },
+          {
+            label: "Year on year",
+            amount: latest.yearOverYearGain,
+            percent: latest.yearOverYearPercent,
+            signed: true,
+            note: "Change in gain against the statement from the same month last year.",
+            comparedWith: latest.yearOverYearFrom,
+          },
         ];
 
   return {

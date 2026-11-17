@@ -26,7 +26,9 @@ export type RunOutcome =
 const SCRIPTS_RUN = "https://script.googleapis.com/v1/scripts";
 
 function record(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 function scriptErrorMessage(error: Record<string, unknown>): string {

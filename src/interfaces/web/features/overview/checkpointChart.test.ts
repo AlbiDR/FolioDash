@@ -25,10 +25,18 @@ const checkpoint = (id: string, on: string, value: number) => ({ id, date: date(
 
 describe("checkpoint markers on the chart", () => {
   it("X8 keeps only markers inside the shown period and draws one point per date", () => {
-    const markers = chartMarkers([checkpoint("c1", "2026-03-05", 1000), checkpoint("c2", "2026-10-20", 1200), checkpoint("c3", "2026-10-20", 1210)]);
+    const markers = chartMarkers([
+      checkpoint("c1", "2026-03-05", 1000),
+      checkpoint("c2", "2026-10-20", 1200),
+      checkpoint("c3", "2026-10-20", 1210),
+    ]);
     const series = checkpointSeries(markers, date("2026-06-01"));
     expect(series?.points).toHaveLength(1);
-    expect(series?.points[0]).toMatchObject({ time: utcTime(date("2026-10-20")), value: 1210, detail: "2 checkpoints on this date" });
+    expect(series?.points[0]).toMatchObject({
+      time: utcTime(date("2026-10-20")),
+      value: 1210,
+      detail: "2 checkpoints on this date",
+    });
     expect(checkpointSeries(markers, date("2026-11-01"))).toBeNull();
     expect(checkpointSeries(markers, undefined)).toBeNull();
     expect(series?.markers).toBe(true);
@@ -43,10 +51,28 @@ describe("checkpoint markers on the chart", () => {
   });
 
   it("is drawn as separate points, never joined, and widens the value axis to include them", () => {
-    const geometry = computeLineChart([
-      { id: "value", label: "Value", points: [{ time: 1_000_000_000_000, value: 100 }, { time: 1_000_086_400_000, value: 110 }] },
-      { id: "checkpoints", label: "Checkpoint", markers: true, points: [{ time: 1_000_043_200_000, value: 150 }, { time: 1_000_172_800_000, value: 90 }] },
-    ], { width: 700, height: 300, margin: { top: 10, right: 60, bottom: 20, left: 8 }, includeZero: false });
+    const geometry = computeLineChart(
+      [
+        {
+          id: "value",
+          label: "Value",
+          points: [
+            { time: 1_000_000_000_000, value: 100 },
+            { time: 1_000_086_400_000, value: 110 },
+          ],
+        },
+        {
+          id: "checkpoints",
+          label: "Checkpoint",
+          markers: true,
+          points: [
+            { time: 1_000_043_200_000, value: 150 },
+            { time: 1_000_172_800_000, value: 90 },
+          ],
+        },
+      ],
+      { width: 700, height: 300, margin: { top: 10, right: 60, bottom: 20, left: 8 }, includeZero: false },
+    );
     const markers = geometry.series.find((entry) => entry.id === "checkpoints");
     expect(markers?.markers).toBe(true);
     expect(markers?.paths).toEqual([]);
@@ -88,7 +114,11 @@ describe("checkpoint markers on the chart", () => {
     expect(rangeFromDate(dates, "3M")).toBe(date("2026-08-01"));
     expect(rangeFromDate(dates, "All")).toBeNull();
     expect(rangeFromDate(dates, "YTD")).toBe(date("2026-01-01"));
-    const markers = chartMarkers([checkpoint("c1", "2026-08-20", 1000), checkpoint("c2", "2025-12-20", 900), checkpoint("c3", "2026-07-30", 950)]);
+    const markers = chartMarkers([
+      checkpoint("c1", "2026-08-20", 1000),
+      checkpoint("c2", "2025-12-20", 900),
+      checkpoint("c3", "2026-07-30", 950),
+    ]);
     expect(checkpointSeries(markers, rangeFromDate(dates, "3M"))?.points.map((point) => point.value)).toEqual([1000]);
     expect(checkpointSeries(markers, rangeFromDate(dates, "All"))?.points).toHaveLength(3);
     expect(checkpointSeries(markers, undefined)).toBeNull();

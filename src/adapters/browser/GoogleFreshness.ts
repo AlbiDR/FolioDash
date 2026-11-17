@@ -5,7 +5,9 @@ export function watchGoogleFreshness(refresh: () => Promise<void>, paused: () =>
   let stopped = false;
   const check = (): void => {
     if (stopped || document.visibilityState === "hidden" || !navigator.onLine || paused()) return;
-    void refresh().catch(() => { /* The session owns connection feedback. */ });
+    void refresh().catch(() => {
+      /* The session owns connection feedback. */
+    });
   };
   window.addEventListener("focus", check);
   window.addEventListener("online", check);

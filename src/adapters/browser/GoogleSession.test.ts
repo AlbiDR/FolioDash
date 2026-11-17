@@ -3,11 +3,26 @@ import type { GoogleSession } from "../../applications/SessionModel";
 import { createGoogleSessionStore } from "./GoogleSession";
 
 const now = 1_700_000_000_000;
-const value: GoogleSession = { clientId: "synthetic-client", workbookId: "synthetic-workbook", scope: "https://www.googleapis.com/auth/drive.file", accessToken: "synthetic-token", validUntil: now + 600_000 };
+const value: GoogleSession = {
+  clientId: "synthetic-client",
+  workbookId: "synthetic-workbook",
+  scope: "https://www.googleapis.com/auth/drive.file",
+  accessToken: "synthetic-token",
+  validUntil: now + 600_000,
+};
 
 function memory() {
   const data = new Map<string, string>();
-  return { data, getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, text: string) => { data.set(key, text); }, removeItem: (key: string) => { data.delete(key); } };
+  return {
+    data,
+    getItem: (key: string) => data.get(key) ?? null,
+    setItem: (key: string, text: string) => {
+      data.set(key, text);
+    },
+    removeItem: (key: string) => {
+      data.delete(key);
+    },
+  };
 }
 
 describe("device-kept Google session", () => {
@@ -21,7 +36,13 @@ describe("device-kept Google session", () => {
   });
 
   it("rejects a different client, workbook, scope or an excessive lifetime", () => {
-    for (const invalid of [{ ...value, clientId: "other" }, { ...value, workbookId: "other" }, { ...value, scope: "other" }, { ...value, validUntil: now + 3_600_001 }, { ...value, accessToken: "" }]) {
+    for (const invalid of [
+      { ...value, clientId: "other" },
+      { ...value, workbookId: "other" },
+      { ...value, scope: "other" },
+      { ...value, validUntil: now + 3_600_001 },
+      { ...value, accessToken: "" },
+    ]) {
       const storage = memory();
       const store = createGoogleSessionStore(() => storage);
       store.save(invalid);
@@ -48,12 +69,21 @@ describe("device-kept Google session", () => {
     expect(store.load(value.clientId, value.workbookId, now)).toEqual(value);
     store.discard(value.accessToken);
     expect(storage.data.size).toBe(0);
-    expect(() => { createGoogleSessionStore(() => { throw new Error("blocked"); }).discard("any"); }).not.toThrow();
+    expect(() => {
+      createGoogleSessionStore(() => {
+        throw new Error("blocked");
+      }).discard("any");
+    }).not.toThrow();
   });
 
   it("survives blocked, full and malformed storage", () => {
-    const blocked = createGoogleSessionStore(() => { throw new Error("blocked"); });
-    expect(() => { blocked.save(value); blocked.clear(); }).not.toThrow();
+    const blocked = createGoogleSessionStore(() => {
+      throw new Error("blocked");
+    });
+    expect(() => {
+      blocked.save(value);
+      blocked.clear();
+    }).not.toThrow();
     expect(blocked.load(value.clientId, value.workbookId, now)).toBeNull();
     const storage = memory();
     const store = createGoogleSessionStore(() => storage);

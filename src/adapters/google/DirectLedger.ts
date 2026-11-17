@@ -3,7 +3,13 @@ import { prepareBackfillReview, type BackfillStatement } from "../../application
 import type { InterpretStatement } from "../../applications/Rebuild";
 import type { FundCommand } from "../../core/ImportPlan";
 import type { CallFailure, Workbook } from "../../applications/SessionModel";
-import { type AttachRequest, type CommitRequest, type ServiceEnvironment, attachStatements, commitStatement } from "../../applications/LedgerService";
+import {
+  type AttachRequest,
+  type CommitRequest,
+  type ServiceEnvironment,
+  attachStatements,
+  commitStatement,
+} from "../../applications/LedgerService";
 import { rawGrid } from "../../applications/SheetGrid";
 import { readableView, previousReadableViews } from "../../applications/ReadableView";
 import type { Grid } from "../../applications/SheetGrid";
@@ -13,7 +19,16 @@ import type { IsoDate } from "../../core/IsoDate";
 import { toStoredSheet, type RawSheet } from "../../core/RawSheet";
 import { sha256Hex } from "../../core/Sha256";
 import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/RowLedgerStore";
-import { appendLedgerRows, createWorkbook, fenceLedgerWrite, findWorkbook, readLedgerRows, tidyLedgerTab as tidyTab, writeGridTabs, type WorkbookIdentity } from "./GoogleWorkbook";
+import {
+  appendLedgerRows,
+  createWorkbook,
+  fenceLedgerWrite,
+  findWorkbook,
+  readLedgerRows,
+  tidyLedgerTab as tidyTab,
+  writeGridTabs,
+  type WorkbookIdentity,
+} from "./GoogleWorkbook";
 import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./LedgerResults";
 import { VIEW_TAB } from "./SheetsLayout";
 import { type RestClient, type RestFailure } from "./Rest";
@@ -61,13 +76,22 @@ export type EnsureResult =
   | { readonly status: "call-failed"; readonly failure: CallFailure };
 
 /** Finds the person's spreadsheet, or creates it. This is the whole of "starting a portfolio from scratch". */
-export async function ensureWorkbook(rest: RestClient, accessToken: string, identity?: WorkbookIdentity): Promise<EnsureResult> {
+export async function ensureWorkbook(
+  rest: RestClient,
+  accessToken: string,
+  identity?: WorkbookIdentity,
+): Promise<EnsureResult> {
   const found = await findWorkbook(rest, accessToken, identity);
   if (!found.ok) return { status: "call-failed", failure: found.failure };
   if (found.value !== null) return { status: "ready", workbook: found.value, created: false, tagged: true };
   const created = await createWorkbook(rest, accessToken, identity);
   if (!created.ok) return { status: "call-failed", failure: created.failure };
-  return { status: "ready", workbook: { id: created.value.id, url: created.value.url }, created: true, tagged: created.value.tagged };
+  return {
+    status: "ready",
+    workbook: { id: created.value.id, url: created.value.url },
+    created: true,
+    tagged: created.value.tagged,
+  };
 }
 
 function storeOf(rows: readonly LedgerRow[]): { readonly sheet: BufferedRowSheet; readonly store: RowLedgerStore } {
@@ -79,13 +103,21 @@ function storeOf(rows: readonly LedgerRow[]): { readonly sheet: BufferedRowSheet
 export async function readDirect(rest: RestClient, accessToken: string, workbookId: string): Promise<RemoteRead> {
   const tab = await readLedgerRows(rest, accessToken, workbookId);
   if (!tab.ok) {
-    return tab.failure === "not-found" ? { status: "workbook-unavailable" } : { status: "call-failed", failure: tab.failure, message: null };
+    return tab.failure === "not-found"
+      ? { status: "workbook-unavailable" }
+      : { status: "call-failed", failure: tab.failure, message: null };
   }
-  if ("notALedger" in tab.value) return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so it was not changed." };
+  if ("notALedger" in tab.value)
+    return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so it was not changed." };
   const store = storeOf(tab.value.rows).store;
   const loaded = store.load();
   return loaded.status === "ok"
-    ? { status: "ok", state: loaded.state, ignoredTrailingRows: loaded.ignoredTrailingRows, ...(store.recoveryTarget() === null ? {} : { recoveryTarget: store.recoveryTarget() }) }
+    ? {
+        status: "ok",
+        state: loaded.state,
+        ignoredTrailingRows: loaded.ignoredTrailingRows,
+        ...(store.recoveryTarget() === null ? {} : { recoveryTarget: store.recoveryTarget() }),
+      }
     : { status: "damaged", message: loaded.message };
 }
 
@@ -106,22 +138,28 @@ async function writeOnce(
 ): Promise<RemoteCommit> {
   const before = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!before.ok) return notWritten(before.failure);
-  if ("notALedger" in before.value) return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so nothing was saved." };
+  if ("notALedger" in before.value)
+    return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so nothing was saved." };
 
   const { sheet, store } = storeOf(before.value.rows);
   const environment: ServiceEnvironment = { store, withLock: (action) => action(), newRevision: deps.newRevision };
   let prepared: ReturnType<typeof operate>;
-  try { prepared = operate(environment); }
-  catch { return { status: "not-committed", message: "The change could not be prepared. Nothing was sent." }; }
+  try {
+    prepared = operate(environment);
+  } catch {
+    return { status: "not-committed", message: "The change could not be prepared. Nothing was sent." };
+  }
   const { result, wrote } = prepared;
   if (!wrote) return result;
 
   // Nothing has been written yet. Make sure the sheet has not changed since it was read.
   const again = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!again.ok) return notWritten(again.failure);
-  if ("notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows)) return { status: "stale" };
+  if ("notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows))
+    return { status: "stale" };
 
-  if (deps.beforeRevisionWrite !== undefined && !deps.beforeRevisionWrite(sha256Hex(canonicalJson(before.value.rows)))) return { status: "not-committed", message: "The safety receipt could not be stored. Nothing was sent." };
+  if (deps.beforeRevisionWrite !== undefined && !deps.beforeRevisionWrite(sha256Hex(canonicalJson(before.value.rows))))
+    return { status: "not-committed", message: "The safety receipt could not be stored. Nothing was sent." };
 
   const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending, before.value.rows);
   if (sent.ok) {
@@ -129,7 +167,13 @@ async function writeOnce(
     if (!verified.ok || "notALedger" in verified.value) return { status: "unknown", message: LOST };
     const loaded = storeOf(verified.value.rows).store.load();
     const expected = store.load();
-    if (loaded.status !== "ok" || expected.status !== "ok" || canonicalJson(verified.value.rows.slice(0, before.value.rows.length + sheet.pending.length)) !== canonicalJson([...before.value.rows, ...sheet.pending])) return { status: "unknown", message: LOST };
+    if (
+      loaded.status !== "ok" ||
+      expected.status !== "ok" ||
+      canonicalJson(verified.value.rows.slice(0, before.value.rows.length + sheet.pending.length)) !==
+        canonicalJson([...before.value.rows, ...sheet.pending])
+    )
+      return { status: "unknown", message: LOST };
     return result;
   }
   if (sent.failure === "unexpected") {
@@ -142,15 +186,25 @@ async function writeOnce(
         try {
           const reconciled = operate({ store: checked, withLock: (action) => action(), newRevision: deps.newRevision });
           if (!reconciled.wrote) return reconciled.result;
-        } catch { return { status: "unknown", message: LOST }; }
+        } catch {
+          return { status: "unknown", message: LOST };
+        }
       }
     }
   }
-  return sent.failure === "unavailable" || sent.failure === "network" || sent.failure === "unexpected" ? { status: "unknown", message: LOST } : notWritten(sent.failure);
+  return sent.failure === "unavailable" || sent.failure === "network" || sent.failure === "unexpected"
+    ? { status: "unknown", message: LOST }
+    : notWritten(sent.failure);
 }
 
 /** Resolve a missing uncertain command by atomically fencing its predecessor. */
-export async function fenceRevisionDirect(deps: DirectDeps, accessToken: string, workbookId: string, commandId: string, predecessor: string): Promise<"fenced" | "committed" | "unknown"> {
+export async function fenceRevisionDirect(
+  deps: DirectDeps,
+  accessToken: string,
+  workbookId: string,
+  commandId: string,
+  predecessor: string,
+): Promise<"fenced" | "committed" | "unknown"> {
   const before = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!before.ok || "notALedger" in before.value) return "unknown";
   const { sheet, store } = storeOf(before.value.rows);
@@ -162,11 +216,22 @@ export async function fenceRevisionDirect(deps: DirectDeps, accessToken: string,
   const priorFence = store.findCommand(fenceId);
   if (priorFence !== null) return priorFence.requestHash === fenceHash ? "fenced" : "unknown";
   const revision = deps.newRevision();
-  try { store.publish({ ...current.state, revision }, { commandId: fenceId, revision, requestHash: fenceHash }); }
-  catch { return "unknown"; }
+  try {
+    store.publish({ ...current.state, revision }, { commandId: fenceId, revision, requestHash: fenceHash });
+  } catch {
+    return "unknown";
+  }
   const again = await readLedgerRows(deps.rest, accessToken, workbookId);
-  if (!again.ok || "notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows)) return "unknown";
-  const sent = await fenceLedgerWrite(deps.rest, accessToken, workbookId, predecessor, before.value.rows, sheet.pending);
+  if (!again.ok || "notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows))
+    return "unknown";
+  const sent = await fenceLedgerWrite(
+    deps.rest,
+    accessToken,
+    workbookId,
+    predecessor,
+    before.value.rows,
+    sheet.pending,
+  );
   if (!sent.ok) return "unknown";
   const after = await readLedgerRows(deps.rest, accessToken, workbookId);
   if (!after.ok || "notALedger" in after.value) return "unknown";
@@ -177,7 +242,12 @@ export async function fenceRevisionDirect(deps: DirectDeps, accessToken: string,
 }
 
 /** Saves one reviewed statement. */
-export function commitDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: CommitRequest): Promise<RemoteCommit> {
+export function commitDirect(
+  deps: DirectDeps,
+  accessToken: string,
+  workbookId: string,
+  request: CommitRequest,
+): Promise<RemoteCommit> {
   return writeOnce(deps, accessToken, workbookId, (environment) => {
     const outcome = commitStatement(environment, request);
     switch (outcome.status) {
@@ -188,7 +258,10 @@ export function commitDirect(deps: DirectDeps, accessToken: string, workbookId: 
       case "stale":
         return { result: { status: "stale" }, wrote: false };
       case "rejected":
-        return { result: { status: "rejected", messages: outcome.issues.map((issue) => issue.message).slice(0, 10) }, wrote: false };
+        return {
+          result: { status: "rejected", messages: outcome.issues.map((issue) => issue.message).slice(0, 10) },
+          wrote: false,
+        };
       case "damaged":
         return { result: { status: "damaged", message: outcome.message }, wrote: false };
       case "not-committed":
@@ -203,7 +276,12 @@ export function commitDirect(deps: DirectDeps, accessToken: string, workbookId: 
  * Attaches bank statements to months that are already saved, in one request. The
  * saved figures do not change, and a statement that does not reproduce them is refused.
  */
-export function attachDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: AttachRequest): Promise<RemoteCommit> {
+export function attachDirect(
+  deps: DirectDeps,
+  accessToken: string,
+  workbookId: string,
+  request: AttachRequest,
+): Promise<RemoteCommit> {
   return writeOnce(deps, accessToken, workbookId, (environment) => {
     const outcome = attachStatements(environment, request);
     switch (outcome.status) {
@@ -226,67 +304,154 @@ export function attachDirect(deps: DirectDeps, accessToken: string, workbookId: 
 }
 
 /** Restore a reviewed historical revision as a new revision, including its bank sources. */
-export function recoverRevisionDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: { readonly commandId: string; readonly expectedRevision: string; readonly targetRevision: string }): Promise<RemoteCommit> {
+export function recoverRevisionDirect(
+  deps: DirectDeps,
+  accessToken: string,
+  workbookId: string,
+  request: { readonly commandId: string; readonly expectedRevision: string; readonly targetRevision: string },
+): Promise<RemoteCommit> {
   return writeOnce(deps, accessToken, workbookId, (environment) => {
     const store = environment.store;
-    if (!(store instanceof RowLedgerStore)) return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
+    if (!(store instanceof RowLedgerStore))
+      return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
     const loaded = store.load();
     if (loaded.status === "damaged") return { result: loaded, wrote: false };
-    const hash = sha256Hex(canonicalJson({ kind: "recover-revision", targetRevision: request.targetRevision, expectedRevision: request.expectedRevision }));
+    const hash = sha256Hex(
+      canonicalJson({
+        kind: "recover-revision",
+        targetRevision: request.targetRevision,
+        expectedRevision: request.expectedRevision,
+      }),
+    );
     const existing = store.findCommand(request.commandId);
-    if (existing !== null) return existing.requestHash === hash
-      ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
-      : { result: { status: "rejected", messages: ["This recovery identifier was already used for another request."] }, wrote: false };
+    if (existing !== null)
+      return existing.requestHash === hash
+        ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
+        : {
+            result: {
+              status: "rejected",
+              messages: ["This recovery identifier was already used for another request."],
+            },
+            wrote: false,
+          };
     if (loaded.state.revision !== request.expectedRevision) return { result: { status: "stale" }, wrote: false };
-    if (request.commandId.trim() === "" || request.targetRevision.trim() === "") return { result: { status: "rejected", messages: ["The recovery request is incomplete."] }, wrote: false };
+    if (request.commandId.trim() === "" || request.targetRevision.trim() === "")
+      return { result: { status: "rejected", messages: ["The recovery request is incomplete."] }, wrote: false };
     const target = store.loadRevision(request.targetRevision);
     if (target.status !== "ok") return { result: { status: "damaged", message: target.message }, wrote: false };
     const revision = deps.newRevision();
     try {
-      store.publishWithSources({ ...target.state, revision }, { commandId: request.commandId, revision, requestHash: hash }, target.sources, target.recoveryTarget ?? null);
+      store.publishWithSources(
+        { ...target.state, revision },
+        { commandId: request.commandId, revision, requestHash: hash },
+        target.sources,
+        target.recoveryTarget ?? null,
+      );
     } catch {
-      return { result: { status: "rejected", messages: ["The recovery could not be prepared. Nothing was sent."] }, wrote: false };
+      return {
+        result: { status: "rejected", messages: ["The recovery could not be prepared. Nothing was sent."] },
+        wrote: false,
+      };
     }
     return { result: { status: "committed", revision }, wrote: true };
   });
 }
 
 /** Save a reviewed prefix and its replacement source decisions as one guarded revision. */
-export function backfillDirect(deps: DirectDeps, accessToken: string, workbookId: string, request: { readonly commandId: string; readonly expectedRevision: string; readonly earlier: readonly BackfillStatement[]; readonly boundary: readonly FundCommand[] }, interpret: InterpretStatement): Promise<RemoteCommit> {
+export function backfillDirect(
+  deps: DirectDeps,
+  accessToken: string,
+  workbookId: string,
+  request: {
+    readonly commandId: string;
+    readonly expectedRevision: string;
+    readonly earlier: readonly BackfillStatement[];
+    readonly boundary: readonly FundCommand[];
+  },
+  interpret: InterpretStatement,
+): Promise<RemoteCommit> {
   return writeOnce(deps, accessToken, workbookId, (environment) => {
     const store = environment.store;
-    if (!(store instanceof RowLedgerStore)) return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
+    if (!(store instanceof RowLedgerStore))
+      return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
     const loaded = store.load();
     if (loaded.status === "damaged") return { result: loaded, wrote: false };
-    const normalized = request.earlier.map(item => ({ date: item.date, statement: item.statement, commands: item.commands, ...(item.source === undefined ? {} : { source: { sheetName: item.source.sheetName, sheet: toStoredSheet(item.source.sheet) } }) }));
-    const hash = sha256Hex(canonicalJson({ kind: "backfill", expectedRevision: request.expectedRevision, earlier: normalized, boundary: request.boundary }));
+    const normalized = request.earlier.map((item) => ({
+      date: item.date,
+      statement: item.statement,
+      commands: item.commands,
+      ...(item.source === undefined
+        ? {}
+        : { source: { sheetName: item.source.sheetName, sheet: toStoredSheet(item.source.sheet) } }),
+    }));
+    const hash = sha256Hex(
+      canonicalJson({
+        kind: "backfill",
+        expectedRevision: request.expectedRevision,
+        earlier: normalized,
+        boundary: request.boundary,
+      }),
+    );
     const existing = store.findCommand(request.commandId);
-    if (existing !== null) return existing.requestHash === hash
-      ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
-      : { result: { status: "rejected", messages: ["This import identifier was already used for another request."] }, wrote: false };
+    if (existing !== null)
+      return existing.requestHash === hash
+        ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
+        : {
+            result: { status: "rejected", messages: ["This import identifier was already used for another request."] },
+            wrote: false,
+          };
     if (loaded.state.revision !== request.expectedRevision) return { result: { status: "stale" }, wrote: false };
-    if (request.commandId.trim() === "") return { result: { status: "rejected", messages: ["The import identifier is missing."] }, wrote: false };
+    if (request.commandId.trim() === "")
+      return { result: { status: "rejected", messages: ["The import identifier is missing."] }, wrote: false };
     const sources = store.loadSources();
     if (sources.status === "damaged") return { result: sources, wrote: false };
     const revision = deps.newRevision();
-    const candidate = prepareBackfillReview(loaded.state, sources.sources, request.earlier, request.boundary, revision, request.commandId, interpret);
+    const candidate = prepareBackfillReview(
+      loaded.state,
+      sources.sources,
+      request.earlier,
+      request.boundary,
+      revision,
+      request.commandId,
+      interpret,
+    );
     if (!candidate.ok) return { result: { status: "rejected", messages: [candidate.message] }, wrote: false };
     try {
-      store.publishWithSources(candidate.ledger, { commandId: request.commandId, revision, requestHash: hash }, candidate.sources, loaded.state.revision);
+      store.publishWithSources(
+        candidate.ledger,
+        { commandId: request.commandId, revision, requestHash: hash },
+        candidate.sources,
+        loaded.state.revision,
+      );
     } catch {
-      return { result: { status: "rejected", messages: ["The import could not be prepared. Nothing was sent."] }, wrote: false };
+      return {
+        result: { status: "rejected", messages: ["The import could not be prepared. Nothing was sent."] },
+        wrote: false,
+      };
     }
     return { result: { status: "committed", revision }, wrote: true };
   });
 }
 
 function notWritten(failure: RestFailure): RemoteCommit {
-  if (failure === "unauthorised" || failure === "forbidden" || failure === "not-found") return { status: "not-sent", failure };
-  return { status: "not-committed", message: failure === "network" || failure === "unavailable" ? "Google could not be reached, so nothing was saved. It is safe to try again." : "Nothing was saved. It is safe to try again." };
+  if (failure === "unauthorised" || failure === "forbidden" || failure === "not-found")
+    return { status: "not-sent", failure };
+  return {
+    status: "not-committed",
+    message:
+      failure === "network" || failure === "unavailable"
+        ? "Google could not be reached, so nothing was saved. It is safe to try again."
+        : "Nothing was saved. It is safe to try again.",
+  };
 }
 
 /** Resolves a lost answer by reading the sheet. It writes nothing. */
-export async function outcomeDirect(rest: RestClient, accessToken: string, workbookId: string, commandId: string): Promise<RemoteOutcome> {
+export async function outcomeDirect(
+  rest: RestClient,
+  accessToken: string,
+  workbookId: string,
+  commandId: string,
+): Promise<RemoteOutcome> {
   const tab = await readLedgerRows(rest, accessToken, workbookId);
   if (!tab.ok || "notALedger" in tab.value) return { status: "unreachable" };
   const { store } = storeOf(tab.value.rows);
@@ -307,7 +472,12 @@ export type RestoreResult =
  * one, or an existing one that holds no statements. The copy is validated first
  * and read back afterwards. It is only ever called after the person confirms.
  */
-export async function restoreDirect(deps: DirectDeps, accessToken: string, copy: LedgerState, into: Workbook | null): Promise<RestoreResult> {
+export async function restoreDirect(
+  deps: DirectDeps,
+  accessToken: string,
+  copy: LedgerState,
+  into: Workbook | null,
+): Promise<RestoreResult> {
   const valid = parseLedgerState(copy);
   if (valid === null || valid.snapshots.length === 0) return { status: "invalid" };
 
@@ -330,20 +500,33 @@ export async function restoreDirect(deps: DirectDeps, accessToken: string, copy:
 
   const revision = deps.newRevision();
   const { sheet, store } = storeOf(stored);
-  store.publish({ ...valid, revision }, { commandId: `restore-${revision}`, revision, requestHash: sha256Hex(canonicalJson(valid)) });
+  store.publish(
+    { ...valid, revision },
+    { commandId: `restore-${revision}`, revision, requestHash: sha256Hex(canonicalJson(valid)) },
+  );
   const sent = await appendLedgerRows(deps.rest, accessToken, workbook.id, sheet.pending);
   if (!sent.ok) return { status: "failed", failure: sent.failure, workbook };
 
   const back = await readDirect(deps.rest, accessToken, workbook.id);
-  if (back.status !== "ok" || canonicalJson({ ...back.state, revision: "" }) !== canonicalJson({ ...valid, revision: "" })) {
+  if (
+    back.status !== "ok" ||
+    canonicalJson({ ...back.state, revision: "" }) !== canonicalJson({ ...valid, revision: "" })
+  ) {
     return { status: "failed", failure: "unexpected", workbook };
   }
   return { status: "restored", workbook, ledger: back.state };
 }
 
 /** Refreshes the readable tab. Best effort: a failure here never affects the saved records. */
-export async function refreshView(rest: RestClient, accessToken: string, workbookId: string, state: LedgerState): Promise<boolean> {
-  const written = await writeGridTabs(rest, accessToken, workbookId, [{ title: VIEW_TAB, grid: readableView(state), legacyGrids: () => previousReadableViews(state) }]);
+export async function refreshView(
+  rest: RestClient,
+  accessToken: string,
+  workbookId: string,
+  state: LedgerState,
+): Promise<boolean> {
+  const written = await writeGridTabs(rest, accessToken, workbookId, [
+    { title: VIEW_TAB, grid: readableView(state), legacyGrids: () => previousReadableViews(state) },
+  ]);
   return written.ok;
 }
 
@@ -363,7 +546,16 @@ export async function mirrorStatements(
   months: readonly { readonly date: IsoDate; readonly sheet: RawSheet }[],
   present: PresentStatement,
 ): Promise<boolean> {
-  const written = await writeGridTabs(rest, accessToken, workbookId, months.map((month) => ({ title: statementTabTitle(month.date), grid: present(month.sheet), legacyGrids: [rawGrid(month.sheet)] })));
+  const written = await writeGridTabs(
+    rest,
+    accessToken,
+    workbookId,
+    months.map((month) => ({
+      title: statementTabTitle(month.date),
+      grid: present(month.sheet),
+      legacyGrids: [rawGrid(month.sheet)],
+    })),
+  );
   return written.ok;
 }
 
@@ -373,7 +565,12 @@ export function tidyLedgerTab(rest: RestClient, accessToken: string, workbookId:
 }
 
 export type ReadAll =
-  | { readonly status: "ok"; readonly state: LedgerState; readonly sources: readonly SourceRecord[]; readonly ignoredTrailingRows: number }
+  | {
+      readonly status: "ok";
+      readonly state: LedgerState;
+      readonly sources: readonly SourceRecord[];
+      readonly ignoredTrailingRows: number;
+    }
   | { readonly status: "damaged"; readonly message: string }
   | { readonly status: "unavailable"; readonly failure: CallFailure | "missing" | "not-a-ledger" };
 
@@ -387,5 +584,10 @@ export async function readAllDirect(rest: RestClient, accessToken: string, workb
   if (loaded.status === "damaged") return { status: "damaged", message: loaded.message };
   const sources = store.loadSources();
   if (sources.status === "damaged") return { status: "damaged", message: sources.message };
-  return { status: "ok", state: loaded.state, sources: sources.sources, ignoredTrailingRows: loaded.ignoredTrailingRows };
+  return {
+    status: "ok",
+    state: loaded.state,
+    sources: sources.sources,
+    ignoredTrailingRows: loaded.ignoredTrailingRows,
+  };
 }

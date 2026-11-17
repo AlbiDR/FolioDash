@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { AUTOMATIC_BACKOFF_MILLISECONDS, FRESH_RENEWAL, afterAttempt, afterReconnectingToNetwork, mayRenewAutomatically, renewalNeedsThePerson, signInOptionsFor } from "./RenewalPolicy";
+import {
+  AUTOMATIC_BACKOFF_MILLISECONDS,
+  FRESH_RENEWAL,
+  afterAttempt,
+  afterReconnectingToNetwork,
+  mayRenewAutomatically,
+  renewalNeedsThePerson,
+  signInOptionsFor,
+} from "./RenewalPolicy";
 
 const now = 1_700_000_000_000;
 const closed = { ok: false, reason: "closed" } as const;
@@ -16,13 +24,19 @@ describe("when Google access may be renewed quietly", () => {
   });
 
   it("stops after two failures in a row", () => {
-    const twice = afterAttempt(afterAttempt(FRESH_RENEWAL, closed, now), { ok: false, reason: "timeout" }, now + 60_000);
+    const twice = afterAttempt(
+      afterAttempt(FRESH_RENEWAL, closed, now),
+      { ok: false, reason: "timeout" },
+      now + 60_000,
+    );
     expect(mayRenewAutomatically(twice, now + 3_600_000)).toBe(false);
   });
 
   it("stops at once when the person declined or the browser blocked the window, since repeating cannot help", () => {
     for (const reason of ["denied", "blocked"] as const) {
-      expect(mayRenewAutomatically(afterAttempt(FRESH_RENEWAL, { ok: false, reason }, now), now + 3_600_000)).toBe(false);
+      expect(mayRenewAutomatically(afterAttempt(FRESH_RENEWAL, { ok: false, reason }, now), now + 3_600_000)).toBe(
+        false,
+      );
     }
   });
 
@@ -49,7 +63,10 @@ describe("when Google access may be renewed quietly", () => {
 
 describe("what a renewal asks Google for", () => {
   it("names the remembered account and reuses the grant on a quiet attempt", () => {
-    expect(signInOptionsFor("automatic", FRESH_RENEWAL, "person@example.test", false)).toEqual({ prompt: "", loginHint: "person@example.test" });
+    expect(signInOptionsFor("automatic", FRESH_RENEWAL, "person@example.test", false)).toEqual({
+      prompt: "",
+      loginHint: "person@example.test",
+    });
   });
 
   it("sends no hint when none is known", () => {
@@ -58,7 +75,10 @@ describe("what a renewal asks Google for", () => {
 
   it("never opens the chooser on a quiet attempt, even after a failure", () => {
     const failed = afterAttempt(FRESH_RENEWAL, closed, now);
-    expect(signInOptionsFor("automatic", failed, "person@example.test", false)).toEqual({ prompt: "", loginHint: "person@example.test" });
+    expect(signInOptionsFor("automatic", failed, "person@example.test", false)).toEqual({
+      prompt: "",
+      loginHint: "person@example.test",
+    });
   });
 
   it("lets the person choose once a requested attempt has already failed, dropping a hint that may be stale", () => {
@@ -67,6 +87,8 @@ describe("what a renewal asks Google for", () => {
   });
 
   it("opens the chooser whenever the person asks for another account", () => {
-    expect(signInOptionsFor("requested", FRESH_RENEWAL, "person@example.test", true)).toEqual({ prompt: "select_account" });
+    expect(signInOptionsFor("requested", FRESH_RENEWAL, "person@example.test", true)).toEqual({
+      prompt: "select_account",
+    });
   });
 });

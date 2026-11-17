@@ -31,7 +31,17 @@ async function start(): Promise<void> {
   const date = parseIsoDate("2026-01-31");
   if (value === null || date === null) throw new Error("Invalid synthetic setup");
   const isin = "US0378331005";
-  const saved = await session.save.record({ date, statement: { funds: [{ isin, name: "Synthetic Fund A", marketValue: value }], fundsSubtotal: value }, commands: [{ isin, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: value, comment: "" }] }, session.save.newCommandId(), session.state.ledger.revision);
+  const saved = await session.save.record(
+    {
+      date,
+      statement: { funds: [{ isin, name: "Synthetic Fund A", marketValue: value }], fundsSubtotal: value },
+      commands: [
+        { isin, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: value, comment: "" },
+      ],
+    },
+    session.save.newCommandId(),
+    session.state.ledger.revision,
+  );
   if (saved.status !== "recorded") throw new Error("Synthetic initial save failed");
   await session.idle();
   const workbook = session.state.workbook;
@@ -56,15 +66,27 @@ async function start(): Promise<void> {
   };
   const root = document.getElementById("root");
   if (root === null) throw new Error("Synthetic mount missing");
-  render(h(PrivacyProvider, { hidden: false, children: h(BackfillEntry, {
-    ledger: original,
-    workbookId: workbook.id,
-    save: wrapped,
-    prepare: () => Promise.resolve({ status: "unreadable-file" as const, message: "Synthetic manual test" }),
-    onRecord: () => undefined,
-    onLock: () => undefined,
-  }) }), root);
-  Object.assign(window, { syntheticBackfill: { dates: () => session.state.ledger.snapshots.map(snapshot => snapshot.date), pending: () => session.state.pendingRevision ?? null, originalRevision: original.revision } });
+  render(
+    h(PrivacyProvider, {
+      hidden: false,
+      children: h(BackfillEntry, {
+        ledger: original,
+        workbookId: workbook.id,
+        save: wrapped,
+        prepare: () => Promise.resolve({ status: "unreadable-file" as const, message: "Synthetic manual test" }),
+        onRecord: () => undefined,
+        onLock: () => undefined,
+      }),
+    }),
+    root,
+  );
+  Object.assign(window, {
+    syntheticBackfill: {
+      dates: () => session.state.ledger.snapshots.map((snapshot) => snapshot.date),
+      pending: () => session.state.pendingRevision ?? null,
+      originalRevision: original.revision,
+    },
+  });
 }
 void start().catch((error: unknown) => {
   const root = document.getElementById("root");

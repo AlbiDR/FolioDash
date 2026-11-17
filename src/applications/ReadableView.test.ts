@@ -4,7 +4,10 @@ import { readableView } from "./ReadableView";
 
 describe("readableView", () => {
   it("says there is nothing yet for an empty ledger, and always says it is rebuilt and not a record", () => {
-    const text = readableView(EMPTY_LEDGER).cells.flat().map((cell) => String(cell.value)).join(" ");
+    const text = readableView(EMPTY_LEDGER)
+      .cells.flat()
+      .map((cell) => String(cell.value))
+      .join(" ");
     expect(text).toContain("No statements recorded yet");
     expect(text).toContain("rebuilt");
   });

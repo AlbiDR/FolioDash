@@ -119,10 +119,14 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
     maxValue += pad;
   }
 
-  const xScale = scaleUtc().domain([new Date(minTime), new Date(maxTime)]).range([plot.left, plot.left + plot.width]);
+  const xScale = scaleUtc()
+    .domain([new Date(minTime), new Date(maxTime)])
+    .range([plot.left, plot.left + plot.width]);
   // The axis runs from the lowest to the highest plotted value plus a small buffer. It is not rounded outwards.
   const buffer = (maxValue - minValue) * VALUE_BUFFER;
-  const yScale = scaleLinear().domain([minValue - buffer, maxValue + buffer]).range([plot.top + plot.height, plot.top]);
+  const yScale = scaleLinear()
+    .domain([minValue - buffer, maxValue + buffer])
+    .range([plot.top + plot.height, plot.top]);
   const span = maxValue - minValue;
   const between = yScale
     .ticks(TICK_TARGET)
@@ -167,13 +171,25 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       run.push(placed);
     }
     flush();
-    return { id: entry.id, label: entry.label, dashed: entry.dashed === true, slot: entry.slot ?? null, muted: entry.muted === true, markers: entry.markers === true, paths, areas, points };
+    return {
+      id: entry.id,
+      label: entry.label,
+      dashed: entry.dashed === true,
+      slot: entry.slot ?? null,
+      muted: entry.muted === true,
+      markers: entry.markers === true,
+      paths,
+      areas,
+      points,
+    };
   });
 
   return {
     empty: false,
     plot,
-    xTicks: xScale.ticks(Math.max(2, Math.min(TICK_TARGET, Math.floor(plot.width / 110)))).map((date) => ({ time: date.getTime(), x: round(xScale(date)) })),
+    xTicks: xScale
+      .ticks(Math.max(2, Math.min(TICK_TARGET, Math.floor(plot.width / 110))))
+      .map((date) => ({ time: date.getTime(), x: round(xScale(date)) })),
     yTicks: yTickValues.map((value) => ({ value, y: round(yScale(value)) })),
     series: plotted,
   };

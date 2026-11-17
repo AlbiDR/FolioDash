@@ -86,7 +86,9 @@ describe("computeLineChart", () => {
     const phone = computeLineChart(data, { ...layout, width: 260, includeZero: false });
     const desktop = computeLineChart(data, { ...layout, width: 900, includeZero: false });
     expect(phone.xTicks.length).toBeLessThan(desktop.xTicks.length);
-    expect(phone.series[0]?.points.map((point) => [point.time, point.value])).toEqual(desktop.series[0]?.points.map((point) => [point.time, point.value]));
+    expect(phone.series[0]?.points.map((point) => [point.time, point.value])).toEqual(
+      desktop.series[0]?.points.map((point) => [point.time, point.value]),
+    );
     expect(phone.yTicks.map((tick) => tick.value)).toEqual(desktop.yTicks.map((tick) => tick.value));
     for (const point of phone.series[0]?.points ?? []) {
       expect(point.x).toBeGreaterThanOrEqual(phone.plot.left);
@@ -96,7 +98,10 @@ describe("computeLineChart", () => {
 
   describe("fitted value axis", () => {
     const fitted: ChartLayout = { ...layout, includeZero: false };
-    const data = [series("a", [50_000, 52_000, 56_000], [0, 31, 62]), series("b", [43_000, 43_500, 50_500], [0, 31, 62])];
+    const data = [
+      series("a", [50_000, 52_000, 56_000], [0, 31, 62]),
+      series("b", [43_000, 43_500, 50_500], [0, 31, 62]),
+    ];
 
     it("starts and ends at the lowest and highest plotted values, not at rounded numbers", () => {
       const geometry = computeLineChart(data, fitted);
@@ -130,11 +135,18 @@ describe("computeLineChart", () => {
         series("plain", [1, 1], [0, 1]),
       ];
       const plotted = computeLineChart(data, { ...layout, includeZero: false }).series;
-      expect(plotted.map((entry) => [entry.slot, entry.muted])).toEqual([[3, true], [3, false], [null, false]]);
+      expect(plotted.map((entry) => [entry.slot, entry.muted])).toEqual([
+        [3, true],
+        [3, false],
+        [null, false],
+      ]);
     });
 
     it("lets a companion series inform the axis, so no line is ever drawn outside the plot", () => {
-      const data: ChartSeries[] = [{ ...series("invested", [100, 200], [0, 1]), muted: true }, series("value", [10, 20], [0, 1])];
+      const data: ChartSeries[] = [
+        { ...series("invested", [100, 200], [0, 1]), muted: true },
+        series("value", [10, 20], [0, 1]),
+      ];
       const geometry = computeLineChart(data, { ...layout, includeZero: false });
       const ys = geometry.series.flatMap((entry) => entry.points.map((point) => point.y));
       expect(Math.min(...ys)).toBeGreaterThanOrEqual(geometry.plot.top);
@@ -146,7 +158,8 @@ describe("computeLineChart", () => {
 // Bounds must not depend on how many arguments the JavaScript engine accepts.
 it("lays out 150,000 observations across many series without dropping points or bounds", () => {
   const data: ChartSeries[] = Array.from({ length: 100 }, (_, slot) => ({
-    id: String(slot), label: String(slot),
+    id: String(slot),
+    label: String(slot),
     points: Array.from({ length: 1500 }, (_, index) => ({ time: START + index * DAY, value: slot * 1500 + index })),
   }));
   const geometry = computeLineChart(data, layout);

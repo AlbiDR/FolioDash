@@ -13,7 +13,9 @@ export function digestTree(root: string): TreeDigest {
       const path = join(directory, entry.name);
       if (entry.isDirectory()) walk(path);
       else if (entry.isFile() && !entry.name.endsWith(".map")) {
-        digest[relative(root, path).split(sep).join("/")] = createHash("sha256").update(readFileSync(path)).digest("hex");
+        digest[relative(root, path).split(sep).join("/")] = createHash("sha256")
+          .update(readFileSync(path))
+          .digest("hex");
       }
     }
   };
@@ -36,7 +38,8 @@ export function digestDifferences(before: TreeDigest, after: TreeDigest): string
 
 /** Narrow parsed JSON to a digest; anything else is a corrupt snapshot. */
 export function parseDigest(value: unknown): TreeDigest {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error("snapshot is not a digest object");
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    throw new Error("snapshot is not a digest object");
   const entries = Object.entries(value);
   if (!entries.every((entry): entry is [string, string] => typeof entry[1] === "string")) {
     throw new Error("snapshot holds a non-string digest");

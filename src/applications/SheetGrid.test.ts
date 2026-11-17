@@ -1,16 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { BUFFER_WIDTH, EMPTY_CELL, bufferedGrid, plainCell, rawCell } from "./SheetGrid";
 
-const values = (grid: ReturnType<typeof bufferedGrid>): (string | number)[][] => grid.cells.map((row) => row.map((cell) => cell.value));
+const values = (grid: ReturnType<typeof bufferedGrid>): (string | number)[][] =>
+  grid.cells.map((row) => row.map((cell) => cell.value));
 
 describe("bufferedGrid", () => {
   it("keeps an existing empty first row and column and closes the far sides with one more of each", () => {
     const grid = bufferedGrid([[], [EMPTY_CELL, plainCell("a"), plainCell("b")]]);
-    expect(values(grid)).toEqual([["", "", "", ""], ["", "a", "b", ""], ["", "", "", ""]]);
+    expect(values(grid)).toEqual([
+      ["", "", "", ""],
+      ["", "a", "b", ""],
+      ["", "", "", ""],
+    ]);
   });
 
   it("adds an empty first row and column when the data touches the edge", () => {
-    expect(values(bufferedGrid([[plainCell("a")]]))).toEqual([["", "", ""], ["", "a", ""], ["", "", ""]]);
+    expect(values(bufferedGrid([[plainCell("a")]]))).toEqual([
+      ["", "", ""],
+      ["", "a", ""],
+      ["", "", ""],
+    ]);
   });
 
   it("drops trailing empty rows and columns, so nothing beyond the data and the margin remains", () => {

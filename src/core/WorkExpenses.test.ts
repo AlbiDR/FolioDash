@@ -2,11 +2,27 @@ import { describe, expect, it } from "vitest";
 import { type IsoDate, parseIsoDate } from "./IsoDate";
 import { type EuroCents, toEuroCents } from "./Money";
 import {
-  type ExpenseAmounts, type ExpenseDay, adjacentWorkday, expenseDayKind, expenseReport,
-  EXPENSE_OPTIONAL_INDICES, EXPENSE_REPORTING_POLICY, EXPENSE_REQUIRED_INDICES,
-  expenseEntryStatus, expenseTotals, expenseWeek, expenseWeekday, filledExpenseFields, isWorkday,
-  parseExpenseAmounts, parseExpenseCommand, parseExpenseDay, shiftDate, sumExpenseAmounts,
-  sumExpenseDays, weekDates,
+  type ExpenseAmounts,
+  type ExpenseDay,
+  adjacentWorkday,
+  expenseDayKind,
+  expenseReport,
+  EXPENSE_OPTIONAL_INDICES,
+  EXPENSE_REPORTING_POLICY,
+  EXPENSE_REQUIRED_INDICES,
+  expenseEntryStatus,
+  expenseTotals,
+  expenseWeek,
+  expenseWeekday,
+  filledExpenseFields,
+  isWorkday,
+  parseExpenseAmounts,
+  parseExpenseCommand,
+  parseExpenseDay,
+  shiftDate,
+  sumExpenseAmounts,
+  sumExpenseDays,
+  weekDates,
 } from "./WorkExpenses";
 
 function date(value: string): IsoDate {
@@ -22,7 +38,18 @@ function cents(value: number): EuroCents {
 }
 
 function day(on: string, total: number | null, extra: Partial<ExpenseDay> = {}): ExpenseDay {
-  return { date: date(on), revision: on, amounts: [total === null ? null : cents(total), total === null ? null : cents(0), total === null ? null : cents(0), total === null ? null : cents(0), total === null ? null : cents(0)], ...extra };
+  return {
+    date: date(on),
+    revision: on,
+    amounts: [
+      total === null ? null : cents(total),
+      total === null ? null : cents(0),
+      total === null ? null : cents(0),
+      total === null ? null : cents(0),
+      total === null ? null : cents(0),
+    ],
+    ...extra,
+  };
 }
 
 describe("work-expense date arithmetic", () => {
@@ -32,7 +59,13 @@ describe("work-expense date arithmetic", () => {
     expect(expenseWeekday(date("2026-11-05"))).toBe(3);
     expect(isWorkday(date("2026-11-07"))).toBe(false);
     expect(isWorkday(date("2026-11-08"))).toBe(false);
-    expect(weekDates(date("2026-11-08"))).toEqual(["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"]);
+    expect(weekDates(date("2026-11-08"))).toEqual([
+      "2026-11-02",
+      "2026-11-03",
+      "2026-11-04",
+      "2026-11-05",
+      "2026-11-06",
+    ]);
   });
 
   it("navigates across weekends, leap days and year boundaries", () => {
@@ -67,18 +100,32 @@ describe("expense boundaries and classification", () => {
     expect(EXPENSE_OPTIONAL_INDICES).toEqual([3, 4]);
     expect(EXPENSE_REPORTING_POLICY).toBe("work-expenses-v3");
     expect(expenseEntryStatus(amounts)).toEqual({ filled: 3, missingRequired: [], complete: true, partial: false });
-    expect(expenseDayKind(day("2026-11-03", null, { amounts }), date("2026-11-03"), date("2026-11-05"))).toBe("complete");
+    expect(expenseDayKind(day("2026-11-03", null, { amounts }), date("2026-11-03"), date("2026-11-05"))).toBe(
+      "complete",
+    );
     expect(expenseEntryStatus([cents(0), cents(0), cents(0), null, null]).complete).toBe(true);
   });
 
   it("counts missing routine fields for review only when no optional cost was recorded", () => {
-    expect(expenseEntryStatus([cents(200), null, cents(200), null, null])).toEqual({ filled: 2, missingRequired: [1], complete: false, partial: true });
-    expect(expenseEntryStatus([null, null, null, cents(1500), null])).toEqual({ filled: 1, missingRequired: [], complete: true, partial: false });
+    expect(expenseEntryStatus([cents(200), null, cents(200), null, null])).toEqual({
+      filled: 2,
+      missingRequired: [1],
+      complete: false,
+      partial: true,
+    });
+    expect(expenseEntryStatus([null, null, null, cents(1500), null])).toEqual({
+      filled: 1,
+      missingRequired: [],
+      complete: true,
+      partial: false,
+    });
     expect(expenseEntryStatus([null, null, null, null, cents(500)]).partial).toBe(false);
     const blank = expenseEntryStatus([null, null, null, null, null]);
     expect(blank.complete).toBe(false);
     expect(blank.partial).toBe(false);
-    expect(expenseDayKind(day("2026-11-03", null), date("2026-11-03"), date("2026-11-05"), date("2026-11-02"))).toBe("no-work");
+    expect(expenseDayKind(day("2026-11-03", null), date("2026-11-03"), date("2026-11-05"), date("2026-11-02"))).toBe(
+      "no-work",
+    );
   });
 
   it("preserves blank and zero and includes the fifth category", () => {
@@ -90,7 +137,18 @@ describe("expense boundaries and classification", () => {
   });
 
   it("rejects malformed, fractional, negative and overflowing amounts", () => {
-    for (const value of [[], [0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1.5, 0, 0, 0, 0], [-1, 0, 0, 0, 0], ["0", 0, 0, 0, 0], [NaN, 0, 0, 0, 0], [Infinity, 0, 0, 0, 0], [Number.MAX_SAFE_INTEGER, 1, 0, 0, 0]]) expect(parseExpenseAmounts(value)).toBeNull();
+    for (const value of [
+      [],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [1.5, 0, 0, 0, 0],
+      [-1, 0, 0, 0, 0],
+      ["0", 0, 0, 0, 0],
+      [NaN, 0, 0, 0, 0],
+      [Infinity, 0, 0, 0, 0],
+      [Number.MAX_SAFE_INTEGER, 1, 0, 0, 0],
+    ])
+      expect(parseExpenseAmounts(value)).toBeNull();
   });
 
   it("validates canonical weekday dates, revision and command ancestry", () => {
@@ -100,7 +158,10 @@ describe("expense boundaries and classification", () => {
     expect(parseExpenseDay({ ...day("2026-11-05", 0), revision: "" })).toBeNull();
     const command = { id: "synthetic-1", date: "2026-11-05", amounts: [0, null, 0, 0, 0], expectedRevision: null };
     expect(parseExpenseCommand(command)).toEqual(command);
-    expect(parseExpenseCommand({ ...command, expectedRevision: "previous" })).toEqual({ ...command, expectedRevision: "previous" });
+    expect(parseExpenseCommand({ ...command, expectedRevision: "previous" })).toEqual({
+      ...command,
+      expectedRevision: "previous",
+    });
     expect(parseExpenseCommand({ ...command, expectedRevision: "" })).toBeNull();
     expect(parseExpenseCommand({ ...command, expectedRevision: undefined })).toBeNull();
     expect(parseExpenseCommand({ ...command, id: "conflict:reserved-revision-namespace" })).toBeNull();
@@ -111,7 +172,14 @@ describe("expense boundaries and classification", () => {
     const start = date("2026-11-02");
     expect(expenseDayKind(undefined, date("2026-11-03"), today, start)).toBe("no-work");
     expect(expenseDayKind(day("2026-11-03", 0), date("2026-11-03"), today, start)).toBe("complete");
-    expect(expenseDayKind(day("2026-11-03", null, { amounts: [null, cents(700), null, null, null] }), date("2026-11-03"), today, start)).toBe("partial");
+    expect(
+      expenseDayKind(
+        day("2026-11-03", null, { amounts: [null, cents(700), null, null, null] }),
+        date("2026-11-03"),
+        today,
+        start,
+      ),
+    ).toBe("partial");
     expect(expenseDayKind(undefined, date("2026-10-30"), today, start)).toBe("outside-history");
     expect(expenseDayKind(undefined, today, today, start)).toBe("not-entered");
     expect(expenseDayKind(undefined, date("2026-11-06"), today, start)).toBe("future");
@@ -185,7 +253,12 @@ describe("canonical expense reporting", () => {
   });
 
   it("includes zero-cost days in the daily denominator and known partial amounts in annual totals only", () => {
-    const days = [day("2026-11-02", 1000), day("2026-11-03", 0), day("2026-11-04", null, { amounts: [null, cents(400), null, null, null] }), day("2026-11-06", 8000)];
+    const days = [
+      day("2026-11-02", 1000),
+      day("2026-11-03", 0),
+      day("2026-11-04", null, { amounts: [null, cents(400), null, null, null] }),
+      day("2026-11-06", 8000),
+    ];
     const report = expenseReport(days, 2026, date("2026-11-05"));
     expect(report.completeDays).toBe(2);
     expect(report.partialDays).toBe(1);
@@ -207,7 +280,11 @@ describe("canonical expense reporting", () => {
   });
 
   it("reports partial-only evidence without inventing complete-day averages or projections", () => {
-    const report = expenseReport([day("2026-11-02", null, { amounts: [null, cents(900), null, null, null] })], 2026, date("2026-12-01"));
+    const report = expenseReport(
+      [day("2026-11-02", null, { amounts: [null, cents(900), null, null, null] })],
+      2026,
+      date("2026-12-01"),
+    );
     expect(report.partialDays).toBe(1);
     expect(report.completeDays).toBe(0);
     expect(report.totalYearly).toBe(900);
@@ -218,7 +295,13 @@ describe("canonical expense reporting", () => {
   });
 
   it("uses complete, finished weeks within coverage and drops a week with a partial day", () => {
-    const days = [day("2026-01-05", 1000), day("2026-01-09", 0), day("2026-01-12", 3000), day("2026-01-13", null, { amounts: [cents(10), null, null, null, null] }), day("2026-01-19", 3000)];
+    const days = [
+      day("2026-01-05", 1000),
+      day("2026-01-09", 0),
+      day("2026-01-12", 3000),
+      day("2026-01-13", null, { amounts: [cents(10), null, null, null, null] }),
+      day("2026-01-19", 3000),
+    ];
     const report = expenseReport(days, 2026, date("2026-01-20"));
     expect(report.eligibleWeeks).toBe(1);
     expect(report.averageWeekly).toBe(1000);
@@ -235,7 +318,10 @@ describe("canonical expense reporting", () => {
   it("averages monthly period totals and excludes a month containing partial entries", () => {
     const coverage = day("2025-12-01", 100);
     const january = [day("2026-01-06", 1000), day("2026-01-20", 0)];
-    const february = [day("2026-02-02", 3000), day("2026-02-03", null, { amounts: [null, cents(500), null, null, null] })];
+    const february = [
+      day("2026-02-02", 3000),
+      day("2026-02-03", null, { amounts: [null, cents(500), null, null, null] }),
+    ];
     const report = expenseReport([coverage, ...january, ...february], 2026, date("2026-03-02"));
     expect(report.eligibleMonths).toBe(1);
     expect(report.averageMonthly).toBe(1000);
@@ -244,14 +330,23 @@ describe("canonical expense reporting", () => {
   });
 
   it("never crosses selected-year boundaries to form a completed week", () => {
-    const report = expenseReport([day("2025-12-29", 500), day("2026-01-01", 2000), day("2026-12-31", 4000)], 2026, date("2027-01-04"));
+    const report = expenseReport(
+      [day("2025-12-29", 500), day("2026-01-01", 2000), day("2026-12-31", 4000)],
+      2026,
+      date("2027-01-04"),
+    );
     expect(report.averageDaily).toBe(3000);
     expect(report.totalYearly).toBe(6000);
     expect(report.eligibleWeeks).toBe(0);
   });
 
   it("calculates typical periods and yearly projection from unrounded daily cents and rounds half up once", () => {
-    const report = expenseReport([day("2026-01-05", 1), day("2026-01-06", 0)], 2026, date("2026-01-07"), "typical-periods");
+    const report = expenseReport(
+      [day("2026-01-05", 1), day("2026-01-06", 0)],
+      2026,
+      date("2026-01-07"),
+      "typical-periods",
+    );
     expect(report.averageDaily).toBe(1);
     expect(report.averageWeekly).toBe(3);
     expect(report.averageMonthly).toBe(11);
@@ -261,7 +356,11 @@ describe("canonical expense reporting", () => {
   });
 
   it("separates selected-year totals from unrelated history and ignores future observations", () => {
-    const report = expenseReport([day("2025-12-31", 500), day("2026-01-01", 2000), day("2026-11-06", 9000)], 2026, date("2026-01-01"));
+    const report = expenseReport(
+      [day("2025-12-31", 500), day("2026-01-01", 2000), day("2026-11-06", 9000)],
+      2026,
+      date("2026-01-01"),
+    );
     expect(report.completeDays).toBe(1);
     expect(report.totalYearly).toBe(2000);
     expect(report.excludedFutureDays).toBe(1);
@@ -269,7 +368,11 @@ describe("canonical expense reporting", () => {
   });
 
   it("retains fifth-category spending as a complete day in a weekly readout", () => {
-    const days = [day("2026-11-02", 100), day("2026-11-03", null, { amounts: [null, null, null, null, cents(500)] }), day("2026-11-06", 900)];
+    const days = [
+      day("2026-11-02", 100),
+      day("2026-11-03", null, { amounts: [null, null, null, null, cents(500)] }),
+      day("2026-11-06", 900),
+    ];
     const week = expenseWeek(days, date("2026-11-05"), date("2026-11-05"));
     expect(week.total).toBe(600);
     expect(week.partialDays).toBe(0);
@@ -291,14 +394,17 @@ describe("canonical expense reporting", () => {
   });
 });
 
-
 describe("optional work costs can close a day", () => {
   it.each([3, 4])("accepts category %i alone, including zero, and preserves every blank", (index) => {
     for (const amount of [cents(0), cents(500)]) {
-      const amounts = [null, null, null, null, null].map((_, field) => field === index ? amount : null) as unknown as ExpenseAmounts;
+      const amounts = [null, null, null, null, null].map((_, field) =>
+        field === index ? amount : null,
+      ) as unknown as ExpenseAmounts;
       const before = JSON.stringify(amounts);
       expect(expenseEntryStatus(amounts)).toEqual({ filled: 1, missingRequired: [], complete: true, partial: false });
-      expect(expenseDayKind(day("2026-01-05", null, { amounts }), date("2026-01-05"), date("2026-01-06"))).toBe("complete");
+      expect(expenseDayKind(day("2026-01-05", null, { amounts }), date("2026-01-05"), date("2026-01-06"))).toBe(
+        "complete",
+      );
       expect(JSON.stringify(amounts)).toBe(before);
     }
   });

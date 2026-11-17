@@ -45,7 +45,13 @@ const WINDOW_ID = crypto.randomUUID();
  */
 const durable = createDurableStore([() => window.localStorage, () => window.sessionStorage]);
 
-const shared = createSharedConnection({ open: () => window.localStorage, keys: KEYS, windowId: WINDOW_ID, now: () => Date.now(), source: window });
+const shared = createSharedConnection({
+  open: () => window.localStorage,
+  keys: KEYS,
+  windowId: WINDOW_ID,
+  now: () => Date.now(),
+  source: window,
+});
 
 export function createBrowserSession(clientId: string): Session {
   return new Session({
@@ -58,13 +64,29 @@ export function createBrowserSession(clientId: string): Session {
     accountHint: createAccountHintStore(() => durable, KEYS.hint),
     coordination: shared,
     rest: browserRest,
-    cache: __SYNTHETIC_ACCEPTANCE__ ? createLedgerCache(() => window.localStorage, "foliodash.synthetic-acceptance.ledger.v1") : browserLedgerCache,
+    cache: __SYNTHETIC_ACCEPTANCE__
+      ? createLedgerCache(() => window.localStorage, "foliodash.synthetic-acceptance.ledger.v1")
+      : browserLedgerCache,
     revisionPending: createRevisionPendingStore(() => window.localStorage, `${PREFIX}revision-pending.v1.`),
     // Checkpoint copies, receipts and the cross-window lock all carry the build prefix, so the synthetic build never meets real ones.
     checkpointStore: createCheckpointStore(() => window.localStorage, PREFIX),
-    checkpointLock: createCheckpointLock(`${PREFIX}checkpoints`, typeof navigator === "undefined" ? undefined : navigator.locks),
-    expenseCache: createExpenseCache(() => window.localStorage, __SYNTHETIC_ACCEPTANCE__ ? "foliodash.synthetic-acceptance.expenses.v1" : "foliodash.expenses.v1"),
-    ...(__SYNTHETIC_ACCEPTANCE__ ? { workbookIdentity: { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" } } : {}),
+    checkpointLock: createCheckpointLock(
+      `${PREFIX}checkpoints`,
+      typeof navigator === "undefined" ? undefined : navigator.locks,
+    ),
+    expenseCache: createExpenseCache(
+      () => window.localStorage,
+      __SYNTHETIC_ACCEPTANCE__ ? "foliodash.synthetic-acceptance.expenses.v1" : "foliodash.expenses.v1",
+    ),
+    ...(__SYNTHETIC_ACCEPTANCE__
+      ? {
+          workbookIdentity: {
+            title: "FolioDash SYNTHETIC ACCEPTANCE",
+            propertyKey: "foliodash-synthetic-acceptance",
+            propertyValue: "ledger-v1",
+          },
+        }
+      : {}),
     now: () => Date.now(),
     newId: () => crypto.randomUUID(),
   });

@@ -19,7 +19,11 @@ interface ClickTarget {
  * untrusted (scripted) click is ignored: it carries no gesture and would only be blocked.
  * Returns a function that stops listening.
  */
-export function armGestureRenewal(target: ClickTarget, renewal: GestureRenewal, activation?: { readonly isActive: boolean }): () => void {
+export function armGestureRenewal(
+  target: ClickTarget,
+  renewal: GestureRenewal,
+  activation?: { readonly isActive: boolean },
+): () => void {
   const onClick = (event: Event): void => {
     if (!event.isTrusted || !renewal.needed()) return;
     renewal.renew();
@@ -27,5 +31,7 @@ export function armGestureRenewal(target: ClickTarget, renewal: GestureRenewal, 
   target.addEventListener("click", onClick);
   // Opened from a tap or link that is still "active" (for example launching the installed app).
   if (activation?.isActive === true && renewal.needed()) renewal.renew();
-  return () => { target.removeEventListener("click", onClick); };
+  return () => {
+    target.removeEventListener("click", onClick);
+  };
 }

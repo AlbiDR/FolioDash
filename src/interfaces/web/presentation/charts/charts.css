@@ -3,7 +3,9 @@
   padding: var(--card-padding);
   background: var(--color-surface);
   border-radius: var(--shape-lg);
-  box-shadow: inset 0 0 0 1px var(--color-border), var(--shadow-card);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border),
+    var(--shadow-card);
 }
 
 .chart-title {
@@ -122,7 +124,9 @@
 }
 
 /* Inspection owns opacity even if a legend is used during the entrance cue. */
-.chart-series.unfocused { animation: none; }
+.chart-series.unfocused {
+  animation: none;
+}
 
 @keyframes chart-reveal {
   from {
@@ -159,7 +163,9 @@
   stroke-width: 2;
 }
 
-.chart-series .checkpoint-marker.is-active { stroke: var(--color-text); }
+.chart-series .checkpoint-marker.is-active {
+  stroke: var(--color-text);
+}
 
 .chart-swatch rect.checkpoint-swatch {
   fill: var(--series-color);
@@ -173,14 +179,30 @@
 }
 
 /* One line style for every series; colour alone separates funds, since they are one measure. */
-.series-0 { --series-color: var(--series-0); }
-.series-1 { --series-color: var(--series-1); }
-.series-2 { --series-color: var(--series-2); }
-.series-3 { --series-color: var(--series-3); }
-.series-4 { --series-color: var(--series-4); }
-.series-5 { --series-color: var(--series-5); }
-.series-6 { --series-color: var(--series-6); }
-.series-7 { --series-color: var(--series-7); }
+.series-0 {
+  --series-color: var(--series-0);
+}
+.series-1 {
+  --series-color: var(--series-1);
+}
+.series-2 {
+  --series-color: var(--series-2);
+}
+.series-3 {
+  --series-color: var(--series-3);
+}
+.series-4 {
+  --series-color: var(--series-4);
+}
+.series-5 {
+  --series-color: var(--series-5);
+}
+.series-6 {
+  --series-color: var(--series-6);
+}
+.series-7 {
+  --series-color: var(--series-7);
+}
 
 /* Only a series that is a different measure (net invested against value) is dashed, in a quiet grey. */
 .chart-series.dashed,
@@ -333,21 +355,45 @@
 }
 
 @media (max-width: 47.5rem) {
-  .chart-readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .chart-readout-date { grid-column: 1 / -1; }
-  .chart-readout-item { min-width: 0; }
-  .chart-readout-label { overflow-wrap: anywhere; }
-  .chart-readout-value { font-size: var(--text-body); overflow-wrap: anywhere; }
-  .chart-legend { gap: var(--space-2); font-size: var(--text-small); }
-  .chart-legend-item { min-width: 0; overflow-wrap: anywhere; }
-  .chart-swatch { flex-shrink: 0; }
+  .chart-readout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .chart-readout-date {
+    grid-column: 1 / -1;
+  }
+  .chart-readout-item {
+    min-width: 0;
+  }
+  .chart-readout-label {
+    overflow-wrap: anywhere;
+  }
+  .chart-readout-value {
+    font-size: var(--text-body);
+    overflow-wrap: anywhere;
+  }
+  .chart-legend {
+    gap: var(--space-2);
+    font-size: var(--text-small);
+  }
+  .chart-legend-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .chart-swatch {
+    flex-shrink: 0;
+  }
 }
 
 /* Readout values need their own line when two columns no longer fit comfortably. */
 @media (max-width: 21.875rem) {
-  .chart-readout { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .chart-readout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
 }
 
-
 /* Date labels do not intercept bar inspection or chart pointer movement. */
-.chart-time-axis { pointer-events: none; }
+.chart-time-axis {
+  pointer-events: none;
+}

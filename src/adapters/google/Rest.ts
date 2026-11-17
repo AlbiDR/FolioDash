@@ -26,7 +26,8 @@ export type RestFailure =
   | "network"
   | "unexpected";
 
-export type RestResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly failure: RestFailure };
+export type RestResult<T> =
+  { readonly ok: true; readonly value: T } | { readonly ok: false; readonly failure: RestFailure };
 
 /** Whether a failed call is known not to have changed anything. A lost answer is not such a failure. */
 export function wroteNothing(failure: RestFailure): boolean {
@@ -48,7 +49,10 @@ export async function callRest(
     response = await rest({
       method: request.method,
       url: request.url,
-      headers: { Authorization: `Bearer ${accessToken}`, ...(request.body === undefined ? {} : { "Content-Type": "application/json" }) },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(request.body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
       ...(request.body === undefined ? {} : { body: JSON.stringify(request.body) }),
     });
   } catch {

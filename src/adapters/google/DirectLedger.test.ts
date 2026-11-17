@@ -10,7 +10,22 @@ import { parseIsin } from "../../core/Isin";
 import { EMPTY_LEDGER } from "../../core/Ledger";
 import type { RawSheet } from "../../core/RawSheet";
 import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../core/Money";
-import { type DirectDeps, attachDirect, backfillDirect, commitDirect, ensureWorkbook, mirrorStatements, outcomeDirect, readAllDirect, readDirect, recoverRevisionDirect, refreshView, restoreDirect, statementTabTitle, tidyLedgerTab } from "./DirectLedger";
+import {
+  type DirectDeps,
+  attachDirect,
+  backfillDirect,
+  commitDirect,
+  ensureWorkbook,
+  mirrorStatements,
+  outcomeDirect,
+  readAllDirect,
+  readDirect,
+  recoverRevisionDirect,
+  refreshView,
+  restoreDirect,
+  statementTabTitle,
+  tidyLedgerTab,
+} from "./DirectLedger";
 import { LEDGER_TAB, VIEW_TAB } from "./SheetsLayout";
 import { writeGridTabs } from "./GoogleWorkbook";
 
@@ -27,14 +42,33 @@ const ISIN = (() => {
 function statement(value: number): StatementInput {
   return { funds: [{ isin: ISIN, name: "Synthetic Fund A", marketValue: cents(value) }], fundsSubtotal: cents(value) };
 }
-const start: FundCommand = { isin: ISIN, action: "Start", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, openingNetInvested: cents(1000), comment: "" };
+const start: FundCommand = {
+  isin: ISIN,
+  action: "Start",
+  moneyIn: ZERO_CENTS,
+  moneyOut: ZERO_CENTS,
+  openingNetInvested: cents(1000),
+  comment: "",
+};
 const keep: FundCommand = { isin: ISIN, action: "Keep", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS, comment: "" };
 
 function first(revision = "", commandId = "command-first-0001"): CommitRequest {
-  return { commandId, expectedRevision: revision, statement: statement(1000), date: date("2026-01-31"), commands: [start] };
+  return {
+    commandId,
+    expectedRevision: revision,
+    statement: statement(1000),
+    date: date("2026-01-31"),
+    commands: [start],
+  };
 }
 function second(revision: string, commandId = "command-second-001"): CommitRequest {
-  return { commandId, expectedRevision: revision, statement: statement(1100), date: date("2026-02-28"), commands: [keep] };
+  return {
+    commandId,
+    expectedRevision: revision,
+    statement: statement(1100),
+    date: date("2026-02-28"),
+    commands: [keep],
+  };
 }
 
 function setup() {
@@ -55,23 +89,37 @@ describe("ensureWorkbook: starting from scratch", () => {
     const { google } = setup();
     const normal = await readyWorkbook(google);
     const before = JSON.stringify([...(google.workbooks.get(normal.id) ?? [])]);
-    const identity = { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" };
+    const identity = {
+      title: "FolioDash SYNTHETIC ACCEPTANCE",
+      propertyKey: "foliodash-synthetic-acceptance",
+      propertyValue: "ledger-v1",
+    };
     const synthetic = await ensureWorkbook(google.client, google.token, identity);
     expect(synthetic).toMatchObject({ status: "ready", created: true });
     if (synthetic.status !== "ready") throw new Error("Synthetic setup failed");
     expect(synthetic.workbook.id).not.toBe(normal.id);
     expect(google.files.get(synthetic.workbook.id)?.name).toBe(identity.title);
-    expect(google.files.get(synthetic.workbook.id)?.appProperties).toEqual({ [identity.propertyKey]: identity.propertyValue });
+    expect(google.files.get(synthetic.workbook.id)?.appProperties).toEqual({
+      [identity.propertyKey]: identity.propertyValue,
+    });
     const again = await ensureWorkbook(google.client, google.token, identity);
     expect(again).toMatchObject({ status: "ready", created: false, workbook: synthetic.workbook });
-    expect(await ensureWorkbook(google.client, google.token)).toMatchObject({ status: "ready", created: false, workbook: normal });
+    expect(await ensureWorkbook(google.client, google.token)).toMatchObject({
+      status: "ready",
+      created: false,
+      workbook: normal,
+    });
     expect(JSON.stringify([...(google.workbooks.get(normal.id) ?? [])])).toBe(before);
   });
 
   it("uses the synthetic name fallback if tagging fails, never the normal workbook name", async () => {
     const { google } = setup();
     const normal = await readyWorkbook(google);
-    const identity = { title: "FolioDash SYNTHETIC ACCEPTANCE", propertyKey: "foliodash-synthetic-acceptance", propertyValue: "ledger-v1" };
+    const identity = {
+      title: "FolioDash SYNTHETIC ACCEPTANCE",
+      propertyKey: "foliodash-synthetic-acceptance",
+      propertyValue: "ledger-v1",
+    };
     google.faults.push({ match: /^PATCH \/drive/u, status: 500 });
     const synthetic = await ensureWorkbook(google.client, google.token, identity);
     expect(synthetic).toMatchObject({ status: "ready", created: true, tagged: false });
@@ -188,7 +236,9 @@ describe("generated tab ownership", () => {
     old.developerMetadata = [];
     old.rows = [["personal notes"]];
     for (let run = 0; run < 3; run++) {
-      expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
+      expect(
+        (await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok,
+      ).toBe(false);
     }
     expect(google.workbooks.get(workbook.id)?.size).toBe(2);
     expect(old.rows).toEqual([["personal notes"]]);
@@ -204,7 +254,9 @@ describe("generated tab ownership", () => {
     view.developerMetadata = [];
     const records = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
     for (let run = 0; run < 3; run++) {
-      expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
+      expect(
+        (await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok,
+      ).toBe(true);
     }
     expect(view.developerMetadata).toHaveLength(1);
     expect(google.workbooks.get(workbook.id)?.size).toBe(2);
@@ -224,7 +276,7 @@ describe("generated tab ownership", () => {
     original.developerMetadata = [];
     original.rows = legacyJanuarySummary(ISIN);
     const records = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
-    const guards = [...google.namedRanges.get(workbook.id) ?? []];
+    const guards = [...(google.namedRanges.get(workbook.id) ?? [])];
     expect(await refreshView(google.client, google.token, workbook.id, latest.state)).toBe(true);
     expect(google.tab(workbook.id, VIEW_TAB)?.id).toBe(original.id);
     expect(original.rows.flat()).toContain("Statement date");
@@ -233,7 +285,7 @@ describe("generated tab ownership", () => {
     expect(original.developerMetadata).toHaveLength(1);
     expect(google.workbooks.get(workbook.id)?.size).toBe(2);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(records);
-    expect([...google.namedRanges.get(workbook.id) ?? []]).toEqual(guards);
+    expect([...(google.namedRanges.get(workbook.id) ?? [])]).toEqual(guards);
   });
 
   it("also recognises an unmarked current-layout summary from an earlier saved date", async () => {
@@ -295,11 +347,19 @@ describe("generated tab ownership", () => {
     const rest: DirectDeps["rest"] = async (request) => {
       const answer = await google.client(request);
       if (request.method !== "GET" || request.url.includes("/values")) return answer;
-      const body = await answer.json() as { sheets?: { properties: Record<string, unknown>; developerMetadata?: (Record<string, unknown> & { location: Record<string, unknown> })[] }[] };
+      const body = (await answer.json()) as {
+        sheets?: {
+          properties: Record<string, unknown>;
+          developerMetadata?: (Record<string, unknown> & { location: Record<string, unknown> })[];
+        }[];
+      };
       for (const sheet of body.sheets ?? []) {
         if (sheet.properties["sheetId"] === 0) delete sheet.properties["sheetId"];
         for (const marker of sheet.developerMetadata ?? []) {
-          if (marker.location["sheetId"] === 0) { delete marker.location["sheetId"]; marker.location["locationType"] = "SHEET"; }
+          if (marker.location["sheetId"] === 0) {
+            delete marker.location["sheetId"];
+            marker.location["locationType"] = "SHEET";
+          }
         }
       }
       return { ...answer, json: () => Promise.resolve(body) };
@@ -313,12 +373,23 @@ describe("generated tab ownership", () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
     await writeGridTabs(google.client, google.token, workbook.id, [
-      { title: "Bank 2026-03-31", grid: grid() }, { title: "Work expenses", grid: grid() },
+      { title: "Bank 2026-03-31", grid: grid() },
+      { title: "Work expenses", grid: grid() },
     ]);
     await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Bank 2026-01-31", grid: grid() }]);
-    expect([...google.workbooks.get(workbook.id)?.keys() ?? []]).toEqual([VIEW_TAB, "Work expenses", "Bank 2026-03-31", "Bank 2026-01-31", LEDGER_TAB]);
-    expect(google.tab(workbook.id, "Bank 2026-03-31")?.tabColorStyle).toEqual(google.tab(workbook.id, "Bank 2026-01-31")?.tabColorStyle);
-    expect(google.tab(workbook.id, "Work expenses")?.tabColorStyle).not.toEqual(google.tab(workbook.id, VIEW_TAB)?.tabColorStyle);
+    expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])]).toEqual([
+      VIEW_TAB,
+      "Work expenses",
+      "Bank 2026-03-31",
+      "Bank 2026-01-31",
+      LEDGER_TAB,
+    ]);
+    expect(google.tab(workbook.id, "Bank 2026-03-31")?.tabColorStyle).toEqual(
+      google.tab(workbook.id, "Bank 2026-01-31")?.tabColorStyle,
+    );
+    expect(google.tab(workbook.id, "Work expenses")?.tabColorStyle).not.toEqual(
+      google.tab(workbook.id, VIEW_TAB)?.tabColorStyle,
+    );
     expect(google.tab(workbook.id, "Bank 2026-01-31")?.hideGridlines).toBe(true);
     expect(google.tab(workbook.id, LEDGER_TAB)?.frozenRowCount).toBe(1);
   });
@@ -331,7 +402,9 @@ describe("generated tab ownership", () => {
     if (tabs === undefined || view === undefined) throw new Error("setup failed");
     tabs.delete(VIEW_TAB);
     tabs.set("My overview", view);
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok).toBe(true);
+    expect(
+      (await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }])).ok,
+    ).toBe(true);
     expect(tabs.has(VIEW_TAB)).toBe(false);
     expect(view.rows[1]?.[1]).toBe("Synthetic view");
   });
@@ -343,9 +416,19 @@ describe("generated tab ownership", () => {
     const other = google.tab(workbook.id, "Another view");
     const view = google.tab(workbook.id, VIEW_TAB);
     if (other === undefined || view === undefined) throw new Error("setup failed");
-    other.developerMetadata = view.developerMetadata.map((metadata) => ({ ...metadata, location: { sheetId: other.id } }));
+    other.developerMetadata = view.developerMetadata.map((metadata) => ({
+      ...metadata,
+      location: { sheetId: other.id },
+    }));
     const calls = google.callsMatching(/:batchUpdate$/u).length;
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: "New view", grid: grid() }, { title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
+    expect(
+      (
+        await writeGridTabs(google.client, google.token, workbook.id, [
+          { title: "New view", grid: grid() },
+          { title: VIEW_TAB, grid: grid() },
+        ])
+      ).ok,
+    ).toBe(false);
     expect(google.callsMatching(/:batchUpdate$/u)).toHaveLength(calls);
     expect(google.tab(workbook.id, "New view")).toBeUndefined();
   });
@@ -354,8 +437,17 @@ describe("generated tab ownership", () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
     const before = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: LEDGER_TAB, grid: grid() }])).ok).toBe(false);
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: VIEW_TAB, grid: grid() }, { title: VIEW_TAB, grid: grid() }])).ok).toBe(false);
+    expect(
+      (await writeGridTabs(google.client, google.token, workbook.id, [{ title: LEDGER_TAB, grid: grid() }])).ok,
+    ).toBe(false);
+    expect(
+      (
+        await writeGridTabs(google.client, google.token, workbook.id, [
+          { title: VIEW_TAB, grid: grid() },
+          { title: VIEW_TAB, grid: grid() },
+        ])
+      ).ok,
+    ).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
   });
 
@@ -368,7 +460,12 @@ describe("generated tab ownership", () => {
     const original = google.tab(workbook.id, title);
     const tabs = google.workbooks.get(workbook.id);
     if (original === undefined || tabs === undefined) throw new Error("setup failed");
-    const duplicate = { ...original, id: 2000, rows: original.rows.map((row) => [...row]), developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })) };
+    const duplicate = {
+      ...original,
+      id: 2000,
+      rows: original.rows.map((row) => [...row]),
+      developerMetadata: original.developerMetadata.map((marker) => ({ ...marker, location: { sheetId: 2000 } })),
+    };
     original.developerMetadata = [];
     tabs.set(`${title} (2)`, duplicate);
     google.faults.push({ match: /:batchUpdate$/u, status: 400 });
@@ -412,7 +509,11 @@ describe("generated tab ownership", () => {
     const tabs = google.workbooks.get(workbook.id);
     if (tab === undefined || tabs === undefined) throw new Error("setup failed");
     tabs.set(`${title} (2)`, { ...tab, id: 4000, developerMetadata: [], rows: [["=1+1"]] });
-    expect(await writeGridTabs(google.client, google.token, workbook.id, [view])).toMatchObject({ ok: true, consolidatedTabs: 0, preservedTabs: 1 });
+    expect(await writeGridTabs(google.client, google.token, workbook.id, [view])).toMatchObject({
+      ok: true,
+      consolidatedTabs: 0,
+      preservedTabs: 1,
+    });
     expect(google.tab(workbook.id, `${title} (2)`)?.rows).toEqual([["=1+1"]]);
   });
 
@@ -420,8 +521,12 @@ describe("generated tab ownership", () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
     google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(false);
-    expect((await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(true);
+    expect(
+      (await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok,
+    ).toBe(false);
+    expect(
+      (await writeGridTabs(google.client, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok,
+    ).toBe(true);
     expect(google.workbooks.get(workbook.id)?.size).toBe(3);
   });
 
@@ -432,13 +537,16 @@ describe("generated tab ownership", () => {
       if (request.body !== undefined && request.url.endsWith(":batchUpdate")) {
         const body = JSON.parse(request.body) as { requests: Record<string, unknown>[] };
         for (const item of body.requests) {
-          if (item["createDeveloperMetadata"] !== undefined) item["createDeveloperMetadata"] = { developerMetadata: { location: { sheetId: -1 } } };
+          if (item["createDeveloperMetadata"] !== undefined)
+            item["createDeveloperMetadata"] = { developerMetadata: { location: { sheetId: -1 } } };
         }
         return google.client({ ...request, body: JSON.stringify(body) });
       }
       return google.client(request);
     };
-    expect((await writeGridTabs(rest, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(false);
+    expect((await writeGridTabs(rest, google.token, workbook.id, [{ title: "Generated", grid: grid() }])).ok).toBe(
+      false,
+    );
     expect(google.tab(workbook.id, "Generated")).toBeUndefined();
     expect(google.workbooks.get(workbook.id)?.size).toBe(2);
   });
@@ -535,10 +643,13 @@ describe("commitDirect: saving", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     await commitDirect(deps, google.token, workbook.id, first());
-    google.afterRead = { count: google.calls.filter(call => call.startsWith("GET ") && call.includes("/values/")).length + 1, run: () => {
-      const rows = google.tab(workbook.id, LEDGER_TAB)?.rows;
-      if (rows?.[1] !== undefined) rows[1][2] = "changed without adding rows";
-    } };
+    google.afterRead = {
+      count: google.calls.filter((call) => call.startsWith("GET ") && call.includes("/values/")).length + 1,
+      run: () => {
+        const rows = google.tab(workbook.id, LEDGER_TAB)?.rows;
+        if (rows?.[1] !== undefined) rows[1][2] = "changed without adding rows";
+      },
+    };
     const before = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await commitDirect(deps, google.token, workbook.id, second("revision-0001"))).status).toBe("stale");
     expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(before);
@@ -548,14 +659,16 @@ describe("commitDirect: saving", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     let appended = false;
-    const rest: DirectDeps["rest"] = async request => {
+    const rest: DirectDeps["rest"] = async (request) => {
       if (appended && request.method === "GET") throw new Error("verification connection lost");
       const response = await google.client(request);
       if (request.method === "POST" && request.url.includes(":batchUpdate")) appended = true;
       return response;
     };
     expect((await commitDirect({ ...deps, rest }, google.token, workbook.id, first())).status).toBe("unknown");
-    expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe("committed");
+    expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe(
+      "committed",
+    );
     expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(1);
   });
 
@@ -564,14 +677,19 @@ describe("commitDirect: saving", () => {
     const workbook = await readyWorkbook(google);
     google.faults.push({ match: /:batchUpdate$/u, status: 418, applyFirst: true });
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("already-committed");
-    expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe("committed");
+    expect((await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).status).toBe(
+      "committed",
+    );
   });
 
   it("treats a refusal Google made before doing anything as not written, and the retry then works", async () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     google.faults.push({ match: /:batchUpdate$/u, status: 403 });
-    expect(await commitDirect(deps, google.token, workbook.id, first())).toEqual({ status: "not-sent", failure: "forbidden" });
+    expect(await commitDirect(deps, google.token, workbook.id, first())).toEqual({
+      status: "not-sent",
+      failure: "forbidden",
+    });
     expect((await readDirect(google.client, google.token, workbook.id)).status === "ok").toBe(true);
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("committed");
   });
@@ -582,7 +700,9 @@ describe("commitDirect: saving", () => {
     google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
     const lost = await commitDirect(deps, google.token, workbook.id, first());
     expect(lost.status).toBe("unknown");
-    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "committed" });
+    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({
+      status: "committed",
+    });
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("already-committed");
     const read = await readDirect(google.client, google.token, workbook.id);
     expect(read.status === "ok" && read.state.snapshots).toHaveLength(1);
@@ -593,7 +713,9 @@ describe("commitDirect: saving", () => {
     const workbook = await readyWorkbook(google);
     google.faults.push({ match: /:batchUpdate$/u, status: 503 });
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("unknown");
-    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "not-found" });
+    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({
+      status: "not-found",
+    });
   });
 
   it("refuses to add to a damaged ledger", async () => {
@@ -632,7 +754,9 @@ describe("restoreDirect: the loop closes both ways", () => {
     const restored = await restoreDirect(deps, google.token, copy, null);
     expect(restored.status).toBe("restored");
     if (restored.status !== "restored") return;
-    expect(restored.ledger.snapshots.map((snapshot) => snapshot.date)).toEqual(copy.snapshots.map((snapshot) => snapshot.date));
+    expect(restored.ledger.snapshots.map((snapshot) => snapshot.date)).toEqual(
+      copy.snapshots.map((snapshot) => snapshot.date),
+    );
     const read = await readDirect(google.client, google.token, restored.workbook.id);
     expect(read.status === "ok" && read.state.snapshots).toHaveLength(2);
   });
@@ -665,7 +789,11 @@ describe("restoreDirect: the loop closes both ways", () => {
   it("refuses a copy that fails the ledger rules or holds no statements", async () => {
     const { google, deps } = setup();
     expect((await restoreDirect(deps, google.token, EMPTY_LEDGER, null)).status).toBe("invalid");
-    const broken = { revision: "r", funds: [{ isin: "NOT-AN-ISIN", name: "A", fullName: "A", firstDate: "2026-01-31" }], snapshots: [] };
+    const broken = {
+      revision: "r",
+      funds: [{ isin: "NOT-AN-ISIN", name: "A", fullName: "A", firstDate: "2026-01-31" }],
+      snapshots: [],
+    };
     expect((await restoreDirect(deps, google.token, broken as never, null)).status).toBe("invalid");
     expect(google.files.size).toBe(0);
   });
@@ -681,7 +809,9 @@ describe("refreshView", () => {
     expect(await refreshView(google.client, google.token, workbook.id, read.state)).toBe(true);
     const lines = google.tab(workbook.id, VIEW_TAB)?.rows ?? [];
     expect(String(lines[2]?.[1])).toContain("rebuilt");
-    expect(lines.some((line) => line[1] === "Latest statement" && line[2] === toSpreadsheetSerial(date("2026-01-31")))).toBe(true);
+    expect(
+      lines.some((line) => line[1] === "Latest statement" && line[2] === toSpreadsheetSerial(date("2026-01-31"))),
+    ).toBe(true);
     const ledgerBefore = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
     google.faults.push({ match: /:batchUpdate$/u, status: 500 });
     expect(await refreshView(google.client, google.token, workbook.id, read.state)).toBe(false);
@@ -694,7 +824,10 @@ describe("saving the bank statement with the month", () => {
     date1904: false,
     rows: [
       [undefined, { kind: "text", text: "Categoria / Nome prodotto" }],
-      [{ kind: "number", text: "652.289", format: null }, { kind: "text", text: "Synthetic Fund A" }],
+      [
+        { kind: "number", text: "652.289", format: null },
+        { kind: "text", text: "Synthetic Fund A" },
+      ],
     ],
   };
   const withSource = (): CommitRequest => ({ ...first(), source: { sheetName: "Il Mio Patrimonio", sheet } });
@@ -726,7 +859,9 @@ describe("saving the bank statement with the month", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     await commitDirect(deps, google.token, workbook.id, withSource());
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid)).toBe(true);
+    expect(
+      await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid),
+    ).toBe(true);
     const title = statementTabTitle(date("2026-01-31"));
     expect(title).toBe("Bank 2026-01-31");
     // The data keeps its place, with one empty row and column around it.
@@ -736,7 +871,9 @@ describe("saving the bank statement with the month", () => {
       ["", 652.289, "Synthetic Fund A", ""],
       ["", "", "", ""],
     ]);
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid)).toBe(true);
+    expect(
+      await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid),
+    ).toBe(true);
     expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === title)).toHaveLength(1);
   });
 
@@ -746,7 +883,9 @@ describe("saving the bank statement with the month", () => {
     await commitDirect(deps, google.token, workbook.id, withSource());
     const before = JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows);
     google.faults.push({ match: /:batchUpdate$/u, status: 503 });
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid)).toBe(false);
+    expect(
+      await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet }], rawGrid),
+    ).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, LEDGER_TAB)?.rows)).toBe(before);
     expect((await readAllDirect(google.client, google.token, workbook.id)).status).toBe("ok");
   });
@@ -785,26 +924,57 @@ describe("the readable monthly tabs, in a few requests", () => {
   it("writes seventeen months with the same handful of requests as one, never one request per month", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
-    const months = Array.from({ length: 17 }, (_, index) => ({ date: date(`2026-${String((index % 12) + 1).padStart(2, "0")}-${index < 12 ? "15" : "16"}`), sheet: sheetFor(`Month ${String(index)}`) }));
+    const months = Array.from({ length: 17 }, (_, index) => ({
+      date: date(`2026-${String((index % 12) + 1).padStart(2, "0")}-${index < 12 ? "15" : "16"}`),
+      sheet: sheetFor(`Month ${String(index)}`),
+    }));
     const before = google.calls.length;
     expect(await mirrorStatements(google.client, google.token, workbook.id, months, rawGrid)).toBe(true);
     // List the tabs, then one batch that adds, fits, formats and fills them all.
     expect(google.calls.length - before).toBe(2);
-    expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name.startsWith("Bank "))).toHaveLength(17);
-    expect(google.tab(workbook.id, "Bank 2026-03-15")?.rows).toEqual([["", "", ""], ["", "Month 2", ""], ["", "", ""]]);
+    expect(
+      [...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name.startsWith("Bank ")),
+    ).toHaveLength(17);
+    expect(google.tab(workbook.id, "Bank 2026-03-15")?.rows).toEqual([
+      ["", "", ""],
+      ["", "Month 2", ""],
+      ["", "", ""],
+    ]);
   });
 
   it("rewrites tabs that exist and adds only the missing ones", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
-    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheetFor("old") }], rawGrid);
-    await mirrorStatements(google.client, google.token, workbook.id, [
-      { date: date("2026-01-31"), sheet: sheetFor("new") },
-      { date: date("2026-02-28"), sheet: sheetFor("second") },
-    ], rawGrid);
-    expect(google.tab(workbook.id, "Bank 2026-01-31")?.rows).toEqual([["", "", ""], ["", "new", ""], ["", "", ""]]);
-    expect(google.tab(workbook.id, "Bank 2026-02-28")?.rows).toEqual([["", "", ""], ["", "second", ""], ["", "", ""]]);
-    expect([...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === "Bank 2026-01-31")).toHaveLength(1);
+    await mirrorStatements(
+      google.client,
+      google.token,
+      workbook.id,
+      [{ date: date("2026-01-31"), sheet: sheetFor("old") }],
+      rawGrid,
+    );
+    await mirrorStatements(
+      google.client,
+      google.token,
+      workbook.id,
+      [
+        { date: date("2026-01-31"), sheet: sheetFor("new") },
+        { date: date("2026-02-28"), sheet: sheetFor("second") },
+      ],
+      rawGrid,
+    );
+    expect(google.tab(workbook.id, "Bank 2026-01-31")?.rows).toEqual([
+      ["", "", ""],
+      ["", "new", ""],
+      ["", "", ""],
+    ]);
+    expect(google.tab(workbook.id, "Bank 2026-02-28")?.rows).toEqual([
+      ["", "", ""],
+      ["", "second", ""],
+      ["", "", ""],
+    ]);
+    expect(
+      [...(google.workbooks.get(workbook.id)?.keys() ?? [])].filter((name) => name === "Bank 2026-01-31"),
+    ).toHaveLength(1);
   });
 
   it("does nothing, and asks Google for nothing, when there are no months", async () => {
@@ -817,12 +987,21 @@ describe("the readable monthly tabs, in a few requests", () => {
 });
 
 describe("lean tabs", () => {
-  const sheet = (): RawSheet => ({ date1904: false, rows: [[], [undefined, { kind: "text", text: "Header" }, { kind: "number", text: "5", format: null }], [], []] });
+  const sheet = (): RawSheet => ({
+    date1904: false,
+    rows: [[], [undefined, { kind: "text", text: "Header" }, { kind: "number", text: "5", format: null }], [], []],
+  });
 
   it("cuts a tab down to its data plus one empty row and column, deleting what was there", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
-    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheet() }], rawGrid);
+    await mirrorStatements(
+      google.client,
+      google.token,
+      workbook.id,
+      [{ date: date("2026-01-31"), sheet: sheet() }],
+      rawGrid,
+    );
     const tab = google.tab(workbook.id, "Bank 2026-01-31");
     expect([tab?.rowCount, tab?.columnCount]).toEqual([3, 4]);
     // Rewriting with a bigger tab in place first (as a person might) still ends lean.
@@ -831,7 +1010,13 @@ describe("lean tabs", () => {
       tab.columnCount = 26;
       tab.rows[500] = ["stray"];
     }
-    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheet() }], rawGrid);
+    await mirrorStatements(
+      google.client,
+      google.token,
+      workbook.id,
+      [{ date: date("2026-01-31"), sheet: sheet() }],
+      rawGrid,
+    );
     expect([tab?.rowCount, tab?.columnCount]).toEqual([3, 4]);
     expect(tab?.rows).toHaveLength(3);
   });
@@ -839,10 +1024,24 @@ describe("lean tabs", () => {
   it("applies the whole write or none of it, so a refused batch leaves the old tab alone", async () => {
     const { google } = setup();
     const workbook = await readyWorkbook(google);
-    await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: sheet() }], rawGrid);
+    await mirrorStatements(
+      google.client,
+      google.token,
+      workbook.id,
+      [{ date: date("2026-01-31"), sheet: sheet() }],
+      rawGrid,
+    );
     const before = JSON.stringify(google.tab(workbook.id, "Bank 2026-01-31")?.rows);
     google.faults.push({ match: /:batchUpdate$/u, status: 400 });
-    expect(await mirrorStatements(google.client, google.token, workbook.id, [{ date: date("2026-01-31"), sheet: { date1904: false, rows: [[{ kind: "text", text: "Other" }]] } }], rawGrid)).toBe(false);
+    expect(
+      await mirrorStatements(
+        google.client,
+        google.token,
+        workbook.id,
+        [{ date: date("2026-01-31"), sheet: { date1904: false, rows: [[{ kind: "text", text: "Other" }]] } }],
+        rawGrid,
+      ),
+    ).toBe(false);
     expect(JSON.stringify(google.tab(workbook.id, "Bank 2026-01-31")?.rows)).toBe(before);
   });
 
@@ -857,7 +1056,9 @@ describe("lean tabs", () => {
     expect(view?.rows[0]?.every((cell) => cell === "")).toBe(true);
     expect(view?.rows[1]?.[0]).toBe("");
     expect(view?.rows[1]?.[1]).toBe("FolioDash");
-    const patterns = (view?.formats ?? []).flat().map((format) => (format?.["numberFormat"] as { pattern?: string } | undefined)?.pattern);
+    const patterns = (view?.formats ?? [])
+      .flat()
+      .map((format) => (format?.["numberFormat"] as { pattern?: string } | undefined)?.pattern);
     expect(patterns).toContain('#,##0.00" €"');
     expect(patterns).toContain("dd/mm/yyyy");
   });
@@ -883,7 +1084,18 @@ describe("attachDirect: statements for months saved earlier", () => {
     const revision = one.status === "committed" ? one.revision : "";
     const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "Fondi" }]] };
     // The earlier save had no statement; this statement must reproduce the saved month, so it is the same funds and figures.
-    const request = { commandId: "attach-0001", expectedRevision: revision, items: [{ date: date("2026-01-31"), statement: statement(1000), commands: [start], source: { sheetName: "Il Mio Patrimonio", sheet } }] };
+    const request = {
+      commandId: "attach-0001",
+      expectedRevision: revision,
+      items: [
+        {
+          date: date("2026-01-31"),
+          statement: statement(1000),
+          commands: [start],
+          source: { sheetName: "Il Mio Patrimonio", sheet },
+        },
+      ],
+    };
     const appendsBefore = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("committed");
     expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appendsBefore + 1);
@@ -899,7 +1111,13 @@ describe("attachDirect: statements for months saved earlier", () => {
     const one = await commitDirect(deps, google.token, workbook.id, first());
     const revision = one.status === "committed" ? one.revision : "";
     const sheet: RawSheet = { date1904: false, rows: [] };
-    const request = { commandId: "attach-0002", expectedRevision: revision, items: [{ date: date("2026-01-31"), statement: statement(999), commands: [start], source: { sheetName: "S", sheet } }] };
+    const request = {
+      commandId: "attach-0002",
+      expectedRevision: revision,
+      items: [
+        { date: date("2026-01-31"), statement: statement(999), commands: [start], source: { sheetName: "S", sheet } },
+      ],
+    };
     const appendsBefore = google.requests.filter((request) => request["appendCells"] !== undefined).length;
     expect((await attachDirect(deps, google.token, workbook.id, request)).status).toBe("rejected");
     expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(appendsBefore);
@@ -910,33 +1128,41 @@ describe("atomic predecessor guard", () => {
   it.each([
     { command: "device-two", value: 1200, statuses: ["committed", "stale"], receipt: "not-found" },
     { command: "device-one", value: 1000, statuses: ["already-committed", "committed"], receipt: "committed" },
-  ])("coordinates two devices past the final read ($command), preserving one valid save", async ({ command, value, statuses, receipt }) => {
-    const { google, deps } = setup();
-    const workbook = await readyWorkbook(google);
-    let release: (() => void) | undefined;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
-    let waiting = 0;
-    const rest: DirectDeps["rest"] = async (request) => {
-      if (request.body?.includes('"appendCells"')) {
-        waiting++;
-        if (waiting === 2) release?.();
-        await gate;
-      }
-      return google.client(request);
-    };
-    const results = await Promise.all([
-      commitDirect({ ...deps, rest }, google.token, workbook.id, first("", "device-one")),
-      commitDirect({ ...deps, rest }, google.token, workbook.id, { ...first("", command), statement: statement(value) }),
-    ]);
-    expect(results.map((result) => result.status).sort()).toEqual(statuses);
-    expect(google.namedRanges.get(workbook.id)?.size).toBe(1);
-    const read = await readDirect(google.client, google.token, workbook.id);
-    expect(read).toMatchObject({ status: "ok", ignoredTrailingRows: 0 });
-    if (read.status !== "ok") throw new Error("ledger must stay readable");
-    expect(read.state.snapshots).toHaveLength(1);
-    expect((await outcomeDirect(google.client, google.token, workbook.id, "device-one")).status).toBe("committed");
-    expect((await outcomeDirect(google.client, google.token, workbook.id, command)).status).toBe(receipt);
-  });
+  ])(
+    "coordinates two devices past the final read ($command), preserving one valid save",
+    async ({ command, value, statuses, receipt }) => {
+      const { google, deps } = setup();
+      const workbook = await readyWorkbook(google);
+      let release: (() => void) | undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let waiting = 0;
+      const rest: DirectDeps["rest"] = async (request) => {
+        if (request.body?.includes('"appendCells"')) {
+          waiting++;
+          if (waiting === 2) release?.();
+          await gate;
+        }
+        return google.client(request);
+      };
+      const results = await Promise.all([
+        commitDirect({ ...deps, rest }, google.token, workbook.id, first("", "device-one")),
+        commitDirect({ ...deps, rest }, google.token, workbook.id, {
+          ...first("", command),
+          statement: statement(value),
+        }),
+      ]);
+      expect(results.map((result) => result.status).sort()).toEqual(statuses);
+      expect(google.namedRanges.get(workbook.id)?.size).toBe(1);
+      const read = await readDirect(google.client, google.token, workbook.id);
+      expect(read).toMatchObject({ status: "ok", ignoredTrailingRows: 0 });
+      if (read.status !== "ok") throw new Error("ledger must stay readable");
+      expect(read.state.snapshots).toHaveLength(1);
+      expect((await outcomeDirect(google.client, google.token, workbook.id, "device-one")).status).toBe("committed");
+      expect((await outcomeDirect(google.client, google.token, workbook.id, command)).status).toBe(receipt);
+    },
+  );
 
   it("does not mark an acknowledged save uncertain when a legitimate successor arrives before read-back", async () => {
     const { google, deps } = setup();
@@ -967,7 +1193,9 @@ describe("atomic predecessor guard", () => {
     };
     expect((await commitDirect({ ...deps, rest }, google.token, workbook.id, first())).status).toBe("unknown");
     expect(google.namedRanges.get(workbook.id)?.size ?? 0).toBe(0);
-    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({ status: "not-found" });
+    expect(await outcomeDirect(google.client, google.token, workbook.id, "command-first-0001")).toEqual({
+      status: "not-found",
+    });
     expect((await commitDirect(deps, google.token, workbook.id, first())).status).toBe("committed");
   });
 });
@@ -977,22 +1205,31 @@ describe("recovery of an earlier revision", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "synthetic" }]] };
-    const initial = await commitDirect(deps, google.token, workbook.id, { ...first(), source: { sheetName: "Synthetic", sheet } });
+    const initial = await commitDirect(deps, google.token, workbook.id, {
+      ...first(),
+      source: { sheetName: "Synthetic", sheet },
+    });
     if (initial.status !== "committed") throw new Error("first save failed");
     const target = await readAllDirect(google.client, google.token, workbook.id);
     if (target.status !== "ok") throw new Error("first read failed");
     const later = await commitDirect(deps, google.token, workbook.id, second(initial.revision));
     if (later.status !== "committed") throw new Error("second save failed");
     const request = { commandId: "recover-first", expectedRevision: later.revision, targetRevision: initial.revision };
-    expect(await recoverRevisionDirect(deps, google.token, workbook.id, { ...request, expectedRevision: initial.revision })).toMatchObject({ status: "stale" });
+    expect(
+      await recoverRevisionDirect(deps, google.token, workbook.id, { ...request, expectedRevision: initial.revision }),
+    ).toMatchObject({ status: "stale" });
     const result = await recoverRevisionDirect(deps, google.token, workbook.id, request);
     expect(result.status).toBe("committed");
     const restored = await readAllDirect(google.client, google.token, workbook.id);
     if (restored.status !== "ok") throw new Error("recovery read failed");
     expect(restored.state.snapshots).toEqual(target.state.snapshots);
     expect(restored.sources).toEqual(target.sources);
-    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({ status: "already-committed" });
-    expect(await recoverRevisionDirect(deps, google.token, workbook.id, { ...request, targetRevision: later.revision })).toMatchObject({ status: "rejected" });
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({
+      status: "already-committed",
+    });
+    expect(
+      await recoverRevisionDirect(deps, google.token, workbook.id, { ...request, targetRevision: later.revision }),
+    ).toMatchObject({ status: "rejected" });
   });
 
   it("reports a lost recovery response as unknown and resolves the same command without writing twice", async () => {
@@ -1005,8 +1242,12 @@ describe("recovery of an earlier revision", () => {
     const request = { commandId: "recover-lost", expectedRevision: later.revision, targetRevision: initial.revision };
     google.faults.push({ match: /:batchUpdate$/u, network: true, applyFirst: true });
     expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({ status: "unknown" });
-    expect(await outcomeDirect(google.client, google.token, workbook.id, request.commandId)).toMatchObject({ status: "committed" });
-    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({ status: "already-committed" });
+    expect(await outcomeDirect(google.client, google.token, workbook.id, request.commandId)).toMatchObject({
+      status: "committed",
+    });
+    expect(await recoverRevisionDirect(deps, google.token, workbook.id, request)).toMatchObject({
+      status: "already-committed",
+    });
   });
 });
 
@@ -1015,12 +1256,28 @@ describe("guarded earlier history", () => {
     const { google, deps } = setup();
     const workbook = await readyWorkbook(google);
     const sheet: RawSheet = { date1904: false, rows: [[{ kind: "text", text: "synthetic" }]] };
-    const initial = await commitDirect(deps, google.token, workbook.id, { ...first(), source: { sheetName: "Synthetic", sheet } });
+    const initial = await commitDirect(deps, google.token, workbook.id, {
+      ...first(),
+      source: { sheetName: "Synthetic", sheet },
+    });
     if (initial.status !== "committed") throw new Error("first save failed");
-    const before = google.requests.filter(request => request["appendCells"] !== undefined).length;
-    const result = await backfillDirect(deps, google.token, workbook.id, { commandId: "invalid-input", expectedRevision: initial.revision, earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], boundary: [keep] }, () => { throw new Error("parser failure"); });
+    const before = google.requests.filter((request) => request["appendCells"] !== undefined).length;
+    const result = await backfillDirect(
+      deps,
+      google.token,
+      workbook.id,
+      {
+        commandId: "invalid-input",
+        expectedRevision: initial.revision,
+        earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+        boundary: [keep],
+      },
+      () => {
+        throw new Error("parser failure");
+      },
+    );
     expect(result.status).toBe("not-committed");
-    expect(google.requests.filter(request => request["appendCells"] !== undefined)).toHaveLength(before);
+    expect(google.requests.filter((request) => request["appendCells"] !== undefined)).toHaveLength(before);
   });
   it("commits one complete candidate and permits recovery of the prior revision", async () => {
     const { google, deps } = setup();
@@ -1029,16 +1286,27 @@ describe("guarded earlier history", () => {
     if (firstSave.status !== "committed") throw new Error("first save failed");
     const before = await readAllDirect(google.client, google.token, workbook.id);
     if (before.status !== "ok") throw new Error("read failed");
-    const request = { commandId: "insert-december", expectedRevision: firstSave.revision, earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], boundary: [keep] };
+    const request = {
+      commandId: "insert-december",
+      expectedRevision: firstSave.revision,
+      earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+      boundary: [keep],
+    };
     const interpret = () => ({ ok: false as const, message: "no bank sources" });
     const result = await backfillDirect(deps, google.token, workbook.id, request, interpret);
     expect(result.status).toBe("committed");
     if (result.status !== "committed") throw new Error("insertion failed");
     const after = await readAllDirect(google.client, google.token, workbook.id);
     if (after.status !== "ok") throw new Error("read failed");
-    expect(after.state.snapshots.map(snapshot => snapshot.date)).toEqual(["2025-12-31", "2026-01-31"]);
-    expect(await backfillDirect(deps, google.token, workbook.id, request, interpret)).toMatchObject({ status: "already-committed" });
-    const recovered = await recoverRevisionDirect(deps, google.token, workbook.id, { commandId: "undo-insert", expectedRevision: result.revision, targetRevision: firstSave.revision });
+    expect(after.state.snapshots.map((snapshot) => snapshot.date)).toEqual(["2025-12-31", "2026-01-31"]);
+    expect(await backfillDirect(deps, google.token, workbook.id, request, interpret)).toMatchObject({
+      status: "already-committed",
+    });
+    const recovered = await recoverRevisionDirect(deps, google.token, workbook.id, {
+      commandId: "undo-insert",
+      expectedRevision: result.revision,
+      targetRevision: firstSave.revision,
+    });
     expect(recovered.status).toBe("committed");
     const restored = await readAllDirect(google.client, google.token, workbook.id);
     if (restored.status !== "ok") throw new Error("recovery read failed");
@@ -1052,9 +1320,11 @@ describe("guarded earlier history", () => {
     const initial = await commitDirect(deps, google.token, workbook.id, first());
     if (initial.status !== "committed") throw new Error("first save failed");
     let release: (() => void) | undefined;
-    const gate = new Promise<void>(resolve => { release = resolve; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     let waiting = 0;
-    const rest: DirectDeps["rest"] = async request => {
+    const rest: DirectDeps["rest"] = async (request) => {
       if (request.body?.includes('"appendCells"')) {
         waiting++;
         if (waiting === 2) release?.();
@@ -1062,13 +1332,18 @@ describe("guarded earlier history", () => {
       }
       return google.client(request);
     };
-    const candidate = { commandId: "insert-race", expectedRevision: initial.revision, earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }], boundary: [keep] };
+    const candidate = {
+      commandId: "insert-race",
+      expectedRevision: initial.revision,
+      earlier: [{ date: date("2025-12-31"), statement: statement(1000), commands: [start] }],
+      boundary: [keep],
+    };
     const interpret = () => ({ ok: false as const, message: "no source" });
     const results = await Promise.all([
       backfillDirect({ ...deps, rest }, google.token, workbook.id, candidate, interpret),
       commitDirect({ ...deps, rest }, google.token, workbook.id, second(initial.revision, "legacy-race")),
     ]);
-    expect(results.map(result => result.status).sort()).toEqual(["committed", "stale"]);
+    expect(results.map((result) => result.status).sort()).toEqual(["committed", "stale"]);
     const read = await readDirect(google.client, google.token, workbook.id);
     expect(read.status).toBe("ok");
     if (read.status === "ok") expect(read.state.snapshots).toHaveLength(2);

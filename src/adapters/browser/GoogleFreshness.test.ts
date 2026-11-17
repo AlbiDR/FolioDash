@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { watchGoogleFreshness } from "./GoogleFreshness";
 
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 function setup() {
   vi.useFakeTimers();
@@ -14,7 +17,16 @@ function setup() {
   let paused = false;
   const refresh = vi.fn(() => Promise.resolve());
   const stop = watchGoogleFreshness(refresh, () => paused);
-  return { browser, page, network, refresh, stop, pause: () => { paused = true; } };
+  return {
+    browser,
+    page,
+    network,
+    refresh,
+    stop,
+    pause: () => {
+      paused = true;
+    },
+  };
 }
 
 describe("Google freshness triggers", () => {

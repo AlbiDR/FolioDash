@@ -1,15 +1,70 @@
 /* ---------- Checkpoints: a short form and a plain list ---------- */
-.checkpoint-form { display: grid; gap: var(--space-3); margin-top: var(--space-3); max-width: 28rem; }
-.checkpoint-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-.checkpoint-feedback { min-height: 1.5em; margin: var(--space-2) 0 0; color: var(--color-muted); }
-.checkpoint-list { display: grid; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; list-style: none; }
-.checkpoint-list > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-1) var(--space-3); align-items: center; padding-block: var(--space-2); border-bottom: 1px solid var(--color-border); }
-.checkpoint-list > li:last-child { border-bottom: 0; }
-.checkpoint-date { font-weight: var(--weight-semibold); }
-.checkpoint-value { justify-self: end; font-variant-numeric: tabular-nums; }
-.checkpoint-note { grid-column: 1 / -1; color: var(--color-muted); overflow-wrap: anywhere; }
-.checkpoint-list > li > button, .checkpoint-confirm { grid-column: 1 / -1; justify-self: start; }
-.checkpoint-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-.checkpoint-pending { margin: var(--space-2) 0; padding-left: var(--space-4); }
-.checkpoint-unconfirmed > li { border-bottom-style: dashed; }
-.checkpoint-preserved textarea { width: 100%; font-family: var(--font-body); }
+.checkpoint-form {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  max-width: 28rem;
+}
+.checkpoint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.checkpoint-feedback {
+  min-height: 1.5em;
+  margin: var(--space-2) 0 0;
+  color: var(--color-muted);
+}
+.checkpoint-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.checkpoint-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-3);
+  align-items: center;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+.checkpoint-list > li:last-child {
+  border-bottom: 0;
+}
+.checkpoint-date {
+  font-weight: var(--weight-semibold);
+}
+.checkpoint-value {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}
+.checkpoint-note {
+  grid-column: 1 / -1;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+.checkpoint-list > li > button,
+.checkpoint-confirm {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.checkpoint-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.checkpoint-pending {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-4);
+}
+.checkpoint-unconfirmed > li {
+  border-bottom-style: dashed;
+}
+.checkpoint-preserved textarea {
+  width: 100%;
+  font-family: var(--font-body);
+}

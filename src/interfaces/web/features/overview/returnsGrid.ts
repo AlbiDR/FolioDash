@@ -1,7 +1,20 @@
 import type { IsoDate } from "../../../../core/IsoDate";
 import type { StatementLabel } from "../../../../core/StatementLabels";
 
-export const GRID_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+export const GRID_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 export interface ReturnsRow {
   readonly year: number;
@@ -21,7 +34,10 @@ function monthOf(date: IsoDate, label: StatementLabel | undefined): { readonly y
   let month = Number(date.slice(5, 7));
   if (label?.kind === "closes-previous-month") {
     month -= 1;
-    if (month === 0) { month = 12; year -= 1; }
+    if (month === 0) {
+      month = 12;
+      year -= 1;
+    }
   }
   return { year, month };
 }
@@ -30,7 +46,11 @@ function monthOf(date: IsoDate, label: StatementLabel | undefined): { readonly y
  * Lays the model's month-on-month changes out by calendar year and month. It only places figures the model already
  * holds; it adds, averages and compounds nothing. Years with no statements between the first and last still get a row.
  */
-export function returnsGrid(dates: readonly IsoDate[], labels: readonly (StatementLabel | undefined)[], changes: readonly (number | null)[]): ReturnsGrid {
+export function returnsGrid(
+  dates: readonly IsoDate[],
+  labels: readonly (StatementLabel | undefined)[],
+  changes: readonly (number | null)[],
+): ReturnsGrid {
   const placed = new Map<number, (number | null)[]>();
   let first = Infinity;
   let last = -Infinity;
@@ -44,7 +64,8 @@ export function returnsGrid(dates: readonly IsoDate[], labels: readonly (Stateme
   });
   if (first === Infinity) return { rows: [], largest: 0 };
   const rows: ReturnsRow[] = [];
-  for (let year = first; year <= last; year++) rows.push({ year, cells: placed.get(year) ?? Array.from({ length: 12 }, () => null) });
+  for (let year = first; year <= last; year++)
+    rows.push({ year, cells: placed.get(year) ?? Array.from({ length: 12 }, () => null) });
   const largest = Math.max(0, ...rows.flatMap((row) => row.cells.map((cell) => (cell === null ? 0 : Math.abs(cell)))));
   return { rows, largest };
 }

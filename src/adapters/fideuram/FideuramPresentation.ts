@@ -3,7 +3,16 @@ import { type Decimal, decimalToNumber } from "../../core/Decimal";
 import { toSpreadsheetSerial } from "../../core/IsoDate";
 import type { RawCell, RawSheet } from "../../core/RawSheet";
 import { FIDEURAM_HEADERS, type FundPosition, findHeader, interpretFideuramSheet } from "./FideuramLayout";
-import { type Currency, type ReadResult, readDate, readMoney, readPrice, readQuantity, readRate, readRisk } from "./FideuramValues";
+import {
+  type Currency,
+  type ReadResult,
+  readDate,
+  readMoney,
+  readPrice,
+  readQuantity,
+  readRate,
+  readRisk,
+} from "./FideuramValues";
 
 const DATE = "dd/mm/yyyy";
 const QUANTITY = "#,##0.000";
@@ -33,12 +42,19 @@ function priceCell(value: Decimal, currency: Currency | null, precision = 3): Gr
  * the quantity, price and rate shown for a fund are the ones that reading settled on,
  * so a month whose file stored a quantity as a time still shows the real quantity.
  */
-function typed(cell: RawCell | undefined, column: number, date1904: boolean, position: FundPosition | undefined): GridCell | null {
+function typed(
+  cell: RawCell | undefined,
+  column: number,
+  date1904: boolean,
+  position: FundPosition | undefined,
+): GridCell | null {
   if (cell === undefined || cell.kind === "formula") return null;
   if (position !== undefined) {
-    if (column === COLUMN.G && position.quantity !== null) return { value: decimalToNumber(position.quantity), format: QUANTITY, emphasis: null };
+    if (column === COLUMN.G && position.quantity !== null)
+      return { value: decimalToNumber(position.quantity), format: QUANTITY, emphasis: null };
     if (column === COLUMN.H && position.price !== null) return priceCell(position.price, position.priceCurrency);
-    if (column === COLUMN.I && position.exchangeRate !== null) return { value: decimalToNumber(position.exchangeRate), format: RATE, emphasis: null };
+    if (column === COLUMN.I && position.exchangeRate !== null)
+      return { value: decimalToNumber(position.exchangeRate), format: RATE, emphasis: null };
   }
   switch (column) {
     case COLUMN.F: {
@@ -53,7 +69,9 @@ function typed(cell: RawCell | undefined, column: number, date1904: boolean, pos
     case COLUMN.J: {
       const price = only(readPrice(cell));
       // An average cost written without a symbol takes the currency of the fund's price.
-      return price === null ? null : priceCell(price.value, price.currency ?? position?.priceCurrency ?? null, column === COLUMN.J ? 4 : 3);
+      return price === null
+        ? null
+        : priceCell(price.value, price.currency ?? position?.priceCurrency ?? null, column === COLUMN.J ? 4 : 3);
     }
     case COLUMN.I:
     case COLUMN.K: {
@@ -102,7 +120,8 @@ export function presentStatement(sheet: RawSheet): Grid {
       if (rowIndex === header) return { ...plainCell(labels.get(column) ?? value, "header"), alignment };
       const isin = rawCell(row[COLUMN.E]).value;
       const position = typeof isin === "string" ? positions.get(isin.trim()) : undefined;
-      const reading = header !== null && rowIndex > header ? typed(row[column], column, sheet.date1904, position) : null;
+      const reading =
+        header !== null && rowIndex > header ? typed(row[column], column, sheet.date1904, position) : null;
       const display = column < COLUMN.F && typeof value === "number" ? String(value) : value;
       return { ...(reading ?? plainCell(display)), emphasis: value === "" ? null : emphasis, alignment };
     });

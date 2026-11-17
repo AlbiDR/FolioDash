@@ -45,7 +45,10 @@ describe("statementDateCandidate", () => {
   });
 
   it("falls back to the last-modified time, then to nothing", () => {
-    expect(candidate({ lastModified: Date.UTC(2026, 4, 3, 8) })).toEqual({ date: "2026-05-03", source: "file-modified" });
+    expect(candidate({ lastModified: Date.UTC(2026, 4, 3, 8) })).toEqual({
+      date: "2026-05-03",
+      source: "file-modified",
+    });
     expect(candidate({})).toBeNull();
   });
 });

@@ -91,7 +91,9 @@
   --motion-update-opacity: 0.65;
   --duration-medium: 380ms;
 
-  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-body:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto,
+    sans-serif;
 
   /* Type: one size per role, never a raw rem in a component. Seven steps and three weights.
    *   caption  axis labels, ISINs, chips

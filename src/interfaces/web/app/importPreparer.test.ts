@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { FORMULA, ROW, COL, number, syntheticSheet, text, withCell } from "../../../../tests/fixtures/SyntheticFideuramSheet";
+import {
+  FORMULA,
+  ROW,
+  COL,
+  number,
+  syntheticSheet,
+  text,
+  withCell,
+} from "../../../../tests/fixtures/SyntheticFideuramSheet";
 import { buildXlsx } from "../../../../tests/fixtures/SyntheticXlsx";
 import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
 import type { ImportFile } from "../../../applications/ImportModel";
@@ -60,21 +68,26 @@ describe("createImportPreparer", () => {
   });
 
   it("prepares an actual multi-sheet workbook using independent sheet dates, ignoring notes and container dates", async () => {
-    const bytes = await buildXlsx([
-      { name: "Bank 2026-03-31", sheet: syntheticSheet() },
-      { name: "Notes", sheet: { rows: [[text("synthetic notes")]], date1904: false } },
-      { name: "31-01-2026", sheet: syntheticSheet() },
-      { name: "February", sheet: syntheticSheet() },
-    ], { created: "2026-11-04T12:00:00Z" });
+    const bytes = await buildXlsx(
+      [
+        { name: "Bank 2026-03-31", sheet: syntheticSheet() },
+        { name: "Notes", sheet: { rows: [[text("synthetic notes")]], date1904: false } },
+        { name: "31-01-2026", sheet: syntheticSheet() },
+        { name: "February", sheet: syntheticSheet() },
+      ],
+      { created: "2026-11-04T12:00:00Z" },
+    );
     const batch = await prepareExcelHistory([file(bytes)], prepare);
     expect(batch.problems).toEqual([]);
     expect(batch.notices).toHaveLength(1);
     expect(batch.notices[0]).toContain("Notes");
     expect(batch.entries.map((entry) => [entry.sheet.name, entry.date])).toEqual([
-      ["Bank 2026-03-31", "2026-03-31"], ["31-01-2026", "2026-01-31"], ["February", ""],
+      ["Bank 2026-03-31", "2026-03-31"],
+      ["31-01-2026", "2026-01-31"],
+      ["February", ""],
     ]);
     expect(planExcelHistory(batch.entries, EMPTY_LEDGER).ok).toBe(false);
-    const confirmed = batch.entries.map((entry) => entry.date === "" ? { ...entry, date: "2026-02-28" } : entry);
+    const confirmed = batch.entries.map((entry) => (entry.date === "" ? { ...entry, date: "2026-02-28" } : entry));
     const plan = planExcelHistory(confirmed, EMPTY_LEDGER);
     expect(plan.ok && plan.entries.map((entry) => entry.date)).toEqual(["2026-01-31", "2026-02-28", "2026-03-31"]);
   });
@@ -97,7 +110,8 @@ describe("createImportPreparer", () => {
     const review = await prepare(file(await buildXlsx([{ name: "S", sheet: broken }])));
     const outcome = review.status === "reviewed" ? review.sheets[0]?.outcome : undefined;
     expect(outcome?.ok).toBe(false);
-    if (outcome && !outcome.ok) expect(outcome.issues.map((issue) => [issue.code, issue.cell])).toEqual([["does-not-reconcile", "M5"]]);
+    if (outcome && !outcome.ok)
+      expect(outcome.issues.map((issue) => [issue.code, issue.cell])).toEqual([["does-not-reconcile", "M5"]]);
   });
 
   it("reports a formula cell as an issue and never evaluates it", async () => {

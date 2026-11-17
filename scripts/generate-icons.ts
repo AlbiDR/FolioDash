@@ -34,7 +34,12 @@ function png(size: number, pixels: Uint8Array): Buffer {
     rows[row * (size * 4 + 1)] = 0; // no filter
     rows.set(pixels.subarray(row * size * 4, (row + 1) * size * 4), row * (size * 4 + 1) + 1);
   }
-  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", deflateSync(rows, { level: 9 })), chunk("IEND", new Uint8Array(0))]);
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(rows, { level: 9 })),
+    chunk("IEND", new Uint8Array(0)),
+  ]);
 }
 
 const ICONS: readonly { readonly file: string; readonly size: number; readonly rounded: boolean }[] = [

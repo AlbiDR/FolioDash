@@ -11,7 +11,12 @@ export interface ExpenseConflict {
 /** Acknowledged records and a rebuildable view have different success states. */
 export type ExpenseSaveOutcome =
   | { readonly status: "saved"; readonly days: readonly ExpenseDay[]; readonly viewUpdated: boolean }
-  | { readonly status: "conflict"; readonly days: readonly ExpenseDay[]; readonly conflicts?: readonly ExpenseConflict[]; readonly message: string }
+  | {
+      readonly status: "conflict";
+      readonly days: readonly ExpenseDay[];
+      readonly conflicts?: readonly ExpenseConflict[];
+      readonly message: string;
+    }
   | { readonly status: "not-saved"; readonly message: string }
   | { readonly status: "unknown"; readonly message: string };
 

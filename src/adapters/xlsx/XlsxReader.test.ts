@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  FORMULA,
-  syntheticSheet,
-  text,
-  number,
-} from "../../../tests/fixtures/SyntheticFideuramSheet";
+import { FORMULA, syntheticSheet, text, number } from "../../../tests/fixtures/SyntheticFideuramSheet";
 import { type SheetInput, buildXlsx, buildZip } from "../../../tests/fixtures/SyntheticXlsx";
 import { interpretFideuramSheet } from "../fideuram/FideuramLayout";
 import { readXlsx } from "./XlsxReader";
@@ -73,7 +68,9 @@ describe("reading a well-formed file", () => {
     const sheetXml = `<worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>R&amp;D &#65;</t></is></c><c r="B1" t="s"><v>0</v></c></row></sheetData></worksheet>`;
     const sharedStrings = `<sst><si><r><t>Rich </t></r><r><t xml:space="preserve">text </t></r><rPh><t>ignored</t></rPh></si></sst>`;
     const [read] = await readOk(
-      await buildXlsx([baseline], { overrides: { "xl/worksheets/sheet1.xml": sheetXml, "xl/sharedStrings.xml": sharedStrings } }),
+      await buildXlsx([baseline], {
+        overrides: { "xl/worksheets/sheet1.xml": sheetXml, "xl/sharedStrings.xml": sharedStrings },
+      }),
     );
     expect(read?.sheet.rows[0]).toEqual([text("R&D A"), text("Rich text ")]);
   });

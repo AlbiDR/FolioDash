@@ -114,13 +114,20 @@ vm.runInContext(code, context, { filename: "Code.js" });
 for (const name of OPERATIONS) check(typeof context[name] === "function", `${name} is not a top-level function`);
 
 /** Calls one of the bundle's top-level operations the way Apps Script would. */
-const call = (name: string, ...args: unknown[]): Answer => plain((context[name] as (...rest: unknown[]) => unknown)(...args));
+const call = (name: string, ...args: unknown[]): Answer =>
+  plain((context[name] as (...rest: unknown[]) => unknown)(...args));
 for (const forbidden of ["process", "require", "window", "document", "fetch", "XMLHttpRequest"]) {
   check(!new RegExp(`\\b${forbidden}\\b`, "u").test(code), `the bundle refers to ${forbidden}`);
 }
 // Apps Script's file parser rejects BigInt literals (a digit string ending in n), even though its runtime has BigInt.
-check(!/(^|[^\w$.])\d[\d_]*n(?![\w$])/mu.test(code), "the bundle contains a BigInt literal, which Apps Script cannot parse");
-check(JSON.stringify(manifest.oauthScopes) === JSON.stringify(["https://www.googleapis.com/auth/spreadsheets"]), "unexpected OAuth scopes");
+check(
+  !/(^|[^\w$.])\d[\d_]*n(?![\w$])/mu.test(code),
+  "the bundle contains a BigInt literal, which Apps Script cannot parse",
+);
+check(
+  JSON.stringify(manifest.oauthScopes) === JSON.stringify(["https://www.googleapis.com/auth/spreadsheets"]),
+  "unexpected OAuth scopes",
+);
 
 function plain(value: unknown): Answer {
   return JSON.parse(JSON.stringify(value)) as Answer;
@@ -131,10 +138,15 @@ const request = {
   expectedRevision: "",
   date: "2026-01-15",
   statement: { funds: [{ isin: "US0378331005", name: "Example Fund", marketValue: 100000 }], fundsSubtotal: 100000 },
-  commands: [{ isin: "US0378331005", action: "Start", moneyIn: 0, moneyOut: 0, comment: "", openingNetInvested: 90000 }],
+  commands: [
+    { isin: "US0378331005", action: "Start", moneyIn: 0, moneyOut: 0, comment: "", openingNetInvested: 90000 },
+  ],
 };
 
-check(call("foliodashRead", WORKBOOK).value?.state?.snapshots?.length === 0, "an empty workbook should read as an empty ledger");
+check(
+  call("foliodashRead", WORKBOOK).value?.state?.snapshots?.length === 0,
+  "an empty workbook should read as an empty ledger",
+);
 const committed = call("foliodashCommit", WORKBOOK, request);
 check(committed.ok === true && committed.value?.status === "committed", `commit failed: ${JSON.stringify(committed)}`);
 const again = call("foliodashCommit", WORKBOOK, request);
@@ -143,12 +155,20 @@ const read = call("foliodashRead", WORKBOOK);
 check(read.value?.state?.snapshots?.length === 1, "the committed statement should read back");
 check(call("foliodashOutcome", WORKBOOK, "command-0001").value?.status === "committed", "the outcome should be found");
 check(call("foliodashCheck", WORKBOOK).ok === true, "check should succeed on an intact ledger");
-check(call("foliodashRead", "no-access-workbook").error === "unavailable", "no access should be reported as unavailable");
-check(call("foliodashCommit", WORKBOOK, { nonsense: true }).error === "invalid-request", "a malformed request should be refused");
+check(
+  call("foliodashRead", "no-access-workbook").error === "unavailable",
+  "no access should be reported as unavailable",
+);
+check(
+  call("foliodashCommit", WORKBOOK, { nonsense: true }).error === "invalid-request",
+  "a malformed request should be refused",
+);
 
 if (failures.length > 0) {
   process.stderr.write(`Apps Script bundle check failed:\n${failures.map((entry) => `- ${entry}`).join("\n")}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`Apps Script bundle check passed (${String(code.length)} bytes, ${String(OPERATIONS.length)} operations).\n`);
+  process.stdout.write(
+    `Apps Script bundle check passed (${String(code.length)} bytes, ${String(OPERATIONS.length)} operations).\n`,
+  );
 }

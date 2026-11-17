@@ -49,7 +49,12 @@ export function mayRenewAutomatically(history: RenewalHistory, now: number): boo
  * nothing needs choosing. Once that has failed, a hint that may be stale is dropped and an
  * explicit request shows the account chooser.
  */
-export function signInOptionsFor(trigger: RenewalTrigger, history: RenewalHistory, loginHint: string | null, differentAccount: boolean): SignInOptions {
+export function signInOptionsFor(
+  trigger: RenewalTrigger,
+  history: RenewalHistory,
+  loginHint: string | null,
+  differentAccount: boolean,
+): SignInOptions {
   if (differentAccount) return { prompt: "select_account" };
   if (trigger === "requested" && history.failures > 0) return { prompt: "select_account" };
   return loginHint === null ? { prompt: "" } : { prompt: "", loginHint };

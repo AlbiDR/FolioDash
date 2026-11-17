@@ -13,24 +13,28 @@ export interface RemoteTarget {
 }
 
 function record(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 function short(value: unknown, fallback: string): string {
   return typeof value === "string" ? value.slice(0, 200) : fallback;
 }
 
-
 /** Interprets the service's answer to `check` or `read`. */
 export function interpretRead(result: unknown): RemoteRead {
   const answer = record(result);
   if (answer === null) return { status: "unrecognised" };
   if (answer["ok"] === false) {
-    return answer["error"] === "unavailable" ? { status: "workbook-unavailable" } : { status: "refused", message: short(answer["message"], "The request was refused.") };
+    return answer["error"] === "unavailable"
+      ? { status: "workbook-unavailable" }
+      : { status: "refused", message: short(answer["message"], "The request was refused.") };
   }
   const value = record(answer["value"]);
   if (answer["ok"] !== true || value === null) return { status: "unrecognised" };
-  if (value["status"] === "damaged") return { status: "damaged", message: short(value["message"], "The ledger is damaged.") };
+  if (value["status"] === "damaged")
+    return { status: "damaged", message: short(value["message"], "The ledger is damaged.") };
   if (value["status"] !== "ok") return { status: "unrecognised" };
   const state = parseLedgerState(value["state"]);
   if (state === null) return { status: "damaged", message: "The ledger in the spreadsheet did not pass validation." };
@@ -39,17 +43,25 @@ export function interpretRead(result: unknown): RemoteRead {
 }
 
 /** `foliodashCheck` and `foliodashRead` answer identically; the connection screen uses the first, the app the second. */
-export async function readRemoteLedger(http: HttpClient, target: RemoteTarget, functionName: "foliodashCheck" | "foliodashRead" = "foliodashRead"): Promise<RemoteRead> {
+export async function readRemoteLedger(
+  http: HttpClient,
+  target: RemoteTarget,
+  functionName: "foliodashCheck" | "foliodashRead" = "foliodashRead",
+): Promise<RemoteRead> {
   const outcome = await runScriptFunction(http, {
     scriptId: target.scriptId,
     accessToken: target.accessToken,
     functionName,
     parameters: [target.workbookId],
   });
-  if (outcome.status !== "ok") return { status: "call-failed", failure: outcome.status, message: outcome.status === "script-error" ? outcome.message : null };
+  if (outcome.status !== "ok")
+    return {
+      status: "call-failed",
+      failure: outcome.status,
+      message: outcome.status === "script-error" ? outcome.message : null,
+    };
   return interpretRead(outcome.result);
 }
-
 
 const UNKNOWN_TEXT = "The save may or may not have been recorded. Check what happened before trying again.";
 
@@ -81,7 +93,10 @@ function interpretCommit(result: unknown): RemoteCommit {
     case "damaged":
       return { status: "damaged", message: short(value["message"], "The ledger is damaged.") };
     case "not-committed":
-      return { status: "not-committed", message: short(value["message"], "Nothing was recorded. It is safe to try again.") };
+      return {
+        status: "not-committed",
+        message: short(value["message"], "Nothing was recorded. It is safe to try again."),
+      };
     default:
       return { status: "unknown", message: short(value["message"], UNKNOWN_TEXT) };
   }
@@ -93,7 +108,11 @@ function interpretCommit(result: unknown): RemoteCommit {
  * "not sent"; everything else is unknown and must be resolved with
  * `readRemoteCommandOutcome` rather than retried blindly.
  */
-export async function commitRemote(http: HttpClient, target: RemoteTarget, request: CommitRequest): Promise<RemoteCommit> {
+export async function commitRemote(
+  http: HttpClient,
+  target: RemoteTarget,
+  request: CommitRequest,
+): Promise<RemoteCommit> {
   const outcome = await runScriptFunction(http, {
     scriptId: target.scriptId,
     accessToken: target.accessToken,
@@ -107,8 +126,11 @@ export async function commitRemote(http: HttpClient, target: RemoteTarget, reque
   return { status: "unknown", message: UNKNOWN_TEXT };
 }
 
-
-export async function readRemoteCommandOutcome(http: HttpClient, target: RemoteTarget, commandId: string): Promise<RemoteOutcome> {
+export async function readRemoteCommandOutcome(
+  http: HttpClient,
+  target: RemoteTarget,
+  commandId: string,
+): Promise<RemoteOutcome> {
   const outcome = await runScriptFunction(http, {
     scriptId: target.scriptId,
     accessToken: target.accessToken,
@@ -121,6 +143,7 @@ export async function readRemoteCommandOutcome(http: HttpClient, target: RemoteT
   if (answer?.["ok"] !== true || value === null) return { status: "unreachable" };
   if (value["status"] === "committed") return { status: "committed" };
   if (value["status"] === "not-found") return { status: "not-found" };
-  if (value["status"] === "damaged") return { status: "damaged", message: short(value["message"], "The ledger is damaged.") };
+  if (value["status"] === "damaged")
+    return { status: "damaged", message: short(value["message"], "The ledger is damaged.") };
   return { status: "unreachable" };
 }

@@ -28,8 +28,13 @@ describe("the remembered Google account", () => {
     expect(store.getItem("hint")).toBeNull();
     store.setItem("hint", "not json");
     expect(hints.load("client")).toBeNull();
-    const blocked = createAccountHintStore(() => { throw new Error("blocked"); });
-    expect(() => { blocked.save("client", "person@example.test"); blocked.clear(); }).not.toThrow();
+    const blocked = createAccountHintStore(() => {
+      throw new Error("blocked");
+    });
+    expect(() => {
+      blocked.save("client", "person@example.test");
+      blocked.clear();
+    }).not.toThrow();
     expect(blocked.load("client")).toBeNull();
   });
 });

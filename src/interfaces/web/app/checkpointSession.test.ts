@@ -23,25 +23,48 @@ const TODAY = date("2026-11-16");
 const euros = (value: number) => required(toEuroCents(Math.round(value * 100)));
 const request = (on = "2026-11-14", value = 1000, note = "") => ({ date: date(on), cents: euros(value), note });
 
-interface Memory extends KeyValueStore { readonly data: Map<string, string>; failWritesTo: RegExp | null; failRemovalsOf: RegExp | null }
+interface Memory extends KeyValueStore {
+  readonly data: Map<string, string>;
+  failWritesTo: RegExp | null;
+  failRemovalsOf: RegExp | null;
+}
 function memory(): Memory {
   const data = new Map<string, string>();
   const kv: Memory = {
-    data, failWritesTo: null, failRemovalsOf: null,
+    data,
+    failWritesTo: null,
+    failRemovalsOf: null,
     getItem: (key) => data.get(key) ?? null,
-    setItem: (key, value) => { if (kv.failWritesTo?.test(key) === true) throw new Error("QuotaExceededError"); data.set(key, value); },
-    removeItem: (key) => { if (kv.failRemovalsOf?.test(key) === true) throw new Error("blocked"); data.delete(key); },
+    setItem: (key, value) => {
+      if (kv.failWritesTo?.test(key) === true) throw new Error("QuotaExceededError");
+      data.set(key, value);
+    },
+    removeItem: (key) => {
+      if (kv.failRemovalsOf?.test(key) === true) throw new Error("blocked");
+      data.delete(key);
+    },
   };
   return kv;
 }
 
 /** A Web Locks stand-in: exclusive, and a second request while held is told so without waiting. */
 function locks() {
-  const state = { held: false, request: async <T>(_name: string, _options: { ifAvailable: true; mode: "exclusive" }, callback: (lock: object | null) => Promise<T>): Promise<T> => {
-    if (state.held) return callback(null);
-    state.held = true;
-    try { return await callback({}); } finally { state.held = false; }
-  } };
+  const state = {
+    held: false,
+    request: async <T>(
+      _name: string,
+      _options: { ifAvailable: true; mode: "exclusive" },
+      callback: (lock: object | null) => Promise<T>,
+    ): Promise<T> => {
+      if (state.held) return callback(null);
+      state.held = true;
+      try {
+        return await callback({});
+      } finally {
+        state.held = false;
+      }
+    },
+  };
   return state;
 }
 
@@ -53,15 +76,25 @@ async function world() {
   const kv = memory();
   const shared = locks();
   let ids = 0;
-  const make = (options: { store?: KeyValueStore; prefix?: string; useLocks?: boolean; workbookId?: string | null; access?: () => Promise<{ ok: true; token: string; workbook: Workbook }>; rest?: RestClient } = {}) => new CheckpointSession({
-    rest: options.rest ?? google.client,
-    store: createCheckpointStore(() => options.store ?? kv, options.prefix ?? "foliodash."),
-    lock: createCheckpointLock("foliodash.checkpoints", options.useLocks === false ? undefined : shared),
-    newId: () => `synthetic-${String(++ids).padStart(4, "0")}`,
-    access: options.access ?? (() => Promise.resolve({ ok: true as const, token: google.token, workbook })),
-    workbookId: options.workbookId === undefined ? workbook.id : options.workbookId,
-    today: () => TODAY,
-  });
+  const make = (
+    options: {
+      store?: KeyValueStore;
+      prefix?: string;
+      useLocks?: boolean;
+      workbookId?: string | null;
+      access?: () => Promise<{ ok: true; token: string; workbook: Workbook }>;
+      rest?: RestClient;
+    } = {},
+  ) =>
+    new CheckpointSession({
+      rest: options.rest ?? google.client,
+      store: createCheckpointStore(() => options.store ?? kv, options.prefix ?? "foliodash."),
+      lock: createCheckpointLock("foliodash.checkpoints", options.useLocks === false ? undefined : shared),
+      newId: () => `synthetic-${String(++ids).padStart(4, "0")}`,
+      access: options.access ?? (() => Promise.resolve({ ok: true as const, token: google.token, workbook })),
+      workbookId: options.workbookId === undefined ? workbook.id : options.workbookId,
+      today: () => TODAY,
+    });
   const appends = () => google.calls.filter((call) => call.includes(":append")).length;
   return { google, workbook, kv, shared, make, appends };
 }
@@ -198,9 +231,17 @@ describe("checkpoint session", () => {
   it("C11 Forget during an in-flight save attributes nothing to the new state and removes the copies", async () => {
     const w = await world();
     let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     let calls = 0;
-    const session = w.make({ access: async () => { calls++; if (calls > 1) await gate; return { ok: true as const, token: w.google.token, workbook: w.workbook }; } });
+    const session = w.make({
+      access: async () => {
+        calls++;
+        if (calls > 1) await gate;
+        return { ok: true as const, token: w.google.token, workbook: w.workbook };
+      },
+    });
     await session.refresh();
     const pending = session.add(request());
     await Promise.resolve();
@@ -246,7 +287,12 @@ describe("checkpoint session", () => {
     const target = required(session.state.active[0]);
     const before = appends();
     const reads = google.calls.filter((call) => call.startsWith("GET") && call.includes("/values/")).length;
-    google.afterRead = { count: reads + 1, run: () => { appendRaw(google, workbook.id, { id: "rival-void-1", kind: "void", target: target.id }); } };
+    google.afterRead = {
+      count: reads + 1,
+      run: () => {
+        appendRaw(google, workbook.id, { id: "rival-void-1", kind: "void", target: target.id });
+      },
+    };
     const result = await session.void(target.id);
     expect(result.status).toBe("no-change");
     expect(session.state.pending).toEqual([]);
@@ -288,9 +334,15 @@ describe("checkpoint session", () => {
     if (!created.ok) throw new Error("Synthetic replacement setup failed");
     // Both fakes number their first workbook the same, so the app sees a different id and the fake is addressed by its own.
     const replacement: Workbook = { id: "replacement-workbook", url: created.value.url };
-    const replacementRest: RestClient = (call) => replacementGoogle.client({ ...call, url: call.url.replaceAll(replacement.id, created.value.id) });
-    const reachReplacement = () => Promise.resolve({ ok: true as const, token: replacementGoogle.token, workbook: replacement });
-    const viaReplacement = original.make({ workbookId: replacement.id, rest: replacementRest, access: reachReplacement });
+    const replacementRest: RestClient = (call) =>
+      replacementGoogle.client({ ...call, url: call.url.replaceAll(replacement.id, created.value.id) });
+    const reachReplacement = () =>
+      Promise.resolve({ ok: true as const, token: replacementGoogle.token, workbook: replacement });
+    const viaReplacement = original.make({
+      workbookId: replacement.id,
+      rest: replacementRest,
+      access: reachReplacement,
+    });
     expect(viaReplacement.state.preserved.map((entry) => entry.workbookId)).toEqual([original.workbook.id]);
     expect(viaReplacement.state.preserved[0]?.pending).toHaveLength(1);
     await viaReplacement.refresh();
@@ -357,13 +409,24 @@ describe("checkpoint session", () => {
 
   it("CP-002 a delayed refresh in one window cannot overwrite a newer copy another window saved", async () => {
     const w = await world();
-    const a = w.make(); await a.refresh();
-    const b = w.make({ workbookId: w.workbook.id }); await b.refresh();
+    const a = w.make();
+    await a.refresh();
+    const b = w.make({ workbookId: w.workbook.id });
+    await b.refresh();
     // A reads the old (empty) log but has not stored anything yet.
     let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     let reads = 0;
-    const slow = w.make({ workbookId: w.workbook.id, rest: async (call) => { const answer = await w.google.client(call); if (call.url.includes("/values/") && ++reads === 1) await gate; return answer; } });
+    const slow = w.make({
+      workbookId: w.workbook.id,
+      rest: async (call) => {
+        const answer = await w.google.client(call);
+        if (call.url.includes("/values/") && ++reads === 1) await gate;
+        return answer;
+      },
+    });
     const delayed = slow.refresh();
     await Promise.resolve();
     expect((await b.add(request("2026-11-12", 950))).status).toBe("saved");
@@ -415,7 +478,12 @@ describe("checkpoint session", () => {
     await session.add(request());
     const target = required(session.state.active[0]);
     const reads = google.calls.filter((call) => call.startsWith("GET") && call.includes("/values/")).length;
-    google.afterRead = { count: reads + 1, run: () => { appendRaw(google, workbook.id, { id: "rival-void-1", kind: "void", target: target.id }); } };
+    google.afterRead = {
+      count: reads + 1,
+      run: () => {
+        appendRaw(google, workbook.id, { id: "rival-void-1", kind: "void", target: target.id });
+      },
+    };
     kv.failWritesTo = /checkpoints\.copy/u;
     const result = await session.void(target.id);
     expect(result.status).toBe("unknown");
@@ -452,13 +520,17 @@ describe("checkpoint session", () => {
     const w = await world();
     let calls = -1_000;
     let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     // The adapter's own read, after the preflight, is held back so Forget lands before the append.
-    const session = w.make({ rest: async (call) => {
-      const answer = await w.google.client(call);
-      if (call.url.includes("/values/") && ++calls === 2) await gate;
-      return answer;
-    } });
+    const session = w.make({
+      rest: async (call) => {
+        const answer = await w.google.client(call);
+        if (call.url.includes("/values/") && ++calls === 2) await gate;
+        return answer;
+      },
+    });
     await session.refresh();
     await session.add(request("2026-11-10", 900));
     const before = w.appends();
@@ -474,8 +546,10 @@ describe("checkpoint session", () => {
 
   it("CR-002 a log that lost a checkpoint another window saved is refused before anything is sent", async () => {
     const w = await world();
-    const a = w.make(); await a.refresh();
-    const b = w.make({ workbookId: w.workbook.id }); await b.refresh();
+    const a = w.make();
+    await a.refresh();
+    const b = w.make({ workbookId: w.workbook.id });
+    await b.refresh();
     expect((await b.add(request("2026-11-12", 950))).status).toBe("saved");
     // Google loses B's row while window A still holds its earlier, empty view.
     required(w.google.tab(w.workbook.id, CHECKPOINT_LOG_TITLE)).rows.splice(1);
@@ -487,8 +561,10 @@ describe("checkpoint session", () => {
 
   it("CR-002 a refresh that sees a log older than the shared copy is not treated as ready", async () => {
     const w = await world();
-    const a = w.make(); await a.refresh();
-    const b = w.make({ workbookId: w.workbook.id }); await b.refresh();
+    const a = w.make();
+    await a.refresh();
+    const b = w.make({ workbookId: w.workbook.id });
+    await b.refresh();
     await b.add(request("2026-11-12", 950));
     required(w.google.tab(w.workbook.id, CHECKPOINT_LOG_TITLE)).rows.splice(1);
     await a.refresh();
@@ -546,13 +622,20 @@ describe("checkpoint session", () => {
   it("REVIEW-003 an older answer that the log did not exist cannot hide a checkpoint another window saved meanwhile", async () => {
     const w = await world();
     let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     let held = false;
-    const slow = w.make({ rest: async (call) => {
-      const answer = await w.google.client(call);
-      if (!held && call.method === "GET" && !call.url.includes("/values/")) { held = true; await gate; }
-      return answer;
-    } });
+    const slow = w.make({
+      rest: async (call) => {
+        const answer = await w.google.client(call);
+        if (!held && call.method === "GET" && !call.url.includes("/values/")) {
+          held = true;
+          await gate;
+        }
+        return answer;
+      },
+    });
     const delayed = slow.refresh();
     await new Promise((resolve) => setTimeout(resolve, 20));
     const other = w.make({ workbookId: w.workbook.id });

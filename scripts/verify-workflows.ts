@@ -3,7 +3,16 @@
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import process from "node:process";
@@ -21,7 +30,8 @@ const CHECKSUMS: Readonly<Record<string, string>> = {
 const architecture = process.arch === "x64" ? "amd64" : process.arch;
 const target = `${process.platform}_${architecture}`;
 const checksum = CHECKSUMS[target];
-if (checksum === undefined) throw new Error(`Workflow verification supports Linux and macOS on x64/arm64, not ${target}.`);
+if (checksum === undefined)
+  throw new Error(`Workflow verification supports Linux and macOS on x64/arm64, not ${target}.`);
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cache = join(tmpdir(), "foliodash-actionlint");
@@ -58,10 +68,13 @@ try {
   if (extracted.status !== 0) throw new Error("Cannot extract the verified actionlint binary.");
 
   const suppliedFiles = process.argv.slice(2);
-  const files = suppliedFiles.length > 0 ? suppliedFiles : readdirSync(join(root, ".github/workflows"))
-    .filter((file) => /\.ya?ml$/u.test(file))
-    .sort()
-    .map((file) => join(root, ".github/workflows", file));
+  const files =
+    suppliedFiles.length > 0
+      ? suppliedFiles
+      : readdirSync(join(root, ".github/workflows"))
+          .filter((file) => /\.ya?ml$/u.test(file))
+          .sort()
+          .map((file) => join(root, ".github/workflows", file));
   if (files.length === 0) throw new Error("No workflow definitions found.");
   // Optional external linters are disabled so a machine's PATH cannot silently
   // change the checks. actionlint still validates syntax, expressions and jobs.
@@ -71,7 +84,8 @@ try {
   });
   if (checked.error !== undefined) throw checked.error;
   process.exitCode = checked.status ?? 1;
-  if (process.exitCode === 0) console.log(`Workflow verification passed: actionlint ${VERSION}, ${String(files.length)} files.`);
+  if (process.exitCode === 0)
+    console.log(`Workflow verification passed: actionlint ${VERSION}, ${String(files.length)} files.`);
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }

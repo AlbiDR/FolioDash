@@ -26,8 +26,14 @@ export function parseHistory(text: string): ParsedHistory {
   } catch {
     return { ok: false, message: "This file is not a FolioDash history file." };
   }
-  const file = typeof body === "object" && body !== null && !Array.isArray(body) ? (body as Record<string, unknown>) : null;
-  if (file === null || file["kind"] !== HISTORY_FILE_KIND || file["version"] !== 1 || !Array.isArray(file["statements"])) {
+  const file =
+    typeof body === "object" && body !== null && !Array.isArray(body) ? (body as Record<string, unknown>) : null;
+  if (
+    file === null ||
+    file["kind"] !== HISTORY_FILE_KIND ||
+    file["version"] !== 1 ||
+    !Array.isArray(file["statements"])
+  ) {
     return { ok: false, message: "This file is not a FolioDash history file." };
   }
   const entries = file["statements"] as unknown[];
@@ -37,12 +43,21 @@ export function parseHistory(text: string): ParsedHistory {
   const statements: HistoryStatement[] = [];
   const ids = new Set<string>();
   for (const [index, entry] of entries.entries()) {
-    const parsed = parseCommitRequest(typeof entry === "object" && entry !== null ? { ...entry, expectedRevision: "" } : entry);
+    const parsed = parseCommitRequest(
+      typeof entry === "object" && entry !== null ? { ...entry, expectedRevision: "" } : entry,
+    );
     if (!parsed.ok) return { ok: false, message: `Statement ${String(index + 1)}: ${parsed.message}` };
     const { commandId, date, statement: input, commands, source } = parsed.request;
     // The bank statement travels with its month, so the import keeps it and the ledger stays rebuildable.
-    const statement: HistoryStatement = { commandId, date, statement: input, commands, ...(source === undefined ? {} : { source }) };
-    if (ids.has(statement.commandId)) return { ok: false, message: `Statement ${String(index + 1)} repeats a command id.` };
+    const statement: HistoryStatement = {
+      commandId,
+      date,
+      statement: input,
+      commands,
+      ...(source === undefined ? {} : { source }),
+    };
+    if (ids.has(statement.commandId))
+      return { ok: false, message: `Statement ${String(index + 1)} repeats a command id.` };
     ids.add(statement.commandId);
     statements.push(statement);
   }
@@ -70,16 +85,32 @@ export function planHistory(ledger: LedgerState, statements: readonly HistorySta
   }
   for (const [index, snapshot] of ledger.snapshots.entries()) {
     const fromFile = statements[index];
-    if (fromFile === undefined || fromFile.date !== snapshot.date || fromFile.statement.fundsSubtotal !== snapshot.fundsSubtotal) {
-      return { ok: false, message: "The spreadsheet already holds different statements from this file, so nothing was changed." };
+    if (
+      fromFile === undefined ||
+      fromFile.date !== snapshot.date ||
+      fromFile.statement.fundsSubtotal !== snapshot.fundsSubtotal
+    ) {
+      return {
+        ok: false,
+        message: "The spreadsheet already holds different statements from this file, so nothing was changed.",
+      };
     }
   }
   let state = ledger;
   const toSave = statements.slice(ledger.snapshots.length);
   for (const [index, statement] of toSave.entries()) {
-    const applied = applyImport(state, statement.statement, statement.date, statement.commands, `plan-${String(index)}`);
+    const applied = applyImport(
+      state,
+      statement.statement,
+      statement.date,
+      statement.commands,
+      `plan-${String(index)}`,
+    );
     if (!applied.ok) {
-      return { ok: false, message: `Statement dated ${statement.date} would not be accepted: ${applied.issues[0]?.message ?? "a rule was not met."}` };
+      return {
+        ok: false,
+        message: `Statement dated ${statement.date} would not be accepted: ${applied.issues[0]?.message ?? "a rule was not met."}`,
+      };
     }
     state = applied.state;
   }
@@ -87,8 +118,7 @@ export function planHistory(ledger: LedgerState, statements: readonly HistorySta
 }
 
 export type StepResult<Failure> =
-  | { readonly ok: true; readonly ledger: LedgerState }
-  | { readonly ok: false; readonly failure: Failure };
+  { readonly ok: true; readonly ledger: LedgerState } | { readonly ok: false; readonly failure: Failure };
 
 export interface HistoryRun<Failure> {
   /** The ledger as last read back from the spreadsheet. */
@@ -128,11 +158,22 @@ export async function runHistory<Failure>(
  * yet stored with the ledger. They are attached in one step; their figures do not
  * change, and a statement that does not reproduce its month is refused when attached.
  */
-export function planAttach(ledger: LedgerState, statements: readonly HistoryStatement[], have: ReadonlySet<IsoDate>): AttachItem[] {
+export function planAttach(
+  ledger: LedgerState,
+  statements: readonly HistoryStatement[],
+  have: ReadonlySet<IsoDate>,
+): AttachItem[] {
   const saved = new Set(ledger.snapshots.map((snapshot) => snapshot.date));
   return statements.flatMap((statement): AttachItem[] =>
     statement.source !== undefined && saved.has(statement.date) && !have.has(statement.date)
-      ? [{ date: statement.date, statement: statement.statement, commands: statement.commands, source: statement.source }]
+      ? [
+          {
+            date: statement.date,
+            statement: statement.statement,
+            commands: statement.commands,
+            source: statement.source,
+          },
+        ]
       : [],
   );
 }

@@ -43,4 +43,5 @@ const service = createService(openEnvironment);
 export const foliodashCheck = (workbookId: unknown): unknown => service.check(workbookId);
 export const foliodashRead = (workbookId: unknown): unknown => service.read(workbookId);
 export const foliodashCommit = (workbookId: unknown, request: unknown): unknown => service.commit(workbookId, request);
-export const foliodashOutcome = (workbookId: unknown, commandId: unknown): unknown => service.outcome(workbookId, commandId);
+export const foliodashOutcome = (workbookId: unknown, commandId: unknown): unknown =>
+  service.outcome(workbookId, commandId);

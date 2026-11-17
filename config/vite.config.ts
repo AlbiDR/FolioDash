@@ -11,7 +11,10 @@ function buildStamp(): string {
   if (pinned !== undefined && pinned !== "") return pinned;
   let revision = "unknown";
   try {
-    revision = execFileSync("git", ["describe", "--always", "--dirty", "--abbrev=7"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    revision = execFileSync("git", ["describe", "--always", "--dirty", "--abbrev=7"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
   } catch {
     // Built outside a git checkout.
   }

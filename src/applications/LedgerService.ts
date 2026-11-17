@@ -87,7 +87,13 @@ export type CommandOutcome =
 export function requestHash(request: CommitRequest): string {
   const base = { date: request.date, statement: request.statement, commands: request.commands };
   // The statement is part of what was asked for, so the same id with a different statement is a different request.
-  return sha256Hex(canonicalJson(request.source === undefined ? base : { ...base, source: { sheetName: request.source.sheetName, sheet: toStoredSheet(request.source.sheet) } }));
+  return sha256Hex(
+    canonicalJson(
+      request.source === undefined
+        ? base
+        : { ...base, source: { sheetName: request.source.sheetName, sheet: toStoredSheet(request.source.sheet) } },
+    ),
+  );
 }
 
 export function readLedger(environment: ServiceEnvironment): LoadResult {
@@ -120,14 +126,26 @@ export function commitStatement(environment: ServiceEnvironment, request: Commit
         ? { status: "already-committed", revision: earlier.revision }
         : {
             status: "rejected",
-            issues: [{ code: "invalid-command", isin: null, message: "This command id was already used for different content." }],
+            issues: [
+              {
+                code: "invalid-command",
+                isin: null,
+                message: "This command id was already used for different content.",
+              },
+            ],
           };
     }
     if (loaded.state.revision !== request.expectedRevision) {
       return { status: "stale", currentRevision: loaded.state.revision };
     }
 
-    const applied = applyImport(loaded.state, request.statement, request.date, request.commands, environment.newRevision());
+    const applied = applyImport(
+      loaded.state,
+      request.statement,
+      request.date,
+      request.commands,
+      environment.newRevision(),
+    );
     if (!applied.ok) return { status: "rejected", issues: applied.issues };
 
     try {
@@ -136,7 +154,15 @@ export function commitStatement(environment: ServiceEnvironment, request: Commit
         { commandId: request.commandId, revision: applied.state.revision, requestHash: hash },
         request.source === undefined
           ? undefined
-          : [{ date: request.date, commandId: request.commandId, sheetName: request.source.sheetName, commands: request.commands, sheet: toStoredSheet(request.source.sheet) }],
+          : [
+              {
+                date: request.date,
+                commandId: request.commandId,
+                sheetName: request.source.sheetName,
+                commands: request.commands,
+                sheet: toStoredSheet(request.source.sheet),
+              },
+            ],
       );
     } catch {
       // The write may or may not have committed. Look before saying anything.
@@ -146,12 +172,20 @@ export function commitStatement(environment: ServiceEnvironment, request: Commit
   });
 }
 
-function resolveFailedPublish(environment: ServiceEnvironment, commandId: string, revisionBefore: string): CommitOutcome {
+function resolveFailedPublish(
+  environment: ServiceEnvironment,
+  commandId: string,
+  revisionBefore: string,
+): CommitOutcome {
   const unknown = (message: string): CommitOutcome => ({ status: "unknown", message });
   try {
     const after = environment.store.load();
-    if (after.status !== "ok") return unknown("The save failed and the ledger could not be confirmed. Read the command outcome before retrying.");
-    if (environment.store.findCommand(commandId) !== null) return { status: "committed", revision: after.state.revision };
+    if (after.status !== "ok")
+      return unknown(
+        "The save failed and the ledger could not be confirmed. Read the command outcome before retrying.",
+      );
+    if (environment.store.findCommand(commandId) !== null)
+      return { status: "committed", revision: after.state.revision };
     return after.state.revision === revisionBefore
       ? { status: "not-committed", message: "The save failed and nothing was recorded. It is safe to try again." }
       : unknown("The save failed and the ledger changed in another way. Read the command outcome before retrying.");
@@ -187,7 +221,13 @@ export type AttachOutcome =
 function attachHash(request: AttachRequest): string {
   return sha256Hex(
     canonicalJson({
-      attach: request.items.map((item) => ({ date: item.date, statement: item.statement, commands: item.commands, sheetName: item.source.sheetName, sheet: toStoredSheet(item.source.sheet) })),
+      attach: request.items.map((item) => ({
+        date: item.date,
+        statement: item.statement,
+        commands: item.commands,
+        sheetName: item.source.sheetName,
+        sheet: toStoredSheet(item.source.sheet),
+      })),
     }),
   );
 }
@@ -210,7 +250,8 @@ export function attachStatements(environment: ServiceEnvironment, request: Attac
         ? { status: "already-attached", revision: earlier.revision }
         : { status: "rejected", messages: ["This command id was already used for different content."] };
     }
-    if (loaded.state.revision !== request.expectedRevision) return { status: "stale", currentRevision: loaded.state.revision };
+    if (loaded.state.revision !== request.expectedRevision)
+      return { status: "stale", currentRevision: loaded.state.revision };
 
     const existing = environment.store.loadSources();
     if (existing.status === "damaged") return existing;
@@ -221,7 +262,8 @@ export function attachStatements(environment: ServiceEnvironment, request: Attac
       const index = loaded.state.snapshots.findIndex((snapshot) => snapshot.date === item.date);
       const saved = loaded.state.snapshots[index];
       if (saved === undefined) problems.push(`${item.date}: no month is saved for this date.`);
-      else if (have.has(item.date) || seen.has(item.date)) problems.push(`${item.date}: this month already has its bank statement.`);
+      else if (have.has(item.date) || seen.has(item.date))
+        problems.push(`${item.date}: this month already has its bank statement.`);
       else {
         const replayed = replayedMonth(loaded.state, index, item.statement, item.date, item.commands);
         if (replayed === undefined || canonicalJson(replayed) !== canonicalJson(saved)) {
@@ -231,7 +273,10 @@ export function attachStatements(environment: ServiceEnvironment, request: Attac
       seen.add(item.date);
     }
     if (problems.length > 0 || request.items.length === 0) {
-      return { status: "rejected", messages: problems.length > 0 ? problems.slice(0, 10) : ["There is no statement to attach."] };
+      return {
+        status: "rejected",
+        messages: problems.length > 0 ? problems.slice(0, 10) : ["There is no statement to attach."],
+      };
     }
 
     const next: LedgerState = { ...loaded.state, revision: environment.newRevision() };
@@ -239,12 +284,24 @@ export function attachStatements(environment: ServiceEnvironment, request: Attac
       environment.store.publish(
         next,
         { commandId: request.commandId, revision: next.revision, requestHash: hash },
-        request.items.map((item) => ({ date: item.date, commandId: request.commandId, sheetName: item.source.sheetName, commands: item.commands, sheet: toStoredSheet(item.source.sheet) })),
+        request.items.map((item) => ({
+          date: item.date,
+          commandId: request.commandId,
+          sheetName: item.source.sheetName,
+          commands: item.commands,
+          sheet: toStoredSheet(item.source.sheet),
+        })),
       );
     } catch {
       const resolved = resolveFailedPublish(environment, request.commandId, loaded.state.revision);
-      if (resolved.status === "committed") return { status: "attached", revision: resolved.revision, count: request.items.length };
-      return resolved.status === "unknown" || resolved.status === "not-committed" ? resolved : { status: "unknown", message: "The save failed and the result could not be checked. Read the command outcome before retrying." };
+      if (resolved.status === "committed")
+        return { status: "attached", revision: resolved.revision, count: request.items.length };
+      return resolved.status === "unknown" || resolved.status === "not-committed"
+        ? resolved
+        : {
+            status: "unknown",
+            message: "The save failed and the result could not be checked. Read the command outcome before retrying.",
+          };
     }
     return { status: "attached", revision: next.revision, count: request.items.length };
   });

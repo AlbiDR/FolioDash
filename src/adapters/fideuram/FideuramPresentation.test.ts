@@ -3,7 +3,8 @@ import { COL, ROW, number, syntheticSheet, text, withCell } from "../../../tests
 import { presentStatement } from "./FideuramPresentation";
 
 /** The grid has one empty row on top and one empty column on the left, so sheet row r, column c sits at r, c in the sheet's own numbering. */
-const at = (sheet: ReturnType<typeof syntheticSheet>, row: number, column: number) => presentStatement(sheet).cells[row]?.[column];
+const at = (sheet: ReturnType<typeof syntheticSheet>, row: number, column: number) =>
+  presentStatement(sheet).cells[row]?.[column];
 
 describe("presentStatement", () => {
   it("keeps the bank's positions: the data sits where the file had it, with empty first row and column", () => {
@@ -65,7 +66,17 @@ describe("presentStatement", () => {
   });
   it("normalizes display whitespace and uses semantic alignment without mutating source evidence", () => {
     const original = syntheticSheet();
-    const padded = withCell(withCell(withCell(original, ROW.productA, COL.B, text("  Example Fund A Acc EUR  ")), ROW.fundsCategory, COL.C, text("\u00a0 Fondi \u00a0")), ROW.productA, COL.M, text("1.250,00 € "));
+    const padded = withCell(
+      withCell(
+        withCell(original, ROW.productA, COL.B, text("  Example Fund A Acc EUR  ")),
+        ROW.fundsCategory,
+        COL.C,
+        text("\u00a0 Fondi \u00a0"),
+      ),
+      ROW.productA,
+      COL.M,
+      text("1.250,00 € "),
+    );
     const sourceBefore = JSON.stringify(padded);
     const baseline = presentStatement(original);
     const actual = presentStatement(padded);
@@ -74,8 +85,12 @@ describe("presentStatement", () => {
     expect(actual.cells[ROW.contractA]?.[COL.F]?.alignment).toBe("CENTER");
     expect(actual.cells[ROW.productA]?.[COL.B]?.alignment).toBe("LEFT");
     expect(actual.cells[ROW.header]?.[COL.I]?.value).toBe("Cambio");
-    expect(actual.cells.flat().filter((cell) => typeof cell.value === "string").every((cell) => cell.value === String(cell.value).trim())).toBe(true);
+    expect(
+      actual.cells
+        .flat()
+        .filter((cell) => typeof cell.value === "string")
+        .every((cell) => cell.value === String(cell.value).trim()),
+    ).toBe(true);
     expect(JSON.stringify(padded)).toBe(sourceBefore);
   });
-
 });

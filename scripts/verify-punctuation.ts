@@ -29,7 +29,9 @@ for (const file of files) {
 }
 
 if (problems.length > 0) {
-  console.error(`Punctuation policy failed: ${String(problems.length)} forbidden dash${problems.length === 1 ? "" : "es"} found. Use a plain hyphen instead.`);
+  console.error(
+    `Punctuation policy failed: ${String(problems.length)} forbidden dash${problems.length === 1 ? "" : "es"} found. Use a plain hyphen instead.`,
+  );
   for (const problem of problems) console.error(`  ${problem}`);
   process.exit(1);
 }

@@ -30,7 +30,9 @@ function decodeEntities(text: string): string {
     // A bare ampersand or an undefined entity such as &foo; is not allowed in this subset.
     if (entity === undefined) return fail("The file uses an XML entity that is not supported.");
     if (entity.startsWith("#")) {
-      const code = entity.startsWith("#x") ? Number.parseInt(entity.slice(2), 16) : Number.parseInt(entity.slice(1), 10);
+      const code = entity.startsWith("#x")
+        ? Number.parseInt(entity.slice(2), 16)
+        : Number.parseInt(entity.slice(1), 10);
       if (code > MAX_CODE_POINT) return fail("The file uses an invalid character reference.");
       return String.fromCodePoint(code);
     }

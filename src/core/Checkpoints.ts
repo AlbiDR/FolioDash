@@ -71,7 +71,16 @@ export function parseCheckpointCommand(value: unknown): CheckpointCommand | null
     const date = typeof value["date"] === "string" ? parseIsoDate(value["date"]) : null;
     const cents = typeof value["cents"] === "number" ? toEuroCents(value["cents"]) : null;
     const note = value["note"];
-    if (date === null || date !== value["date"] || cents === null || cents < 0 || cents > MAX_CHECKPOINT_CENTS || typeof note !== "string" || !isSafeNote(note)) return null;
+    if (
+      date === null ||
+      date !== value["date"] ||
+      cents === null ||
+      cents < 0 ||
+      cents > MAX_CHECKPOINT_CENTS ||
+      typeof note !== "string" ||
+      !isSafeNote(note)
+    )
+      return null;
     return { id: value["id"], kind: "add", date, cents, note };
   }
   if (value["kind"] === "void") {
@@ -118,7 +127,9 @@ export function activeCheckpoints(commands: readonly CheckpointCommand[]): Check
   const withdrawn = new Set<string>();
   for (const command of commands) if (command.kind === "void") withdrawn.add(command.target);
   return commands.flatMap((command): Checkpoint[] =>
-    command.kind === "add" && !withdrawn.has(command.id) ? [{ id: command.id, date: command.date, cents: command.cents, note: command.note }] : [],
+    command.kind === "add" && !withdrawn.has(command.id)
+      ? [{ id: command.id, date: command.date, cents: command.cents, note: command.note }]
+      : [],
   );
 }
 
@@ -129,7 +140,9 @@ export function chartMarkers(active: readonly Checkpoint[]): CheckpointMarker[] 
     const entry = byDate.get(checkpoint.date);
     byDate.set(checkpoint.date, { latest: checkpoint, count: (entry?.count ?? 0) + 1 });
   }
-  return [...byDate.values()].sort((left, right) => (left.latest.date < right.latest.date ? -1 : 1)).map(({ latest, count }) => ({ ...latest, count }));
+  return [...byDate.values()]
+    .sort((left, right) => (left.latest.date < right.latest.date ? -1 : 1))
+    .map(({ latest, count }) => ({ ...latest, count }));
 }
 
 export type Admission =
@@ -142,8 +155,13 @@ export type Admission =
  * Decides whether a command may be appended to this log. Pure. `today` is the
  * user's local date: a checkpoint cannot be recorded for a day that has not come.
  */
-export function admitCheckpoint(commands: readonly CheckpointCommand[], command: CheckpointCommand, today: IsoDate): Admission {
-  if (parseCheckpointCommand(command) === null) return { status: "refuse", message: "Enter a valid date, an amount and a short plain note." };
+export function admitCheckpoint(
+  commands: readonly CheckpointCommand[],
+  command: CheckpointCommand,
+  today: IsoDate,
+): Admission {
+  if (parseCheckpointCommand(command) === null)
+    return { status: "refuse", message: "Enter a valid date, an amount and a short plain note." };
   const prior = commands.find((entry) => entry.id === command.id);
   if (prior !== undefined) {
     return canonicalJson(prior) === canonicalJson(command)
@@ -151,12 +169,18 @@ export function admitCheckpoint(commands: readonly CheckpointCommand[], command:
       : { status: "refuse", message: "That save identifier already belongs to a different checkpoint." };
   }
   if (command.kind === "add") {
-    if (command.date > today) return { status: "refuse", message: "A checkpoint can be recorded only when its day has come." };
-    if (commands.filter((entry) => entry.kind === "add").length >= ADD_ADMISSION_LIMIT) return { status: "refuse", message: "This log holds as many checkpoints as it accepts. Void one you no longer need first." };
+    if (command.date > today)
+      return { status: "refuse", message: "A checkpoint can be recorded only when its day has come." };
+    if (commands.filter((entry) => entry.kind === "add").length >= ADD_ADMISSION_LIMIT)
+      return {
+        status: "refuse",
+        message: "This log holds as many checkpoints as it accepts. Void one you no longer need first.",
+      };
     return { status: "admit" };
   }
   const target = commands.find((entry) => entry.id === command.target);
-  if (target === undefined || target.kind !== "add") return { status: "refuse", message: "That checkpoint is not in this log." };
+  if (target === undefined || target.kind !== "add")
+    return { status: "refuse", message: "That checkpoint is not in this log." };
   const alreadyVoided = commands.some((entry) => entry.kind === "void" && entry.target === command.target);
   return alreadyVoided ? { status: "no-op" } : { status: "admit" };
 }

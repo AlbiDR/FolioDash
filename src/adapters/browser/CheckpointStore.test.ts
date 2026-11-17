@@ -11,13 +11,31 @@ function required<T>(value: T | null | undefined): T {
   return value;
 }
 const date = (text: string): IsoDate => required(parseIsoDate(text));
-const add = (name: string): CheckpointCommand => ({ id: `${name}-0000000`.slice(0, 12), kind: "add", date: date("2026-11-14"), cents: required(toEuroCents(100_000)), note: "" });
+const add = (name: string): CheckpointCommand => ({
+  id: `${name}-0000000`.slice(0, 12),
+  kind: "add",
+  date: date("2026-11-14"),
+  cents: required(toEuroCents(100_000)),
+  note: "",
+});
 
-const receipt = (name: string, phase: CheckpointReceipt["phase"] = "sent"): CheckpointReceipt => ({ command: add(name), phase });
+const receipt = (name: string, phase: CheckpointReceipt["phase"] = "sent"): CheckpointReceipt => ({
+  command: add(name),
+  phase,
+});
 
 function memory(): KeyValueStore & { readonly data: Map<string, string> } {
   const data = new Map<string, string>();
-  return { data, getItem: (key) => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); }, removeItem: (key) => { data.delete(key); } };
+  return {
+    data,
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => {
+      data.set(key, value);
+    },
+    removeItem: (key) => {
+      data.delete(key);
+    },
+  };
 }
 
 describe("checkpoint store", () => {
@@ -33,20 +51,36 @@ describe("checkpoint store", () => {
   });
 
   it("B1a reports a write that storage refuses, instead of believing it", () => {
-    const full: KeyValueStore = { getItem: () => null, setItem: () => { throw new Error("QuotaExceededError"); }, removeItem: () => undefined };
+    const full: KeyValueStore = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error("QuotaExceededError");
+      },
+      removeItem: () => undefined,
+    };
     const store = createCheckpointStore(() => full, "foliodash.");
     expect(store.saveReceipts("wb-1", [receipt("p1")])).toBe(false);
     expect(store.saveCopy({ workbookId: "wb-1", commands: [], initialized: true })).toBe(false);
   });
 
   it("B1a reports a write that does not read back identically", () => {
-    const lossy: KeyValueStore = { getItem: () => "not what was written", setItem: () => undefined, removeItem: () => undefined };
+    const lossy: KeyValueStore = {
+      getItem: () => "not what was written",
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    };
     expect(createCheckpointStore(() => lossy, "foliodash.").saveReceipts("wb-1", [receipt("p1")])).toBe(false);
   });
 
   it("refuses an oversized copy rather than crowding out the browser's storage", () => {
     const store = createCheckpointStore(() => memory(), "foliodash.");
-    const huge = Array.from({ length: 20_000 }, (_, index): CheckpointCommand => ({ id: `bulk-${String(index).padStart(8, "0")}`, kind: "add", date: date("2026-11-14"), cents: required(toEuroCentsSafe(100)), note: "x".repeat(100) }));
+    const huge = Array.from({ length: 20_000 }, (_, index): CheckpointCommand => ({
+      id: `bulk-${String(index).padStart(8, "0")}`,
+      kind: "add",
+      date: date("2026-11-14"),
+      cents: required(toEuroCentsSafe(100)),
+      note: "x".repeat(100),
+    }));
     expect(store.saveCopy({ workbookId: "wb-1", commands: huge, initialized: true })).toBe(false);
   });
 
@@ -55,8 +89,18 @@ describe("checkpoint store", () => {
     const kv = memory();
     const real = createCheckpointStore(() => kv, "foliodash.");
     const note = "\\".repeat(120);
-    const adds = Array.from({ length: ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({ id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`, kind: "add", date: date("2026-11-14"), cents: required(toEuroCents(99_999_999_999)), note }));
-    const voids = Array.from({ length: READ_SAFE_LIMIT - ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({ id: `ffffffff-0000-4000-8000-${String(index).padStart(12, "0")}`, kind: "void", target: `00000000-0000-4000-8000-${String(index % ADD_ADMISSION_LIMIT).padStart(12, "0")}` }));
+    const adds = Array.from({ length: ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({
+      id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+      kind: "add",
+      date: date("2026-11-14"),
+      cents: required(toEuroCents(99_999_999_999)),
+      note,
+    }));
+    const voids = Array.from({ length: READ_SAFE_LIMIT - ADD_ADMISSION_LIMIT }, (_, index): CheckpointCommand => ({
+      id: `ffffffff-0000-4000-8000-${String(index).padStart(12, "0")}`,
+      kind: "void",
+      target: `00000000-0000-4000-8000-${String(index % ADD_ADMISSION_LIMIT).padStart(12, "0")}`,
+    }));
     expect(real.saveCopy({ workbookId: "wb-1", commands: [...adds, ...voids], initialized: true })).toBe(true);
     expect(real.loadCopy("wb-1")?.commands).toHaveLength(READ_SAFE_LIMIT);
     expect(store.workbooks()).toEqual([]);
@@ -64,7 +108,12 @@ describe("checkpoint store", () => {
 
   it("reports a receipt that cannot be removed", () => {
     const kv = memory();
-    const stuck: KeyValueStore = { ...kv, removeItem: () => { throw new Error("blocked"); } };
+    const stuck: KeyValueStore = {
+      ...kv,
+      removeItem: () => {
+        throw new Error("blocked");
+      },
+    };
     const store = createCheckpointStore(() => stuck, "foliodash.");
     expect(store.saveReceipts("wb-1", [receipt("p1")])).toBe(true);
     expect(store.saveReceipts("wb-1", [])).toBe(false);
@@ -97,12 +146,24 @@ describe("checkpoint store", () => {
     const key = "foliodash.checkpoints.pending.v1:wb-1";
     const good = kv.data.get(key) ?? "";
     expect(store.loadReceipts("wb-2")).toEqual({ status: "none" });
-    for (const broken of ["nonsense", "{\"version\":1}", "{\"version\":2,\"workbookId\":\"wb-1\",\"receipts\":[]}", good.replace("wb-1", "other-workbook"), "[]"]) {
+    for (const broken of [
+      "nonsense",
+      '{"version":1}',
+      '{"version":2,"workbookId":"wb-1","receipts":[]}',
+      good.replace("wb-1", "other-workbook"),
+      "[]",
+    ]) {
       kv.data.set(key, broken);
       expect(store.loadReceipts("wb-1")).toEqual({ status: "unreadable" });
       expect(kv.data.get(key)).toBe(broken);
     }
-    const throwing: KeyValueStore = { getItem: () => { throw new Error("blocked"); }, setItem: () => undefined, removeItem: () => undefined };
+    const throwing: KeyValueStore = {
+      getItem: () => {
+        throw new Error("blocked");
+      },
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    };
     expect(createCheckpointStore(() => throwing, "foliodash.").loadReceipts("wb-1")).toEqual({ status: "unreadable" });
   });
 
@@ -117,20 +178,40 @@ describe("checkpoint store", () => {
     const kv = memory();
     const store = createCheckpointStore(() => kv, "foliodash.");
     store.saveCopy({ workbookId: "wb-1", commands: [add("a1")], initialized: true });
-    kv.data.set("foliodash.checkpoints.copy.v1:wb-1", "{\"version\":1}");
+    kv.data.set("foliodash.checkpoints.copy.v1:wb-1", '{"version":1}');
     expect(store.loadCopy("wb-1")).toBeNull();
   });
 });
 
-function toEuroCentsSafe(value: number): ReturnType<typeof toEuroCents> { return toEuroCents(value); }
+function toEuroCentsSafe(value: number): ReturnType<typeof toEuroCents> {
+  return toEuroCents(value);
+}
 
 describe("checkpoint lock", () => {
-  const manager = (): { held: boolean; request: <T>(name: string, options: { ifAvailable: true; mode: "exclusive" }, callback: (lock: object | null) => Promise<T>) => Promise<T> } => {
-    const state = { held: false, request: async <T>(_name: string, _options: { ifAvailable: true; mode: "exclusive" }, callback: (lock: object | null) => Promise<T>): Promise<T> => {
-      if (state.held) return callback(null);
-      state.held = true;
-      try { return await callback({}); } finally { state.held = false; }
-    } };
+  const manager = (): {
+    held: boolean;
+    request: <T>(
+      name: string,
+      options: { ifAvailable: true; mode: "exclusive" },
+      callback: (lock: object | null) => Promise<T>,
+    ) => Promise<T>;
+  } => {
+    const state = {
+      held: false,
+      request: async <T>(
+        _name: string,
+        _options: { ifAvailable: true; mode: "exclusive" },
+        callback: (lock: object | null) => Promise<T>,
+      ): Promise<T> => {
+        if (state.held) return callback(null);
+        state.held = true;
+        try {
+          return await callback({});
+        } finally {
+          state.held = false;
+        }
+      },
+    };
     return state;
   };
 
@@ -138,8 +219,13 @@ describe("checkpoint lock", () => {
     const locks = manager();
     const lock = createCheckpointLock("foliodash.checkpoints", locks);
     let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
-    const first = lock.run(async () => { await gate; return "first"; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const first = lock.run(async () => {
+      await gate;
+      return "first";
+    });
     await Promise.resolve();
     expect((await lock.run(() => Promise.resolve("second"))).status).toBe("busy");
     release();

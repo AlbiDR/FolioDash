@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { SAFE_RADIUS, TILE_RADIUS, foregroundReach, markSvg, markSvgBody } from "./icon-mark.ts";
-import { blur, boundaryDistance, fillMask, flattenPath, resample, strokeCoverage, toBytes, type Polygon } from "./icon-raster.ts";
+import {
+  blur,
+  boundaryDistance,
+  fillMask,
+  flattenPath,
+  resample,
+  strokeCoverage,
+  toBytes,
+  type Polygon,
+} from "./icon-raster.ts";
 
 const sum = (values: Float32Array): number => values.reduce((total, value) => total + value, 0);
 const square = (from: number, to: number): Polygon => [
@@ -14,10 +23,16 @@ const square = (from: number, to: number): Polygon => [
 void describe("icon rasteriser", () => {
   void it("flattens straight paths and circular arcs onto their circle", () => {
     const [rectangle] = flattenPath("M0 0H4V3H0Z");
-    assert.deepEqual(rectangle, [[0, 0], [4, 0], [4, 3], [0, 3]]);
+    assert.deepEqual(rectangle, [
+      [0, 0],
+      [4, 0],
+      [4, 3],
+      [0, 3],
+    ]);
     const [quarter] = flattenPath("M0 10A10 10 0 0 1 10 0");
     assert.ok(quarter !== undefined && quarter.length > 10);
-    for (const [x, y] of quarter) assert.ok(Math.abs(Math.hypot(x - 10, y - 10) - 10) < 1e-9, "every arc point lies on the circle");
+    for (const [x, y] of quarter)
+      assert.ok(Math.abs(Math.hypot(x - 10, y - 10) - 10) < 1e-9, "every arc point lies on the circle");
   });
 
   void it("covers exactly the area of a shape, including half-covered pixels", () => {

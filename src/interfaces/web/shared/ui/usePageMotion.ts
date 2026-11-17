@@ -31,9 +31,17 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
   };
   const change = (commit: () => void): void => {
     // The latest destination replaces the pending destination, never mounts an intermediate screen.
-    if (pending !== null) { pending = commit; return; }
+    if (pending !== null) {
+      pending = commit;
+      return;
+    }
     const element = page.current;
-    if (element === null || typeof element.animate !== "function" || window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden) {
+    if (
+      element === null ||
+      typeof element.animate !== "function" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.hidden
+    ) {
       stop();
       flushSync(commit);
       return;
@@ -52,14 +60,29 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
     const arrive = (): void => {
       if (request !== generation) return;
       finish();
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden || page.current === null) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden || page.current === null)
+        return;
       const incoming = page.current;
-      const arrival = incoming.animate([{ opacity: 0, transform: `translateY(${nudge})` }, { opacity: 1, transform: "none" }], { duration, easing });
+      const arrival = incoming.animate(
+        [
+          { opacity: 0, transform: `translateY(${nudge})` },
+          { opacity: 1, transform: "none" },
+        ],
+        { duration, easing },
+      );
       animation = arrival;
-      arrival.onfinish = () => { if (animation === arrival) animation = null; };
+      arrival.onfinish = () => {
+        if (animation === arrival) animation = null;
+      };
     };
     try {
-      animation = element.animate([{ opacity, transform }, { opacity: 0, transform: `translateY(calc(-1 * ${nudge}))` }], { duration, easing, fill: "forwards" });
+      animation = element.animate(
+        [
+          { opacity, transform },
+          { opacity: 0, transform: `translateY(calc(-1 * ${nudge}))` },
+        ],
+        { duration, easing, fill: "forwards" },
+      );
       animation.onfinish = arrive;
       // Backgrounding or an externally cancelled animation must never strand an inert page.
       animation.oncancel = arrive;
@@ -68,7 +91,14 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
       finish();
     }
   };
-  return { change, finish, cancel: (): void => { pending = null; stop(); } };
+  return {
+    change,
+    finish,
+    cancel: (): void => {
+      pending = null;
+      stop();
+    },
+  };
 }
 
 /** One live page at a time: finish the exit before replacing it, and coalesce rapid destinations. */
@@ -76,7 +106,9 @@ export function usePageMotion(page: RefObject<HTMLElement | null>) {
   const motion = useMemo(() => createPageMotion(page), [page]);
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const settle = (): void => { if (preference.matches || document.hidden) motion.finish(); };
+    const settle = (): void => {
+      if (preference.matches || document.hidden) motion.finish();
+    };
     preference.addEventListener("change", settle);
     document.addEventListener("visibilitychange", settle);
     return () => {

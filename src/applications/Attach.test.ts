@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { OPENING, date, februarySheet, interpret, januarySheet, twoSavedMonths } from "../../tests/fixtures/SavedMonths";
+import {
+  OPENING,
+  date,
+  februarySheet,
+  interpret,
+  januarySheet,
+  twoSavedMonths,
+} from "../../tests/fixtures/SavedMonths";
 import { type AttachItem, type AttachRequest, attachStatements } from "./LedgerService";
 import { verifyRebuild } from "./Rebuild";
 
@@ -27,7 +34,8 @@ function setup(withStatements: boolean) {
   return { ...saved, request, both };
 }
 
-const count = (rows: readonly { readonly type: string }[], type: string): number => rows.filter((row) => row.type === type).length;
+const count = (rows: readonly { readonly type: string }[], type: string): number =>
+  rows.filter((row) => row.type === type).length;
 
 describe("attachStatements: statements for months that are already saved", () => {
   it("adds every statement in one new revision, leaving the saved figures exactly as they were", () => {
@@ -43,7 +51,10 @@ describe("attachStatements: statements for months that are already saved", () =>
     // The saved months are referenced, not written again.
     expect(count(sheet.rows, "SNAPSHOT")).toBe(snapshotsBefore);
     const sources = store.loadSources();
-    expect(sources.status === "ok" && sources.sources.map((source) => source.date)).toEqual(["2026-01-31", "2026-02-28"]);
+    expect(sources.status === "ok" && sources.sources.map((source) => source.date)).toEqual([
+      "2026-01-31",
+      "2026-02-28",
+    ]);
   });
 
   it("makes the history rebuildable: every month then replays to its saved figures", () => {
@@ -51,12 +62,21 @@ describe("attachStatements: statements for months that are already saved", () =>
     const before = store.load();
     const sourcesBefore = store.loadSources();
     if (before.status !== "ok" || sourcesBefore.status !== "ok") throw new Error("setup failed");
-    expect(verifyRebuild(before.state, sourcesBefore.sources, interpret)).toMatchObject({ matching: 0, withoutStatement: 2 });
+    expect(verifyRebuild(before.state, sourcesBefore.sources, interpret)).toMatchObject({
+      matching: 0,
+      withoutStatement: 2,
+    });
     attachStatements(environment, request(both));
     const after = store.load();
     const sources = store.loadSources();
     if (after.status !== "ok" || sources.status !== "ok") throw new Error("setup failed");
-    expect(verifyRebuild(after.state, sources.sources, interpret)).toEqual({ months: 2, matching: 2, withoutStatement: 0, differing: [], unreadable: [] });
+    expect(verifyRebuild(after.state, sources.sources, interpret)).toEqual({
+      months: 2,
+      matching: 2,
+      withoutStatement: 0,
+      differing: [],
+      unreadable: [],
+    });
   });
 
   it("records the same action once, and refuses the same id for different content", () => {
@@ -88,7 +108,10 @@ describe("attachStatements: statements for months that are already saved", () =>
 
   it("refuses a month that already has its statement, and a month that was never saved", () => {
     const withStatements = setup(true);
-    const again = attachStatements(withStatements.environment, withStatements.request([itemFor("january", withStatements.keeps)]));
+    const again = attachStatements(
+      withStatements.environment,
+      withStatements.request([itemFor("january", withStatements.keeps)]),
+    );
     expect(again.status === "rejected" && again.messages[0]).toContain("already has its bank statement");
     const none = setup(false);
     const unknownMonth: AttachItem = { ...itemFor("january", none.keeps), date: date("2026-03-31") };
@@ -98,7 +121,9 @@ describe("attachStatements: statements for months that are already saved", () =>
 
   it("refuses a review made against an older revision, an empty request, and a damaged ledger", () => {
     const stale = setup(false);
-    expect(attachStatements(stale.environment, stale.request(stale.both, { expectedRevision: "an-older-revision" })).status).toBe("stale");
+    expect(
+      attachStatements(stale.environment, stale.request(stale.both, { expectedRevision: "an-older-revision" })).status,
+    ).toBe("stale");
     expect(attachStatements(stale.environment, stale.request([])).status).toBe("rejected");
     const damaged = setup(false);
     const snapshot = damaged.sheet.rows.findIndex((row) => row.type === "SNAPSHOT");

@@ -36,12 +36,17 @@ class FakeSheet implements SheetLike {
 
   getRange(row: number, column: number, rows: number, columns: number): RangeLike {
     return {
-      getValues: () => Array.from({ length: rows }, (_, r) => Array.from({ length: columns }, (_, c) => this.grid[row - 1 + r]?.[column - 1 + c] ?? "")),
+      getValues: () =>
+        Array.from({ length: rows }, (_, r) =>
+          Array.from({ length: columns }, (_, c) => this.grid[row - 1 + r]?.[column - 1 + c] ?? ""),
+        ),
       setNumberFormat: (format: string) => {
-        for (let r = 0; r < rows; r++) for (let c = 0; c < columns; c++) {
-          const key = `${String(row + r)}:${String(column + c)}`;
-          if (format === "@") this.textFormatted.add(key); else this.textFormatted.delete(key);
-        }
+        for (let r = 0; r < rows; r++)
+          for (let c = 0; c < columns; c++) {
+            const key = `${String(row + r)}:${String(column + c)}`;
+            if (format === "@") this.textFormatted.add(key);
+            else this.textFormatted.delete(key);
+          }
       },
       setValues: (values: string[][]) => {
         if (row + rows - 1 > this.maxRows) throw new Error("range is out of bounds");
@@ -49,7 +54,11 @@ class FakeSheet implements SheetLike {
           line.forEach((value, c) => {
             const key = `${String(row + r)}:${String(column + c)}`;
             const target = (this.grid[row - 1 + r] ??= []);
-            target[column - 1 + c] = this.textFormatted.has(key) ? value : /^\d+(\.\d+)?$/u.test(value) ? Number(value) : value;
+            target[column - 1 + c] = this.textFormatted.has(key)
+              ? value
+              : /^\d+(\.\d+)?$/u.test(value)
+                ? Number(value)
+                : value;
           });
         });
       },
@@ -86,7 +95,10 @@ describe("SheetsRowSheet", () => {
   it("returns exactly the text it was given, even when a value looks like a number", () => {
     const spreadsheet = new FakeSpreadsheet();
     const sheet = new SheetsRowSheet(spreadsheet, () => undefined, "ledger");
-    const rows = [row({ revision: "20260101", checksum: "0123456789", payload: "2026-01-15" }), row({ type: "COMMIT", revision: "12345678" })];
+    const rows = [
+      row({ revision: "20260101", checksum: "0123456789", payload: "2026-01-15" }),
+      row({ type: "COMMIT", revision: "12345678" }),
+    ];
     sheet.appendRows(rows);
     expect(sheet.readRows()).toEqual(rows);
   });
