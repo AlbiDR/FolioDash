@@ -1,10 +1,13 @@
-import { motionMilliseconds } from "../../shared/ui/motion-timing";
 import { useAxisLabels } from "./use-axis-labels";
 import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacy-choice";
 import { type ChartSeries, computeLineChart } from "./line-chart-geometry";
+import { LAYOUT, styleClass } from "./line-chart-layout";
+import { ChartReadout, ChartValuesTable } from "./line-chart-parts";
+import { useChartSize } from "./use-chart-size";
+import { useUpdateFade } from "./use-update-fade";
 
 export interface LineChartProps {
   readonly id: string;
@@ -35,24 +38,6 @@ export interface LineChartProps {
   readonly emptyMessage: string;
 }
 
-// Value labels sit on the right, inside the card, as in Apple's Stocks.
-const LAYOUT = {
-  width: 720,
-  height: 300,
-  margin: { top: 12, right: 78, bottom: 28, left: 8 },
-} as const;
-/** The tallest the plot grows to fill a card, so a very tall neighbour cannot stretch it past a readable shape. */
-const FILL_MAX_HEIGHT = 560;
-/** Nor taller than this share of its width: a time series stays a wide shape even when its neighbour is tall. */
-const FILL_MAX_RATIO = 0.8;
-// Series share one line style and differ only by colour: they are the same measure from different sources.
-// The palette repeats after this many series.
-const STYLE_COUNT = 8;
-
-function styleClass(index: number, slot: number | null): string {
-  return `series-${String((slot ?? index) % STYLE_COUNT)}`;
-}
-
 /**
  * A multi-series line chart drawn as SVG. Drag or hover across it to read any
  * month's values, as in Stocks. Series are told apart by colour and a direct
@@ -63,131 +48,15 @@ function styleClass(index: number, slot: number | null): string {
 export function LineChart(props: LineChartProps): JSX.Element {
   const hidden = usePrivacy();
   const plot = useRef<SVGSVGElement>(null);
-  const previousUpdate = useRef(props.updateKey);
-  const updateAnimation = useRef<Animation | null>(null);
-  const interruptedOpacity = useRef<number | null>(null);
-  useLayoutEffect(() => {
-    const changed = previousUpdate.current !== props.updateKey;
-    previousUpdate.current = props.updateKey;
-    updateAnimation.current?.cancel();
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const settle = (): void => {
-      if (preference.matches) updateAnimation.current?.cancel();
-    };
-    const node = plot.current;
-    if (changed && !preference.matches && node !== null && typeof node.animate === "function") {
-      const style = getComputedStyle(node);
-      updateAnimation.current = node.animate(
-        [
-          {
-            opacity: interruptedOpacity.current ?? Number.parseFloat(style.getPropertyValue("--motion-update-opacity")),
-          },
-          { opacity: 1 },
-        ],
-        {
-          duration: motionMilliseconds(style.getPropertyValue("--duration-feedback")),
-          easing: style.getPropertyValue("--ease-standard").trim(),
-        },
-      );
-    }
-    interruptedOpacity.current = null;
-    preference.addEventListener("change", settle);
-    return () => {
-      preference.removeEventListener("change", settle);
-      interruptedOpacity.current =
-        updateAnimation.current?.playState === "running" && node !== null
-          ? Number.parseFloat(getComputedStyle(node).opacity)
-          : null;
-      updateAnimation.current?.cancel();
-    };
-  }, [props.updateKey, hidden]);
+  useUpdateFade(plot, props.updateKey, hidden);
   const [scrubbed, setScrubbed] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [highlighted, setHighlighted] = useState<string | null>(null);
   const touchStart = useRef<{ readonly previous: number | null } | null>(null);
   const dateControl = useRef<HTMLInputElement>(null);
   const container = useRef<HTMLElement>(null);
-  const [width, setWidth] = useState<number>(LAYOUT.width);
-  const [filledHeight, setFilledHeight] = useState<number | null>(null);
   const fillHeight = props.fillHeight === true;
-  useEffect(() => {
-    const node = container.current;
-    if (node === null) return;
-    let frame: number | null = null;
-    let measuredWidth: number = LAYOUT.width;
-    let fillFrame: number | null = null;
-    /** Spare height the stretched card has beyond the other content, which the plot may take. */
-    const spare = (): number | null => {
-      const svg = plot.current;
-      const last = node.lastElementChild;
-      if (svg === null || last === null) return null;
-      const style = getComputedStyle(node);
-      const box = node.getBoundingClientRect();
-      const inner = node.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-      const other =
-        last.getBoundingClientRect().bottom -
-        box.top -
-        parseFloat(style.paddingTop) -
-        svg.getBoundingClientRect().height;
-      return Math.max(
-        LAYOUT.height,
-        Math.min(FILL_MAX_HEIGHT, Math.round(measuredWidth * FILL_MAX_RATIO), Math.floor(inner - other)),
-      );
-    };
-    const fill = (): void => {
-      if (!fillHeight) return;
-      const target = spare();
-      if (target === null) return;
-      setFilledHeight((current) =>
-        (current !== null && Math.abs(current - target) <= 2) || (current === null && target === LAYOUT.height)
-          ? current
-          : target,
-      );
-    };
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry === undefined || entry.contentRect.width <= 0) return;
-      const nextWidth = Math.max(200, Math.round(entry.contentRect.width));
-      if (nextWidth === measuredWidth) {
-        // A height-only change, such as a neighbour reflowing, may leave spare room to use or give back.
-        if (fillHeight) {
-          if (fillFrame !== null) cancelAnimationFrame(fillFrame);
-          fillFrame = requestAnimationFrame(() => {
-            fillFrame = null;
-            fill();
-          });
-        }
-        return;
-      }
-      measuredWidth = nextWidth;
-      if (frame !== null) cancelAnimationFrame(frame);
-      // Do not change the observed card's layout inside its resize delivery.
-      frame = requestAnimationFrame(() => {
-        frame = null;
-        setWidth(nextWidth);
-        if (!fillHeight) return;
-        // A new width reflows the neighbours: measure again from the standard height so the plot can shrink as well as grow.
-        setFilledHeight(null);
-        if (fillFrame !== null) cancelAnimationFrame(fillFrame);
-        fillFrame = requestAnimationFrame(() => {
-          fillFrame = requestAnimationFrame(() => {
-            fillFrame = null;
-            fill();
-          });
-        });
-      });
-    });
-    observer.observe(node);
-    if (fillHeight)
-      fillFrame = requestAnimationFrame(() => {
-        fillFrame = null;
-        fill();
-      });
-    return () => {
-      observer.disconnect();
-      if (frame !== null) cancelAnimationFrame(frame);
-      if (fillFrame !== null) cancelAnimationFrame(fillFrame);
-    };
-  }, [fillHeight]);
+  const { width, filledHeight } = useChartSize(container, plot, fillHeight);
   const plotHeight = fillHeight && filledHeight !== null ? filledHeight : LAYOUT.height;
   const layout = { ...LAYOUT, width, height: width < 480 ? 200 : plotHeight };
   // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
@@ -324,37 +193,13 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </figcaption>
       {props.controls !== undefined && <div class="chart-controls">{props.controls}</div>}
       {props.subtitle !== undefined && <p class="chart-subtitle">{props.subtitle}</p>}
-      <div class="chart-readout" aria-hidden="true">
-        <span class="chart-readout-date">{activeTime === undefined ? "" : observation(activeTime)}</span>
-        {geometry.series.map((entry, index) => {
-          if (entry.muted) return null;
-          const point = entry.points.find((candidate) => candidate.time === activeTime);
-          // Markers appear in the readout only where there is one, so a chart without a checkpoint keeps its two items.
-          if (entry.markers && point === undefined) return null;
-          return (
-            <span
-              key={entry.id}
-              data-highlighted={highlight === entry.id}
-              class={`chart-readout-item ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}`}
-            >
-              <span class="chart-readout-label">
-                <svg class="chart-swatch" viewBox="0 0 32 8" aria-hidden="true">
-                  {entry.markers ? (
-                    <rect class="checkpoint-swatch" x="12" y="0" width="8" height="8" transform="rotate(45 16 4)" />
-                  ) : (
-                    <line x1="0" x2="32" y1="4" y2="4" />
-                  )}
-                </svg>
-                {entry.label}
-              </span>
-              <span class="chart-readout-value">
-                {point === undefined ? "-" : show(point.value)}
-                {point?.detail == null ? "" : ` (${point.detail})`}
-              </span>
-            </span>
-          );
-        })}
-      </div>
+      <ChartReadout
+        series={geometry.series}
+        activeTime={activeTime}
+        highlight={highlight}
+        observation={observation}
+        show={show}
+      />
       <svg
         ref={plot}
         class="chart-svg"
@@ -504,35 +349,13 @@ export function LineChart(props: LineChartProps): JSX.Element {
           Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.
         </p>
 
-        <div class="chart-values-scroll" role="region" aria-label={`${props.title}: values table`} tabIndex={0}>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                {props.series.map((entry) => (
-                  <th key={entry.id} scope="col">
-                    {entry.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {times.map((time) => (
-                <tr key={time}>
-                  <th scope="row">{observation(time)}</th>
-                  {props.series.map((entry) => {
-                    const point = entry.points.find((candidate) => candidate.time === time);
-                    return (
-                      <td key={entry.id}>
-                        {point?.value === undefined || point.value === null ? "-" : show(point.value)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ChartValuesTable
+          title={props.title}
+          series={props.series}
+          times={times}
+          observation={observation}
+          show={show}
+        />
       </details>
     </figure>
   );

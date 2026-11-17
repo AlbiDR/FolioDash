@@ -1,34 +1,19 @@
 import type { ExpenseConflict, ExpenseSaveOutcome } from "../../applications/session/expense-model";
-import { bufferedGrid, plainCell, type Grid, type GridCell } from "../../applications/ledger/sheet-grid";
+import type { Grid } from "../../applications/ledger/sheet-grid";
 import { canonicalJson } from "../../core/integrity/canonical-json";
-import { toSpreadsheetSerial, type IsoDate } from "../../core/values/iso-date";
+import type { IsoDate } from "../../core/values/iso-date";
 import { sha256Hex } from "../../core/integrity/sha256";
-import {
-  EXPENSE_LABELS,
-  EXPENSE_OPTIONAL_INDICES,
-  EXPENSE_REPORTING_POLICY,
-  expenseDayKind,
-  expenseReport,
-  expenseWeek,
-  filledExpenseFields,
-  parseExpenseCommand,
-  sumExpenseAmounts,
-  weekDates,
-  type ExpenseCommand,
-  type ExpenseDay,
-} from "../../core/expenses/work-expenses";
-import type { EuroCents } from "../../core/values/money";
+import type { ExpenseCommand, ExpenseDay } from "../../core/expenses/work-expenses";
 import { writeGridTabs } from "./google-workbook";
-import { EXPENSE_METADATA_KEY, EXPENSE_RECORD_ROLE, EXPENSE_VIEW_TITLE, LEDGER_TAB } from "./sheets-layout";
+import { EXPENSE_VIEW_TITLE, LEDGER_TAB } from "./sheets-layout";
 import { callRest, wroteNothing, type RestClient } from "./rest";
+import { SHEETS } from "./workbook/sheets-api";
+import { buildExpenseView } from "./expenses/expense-view";
+import { initializeExpenseLog } from "./expenses/expense-setup";
+import { ANCHOR, HEADER, ROLE, commandOf, headToken, inspect, object } from "./expenses/expense-sheet";
 
-const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 export const EXPENSE_LOG_TITLE = "_FolioDash expenses";
 export { EXPENSE_VIEW_TITLE } from "./sheets-layout";
-const KEY = EXPENSE_METADATA_KEY;
-const ROLE = EXPENSE_RECORD_ROLE;
-const ANCHOR = "enabled-v1";
-const HEADER = ["schema", "payload", "checksum"];
 const MAX_COMMANDS = 100_000;
 
 export interface ExpenseHistory {
@@ -41,21 +26,6 @@ export type ExpenseRead =
   | { readonly status: "absent" }
   | { readonly status: "damaged" | "unavailable"; readonly message: string };
 export type DirectExpenseOutcome = ExpenseSaveOutcome & Partial<ExpenseHistory & { readonly initialized: boolean }>;
-
-function object(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-function commandOf(value: unknown): ExpenseCommand | null {
-  const item = object(value);
-  if (item === null || Object.keys(item).sort().join() !== "amounts,date,expectedRevision,id") return null;
-  return parseExpenseCommand(item);
-}
-function headToken(heads: ReadonlySet<string>): string | null {
-  const ids = [...heads].sort();
-  return ids.length > 1 ? `conflict:${sha256Hex(canonicalJson(ids))}` : (ids[0] ?? null);
-}
 
 /** Validates the complete correction graph. Branches remain visible until a reviewed resolution names all heads. */
 export function parseExpenseHistory(value: unknown): ExpenseHistory | null {
@@ -132,55 +102,6 @@ export function decodeExpenseBackup(value: unknown): ExpenseHistory | null {
   return history;
 }
 
-interface Tab {
-  readonly id: number;
-  readonly title: string;
-  readonly markers: readonly string[];
-}
-async function inspect(
-  rest: RestClient,
-  token: string,
-  id: string,
-): Promise<
-  | { readonly status: "ok"; readonly tabs: readonly Tab[] }
-  | { readonly status: "unavailable"; readonly message: string }
-> {
-  const answer = await callRest(rest, token, {
-    method: "GET",
-    url: `${SHEETS}/${encodeURIComponent(id)}?fields=${encodeURIComponent("sheets(properties(sheetId,title),developerMetadata)")}`,
-  });
-  if (!answer.ok)
-    return {
-      status: "unavailable",
-      message: "Your work expense records could not be checked against Google. Nothing on this device was replaced.",
-    };
-  const sheets = object(answer.value)?.["sheets"];
-  if (!Array.isArray(sheets))
-    return { status: "unavailable", message: "Google returned an unrecognised workbook description." };
-  const tabs: Tab[] = [];
-  for (const raw of sheets as unknown[]) {
-    const item = object(raw);
-    const rawProps = object(item?.["properties"]);
-    const props: Record<string, unknown> | null =
-      rawProps === null ? null : { ...rawProps, sheetId: rawProps["sheetId"] ?? 0 };
-    if (typeof props?.["sheetId"] !== "number" || typeof props["title"] !== "string")
-      return { status: "unavailable", message: "Google returned an unrecognised sheet description." };
-    const metadata = item?.["developerMetadata"];
-    const markers = (Array.isArray(metadata) ? (metadata as unknown[]) : []).flatMap((entry): string[] => {
-      const marker = object(entry);
-      const location = object(marker?.["location"]);
-      return marker?.["metadataKey"] === KEY &&
-        typeof marker["metadataValue"] === "string" &&
-        location !== null &&
-        location["sheetId"] === props["sheetId"] &&
-        location["dimensionRange"] === undefined
-        ? [marker["metadataValue"]]
-        : [];
-    });
-    tabs.push({ id: props["sheetId"], title: props["title"], markers });
-  }
-  return { status: "ok", tabs };
-}
 const damaged = (): ExpenseRead => ({
   status: "damaged",
   message:
@@ -238,68 +159,6 @@ export async function readExpenses(
   }
   const history = parseExpenseHistory(commands);
   return history === null ? damaged() : { status: "ok", initialized: true, ...history };
-}
-
-/** Adds ownership, the durable enabled marker and the header in one atomic batch, only for explicit financial actions. */
-async function initialize(
-  rest: RestClient,
-  token: string,
-  id: string,
-  commands: readonly ExpenseCommand[] = [],
-): Promise<"confirmed" | "not-written" | "unknown"> {
-  const found = await inspect(rest, token, id);
-  if (found.status !== "ok") return "not-written";
-  if (found.tabs.some((tab) => tab.markers.length > 0)) return "not-written";
-  const ledger = found.tabs.find((tab) => tab.title === LEDGER_TAB);
-  if (ledger === undefined) return "not-written";
-  const sheetId = Math.max(...found.tabs.map((tab) => tab.id), 0) + 1;
-  const names = new Set(found.tabs.map((tab) => tab.title));
-  let title = EXPENSE_LOG_TITLE;
-  for (let suffix = 2; names.has(title); suffix++) title = `${EXPENSE_LOG_TITLE} (${String(suffix)})`;
-  const metadata = (sheet: number, role: string): unknown => ({
-    createDeveloperMetadata: {
-      developerMetadata: {
-        metadataKey: KEY,
-        metadataValue: role,
-        location: { sheetId: sheet },
-        visibility: "DOCUMENT",
-      },
-    },
-  });
-  const result = await callRest(rest, token, {
-    method: "POST",
-    url: `${SHEETS}/${encodeURIComponent(id)}:batchUpdate`,
-    body: {
-      requests: [
-        {
-          addSheet: {
-            properties: {
-              sheetId,
-              title,
-              hidden: true,
-              gridProperties: { rowCount: Math.max(2, commands.length + 1), columnCount: 3, frozenRowCount: 1 },
-            },
-          },
-        },
-        metadata(sheetId, ROLE),
-        metadata(ledger.id, ANCHOR),
-        {
-          updateCells: {
-            start: { sheetId, rowIndex: 0, columnIndex: 0 },
-            rows: [
-              HEADER,
-              ...commands.map((command) => {
-                const text = canonicalJson(command);
-                return ["1", text, sha256Hex(text)];
-              }),
-            ].map((row) => ({ values: row.map((text) => ({ userEnteredValue: { stringValue: text } })) })),
-            fields: "userEnteredValue",
-          },
-        },
-      ],
-    },
-  });
-  return result.ok ? "confirmed" : wroteNothing(result.failure) ? "not-written" : "unknown";
 }
 
 function currentRevision(read: Extract<ExpenseRead, { status: "ok" }>, date: IsoDate): string | null {
@@ -376,7 +235,7 @@ export async function saveExpense(
     return { status: "not-saved", message: "Enter valid weekday amounts before saving." };
   let read = await readExpenses(rest, token, id, expectedInitialized);
   if (read.status === "absent") {
-    await initialize(rest, token, id);
+    await initializeExpenseLog(rest, token, id, EXPENSE_LOG_TITLE);
     read = await readExpenses(rest, token, id);
     // No command append has been attempted yet, even if the structural setup
     // response was lost. Do not strand an unsent command as an uncertain save.
@@ -439,98 +298,7 @@ export function expenseView(
   conflicts: readonly ExpenseConflict[] = [],
   today?: IsoDate,
 ): Grid {
-  const money = (amount: EuroCents | null): GridCell =>
-    amount === null ? plainCell("") : { value: amount / 100, format: '#,##0.00" €"', emphasis: null };
-  const startDate = [...days].sort((left, right) => left.date.localeCompare(right.date))[0]?.date ?? null;
-  const descriptions = {
-    complete: "Recorded workday",
-    partial: "Needs review; amount recorded so far",
-    "no-work": "No onsite work",
-    "not-entered": "Not entered yet",
-    future: "Future date",
-    "outside-history": "Outside tracked history",
-    weekend: "Weekend",
-  };
-  const rows: GridCell[][] = [
-    [plainCell("Work expenses", "header")],
-    [
-      plainCell(
-        "Costs incurred because of onsite work. Dinner and Other Expenses are optional. Rebuilt from checked records; edit in FolioDash.",
-      ),
-    ],
-    [
-      plainCell("Date", "header"),
-      ...EXPENSE_LABELS.map((label, index) =>
-        plainCell(
-          EXPENSE_OPTIONAL_INDICES.some((optional) => optional === index) ? `${label} (optional)` : label,
-          "header",
-        ),
-      ),
-      plainCell("Recorded amount", "header"),
-      plainCell("State", "header"),
-    ],
-    ...days.map((day) => [
-      { value: toSpreadsheetSerial(day.date), format: "dd/mm/yyyy", emphasis: null },
-      ...day.amounts.map(money),
-      money(filledExpenseFields(day.amounts) === 0 ? null : sumExpenseAmounts(day.amounts)),
-      plainCell(descriptions[expenseDayKind(day, day.date, today ?? day.date, startDate)]),
-    ]),
-    ...conflicts.map((conflict) => [
-      plainCell(conflict.date),
-      plainCell("Conflicting saved versions; review in FolioDash"),
-    ]),
-  ];
-  rows.push([plainCell("Weekly recorded spending", "header")]);
-  for (const monday of [...new Set([...days, ...conflicts].flatMap((day) => weekDates(day.date)[0] ?? []))].sort()) {
-    const total = expenseWeek(days, monday, today ?? weekDates(monday)[4] ?? monday);
-    const unresolved = conflicts.some((conflict) => total.dates.includes(conflict.date));
-    rows.push([
-      plainCell(monday),
-      money(unresolved || total.completeDays + total.partialDays === 0 ? null : total.total),
-      plainCell(
-        unresolved
-          ? "Resolve conflicting versions first"
-          : `${String(total.partialDays)} partial day(s); sum of entered amounts`,
-      ),
-    ]);
-  }
-  if (today !== undefined) {
-    rows.push(
-      [plainCell(`Annual recap: ${EXPENSE_REPORTING_POLICY}, completed-periods`, "header")],
-      [
-        plainCell(
-          `As of ${today}; Dinner and Other Expenses may stay blank. An entered Dinner or Other Expenses amount, including zero, completes a day; otherwise missing commute/lunch entries are excluded from averages. Estimates exclude leave and holidays.`,
-        ),
-      ],
-    );
-    for (const year of [
-      ...new Set([Number(today.slice(0, 4)), ...days.map((day) => Number(day.date.slice(0, 4)))]),
-    ].sort()) {
-      const report = expenseReport(days, year, today);
-      const unresolved = conflicts.some((conflict) => Number(conflict.date.slice(0, 4)) === year);
-      rows.push([plainCell(String(year), "strong")]);
-      const metrics = [
-        ["Average Daily", report.averageDaily],
-        ["Average Weekly", report.averageWeekly],
-        ["Average Monthly", report.averageMonthly],
-        ["Total Yearly", report.totalYearly],
-        ["Yearly Projection (estimate)", report.yearlyProjection],
-      ] as const;
-      for (const [label, amount] of metrics)
-        rows.push([
-          plainCell(label),
-          money(unresolved ? null : amount),
-          plainCell(
-            unresolved
-              ? "Resolve conflicting versions first"
-              : amount === null
-                ? "Not enough eligible history"
-                : "See FolioDash for period counts and definitions",
-          ),
-        ]);
-    }
-  }
-  return bufferedGrid(rows, [140, 160, 130, 160, 130, 160, 150, 260]);
+  return buildExpenseView(days, conflicts, today);
 }
 
 /** Explicit recovery into an absent or verified empty store. Existing history is never cleared or replaced. */
@@ -556,7 +324,7 @@ export async function restoreExpenses(
   let setup: "confirmed" | "not-written" | "unknown";
   if (before.status === "absent") {
     // A new log, header, ownership markers and all commands are one atomic batch.
-    setup = await initialize(rest, token, id, commands);
+    setup = await initializeExpenseLog(rest, token, id, EXPENSE_LOG_TITLE, commands);
   } else {
     // A refused earlier day save may have left an owned log with just its header.
     // Append the complete recovery in one request; never clear or recreate that log.
