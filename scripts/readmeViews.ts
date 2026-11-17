@@ -31,7 +31,7 @@ export type ViewEntry = CapturedView | { readonly skip: string };
 export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
   overview: {
     hash: "#overview", heading: "Portfolio", file: "hero", mobile: "portfolio-mobile.png",
-    crop: { include: ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.movers-card,.period-results,.portfolio-explore", hide: ".dashboard-analysis" },
+    crop: { include: ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.allocation-card,.movers-card,.period-results,.portfolio-explore", hide: ".dashboard-analysis" },
   },
   expenses: { hash: "#expenses", heading: "Work expenses", file: "expenses", crop: { include: ".get-started,.expense-entry,.expense-week", hide: ".page-nav,.expense-year-section,.expense-record" } },
   months: {
