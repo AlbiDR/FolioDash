@@ -10,7 +10,6 @@
   "max-lines src/adapters/google/google-workbook.ts",
   "max-lines src/adapters/ledger/row-ledger-store.ts",
   "max-lines src/core/expenses/work-expenses.test.ts",
-  "max-lines src/interfaces/web/app/app.css",
   "max-lines src/interfaces/web/app/app.tsx",
   "max-lines src/interfaces/web/app/session/checkpoint-session.test.ts",
   "max-lines src/interfaces/web/app/session/checkpoint-session.ts",
@@ -21,7 +20,6 @@
   "max-lines src/interfaces/web/features/account/account-view.tsx",
   "max-lines src/interfaces/web/features/checkpoints/checkpoints-view.tsx",
   "max-lines src/interfaces/web/features/expenses/expenses-view.tsx",
-  "max-lines src/interfaces/web/features/expenses/expenses.css",
   "max-lines src/interfaces/web/features/history/history-view.tsx",
   "max-lines src/interfaces/web/features/import/backfill-entry.tsx",
   "max-lines src/interfaces/web/features/import/cash-questions.tsx",
@@ -29,9 +27,6 @@
   "max-lines src/interfaces/web/features/import/import-view.tsx",
   "max-lines src/interfaces/web/features/overview/months-view.tsx",
   "max-lines src/interfaces/web/features/overview/overview-view.tsx",
-  "max-lines src/interfaces/web/features/overview/portfolio.css",
   "max-lines src/interfaces/web/presentation/charts/line-chart.tsx",
-  "max-lines src/interfaces/web/shared/ui/interactions.css",
-  "max-lines src/interfaces/web/shared/ui/motion.css",
   "max-lines tests/fixtures/fake-google.ts"
 ]

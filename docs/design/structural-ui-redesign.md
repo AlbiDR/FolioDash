@@ -268,7 +268,7 @@ The owner saw the dock's selection start as a rectangle and animate as a rounded
 
 The owner reported the "Reload to update" banner, and "similar ones", as unpolished. Rendering every notice-like pattern in light and dark showed five unrelated looks: an amber `.notice` used for everything (so "Statement saved" looked like a warning), a grey `.review-adjustments` panel that gave success no sign of success, `.review-problem` errors drawn with a heavy 2px outline, Expenses panels with their own copy of the styling, and loading and failure cards. Every action button inside them was an unstyled browser button, because only a few screens had button styles.
 
-They are now one family (rules in `app.css`, "Notices: one family"):
+They are now one family (rules in `src/interfaces/web/app/styles/content-and-notices.css`, "Notices: one family"):
 
 - **Anatomy:** a panel tinted by its tone inside its own shape, a leading icon, text in the normal text colour so contrast does not depend on the tone, and the app's pill button for the action, on its own row under the text.
 - **Tones:** information (blue, the default), success (green), warning (amber), error (red). The tone is told by the icon's shape as well as its colour (info circle, check circle, warning triangle, error circle). The existing classes keep their meaning (`.notice` information, `.review-adjustments` a neutral result, `.review-problem` an error); `.notice-success` and `.notice-warning` change the tone.

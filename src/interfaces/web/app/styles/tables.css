@@ -1,0 +1,327 @@
+/* ---------- Holdings table and month tables ---------- */
+
+.table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.table-scroll:not(.flat) {
+  background: var(--color-surface);
+  border-radius: var(--shape-lg);
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.holdings-table {
+  table-layout: fixed;
+  width: 100%;
+  /* Dense figures use the small role, as the month matrix does, so five amount columns fit beside the fund name. */
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.holdings-table th,
+.holdings-table td {
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.holdings-table thead th {
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.holdings-table th:first-child {
+  /* Columns get the width of what they hold: the three amount columns reserve an amount's width so hiding amounts never moves them, the share and the percentage need less. */
+  width: 21%;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.holdings-table thead th:nth-child(2),
+.holdings-table thead th:nth-child(6) {
+  width: 16.5%;
+}
+.holdings-table thead th:nth-child(3) {
+  width: 11.5%;
+}
+/* The gain figures carry a sign and a currency or percent mark, so they need the most room when text renders wider than the design font. */
+.holdings-table thead th:nth-child(4) {
+  width: 15.5%;
+}
+.holdings-table thead th:nth-child(5) {
+  width: 18%;
+}
+
+.holdings-table tbody th {
+  position: relative;
+  font-weight: var(--weight-semibold);
+}
+
+.holdings-table tbody tr {
+  position: relative;
+  transition: background var(--duration-short) var(--ease-standard);
+}
+
+.holdings-table tbody tr:last-child th,
+.holdings-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.holdings-table tr.closed {
+  color: var(--color-muted);
+}
+
+.holdings-table .sparkline {
+  display: block;
+  width: 6rem;
+  height: 1.5rem;
+  margin: var(--space-1) 0 0 auto;
+}
+
+.stretched {
+  color: inherit;
+  text-decoration: none;
+}
+
+.stretched::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.share-bar {
+  display: inline-block;
+  width: 3.5rem;
+  height: 0.4rem;
+  margin-right: 0.5rem;
+  overflow: hidden;
+  vertical-align: middle;
+  background: var(--surface-high);
+  border-radius: var(--shape-full);
+}
+
+.share-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--shape-full);
+}
+
+.sparkline {
+  color: var(--color-muted);
+}
+
+.sparkline.gain {
+  color: var(--color-gain);
+}
+
+.sparkline.loss {
+  color: var(--color-loss);
+}
+
+.spark-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.spark-area {
+  fill: currentColor;
+  opacity: 0.12;
+}
+
+.definitions {
+  margin-top: 0.5rem;
+  font-size: var(--text-body);
+}
+
+.definitions summary {
+  cursor: pointer;
+  font-weight: var(--weight-semibold);
+}
+
+.definitions dt {
+  font-weight: var(--weight-semibold);
+  margin-top: var(--space-2);
+}
+
+.definitions dd {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.months {
+  display: grid;
+  gap: var(--gap);
+}
+
+.matrix {
+  width: 100%;
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.matrix th,
+.matrix td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.35rem var(--space-2);
+  white-space: nowrap;
+}
+
+.matrix td {
+  text-align: right;
+}
+
+.matrix thead th {
+  text-align: right;
+  color: var(--color-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.matrix thead th:first-child,
+.matrix thead th:nth-child(2),
+.matrix tbody th {
+  text-align: left;
+}
+
+.matrix tbody th {
+  font-weight: var(--weight-semibold);
+}
+
+/* Keep row names visible while the statement columns scroll, in both tables. */
+.matrix .matrix-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  white-space: normal;
+  background: var(--color-surface);
+}
+
+/* The two tables share their statement columns and scroll together, so their columns must be the same width. */
+.matrix .matrix-label {
+  width: 9rem;
+  min-width: 9rem;
+  max-width: 9rem;
+}
+.matrix thead th:nth-child(2) {
+  width: 6.5rem;
+  min-width: 6.5rem;
+}
+.matrix thead th:nth-child(n + 3) {
+  width: 7.75rem;
+  min-width: 7.75rem;
+}
+
+/* Reading cues: the headline row leads, a missing figure recedes, a new year starts with a rule, the chosen statement is tinted. */
+.matrix tr.matrix-headline > td {
+  font-weight: var(--weight-semibold);
+}
+.matrix td .empty {
+  color: var(--color-muted);
+}
+/* A fund's net invested is the reference under its value: still readable, never mistaken for it once the Measure column has scrolled away. */
+.matrix tr.matrix-secondary > td {
+  color: var(--color-muted);
+}
+.matrix .matrix-year-start {
+  box-shadow: inset 2px 0 0 var(--color-border);
+}
+.matrix .matrix-selected {
+  background: var(--color-accent-soft);
+}
+.matrix thead th.matrix-selected {
+  color: var(--color-text);
+}
+/* Best and worst in a row, when asked for: a rule under the cell and a small marker in the free space beside a right-aligned figure, so no column changes width. The marker is always accompanied by text for assistive technology. */
+.matrix td.matrix-best,
+.matrix td.matrix-worst {
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: 100% 2px;
+  background-position: bottom;
+}
+.matrix td.matrix-best {
+  background-image: linear-gradient(var(--color-gain), var(--color-gain));
+}
+.matrix td.matrix-worst {
+  background-image: linear-gradient(var(--color-loss), var(--color-loss));
+}
+.matrix-mark {
+  position: absolute;
+  inset-inline-start: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--text-caption);
+  line-height: 1;
+}
+.matrix-best .matrix-mark {
+  color: var(--color-gain);
+}
+.matrix-worst .matrix-mark {
+  color: var(--color-loss);
+}
+.matrix-marks-toggle {
+  margin: var(--space-1) 0;
+  min-height: var(--touch-target);
+}
+@media (max-width: 47.5rem) {
+  /* Less of a phone's width goes to the frozen names, so more of the statements show beside them. */
+  .matrix .matrix-label {
+    width: 7rem;
+    min-width: 7rem;
+    max-width: 7rem;
+  }
+  .matrix thead th:nth-child(2) {
+    width: 6rem;
+    min-width: 6rem;
+  }
+}
+
+.matrix tbody th[scope="row"]:not([rowspan]) {
+  font-weight: var(--weight-regular);
+  color: var(--color-muted);
+}
+
+.matrix tr.matrix-first > th,
+.matrix tr.matrix-first > td {
+  border-top: 2px solid var(--color-border);
+}
+
+.isin {
+  color: var(--color-muted);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-small);
+}
+
+.tag {
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  background: var(--color-surface-2);
+  border-radius: var(--shape-full);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+}
+
+.screen {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.screen-title {
+  font-size: var(--text-figure);
+  line-height: 1.12;
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+}

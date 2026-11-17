@@ -1,0 +1,293 @@
+/* Additional motion touchpoints 43-92. See docs/operations/interactions.md.
+ * Prefer user-triggered transitions. Never interpolate plotted data or amounts.
+ * The reduced-motion override in shared/ui/interactions/ uses !important and also wins here.
+ */
+
+/* Set A: navigation, controls and workflow feedback (43-67). */
+
+/* 43: Main navigation selection glides between destinations. */
+.nav-list {
+  --nav-gap: 2px;
+  position: relative;
+  isolation: isolate;
+  gap: var(--nav-gap);
+}
+.nav-list > li {
+  min-width: 0;
+}
+.nav-list .nav-link {
+  height: 100%;
+  overflow-wrap: anywhere;
+}
+.nav-list::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0 auto 0 0;
+  width: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
+  border-radius: var(--nav-radius, var(--shape-sm));
+  background: var(--color-accent-soft);
+  transform: translateX(calc(var(--nav-index) * (100% + var(--nav-gap))));
+  transition: transform var(--duration-feedback) var(--ease-standard);
+}
+.nav-list .nav-link[aria-current="page"] {
+  background: transparent;
+}
+@media (min-width: 64rem) {
+  .nav-list {
+    --nav-gap: 4px;
+  }
+  .nav-list::before {
+    inset: 0 0 auto;
+    width: 100%;
+    height: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
+    transform: translateY(calc(var(--nav-index) * (100% + var(--nav-gap))));
+  }
+}
+
+/* 44: Sidebar toggle reflects the direction it will open. */
+.sidebar-toggle > svg {
+  transition: transform var(--duration-feedback) var(--ease-standard);
+}
+.sidebar-toggle[aria-expanded="false"] > svg {
+  transform: scaleX(-1);
+}
+
+/* 45: Source chip hover surface. */
+.status-chip {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .status-chip:hover {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+}
+
+/* 46: Source dot settles only when the actual source tone changes. */
+.status-dot {
+  animation: motion-dot var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-dot {
+  from {
+    transform: scale(0.7);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* 47: Toolbar icon hover boundary. */
+.icon-button {
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+}
+
+/* 48: New page title arrival; only the heading is remounted. */
+.page-title-arrival {
+  animation: motion-label var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-label {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(var(--motion-nudge));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 49: Import-mode destination marker. */
+.mode-row .segmented a {
+  position: relative;
+}
+.mode-row .segmented a::after {
+  content: "";
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  bottom: 4px;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: var(--shape-full);
+  transform: scaleX(0);
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+.mode-row .segmented a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+/* 50: Search-result count confirmation (counts only, never financial amounts). */
+.filter-count {
+  display: inline-block;
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-fade {
+  from {
+    opacity: var(--motion-reveal-opacity);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 51: Active field label. */
+.field > label {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.field:focus-within > label {
+  color: var(--color-accent);
+}
+
+/* 52: Active field instructions become more prominent. */
+.field > .hint {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.field:focus-within > .hint {
+  color: var(--color-text);
+}
+
+/* 53: Placeholder recedes when typing begins; the visible label remains. */
+.field input::placeholder {
+  opacity: 1;
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+.field input:focus::placeholder {
+  opacity: 0.6;
+}
+
+/* 54: Native file-picker button hover feedback. */
+.field input::file-selector-button {
+  min-height: var(--touch-target);
+  padding: var(--space-2);
+  margin-right: var(--space-2);
+  border: 0;
+  border-radius: var(--shape-sm);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .field input:not(:disabled):hover::file-selector-button {
+    background: var(--surface-high);
+  }
+}
+
+/* 55: Valid manual subtotal gains a boundary, with its number updated immediately. */
+.manual-total {
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.manual-total[data-complete="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* 56: Validation label enters/leaves its error colour. */
+.field:has(input[aria-invalid="true"]) > label {
+  color: var(--color-error);
+}
+
+/* 57: Native checkbox check confirmation; its enclosing target retains its size. */
+input[type="checkbox"]:checked {
+  animation: motion-choice var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-choice {
+  from {
+    scale: var(--motion-control-press);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* 58: Native radio selection confirmation. */
+input[type="radio"]:checked {
+  animation: motion-choice var(--duration-cue) var(--ease-standard);
+}
+
+/* 59: Disabled controls fade to their actual availability state. */
+button:disabled {
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+
+/* 60: External workbook-link underline grows without shifting its text. */
+.account .facts a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition: background-size var(--duration-short) var(--ease-standard);
+}
+.account .facts a:focus-visible {
+  background-size: 100% 1px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .account .facts a:hover {
+    background-size: 100% 1px;
+  }
+}
+
+/* 61: Disclosure hover surface. */
+summary {
+  border-radius: var(--shape-sm);
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  summary:hover {
+    background-color: var(--color-accent-soft);
+  }
+}
+
+/* 62: Disclosure keyboard-focus boundary. */
+summary:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* 63: Clipboard outcome appears without removing its live region. */
+.copy-result {
+  display: inline-block;
+  animation: motion-label var(--duration-cue) var(--ease-standard);
+}
+
+/* 64: A newly empty fund search explains itself gently. */
+.search-empty {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+
+/* 65: Newly returned search rows appear; existing matching rows are not remounted. */
+.mobile-holdings[data-filtered="true"] > li,
+.holdings-table[data-filtered="true"] tbody > tr {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+
+/* 66: Ready/review panels confirm readiness with a quiet edge. */
+.review-adjustments {
+  animation: motion-edge var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-edge {
+  from {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  to {
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+
+/* 67: Browser-recorded summary settles after the actual local record completes. */
+.recorded {
+  animation: motion-label var(--duration-feedback) var(--ease-standard);
+}

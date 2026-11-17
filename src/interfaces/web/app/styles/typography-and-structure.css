@@ -1,0 +1,255 @@
+/* ---------- Type roles ----------
+ * Every piece of text is one of these roles; a component picks a role and does not invent a size. */
+.card-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lead);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.card-subtitle {
+  margin: 0 0 var(--space-3);
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+
+.card-title:has(+ .card-subtitle) {
+  margin-bottom: var(--space-1);
+}
+
+.card-label {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.hint,
+.footnote,
+.stat-caption {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+
+.footnote {
+  margin-top: var(--space-3);
+}
+
+.empty-note {
+  color: var(--color-muted);
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  border-radius: var(--shape-full);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pill.gain {
+  background: color-mix(in srgb, var(--color-gain) 15%, transparent);
+  color: var(--color-gain);
+}
+
+.pill.loss {
+  background: color-mix(in srgb, var(--color-loss) 15%, transparent);
+  color: var(--color-loss);
+}
+
+.gain {
+  color: var(--color-gain);
+}
+
+.loss {
+  color: var(--color-loss);
+}
+
+/* ---------- Facts: labelled figures ----------
+ * .facts is a grid of label-over-value pairs. .facts.stacked is the one key-value list: the label on the left, the
+ * value on the right, a hairline between rows. A long value wraps under its label instead of squeezing it. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.facts > div {
+  min-width: 0;
+}
+
+.facts dt {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.facts dd {
+  min-width: 0;
+  margin: var(--space-1) 0 0;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.facts.grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 47.501rem) {
+  .facts.grid {
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  }
+}
+
+.facts.stacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.facts.stacked > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.facts.stacked > div:last-child {
+  border-bottom: 0;
+}
+.facts.stacked dt {
+  flex: 1 1 9rem;
+}
+.facts.stacked dd {
+  flex: 0 1 auto;
+  max-width: 100%;
+  margin: 0;
+  text-align: right;
+}
+
+/* ---------- Page structure shared by every destination ---------- */
+.disclosure-description {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+}
+
+/* A group of disclosure rows: plain rows between hairlines, never boxes. The description sits under the title. */
+.more {
+  display: grid;
+  border-block: 1px solid var(--color-border);
+}
+.more > details + details {
+  border-top: 1px solid var(--color-border);
+}
+.more > details > summary {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  padding-block: var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+.more > details > summary::before {
+  margin-top: 0.4rem;
+}
+.more > details > summary {
+  align-items: start;
+}
+.more > details > summary > .disclosure-description {
+  grid-column: 2;
+}
+.more > details[open] > summary {
+  padding-bottom: var(--space-1);
+}
+.more > details > :not(summary) {
+  margin-bottom: var(--space-3);
+}
+/* Progress: three equal steps, each a number over its name, so the row never wraps into two lines of unequal length. */
+.journey-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  margin: 0;
+  list-style: none;
+  border-block: 1px solid var(--color-border);
+}
+.journey-steps li {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-1);
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  line-height: 1.3;
+  text-align: center;
+}
+.journey-steps li > span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: var(--shape-full);
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+.journey-steps li[aria-current="step"] {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+.journey-steps li[aria-current="step"] > span {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+/* A step already done keeps its place in the row: ringed in the accent, not filled, so the current step is still the one that stands out. */
+.journey-steps li[data-done="true"] > span {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+.import-heading {
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+}
+.account-lead {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  max-width: 55ch;
+}
+/* A section of Your data: a title, one sentence of what it does, an optional note, then its single action. */
+.account-section {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+.account-section > .card-title,
+.account-section > .card-subtitle {
+  margin: 0;
+}
+.account-section > .plain-list {
+  color: var(--color-text);
+  font-size: var(--text-body);
+}
+.account-section > button,
+.account-section > .more {
+  margin-top: var(--space-1);
+}

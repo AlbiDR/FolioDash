@@ -1,0 +1,222 @@
+/* Phone layouts have their own density and navigation, rather than scaled desktop cards. */
+@media (max-width: 47.5rem) {
+  .shell {
+    min-height: 100dvh;
+  }
+
+  .content-inner {
+    padding-top: max(var(--page-inset), env(safe-area-inset-top));
+    padding-left: max(var(--page-inset), env(safe-area-inset-left));
+    padding-right: max(var(--page-inset), env(safe-area-inset-right));
+    gap: var(--space-3);
+  }
+
+  .dash {
+    gap: var(--gap);
+  }
+
+  .content {
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + var(--space-3));
+  }
+
+  .main-nav {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--shape-lg) var(--shape-lg) 0 0;
+    padding: var(--space-1) max(var(--space-2), env(safe-area-inset-right))
+      max(var(--space-1), env(safe-area-inset-bottom)) max(var(--space-2), env(safe-area-inset-left));
+  }
+
+  .nav-link {
+    min-height: var(--touch-target);
+    padding-block: var(--space-1);
+    font-size: var(--text-caption);
+  }
+
+  /* At very large text four labels cannot share a phone's width. Like a tab bar, the labels stop growing
+   * rather than breaking inside the word; the icons and 48px targets are unchanged. */
+  .main-nav {
+    container: nav / inline-size;
+  }
+  @container nav (max-width: 15rem) {
+    .nav-link {
+      font-size: 0.4375rem;
+      line-height: 1.15;
+      padding-inline: 0;
+    }
+  }
+
+  /* A flush bar of about 56px: title, one short status word and the privacy control share one line. */
+  .topbar {
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-2);
+    min-height: 3.5rem;
+    margin-inline: calc(-1 * max(var(--page-inset), env(safe-area-inset-left)));
+    margin-top: calc(-1 * max(var(--page-inset), env(safe-area-inset-top)));
+    padding: max(var(--space-1), env(safe-area-inset-top)) max(var(--page-inset), env(safe-area-inset-right))
+      var(--space-1) max(var(--page-inset), env(safe-area-inset-left));
+    border-radius: 0 0 var(--shape-lg) var(--shape-lg);
+  }
+
+  .topbar-title {
+    flex: 1 1 8rem;
+    min-width: 0;
+  }
+  .topbar-title h1 {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: var(--text-lead);
+    line-height: 1.2;
+  }
+  .topbar > .status-chip {
+    flex: 0 1 auto;
+    max-width: 48%;
+    padding-inline: var(--space-2);
+  }
+  .topbar-controls {
+    flex: none;
+    margin-left: 0;
+  }
+  .topbar .privacy-toggle {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+  .source-full {
+    display: none;
+  }
+  .source-short {
+    display: inline;
+  }
+
+  .segmented button,
+  .segmented a {
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    height: auto;
+    padding-inline: var(--space-2);
+  }
+
+  .card,
+  .chart {
+    padding: var(--space-3);
+    border-radius: var(--shape-md);
+  }
+
+  .perf-row {
+    min-height: var(--touch-target);
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .perf-name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .perf-track {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+  .perf-value {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .import > *,
+  .connection > *,
+  .review > *,
+  .screen > *,
+  .account > * {
+    min-width: 0;
+  }
+  .field input,
+  .field select {
+    min-height: var(--touch-target);
+    font-size: var(--text-body);
+    max-width: 100%;
+    scroll-margin-block: var(--space-4) calc(var(--mobile-nav-height) + var(--space-4));
+  }
+  .field input[type="file"] {
+    padding-inline: var(--space-2);
+  }
+  .field input[type="checkbox"],
+  .field input[type="radio"] {
+    width: auto;
+  }
+  button,
+  .primary,
+  .link-button {
+    min-height: var(--touch-target);
+    white-space: normal;
+  }
+  .import .primary,
+  .account .primary,
+  .get-started .primary {
+    justify-self: stretch;
+    width: 100%;
+  }
+  fieldset {
+    padding: var(--space-3);
+    border-radius: var(--shape-md);
+  }
+  fieldset label:has(input[type="radio"]),
+  label:has(input[type="checkbox"]) {
+    min-height: var(--touch-target);
+    padding-block: var(--space-2);
+    align-content: center;
+  }
+  legend {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  p,
+  dd,
+  .hint,
+  .notice,
+  .status {
+    overflow-wrap: anywhere;
+  }
+  summary {
+    min-height: var(--touch-target);
+    align-content: center;
+    cursor: pointer;
+  }
+  .screen-title {
+    font-size: var(--text-title);
+  }
+  .mode-row > .segmented {
+    width: 100%;
+  }
+  .matrix th,
+  .matrix td {
+    padding: 0.6rem var(--space-2);
+  }
+}
+
+@media (max-width: 47.5rem) {
+  .topbar > .status-chip {
+    min-height: var(--touch-target);
+  }
+  .import button,
+  .review button,
+  .account button {
+    max-width: 100%;
+  }
+}
+
+/* A narrow ranking card needs the same composition at desktop zoom as on a phone. */
+@container (max-width: 20rem) {
+  .perf-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .perf-name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .perf-track {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+  .perf-value {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}

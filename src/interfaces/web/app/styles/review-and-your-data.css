@@ -1,0 +1,167 @@
+/* Tables of funds and categories: the name on the left, figures on the right, a hairline between rows. */
+.import table,
+.review table,
+.recorded table {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.import th,
+.import td,
+.review th,
+.review td,
+.recorded th,
+.recorded td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.import :is(th, td):last-child,
+.review :is(th, td):last-child,
+.recorded :is(th, td):last-child {
+  padding-right: 0;
+}
+
+.import td:not(:first-child),
+.review td:not(:first-child),
+.recorded td:not(:first-child),
+.import th:not(:first-child),
+.review th:not(:first-child),
+.recorded th:not(:first-child) {
+  text-align: right;
+}
+
+.fund-isin {
+  display: block;
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* What will be recorded: one block per fund, its four figures in a row where there is room. */
+.fund-summary {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fund-summary > li {
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.fund-summary-name {
+  margin-bottom: var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+.fund-summary .facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+}
+@media (min-width: 47.501rem) {
+  .fund-summary .facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Your data and getting started ---------- */
+
+.account {
+  display: grid;
+  gap: var(--gap);
+}
+
+.account .card,
+.account-section {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.account .card > .primary,
+.account .card > button {
+  justify-self: start;
+}
+
+/* Settings rows: on a wide screen the label and its explanation sit on the left and the one action on the right, so an action is a control, not a bar across the page. A phone keeps the stacked, full-width action. */
+@media (min-width: 47.501rem) {
+  .account-section > button {
+    justify-self: start;
+  }
+  .account-health,
+  .account-maintenance {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-4);
+    align-items: start;
+  }
+  .account-health > *,
+  .account-maintenance > * {
+    grid-column: 1 / -1;
+  }
+  .account-health > .card-title,
+  .account-maintenance > .card-title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .account-health > .card-subtitle,
+  .account-maintenance > .card-subtitle {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .account-health > button,
+  .account-maintenance > button {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    justify-self: end;
+  }
+}
+
+.plain-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.steps {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+
+details.card > summary {
+  cursor: pointer;
+  font-weight: var(--weight-semibold);
+}
+
+.build-stamp {
+  margin: 0 0.25rem;
+  user-select: all;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 100;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}

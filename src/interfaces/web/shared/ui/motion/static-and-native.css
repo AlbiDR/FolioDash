@@ -1,0 +1,122 @@
+/* Cards, charts and stat blocks are containers, not controls: they get no hover, focus or press
+ * feedback of their own. The links and buttons inside them carry it.
+ */
+.spark-area {
+  transition: opacity var(--duration-feedback) var(--ease-standard);
+}
+.spark-line {
+  transition: stroke-width var(--duration-feedback) var(--ease-standard);
+}
+.hero::before,
+.hero::after {
+  transition: translate var(--duration-medium) var(--ease-standard);
+}
+.hero:focus-within::before {
+  translate: var(--motion-nudge) var(--motion-nudge);
+}
+
+/* Inspection is an opacity/stroke treatment; allocation angles never change. */
+.donut-centre {
+  pointer-events: none;
+}
+.donut[data-inspecting="true"] .donut-number {
+  font-size: max(var(--text-body), min(1.5rem, 13cqi));
+}
+.donut-slice {
+  stroke: var(--color-surface);
+  stroke-width: 0;
+  transition:
+    opacity var(--duration-short) var(--ease-standard),
+    stroke-width var(--duration-short) var(--ease-standard);
+}
+.donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) {
+  opacity: 0.4;
+}
+.donut-slice[data-active="true"] {
+  stroke-width: 2;
+}
+.donut a:focus-visible {
+  outline: none;
+}
+.donut a:focus-visible .donut-slice {
+  stroke: var(--color-text);
+  stroke-width: 3;
+}
+.donut a:active .donut-slice {
+  opacity: 0.7;
+}
+.allocation-card .legend a {
+  min-height: var(--touch-target);
+}
+.allocation-card .legend a[data-active="true"] {
+  background: var(--color-accent-soft);
+}
+.allocation-card .legend a[data-active="true"] .dot {
+  transform: scale(1.12);
+}
+.allocation-card .legend a:active .dot {
+  transform: scale(0.9);
+}
+.allocation-card .legend-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Static data rows and cards do not react to the pointer: only what can be pressed suggests that it can. */
+.matrix tbody tr {
+  transition: background-color var(--duration-short) var(--ease-standard);
+}
+.matrix tbody tr:focus-within {
+  background-color: var(--color-accent-soft);
+}
+.row-link,
+.demo-nav a,
+.link-button {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.link-button:active {
+  scale: var(--motion-control-press);
+}
+.perf-row:active,
+.row-link:active,
+.demo-nav a:active {
+  background-color: var(--color-accent-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .matrix tbody tr:hover {
+    background-color: var(--color-accent-soft);
+  }
+  .perf-row:hover,
+  .row-link:hover {
+    background-color: var(--color-accent-soft);
+  }
+  .mobile-holdings a:hover {
+    background-color: var(--color-accent-soft);
+  }
+  .link-button:hover {
+    box-shadow: var(--shadow-inspect);
+  }
+}
+
+/* Native-control pseudo-elements are not covered by the universal element override. */
+@media (prefers-reduced-motion: reduce) {
+  .field input::placeholder {
+    transition: none !important;
+  }
+  .field input::file-selector-button {
+    transition: none !important;
+  }
+  .chart-date-control input::-webkit-slider-thumb {
+    transition: none !important;
+    transform: none !important;
+  }
+  .chart-date-control input::-moz-range-thumb {
+    transition: none !important;
+    transform: none !important;
+  }
+}

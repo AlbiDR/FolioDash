@@ -33,7 +33,11 @@ import {
   parseExpenseDraft,
   type ExpenseDraft,
 } from "./expense-draft";
-import "./expenses.css";
+import "./styles/base.css";
+import "./styles/record-a-day.css";
+import "./styles/week-and-year.css";
+import "./styles/categories-and-record.css";
+import "./styles/responsive-and-hover.css";
 
 type SaveRequest = Pick<ExpenseCommand, "date" | "amounts" | "expectedRevision">;
 export interface ExpensesViewProps {
