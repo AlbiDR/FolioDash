@@ -55,7 +55,22 @@ async function capture(browser: LocalBrowser, file: string, theme: "light" | "da
   await evaluate(`(()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(`${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}${view.crop?.style ?? ""}`)};document.head.append(style)})()`);
   await delay(300);
   if (!mobile) {
-    const box = await evaluate(`(()=>{const rects=[...document.querySelectorAll(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})].map(element=>element.getBoundingClientRect()).filter(rect=>rect.width>0&&rect.height>0);return rects.length===0?null:{left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))}})()`);
+    // Only the named elements (and what they sit in) stay visible, so a neighbour cannot leak into the margin around the crop.
+    // Hidden elements keep their space: nothing reflows.
+    await evaluate(`((include)=>{const roots=[...document.querySelectorAll(include)];const keep=new Set();for(const root of roots)for(let el=root;el;el=el.parentElement)keep.add(el);
+      const walk=el=>{if(roots.some(root=>root.contains(el)))return;if(!keep.has(el)){el.style.visibility='hidden';return}for(const child of el.children)walk(child)};walk(document.body)})(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})`);
+    // The crop follows what is painted (text, backgrounds, borders, inputs, graphics) inside the named elements, not their boxes, so a
+    // wide empty wrapper cannot stretch the picture. Anything clipped by a scrolling ancestor is cut to what is visible.
+    const box = await evaluate(`((include)=>{const rects=[];const seen=new Set();
+      const visible=(rect,node)=>{let r={left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom};for(let el=node instanceof Element?node:node.parentElement;el&&el!==document.documentElement;el=el.parentElement){const cs=getComputedStyle(el);if(cs.overflowX!=='visible'||cs.overflowY!=='visible'){const b=el.getBoundingClientRect();if(cs.overflowX!=='visible'){r.left=Math.max(r.left,b.left);r.right=Math.min(r.right,b.right)}if(cs.overflowY!=='visible'){r.top=Math.max(r.top,b.top);r.bottom=Math.min(r.bottom,b.bottom)}}}return r.right>r.left&&r.bottom>r.top?r:null};
+      const add=(rect,node)=>{const r=visible(rect,node);if(r)rects.push(r)};
+      const paints=cs=>{const bg=cs.backgroundColor;return (bg!=='transparent'&&!(bg.startsWith('rgba')&&bg.replace(/ /g,'').endsWith(',0)')))||cs.backgroundImage!=='none'||cs.boxShadow!=='none'||['Top','Right','Bottom','Left'].some(side=>parseFloat(cs['border'+side+'Width'])>0&&cs['border'+side+'Style']!=='none')};
+      const visit=el=>{if(seen.has(el))return;seen.add(el);const cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden')return;
+        if(paints(cs)||/^(img|svg|canvas|input|select|textarea)$/i.test(el.tagName)){const r=el.getBoundingClientRect();if(r.width>0&&r.height>0)add(r,el)}
+        if(/^svg$/i.test(el.tagName))return;
+        for(const child of el.childNodes){if(child.nodeType===3&&child.textContent.trim()!==''){const range=document.createRange();range.selectNodeContents(child);for(const q of range.getClientRects())if(q.width>0&&q.height>0)add(q,child)}else if(child.nodeType===1)visit(child)}};
+      document.querySelectorAll(include).forEach(visit);
+      return rects.length===0?null:{left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))}})(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})`);
     if (typeof box !== "object" || box === null) throw new Error("Unexpected screenshot framing.");
     const { left, top, right, bottom } = box as Record<string, number>;
     if (![left, top, right, bottom].every(value => Number.isFinite(value)) || (bottom ?? 0) - (top ?? 0) < 300) throw new Error("Unexpected screenshot framing.");

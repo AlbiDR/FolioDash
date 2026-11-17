@@ -14,9 +14,10 @@ export interface CapturedView {
   readonly open?: string;
   /** File name without theme or extension. */
   readonly file: string;
-  /** Every image is drawn without the page background, the sidebar and the top bar. `include` names the elements the crop must
-   * contain (the banner and the page content when absent); `hide` removes what sits below them; `style` is extra CSS for a
-   * view whose parts differ in width. */
+  /** Every image is drawn without the page background, the sidebar and the top bar. `include` names the elements the picture shows (the
+   * banner and the page content when absent): the crop follows what is painted inside them and everything else is made invisible.
+   * `hide` removes what sits below them from the layout; `style` is extra CSS for a view whose parts differ in width. A new view
+   * needs none of these unless the release rejects its framing. */
   readonly crop?: { readonly include?: string; readonly hide?: string; readonly style?: string };
   /** Phone-sized dark capture, written to this file name. */
   readonly mobile?: string;
@@ -39,6 +40,8 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
   },
   checkpoints: {
     hash: "#checkpoints", heading: "Checkpoints", file: "checkpoints",
+    // The cards span the page but their form and figures are narrow; a form-width column keeps the picture balanced.
+    crop: { include: ".notice,.checkpoints .card", style: ".checkpoints .card{max-inline-size:52rem}" },
     gallery: { title: "Checkpoints", caption: "Record a value between statements and see it on the Performance chart.", alt: "The checkpoints screen listing value-only records between statements, with invented amounts" },
   },
   fund: {
