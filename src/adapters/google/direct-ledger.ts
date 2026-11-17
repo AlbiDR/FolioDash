@@ -1,12 +1,11 @@
 import type { SourceRecord } from "../../applications/import/statement-source";
-import { prepareBackfillReview, type BackfillStatement } from "../../applications/import/backfill-review";
+import type { BackfillStatement } from "../../applications/import/backfill-review";
 import type { InterpretStatement } from "../../applications/import/rebuild";
 import type { FundCommand } from "../../core/statements/import-plan";
 import type { CallFailure, Workbook } from "../../applications/session/session-model";
 import {
   type AttachRequest,
   type CommitRequest,
-  type ServiceEnvironment,
   attachStatements,
   commitStatement,
 } from "../../applications/ledger/ledger-service";
@@ -16,52 +15,17 @@ import type { Grid } from "../../applications/ledger/sheet-grid";
 import { canonicalJson } from "../../core/integrity/canonical-json";
 import { type LedgerState, parseLedgerState } from "../../core/portfolio/ledger";
 import type { IsoDate } from "../../core/values/iso-date";
-import { toStoredSheet, type RawSheet } from "../../core/statements/raw-sheet";
+import type { RawSheet } from "../../core/statements/raw-sheet";
 import { sha256Hex } from "../../core/integrity/sha256";
-import { type LedgerRow, type RowSheet, RowLedgerStore } from "../ledger/row-ledger-store";
-import {
-  appendLedgerRows,
-  createWorkbook,
-  fenceLedgerWrite,
-  findWorkbook,
-  readLedgerRows,
-  tidyLedgerTab as tidyTab,
-  writeGridTabs,
-  type WorkbookIdentity,
-} from "./google-workbook";
+import type { LedgerRow } from "../ledger/row-ledger-store";
+import { createWorkbook, findWorkbook, writeGridTabs, type WorkbookIdentity } from "./google-workbook";
+import { appendLedgerRows, fenceLedgerWrite, readLedgerRows, tidyLedgerTab as tidyTab } from "./workbook/ledger-rows";
+import { storeOf } from "./ledger/buffered-row-sheet";
+import { backfillOperation, recoverOperation } from "./ledger/revision-operations";
+import { writeOnce } from "./ledger/write-once";
 import type { RemoteCommit, RemoteOutcome, RemoteRead } from "./ledger-results";
 import { VIEW_TAB } from "./sheets-layout";
-import { type RestClient, type RestFailure } from "./rest";
-
-/**
- * A sheet held in memory: the rows already stored, plus whatever the ledger rules
- * add during one save. Nothing leaves memory until the save is complete, and then
- * it goes out as one request, so a save is recorded whole or not at all.
- */
-export class BufferedRowSheet implements RowSheet {
-  private readonly stored: readonly LedgerRow[];
-  private readonly added: LedgerRow[] = [];
-
-  constructor(stored: readonly LedgerRow[]) {
-    this.stored = stored;
-  }
-
-  readRows(): readonly LedgerRow[] {
-    return [...this.stored, ...this.added];
-  }
-
-  appendRows(rows: readonly LedgerRow[]): void {
-    this.added.push(...rows);
-  }
-
-  flush(): void {
-    // Nothing is durable until the whole save is sent; see commitDirect.
-  }
-
-  get pending(): readonly LedgerRow[] {
-    return this.added;
-  }
-}
+import type { RestClient } from "./rest";
 
 export interface DirectDeps {
   readonly rest: RestClient;
@@ -94,11 +58,6 @@ export async function ensureWorkbook(
   };
 }
 
-function storeOf(rows: readonly LedgerRow[]): { readonly sheet: BufferedRowSheet; readonly store: RowLedgerStore } {
-  const sheet = new BufferedRowSheet(rows);
-  return { sheet, store: new RowLedgerStore(sheet) };
-}
-
 /** Reads and checks the ledger. A damaged ledger is reported as damaged and never shown. */
 export async function readDirect(rest: RestClient, accessToken: string, workbookId: string): Promise<RemoteRead> {
   const tab = await readLedgerRows(rest, accessToken, workbookId);
@@ -119,82 +78,6 @@ export async function readDirect(rest: RestClient, accessToken: string, workbook
         ...(store.recoveryTarget() === null ? {} : { recoveryTarget: store.recoveryTarget() }),
       }
     : { status: "damaged", message: loaded.message };
-}
-
-const LOST = "The save may or may not have been recorded. Check what happened before trying again.";
-
-/**
- * Runs one ledger operation in memory against the rows already stored, checks once
- * more that nobody else wrote in the meantime, then claims that predecessor and
- * appends rows in one atomic request. Only a refusal Google made before doing
- * anything counts as "not written"; a lost answer is unknown and is resolved by reading the sheet,
- * never by trying again.
- */
-async function writeOnce(
-  deps: DirectDeps,
-  accessToken: string,
-  workbookId: string,
-  operate: (environment: ServiceEnvironment) => { readonly result: RemoteCommit; readonly wrote: boolean },
-): Promise<RemoteCommit> {
-  const before = await readLedgerRows(deps.rest, accessToken, workbookId);
-  if (!before.ok) return notWritten(before.failure);
-  if ("notALedger" in before.value)
-    return { status: "refused", message: "This spreadsheet is not a FolioDash ledger, so nothing was saved." };
-
-  const { sheet, store } = storeOf(before.value.rows);
-  const environment: ServiceEnvironment = { store, withLock: (action) => action(), newRevision: deps.newRevision };
-  let prepared: ReturnType<typeof operate>;
-  try {
-    prepared = operate(environment);
-  } catch {
-    return { status: "not-committed", message: "The change could not be prepared. Nothing was sent." };
-  }
-  const { result, wrote } = prepared;
-  if (!wrote) return result;
-
-  // Nothing has been written yet. Make sure the sheet has not changed since it was read.
-  const again = await readLedgerRows(deps.rest, accessToken, workbookId);
-  if (!again.ok) return notWritten(again.failure);
-  if ("notALedger" in again.value || canonicalJson(again.value.rows) !== canonicalJson(before.value.rows))
-    return { status: "stale" };
-
-  if (deps.beforeRevisionWrite !== undefined && !deps.beforeRevisionWrite(sha256Hex(canonicalJson(before.value.rows))))
-    return { status: "not-committed", message: "The safety receipt could not be stored. Nothing was sent." };
-
-  const sent = await appendLedgerRows(deps.rest, accessToken, workbookId, sheet.pending, before.value.rows);
-  if (sent.ok) {
-    const verified = await readLedgerRows(deps.rest, accessToken, workbookId);
-    if (!verified.ok || "notALedger" in verified.value) return { status: "unknown", message: LOST };
-    const loaded = storeOf(verified.value.rows).store.load();
-    const expected = store.load();
-    if (
-      loaded.status !== "ok" ||
-      expected.status !== "ok" ||
-      canonicalJson(verified.value.rows.slice(0, before.value.rows.length + sheet.pending.length)) !==
-        canonicalJson([...before.value.rows, ...sheet.pending])
-    )
-      return { status: "unknown", message: LOST };
-    return result;
-  }
-  if (sent.failure === "unexpected") {
-    // A duplicate predecessor marker is refused atomically. Only report a stale
-    // review when a valid different winner is visible and our revision is absent.
-    const check = await readLedgerRows(deps.rest, accessToken, workbookId);
-    if (check.ok && !("notALedger" in check.value)) {
-      const checked = storeOf(check.value.rows).store;
-      if (checked.load().status === "ok" && canonicalJson(check.value.rows) !== canonicalJson(before.value.rows)) {
-        try {
-          const reconciled = operate({ store: checked, withLock: (action) => action(), newRevision: deps.newRevision });
-          if (!reconciled.wrote) return reconciled.result;
-        } catch {
-          return { status: "unknown", message: LOST };
-        }
-      }
-    }
-  }
-  return sent.failure === "unavailable" || sent.failure === "network" || sent.failure === "unexpected"
-    ? { status: "unknown", message: LOST }
-    : notWritten(sent.failure);
 }
 
 /** Resolve a missing uncertain command by atomically fencing its predecessor. */
@@ -310,51 +193,7 @@ export function recoverRevisionDirect(
   workbookId: string,
   request: { readonly commandId: string; readonly expectedRevision: string; readonly targetRevision: string },
 ): Promise<RemoteCommit> {
-  return writeOnce(deps, accessToken, workbookId, (environment) => {
-    const store = environment.store;
-    if (!(store instanceof RowLedgerStore))
-      return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
-    const loaded = store.load();
-    if (loaded.status === "damaged") return { result: loaded, wrote: false };
-    const hash = sha256Hex(
-      canonicalJson({
-        kind: "recover-revision",
-        targetRevision: request.targetRevision,
-        expectedRevision: request.expectedRevision,
-      }),
-    );
-    const existing = store.findCommand(request.commandId);
-    if (existing !== null)
-      return existing.requestHash === hash
-        ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
-        : {
-            result: {
-              status: "rejected",
-              messages: ["This recovery identifier was already used for another request."],
-            },
-            wrote: false,
-          };
-    if (loaded.state.revision !== request.expectedRevision) return { result: { status: "stale" }, wrote: false };
-    if (request.commandId.trim() === "" || request.targetRevision.trim() === "")
-      return { result: { status: "rejected", messages: ["The recovery request is incomplete."] }, wrote: false };
-    const target = store.loadRevision(request.targetRevision);
-    if (target.status !== "ok") return { result: { status: "damaged", message: target.message }, wrote: false };
-    const revision = deps.newRevision();
-    try {
-      store.publishWithSources(
-        { ...target.state, revision },
-        { commandId: request.commandId, revision, requestHash: hash },
-        target.sources,
-        target.recoveryTarget ?? null,
-      );
-    } catch {
-      return {
-        result: { status: "rejected", messages: ["The recovery could not be prepared. Nothing was sent."] },
-        wrote: false,
-      };
-    }
-    return { result: { status: "committed", revision }, wrote: true };
-  });
+  return writeOnce(deps, accessToken, workbookId, recoverOperation(deps, request));
 }
 
 /** Save a reviewed prefix and its replacement source decisions as one guarded revision. */
@@ -370,79 +209,7 @@ export function backfillDirect(
   },
   interpret: InterpretStatement,
 ): Promise<RemoteCommit> {
-  return writeOnce(deps, accessToken, workbookId, (environment) => {
-    const store = environment.store;
-    if (!(store instanceof RowLedgerStore))
-      return { result: { status: "damaged", message: "The revision store is unavailable." }, wrote: false };
-    const loaded = store.load();
-    if (loaded.status === "damaged") return { result: loaded, wrote: false };
-    const normalized = request.earlier.map((item) => ({
-      date: item.date,
-      statement: item.statement,
-      commands: item.commands,
-      ...(item.source === undefined
-        ? {}
-        : { source: { sheetName: item.source.sheetName, sheet: toStoredSheet(item.source.sheet) } }),
-    }));
-    const hash = sha256Hex(
-      canonicalJson({
-        kind: "backfill",
-        expectedRevision: request.expectedRevision,
-        earlier: normalized,
-        boundary: request.boundary,
-      }),
-    );
-    const existing = store.findCommand(request.commandId);
-    if (existing !== null)
-      return existing.requestHash === hash
-        ? { result: { status: "already-committed", revision: existing.revision }, wrote: false }
-        : {
-            result: { status: "rejected", messages: ["This import identifier was already used for another request."] },
-            wrote: false,
-          };
-    if (loaded.state.revision !== request.expectedRevision) return { result: { status: "stale" }, wrote: false };
-    if (request.commandId.trim() === "")
-      return { result: { status: "rejected", messages: ["The import identifier is missing."] }, wrote: false };
-    const sources = store.loadSources();
-    if (sources.status === "damaged") return { result: sources, wrote: false };
-    const revision = deps.newRevision();
-    const candidate = prepareBackfillReview(
-      loaded.state,
-      sources.sources,
-      request.earlier,
-      request.boundary,
-      revision,
-      request.commandId,
-      interpret,
-    );
-    if (!candidate.ok) return { result: { status: "rejected", messages: [candidate.message] }, wrote: false };
-    try {
-      store.publishWithSources(
-        candidate.ledger,
-        { commandId: request.commandId, revision, requestHash: hash },
-        candidate.sources,
-        loaded.state.revision,
-      );
-    } catch {
-      return {
-        result: { status: "rejected", messages: ["The import could not be prepared. Nothing was sent."] },
-        wrote: false,
-      };
-    }
-    return { result: { status: "committed", revision }, wrote: true };
-  });
-}
-
-function notWritten(failure: RestFailure): RemoteCommit {
-  if (failure === "unauthorised" || failure === "forbidden" || failure === "not-found")
-    return { status: "not-sent", failure };
-  return {
-    status: "not-committed",
-    message:
-      failure === "network" || failure === "unavailable"
-        ? "Google could not be reached, so nothing was saved. It is safe to try again."
-        : "Nothing was saved. It is safe to try again.",
-  };
+  return writeOnce(deps, accessToken, workbookId, backfillOperation(deps, request, interpret));
 }
 
 /** Resolves a lost answer by reading the sheet. It writes nothing. */

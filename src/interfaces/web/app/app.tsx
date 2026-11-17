@@ -1,96 +1,46 @@
 import type { JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { lazy } from "preact/compat";
 import { GetStarted } from "../features/account/get-started";
-import type { ImportPreparer } from "../../../applications/import/import-model";
 import { FundView } from "../features/overview/fund-view";
 import { MonthsView } from "../features/overview/months-view";
-import type { OverviewModel } from "../features/overview/model/overview-model";
 import { OverviewView } from "../features/overview/overview-view";
-import { PrivacyProvider, PrivacyToggle, usePrivacyChoice } from "../presentation/privacy/privacy";
+import { PrivacyProvider, usePrivacyChoice } from "../presentation/privacy/privacy";
 import { Presence } from "../shared/ui/presence";
 import { usePageMotion } from "../shared/ui/use-page-motion";
 import { DeferredView } from "../shared/ui/deferred-view";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sidebar-choice";
 import { useMediaQuery } from "../shared/ui/use-media-query";
 import { useFocusVisibility } from "../shared/ui/use-focus-visibility";
-import { Icon, type IconName } from "../shared/ui/icons";
 import { watchGoogleFreshness } from "../../../adapters/browser/connection/google-freshness";
 import { armGestureRenewal } from "../../../adapters/browser/connection/gesture-renewal";
 import { prepareGoogleIdentity } from "../../../adapters/browser/connection/google-identity";
 import { createBrowserSession, watchOtherWindows } from "./session/browser-session";
 import { DRIVE_FILE_SCOPE } from "./session/session";
 import { type ChartRange, resolveRange } from "../features/overview/model/chart-range";
-import { rememberClientId, resolveClientId } from "../../../adapters/browser/connection/client-id";
-import { DEMO_VARIANTS, demoPortfolio, demoVariantFrom } from "./demo/demo-portfolio";
-import { demoCheckpoints } from "./demo/demo-checkpoints";
-import { type Checkpoint, chartMarkers } from "../../../core/portfolio/checkpoints";
-import { memoizeLast } from "../shared/ui/memo";
-import { overviewFromLedger } from "./session/overview-from-ledger";
-import { type Route, navEntryOf, routeFrom } from "./routes";
+import { resolveClientId } from "../../../adapters/browser/connection/client-id";
+import { demoVariantFrom } from "./demo/demo-portfolio";
+import { navEntryOf, routeFrom, type Route } from "./routes";
 import { watchForUpdate } from "./platform/service-worker";
-import { describeAge } from "../features/account/time-ago";
 import { describeConnect } from "../features/account/account-text";
 import { useCheckpoints, useExpenses, useNow, useSession } from "./session/use-session";
 import { toIsoDate } from "../../../core/values/iso-date";
 import type { ExpenseCommand, ExpenseDay } from "../../../core/expenses/work-expenses";
 import { demoExpenses } from "./demo/demo-expenses";
-
-const TITLES = {
-  overview: "Portfolio",
-  expenses: "Work expenses",
-  months: "Month by month",
-  checkpoints: "Checkpoints",
-  import: "Update your portfolio",
-  history: "Import a whole history",
-  connection: "Your data",
-} as const;
-const ExpensesView = lazy(async () => ({ default: (await import("../features/expenses/expenses-view")).ExpensesView }));
-const CheckpointsView = lazy(async () => ({
-  default: (await import("../features/checkpoints/checkpoints-view")).CheckpointsView,
-}));
-const ExpenseDataTools = lazy(async () => ({
-  default: (await import("../features/expenses/expense-data-tools")).ExpenseDataTools,
-}));
-const AccountView = lazy(async () => ({ default: (await import("../features/account/account-view")).AccountView }));
-const HistoryView = lazy(async () => ({ default: (await import("../features/history/history-view")).HistoryView }));
-const ImportView = lazy(async () => ({ default: (await import("../features/import/import-view")).ImportView }));
-const prepareImport: ImportPreparer = async (file) => {
-  try {
-    return await (await import("./session/import-preparer")).prepareImport(file);
-  } catch {
-    return {
-      status: "unreadable-file",
-      message: "The import tools or file could not be loaded. Check your connection, then select the file again.",
-    };
-  }
-};
-
-function titleOf(route: Route, model: OverviewModel): string {
-  if (route.name === "fund") return model.funds.find((fund) => fund.isin === route.isin)?.name ?? "Fund";
-  return TITLES[route.name];
-}
-
-// The model is redone only when the ledger itself changes, not on a toggle, a range change or a resize.
-const overviewFor = memoizeLast(overviewFromLedger);
-const NO_CHECKPOINTS: readonly Checkpoint[] = [];
-const markersFor = memoizeLast((active: readonly Checkpoint[]) => chartMarkers(active));
-const demoCheckpointsFor = memoizeLast(demoCheckpoints);
-const demoFor = memoizeLast(demoPortfolio);
-
-const browserPrivacyStorage = (): Storage => window.localStorage;
-
-const NAV: readonly {
-  readonly id: ReturnType<typeof navEntryOf>;
-  readonly href: string;
-  readonly label: string;
-  readonly icon: IconName;
-}[] = [
-  { id: "overview", href: "#overview", label: "Portfolio", icon: "overview" },
-  { id: "expenses", href: "#expenses", label: "Expenses", icon: "expenses" },
-  { id: "import", href: "#import", label: "Import", icon: "import" },
-  { id: "connection", href: "#connection", label: "Your data", icon: "connection" },
-];
+import { AppNav, AppNotices, AppTopbar, DemoPicker, guardImportLinks } from "./app-chrome";
+import { CheckpointsRoute } from "./app-checkpoints-route";
+import { ConnectionRoute } from "./app-connection-route";
+import { ExpensesRoute } from "./app-expenses-route";
+import { ImportRoutes } from "./app-import-routes";
+import {
+  NO_CHECKPOINTS,
+  browserPrivacyStorage,
+  demoCheckpointsFor,
+  demoFor,
+  markersFor,
+  overviewFor,
+  sourceOf,
+  titleOf,
+} from "./app-model";
 
 export function App(): JSX.Element {
   const page = useRef<HTMLElement>(null);
@@ -269,36 +219,7 @@ export function App(): JSX.Element {
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
   // The full sentence is the accessible name everywhere. On phones only the short word, always contained in it, is drawn.
-  const source =
-    data.mode === "signed-out"
-      ? { label: "Demo data", short: "Demo", tone: "demo" }
-      : needsAttention
-        ? { label: "Sheet needs attention", short: "Needs attention", tone: "local" }
-        : data.connection === "checking"
-          ? { label: "Checking Google…", short: "Checking", tone: "local" }
-          : data.connection === "renewing"
-            ? { label: "Renewing Google access…", short: "Renewing", tone: "local" }
-            : data.connection === "waiting"
-              ? {
-                  label: `Saved on this device · tap to sync${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`,
-                  short: "Tap to sync",
-                  tone: "local",
-                }
-              : data.connection === "reconnect"
-                ? { label: "Reconnect to Google", short: "Reconnect", tone: "local" }
-                : data.connection === "offline"
-                  ? { label: "Google unavailable · device copy", short: "Device copy", tone: "local" }
-                  : data.mode === "online"
-                    ? {
-                        label: `Checked with Google${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`,
-                        short: "Checked",
-                        tone: "synced",
-                      }
-                    : {
-                        label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`,
-                        short: "Saved",
-                        tone: "local",
-                      };
+  const source = sourceOf(data, needsAttention, now);
   const clientConfigured = clientId !== "";
   const pageTitle = titleOf(route, model);
   useEffect(() => {
@@ -311,29 +232,7 @@ export function App(): JSX.Element {
         class="shell"
         data-nav={sidebarHidden ? "collapsed" : "open"}
         onClickCapture={(event) => {
-          if (!importLocked || !(event.target instanceof Element)) return;
-          const link = event.target.closest<HTMLAnchorElement>("a[href]");
-          if (
-            link === null ||
-            link.target === "_blank" ||
-            event.metaKey ||
-            event.ctrlKey ||
-            event.shiftKey ||
-            event.altKey
-          )
-            return;
-          const destination = new URL(link.href);
-          if (
-            destination.origin === window.location.origin &&
-            destination.pathname === window.location.pathname &&
-            destination.hash !== "#main-content" &&
-            routeFrom(destination.hash).name !== route.name
-          ) {
-            event.preventDefault();
-            setImportNavigationMessage(
-              "Finish the import or return to statement selection before leaving. Your reviewed answers are still here.",
-            );
-          }
+          guardImportLinks(event, importLocked, route, setImportNavigationMessage);
         }}
       >
         <a
@@ -346,31 +245,7 @@ export function App(): JSX.Element {
         >
           Skip to content
         </a>
-        <nav ref={navigation} class="main-nav" id="main-nav" aria-label="Main" inert={sidebarHidden}>
-          <p class="brand">
-            <img src={`${import.meta.env.BASE_URL}icons/icon.svg`} width="32" height="32" alt="" />
-            FolioDash
-          </p>
-          <ul
-            class="nav-list"
-            style={{
-              "--nav-count": NAV.length,
-              "--nav-index": Math.max(
-                0,
-                NAV.findIndex((entry) => entry.id === current),
-              ),
-            }}
-          >
-            {NAV.map((entry) => (
-              <li key={entry.id}>
-                <a class="nav-link" href={entry.href} aria-current={current === entry.id ? "page" : undefined}>
-                  <Icon name={entry.icon} />
-                  {entry.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <AppNav navigation={navigation} sidebarHidden={sidebarHidden} current={current} />
         <div class="content">
           <div class="content-inner">
             {__SYNTHETIC_ACCEPTANCE__ && (
@@ -379,135 +254,33 @@ export function App(): JSX.Element {
                 spreadsheet and device copy.
               </p>
             )}
-            <header ref={header} class="topbar">
-              {wide && (
-                <button
-                  type="button"
-                  class="icon-button sidebar-toggle"
-                  aria-controls="main-nav"
-                  aria-expanded={!sidebarCollapsed}
-                  onClick={() => {
-                    setSidebarCollapsed(!sidebarCollapsed);
-                  }}
-                >
-                  <Icon name="sidebar" size={20} />
-                  <span class="visually-hidden">{sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}</span>
-                </button>
-              )}
-              {(route.name === "fund" || route.name === "months") && (
-                <a class="icon-button back-button" href="#overview" aria-label="Back to Portfolio">
-                  <Icon name="back" size={20} />
-                </a>
-              )}
-              <div class="topbar-title">
-                <h1 key={pageTitle} id="page-title" class="page-title-arrival">
-                  {pageTitle}
-                </h1>
-              </div>
-              {data.connection === "waiting" || data.connection === "reconnect" ? (
-                // Always one tap away, on every screen, and its own click is the gesture Google's window needs.
-                <button
-                  type="button"
-                  class={`status-chip ${source.tone}`}
-                  title="Sync with Google now"
-                  aria-label={source.label}
-                  onClick={() => {
-                    void session.reconnect();
-                  }}
-                >
-                  <span key={source.tone} class="status-dot" aria-hidden="true" />
-                  <span key={source.label} class="source-label">
-                    <span class="source-full">{source.label}</span>
-                    <span class="source-short" aria-hidden="true">
-                      {source.short}
-                    </span>
-                  </span>
-                </button>
-              ) : (
-                <a
-                  class={`status-chip ${source.tone}`}
-                  href="#connection"
-                  title="Where your data lives"
-                  aria-label={source.label}
-                >
-                  <span key={source.tone} class="status-dot" aria-hidden="true" />
-                  <span key={source.label} class="source-label">
-                    <span class="source-full">{source.label}</span>
-                    <span class="source-short" aria-hidden="true">
-                      {source.short}
-                    </span>
-                  </span>
-                </a>
-              )}
-              <div class="topbar-controls">
-                <PrivacyToggle
-                  hidden={hidden}
-                  onChange={(value) => {
-                    pageMotion.finish();
-                    setHidden(value);
-                  }}
-                />
-              </div>
-            </header>
-            <Presence show={applyUpdate !== null}>
-              {applyUpdate !== null && (
-                <div class="notice app-update" role="status">
-                  <p>
-                    A new version of FolioDash is ready.
-                    {importLocked && <> Finish the import or return to statement selection before updating.</>}
-                    {expenseLocked && (
-                      <> Save or discard the expense draft, or check its uncertain save, before updating.</>
-                    )}
-                  </p>
-                  <button type="button" disabled={importLocked || expenseLocked} onClick={applyUpdate}>
-                    Reload to update
-                  </button>
-                </div>
-              )}
-            </Presence>
-            <Presence show={portfolioScreen && route.name !== "overview" && data.mode === "signed-out"}>
-              <p class="notice" role="status">
-                Demonstration with invented data. Nothing here is yours until you continue with Google.
-              </p>
-            </Presence>
-            <Presence show={portfolioScreen && needsAttention}>
-              <p class="notice notice-warning" role="status">
-                Your Google Sheet needs attention. <a href="#connection">See what to do</a>
-              </p>
-            </Presence>
-            <Presence show={(route.name === "import" || route.name === "history") && data.mode === "signed-out"}>
-              {(route.name === "import" || route.name === "history") && data.mode === "signed-out" && (
-                <div class="notice" role="status">
-                  <p>
-                    Continue with Google to save your statements. You can review the files first.
-                    {!clientConfigured && (
-                      <>
-                        {" "}
-                        Set up Google on <a href="#connection">Your data</a> first.
-                      </>
-                    )}
-                    {importConnectMessage !== "" && <> {importConnectMessage}</>}
-                  </p>
-                  <button
-                    type="button"
-                    disabled={importConnecting || !clientConfigured}
-                    onClick={() => {
-                      void connectForImport();
-                    }}
-                  >
-                    {importConnecting ? "Connecting to Google…" : "Continue with Google"}
-                  </button>
-                </div>
-              )}
-            </Presence>
-            <Presence show={(route.name === "import" || route.name === "history") && data.mode === "device-copy"}>
-              {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
-                <p class="notice" role="status">
-                  Your saved copy is available. Google access is renewed quietly on your next tap, and checked before
-                  saving.
-                </p>
-              )}
-            </Presence>
+            <AppTopbar
+              header={header}
+              wide={wide}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              route={route}
+              pageTitle={pageTitle}
+              data={data}
+              source={source}
+              session={session}
+              hidden={hidden}
+              setHidden={setHidden}
+              pageMotion={pageMotion}
+            />
+            <AppNotices
+              applyUpdate={applyUpdate}
+              importLocked={importLocked}
+              expenseLocked={expenseLocked}
+              portfolioScreen={portfolioScreen}
+              route={route}
+              data={data}
+              needsAttention={needsAttention}
+              clientConfigured={clientConfigured}
+              importConnectMessage={importConnectMessage}
+              importConnecting={importConnecting}
+              connectForImport={connectForImport}
+            />
             <main ref={page} id="main-content" aria-labelledby="page-title" tabIndex={-1}>
               <Presence show={(importLocked || expenseLocked) && importNavigationMessage !== ""}>
                 <p class="notice notice-warning" role="status">
@@ -535,100 +308,32 @@ export function App(): JSX.Element {
                   />
                 )}
                 {route.name === "checkpoints" && (
-                  <CheckpointsView
-                    key={checkpointData.generation}
-                    signedOut={data.mode === "signed-out"}
-                    state={{
-                      ready: data.mode === "signed-out" || checkpointData.ready,
-                      active: shownCheckpoints,
-                      pending: data.mode === "signed-out" ? [] : checkpointData.pending,
-                      unreadable: data.mode !== "signed-out" && checkpointData.receiptsUnreadable,
-                      message: data.mode === "signed-out" ? "" : checkpointData.message,
-                      preserved:
-                        data.mode === "signed-out"
-                          ? []
-                          : checkpointData.preserved.map((entry) => ({
-                              workbookId: entry.workbookId,
-                              active: entry.active,
-                              pending: entry.pending,
-                              unreadable: entry.unreadable,
-                            })),
-                    }}
+                  <CheckpointsRoute
+                    data={data}
+                    checkpointData={checkpointData}
+                    shownCheckpoints={shownCheckpoints}
                     today={today}
-                    onAdd={(request) => session.checkpoints.add(request)}
-                    onVoid={(id) => session.checkpoints.void(id)}
-                    onCheck={() => session.checkpoints.checkPending()}
-                    preservedText={(id, masked) => session.checkpoints.preservedText(id, masked)}
+                    session={session}
                   />
                 )}
                 {route.name === "expenses" && (
-                  <ExpensesView
-                    days={data.mode === "signed-out" ? expenseDemo : expenseData.days}
-                    conflicts={data.mode === "signed-out" ? [] : expenseData.conflicts}
-                    history={data.mode === "signed-out" ? expenseDemoHistory : expenseData.commands}
+                  <ExpensesRoute
+                    data={data}
+                    expenseData={expenseData}
+                    expenseDemo={expenseDemo}
+                    setExpenseDemo={setExpenseDemo}
+                    expenseDemoHistory={expenseDemoHistory}
+                    setExpenseDemoHistory={setExpenseDemoHistory}
+                    expenseConnectMessage={expenseConnectMessage}
+                    setExpenseConnectMessage={setExpenseConnectMessage}
+                    setExpenseLocked={setExpenseLocked}
+                    setHidden={setHidden}
                     today={today}
-                    mode={data.mode}
-                    ready={data.mode === "signed-out" || expenseData.ready}
-                    pending={data.mode !== "signed-out" && expenseData.pending}
-                    onCheckPending={() => session.expenses.checkPending()}
-                    message={expenseConnectMessage || expenseData.message}
-                    onDirtyChange={setExpenseLocked}
-                    onRevealAmounts={() => {
-                      setHidden(false);
-                    }}
-                    onRefresh={() => session.expenses.refresh()}
-                    onConnect={async () => {
-                      const result = await session.connect();
-                      if (result.status === "connected") {
-                        setExpenseConnectMessage("");
-                        await session.expenses.refresh();
-                      } else {
-                        const described = describeConnect(result);
-                        setExpenseConnectMessage(`${described.title}. ${described.body}`);
-                      }
-                    }}
-                    onSave={async (request) => {
-                      if (data.mode !== "signed-out") return session.expenses.save(request);
-                      const entry = expenseDemo.find((day) => day.date === request.date);
-                      if ((entry?.revision ?? null) !== request.expectedRevision)
-                        return {
-                          status: "conflict",
-                          days: expenseDemo,
-                          message: "The demo day changed. Review it before saving again.",
-                        };
-                      const id = crypto.randomUUID();
-                      const days = [
-                        ...expenseDemo.filter((day) => day.date !== request.date),
-                        { date: request.date, amounts: request.amounts, revision: id },
-                      ].sort((a, b) => a.date.localeCompare(b.date));
-                      setExpenseDemoHistory((current) => [...current, { ...request, id }]);
-                      setExpenseDemo(days);
-                      return { status: "saved", days, viewUpdated: true };
-                    }}
+                    session={session}
                   />
                 )}
-                {route.name === "overview" && data.mode === "signed-out" && (
-                  <div class="more">
-                    <details class="demo-picker">
-                      <summary>Explore demo portfolios</summary>
-                      <nav aria-label="Demonstration portfolios">
-                        <ul class="demo-nav">
-                          <li class="demo-label">Demo portfolios:</li>
-                          {DEMO_VARIANTS.map((entry) => (
-                            <li key={entry.id}>
-                              <a
-                                href={`?demo=${entry.id}#overview`}
-                                aria-current={entry.id === variant ? "page" : undefined}
-                              >
-                                {entry.label}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </nav>
-                    </details>
-                  </div>
-                )}
+
+                {route.name === "overview" && data.mode === "signed-out" && <DemoPicker variant={variant} />}
 
                 {route.name === "months" && <MonthsView model={model} />}
                 {route.name === "fund" && (
@@ -639,116 +344,25 @@ export function App(): JSX.Element {
                     onRangeChange={setRange}
                   />
                 )}
-                {route.name === "import" && (
-                  <div inert={jsonImportLocked}>
-                    <ImportView
-                      key={data.workbook?.id ?? "signed-out"}
-                      prepare={prepareImport}
-                      ledger={data.ledger}
-                      {...(data.workbook === null ? {} : { workbookId: data.workbook.id })}
-                      createRevision={() => crypto.randomUUID()}
-                      onRecord={() => undefined}
-                      save={session.save}
-                      onWorkflowLock={setStatementLocked}
-                    />
-                  </div>
-                )}
-                {route.name === "history" && (
-                  <div inert={jsonImportLocked}>
-                    <ImportView
-                      historyMode
-                      prepare={prepareImport}
-                      ledger={data.ledger}
-                      createRevision={() => crypto.randomUUID()}
-                      onRecord={() => undefined}
-                      save={session.save}
-                      onWorkflowLock={setStatementLocked}
-                    />
-                  </div>
-                )}
-                {(route.name === "import" || route.name === "history") && (
-                  <div class="more" inert={statementLocked}>
-                    <details>
-                      <summary>Import an existing FolioDash JSON history file</summary>
-                      <HistoryView
-                        ledger={data.ledger}
-                        onLedger={() => undefined}
-                        save={session.save}
-                        onWorkflowLock={setJsonImportLocked}
-                      />
-                    </details>
-                  </div>
-                )}
+                <ImportRoutes
+                  route={route}
+                  data={data}
+                  jsonImportLocked={jsonImportLocked}
+                  statementLocked={statementLocked}
+                  setStatementLocked={setStatementLocked}
+                  setJsonImportLocked={setJsonImportLocked}
+                  session={session}
+                />
                 {route.name === "connection" && (
-                  <AccountView
-                    key={data.workbook?.id ?? "signed-out"}
-                    state={data}
+                  <ConnectionRoute
+                    data={data}
+                    expenseData={expenseData}
+                    checkpointData={checkpointData}
                     now={now}
                     clientConfigured={clientConfigured}
-                    build={__APP_BUILD__}
-                    expenseCommands={expenseData.commands.length}
-                    checkpointCount={
-                      checkpointData.active.length +
-                      checkpointData.preserved.reduce((total, entry) => total + entry.active.length, 0)
-                    }
-                    revisionSave={session.save}
-                    actions={{
-                      connect: () => session.connect(),
-                      refresh: () => session.refresh(),
-                      reconnect: (options) => session.reconnect(options),
-                      restore: () => session.restoreFromDevice(),
-                      verify: () => session.verifyHistory(),
-                      tidy: () => session.tidySheet(),
-                      forget: () => {
-                        session.forget();
-                      },
-                      setClientId: (text) => {
-                        const kept = rememberClientId(text, browserPrivacyStorage);
-                        if (kept) setClientId(text.trim());
-                        return kept;
-                      },
-                    }}
-                  />
-                )}
-                {route.name === "connection" && data.mode !== "signed-out" && (
-                  <ExpenseDataTools
-                    days={expenseData.days.length}
-                    commands={expenseData.commands.length}
-                    conflicts={expenseData.conflicts.length}
-                    initialized={expenseData.initialized}
-                    ready={expenseData.ready && data.mode === "online" && data.sheet === "ok"}
-                    pending={expenseData.pending}
-                    connected={data.mode === "online" && data.sheet === "ok"}
-                    message={expenseData.message}
-                    onLock={setExpenseLocked}
-                    onExport={() => session.expenses.exportBackup()}
-                    onPreview={(text) => {
-                      const history = session.expenses.previewBackup(text);
-                      return history === null
-                        ? null
-                        : {
-                            days: history.days.length,
-                            commands: history.commands.length,
-                            conflicts: history.conflicts.length,
-                          };
-                    }}
-                    onRestore={(text) => session.expenses.restoreBackup(text)}
-                    onCheck={() => session.expenses.checkPending()}
-                    onSync={async () => {
-                      if (session.state.mode !== "online" || session.state.sheet !== "ok") {
-                        const result = await session.refresh();
-                        if (result.status !== "connected") {
-                          const described = describeConnect(result);
-                          throw new Error(`${described.title}. ${described.body}`);
-                        }
-                      }
-                      await session.expenses.refresh();
-                      if (!session.expenses.state.ready)
-                        throw new Error(
-                          session.expenses.state.message ||
-                            "Your expense records could not be checked. Keep the backup selected and check again.",
-                        );
-                    }}
+                    setClientId={setClientId}
+                    setExpenseLocked={setExpenseLocked}
+                    session={session}
                   />
                 )}
               </DeferredView>

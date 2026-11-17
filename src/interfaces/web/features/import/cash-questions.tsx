@@ -1,7 +1,6 @@
-import { Presence } from "../../shared/ui/presence";
 import type { JSX } from "preact";
 import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
-import { type FundCommand, type PlanRow, applyImport, planImport } from "../../../../core/statements/import-plan";
+import { applyImport, planImport } from "../../../../core/statements/import-plan";
 import type { StatementSource } from "../../../../applications/ledger/ledger-service";
 import type {
   CheckResult,
@@ -12,183 +11,11 @@ import type {
 import { type IsoDate, formatDateLong } from "../../../../core/values/iso-date";
 import type { LedgerState } from "../../../../core/portfolio/ledger";
 import { computeMetrics } from "../../../../core/portfolio/metrics";
-import { type EuroCents, ZERO_CENTS, parseItalianAmount } from "../../../../core/values/money";
 import { Amount } from "../../presentation/privacy/privacy";
 import type { ReviewStatement } from "../../../../applications/import/import-model";
-
-interface Answer {
-  readonly opening: string;
-  readonly moneyIn: string;
-  readonly moneyOut: string;
-  readonly name: string;
-  /** For a fund missing from the statement: was it fully sold? */
-  readonly sold: "yes" | "no" | "";
-  /** For a fund the bank lists at zero value. */
-  readonly zero: "keep" | "close";
-  readonly reopen: boolean;
-}
-
-const BLANK: Answer = { opening: "", moneyIn: "", moneyOut: "", name: "", sold: "", zero: "keep", reopen: false };
-export interface CashReviewDraft {
-  readonly answers: Readonly<Record<string, Answer>>;
-  readonly moneyMoved: "yes" | "no" | "";
-}
-const AMOUNT_HINT = "Use Italian notation, for example 1.000,50. Enter 0 if there was none.";
-
-function amount(text: string): EuroCents | null {
-  return text.trim() === "" ? null : parseItalianAmount(text);
-}
-
-interface Built {
-  readonly commands: FundCommand[];
-  readonly errors: Readonly<Record<string, string>>;
-}
-
-function build(
-  rows: readonly PlanRow[],
-  answers: Readonly<Record<string, Answer>>,
-  moneyMoved: "yes" | "no" | "",
-): Built {
-  const commands: FundCommand[] = [];
-  const errors: Record<string, string> = {};
-  for (const row of rows) {
-    const answer = answers[row.isin] ?? BLANK;
-    const fail = (message: string): void => {
-      errors[row.isin] = message;
-    };
-    const required = (text: string, what: string): EuroCents | null => {
-      const value = amount(text);
-      if (value === null) fail(`${what}. ${AMOUNT_HINT}`);
-      return value;
-    };
-    const base = { isin: row.isin, comment: "" };
-
-    if (row.detected === "Opening") {
-      const opening = required(answer.opening, "Enter the net invested as of the statement date");
-      if (opening !== null)
-        commands.push({
-          ...base,
-          action: "Start",
-          moneyIn: ZERO_CENTS,
-          moneyOut: ZERO_CENTS,
-          openingNetInvested: opening,
-        });
-    } else if (row.detected === "New") {
-      const moneyIn = required(answer.moneyIn, "Enter the money added to this new fund");
-      if (moneyIn !== null) {
-        commands.push({
-          ...base,
-          action: "Add",
-          moneyIn,
-          moneyOut: ZERO_CENTS,
-          ...(answer.name.trim() === "" ? {} : { name: answer.name.trim() }),
-        });
-      }
-    } else if (row.detected === "Closed") {
-      commands.push({ ...base, action: "Closed", moneyIn: ZERO_CENTS, moneyOut: ZERO_CENTS });
-    } else if (row.detected === "Missing") {
-      if (answer.sold !== "yes") {
-        fail(
-          "Confirm whether you sold all of this fund. If you still hold it, go back and include its value or choose a complete statement.",
-        );
-        continue;
-      }
-      const proceeds = required(
-        answer.moneyOut,
-        "Enter the total money received from selling this fund, not just the profit",
-      );
-      if (proceeds !== null) commands.push({ ...base, action: "Close", moneyIn: ZERO_CENTS, moneyOut: proceeds });
-    } else {
-      // Held or Reappeared: cash movements depend on the one question above.
-      if (row.detected === "Reappeared" && !answer.reopen) {
-        fail("This fund was closed and now has value again. Confirm that it is held again.");
-        continue;
-      }
-      if (row.detected === "Held" && row.value === 0 && answer.zero === "close") {
-        const proceeds = required(
-          answer.moneyOut,
-          "Enter the total money received from selling this fund, not just the profit",
-        );
-        if (proceeds !== null) commands.push({ ...base, action: "Close", moneyIn: ZERO_CENTS, moneyOut: proceeds });
-        continue;
-      }
-      if (moneyMoved === "") {
-        fail("Answer the question about money movements above.");
-        continue;
-      }
-      let moneyIn: EuroCents | null = ZERO_CENTS;
-      let moneyOut: EuroCents | null = ZERO_CENTS;
-      if (moneyMoved === "yes") {
-        moneyIn = required(answer.moneyIn, "Enter the money added to this fund");
-        moneyOut = moneyIn === null ? null : required(answer.moneyOut, "Enter the total money received from this fund");
-      }
-      if (moneyIn !== null && moneyOut !== null) {
-        commands.push({ ...base, action: row.detected === "Reappeared" ? "Reopen" : "Keep", moneyIn, moneyOut });
-      }
-    }
-  }
-  return { commands, errors };
-}
-
-function AmountField(props: {
-  readonly id: string;
-  readonly label: string;
-  readonly value: string;
-  readonly hint?: string;
-  /** One explanation shown once for a whole group of fields, instead of the same text under each fund. */
-  readonly describedBy?: string;
-  readonly onInput: (value: string) => void;
-}): JSX.Element {
-  return (
-    <div class="field">
-      <label for={props.id}>
-        {props.label} <span class="cash-currency">(EUR)</span>
-      </label>
-      <input
-        id={props.id}
-        type="text"
-        inputMode="decimal"
-        autoComplete="off"
-        aria-describedby={props.hint === undefined ? props.describedBy : `${props.id}-hint`}
-        value={props.value}
-        onInput={(event) => {
-          props.onInput(event.currentTarget.value);
-        }}
-      />
-      {props.hint !== undefined && (
-        <p id={`${props.id}-hint`} class="hint cash-field-help">
-          {props.hint}
-        </p>
-      )}
-    </div>
-  );
-}
-
-const ACTION_TEXT: Readonly<Record<FundCommand["action"], string>> = {
-  Start: "Starting balance",
-  Add: "New fund",
-  Keep: "Still held",
-  Close: "Fully sold",
-  Reopen: "Held again",
-  Closed: "Remains closed",
-};
-
-const DETECTION_TEXT: Readonly<Record<PlanRow["detected"], string>> = {
-  Opening: "Starting balance",
-  New: "New fund",
-  Held: "Still held",
-  Missing: "Not included in this update",
-  Reappeared: "Closed before, held again",
-  Closed: "Closed earlier",
-};
-
-type SaveState =
-  | { readonly name: "idle" }
-  | { readonly name: "saving"; readonly checking?: boolean }
-  | { readonly name: "not-saved"; readonly message: string }
-  | { readonly name: "refused"; readonly outcome: Extract<RecordResult, { status: "stale" | "rejected" | "damaged" }> }
-  | { readonly name: "saved-not-reloaded" }
-  | { readonly name: "unknown"; readonly message: string };
+import { type Answer, BLANK, type CashReviewDraft, build } from "./cash-answers";
+import { FundQuestion } from "./cash-fund-question";
+import { CashSummary, SaveOutcome, type SaveState } from "./cash-outcome";
 
 export function CashQuestions(props: {
   readonly statement: ReviewStatement;
@@ -457,197 +284,18 @@ export function CashQuestions(props: {
           const answer = answers[row.isin] ?? BLANK;
           const error = built.errors[row.isin];
           const showMoney = moneyMoved === "yes" && (row.detected === "Held" || row.detected === "Reappeared");
-          const id = (suffix: string): string => `${prefix}-${suffix}-${row.isin}`;
           return (
-            <fieldset
+            <FundQuestion
               key={row.isin}
-              class="fund-question"
-              disabled={locked}
-              data-invalid={attempted && error !== undefined}
-              aria-describedby={attempted && error !== undefined ? id("error") : undefined}
-            >
-              <legend>
-                {row.name} <span class="isin">{row.isin}</span> <span class="tag">{DETECTION_TEXT[row.detected]}</span>
-              </legend>
-              <p class="hint">
-                {row.detected === "Missing" || row.detected === "Closed" ? (
-                  "No value on this statement."
-                ) : (
-                  <>
-                    Market value <Amount cents={row.value} />.
-                  </>
-                )}
-                {row.detected !== "Opening" && (
-                  <>
-                    {" "}
-                    Net invested before: <Amount cents={row.priorNetInvested} />.
-                  </>
-                )}
-              </p>
-
-              {row.detected === "Opening" && (
-                <AmountField
-                  id={id("opening")}
-                  label="Net invested on this date"
-                  describedBy={`${prefix}-opening-help`}
-                  value={answer.opening}
-                  onInput={(value) => {
-                    update(row.isin, { opening: value });
-                  }}
-                />
-              )}
-              {row.detected === "New" && (
-                <>
-                  <AmountField
-                    id={id("in")}
-                    label="Money added to this fund"
-                    hint="Total invested in this new fund during the period, including money switched in from another fund. Enter 0 if none."
-                    value={answer.moneyIn}
-                    onInput={(value) => {
-                      update(row.isin, { moneyIn: value });
-                    }}
-                  />
-                  <div class="field">
-                    <label for={id("name")}>Short name (optional)</label>
-                    <input
-                      id={id("name")}
-                      type="text"
-                      value={answer.name}
-                      onInput={(event) => {
-                        update(row.isin, { name: event.currentTarget.value });
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-              {row.detected === "Missing" && (
-                <>
-                  <p>This fund is not included in your update. Did you sell all of it?</p>
-                  <label>
-                    <input
-                      type="radio"
-                      name={id("sold")}
-                      checked={answer.sold === "yes"}
-                      onChange={() => {
-                        update(row.isin, { sold: "yes" });
-                      }}
-                    />{" "}
-                    Yes, fully sold
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name={id("sold")}
-                      checked={answer.sold === "no"}
-                      onChange={() => {
-                        update(row.isin, { sold: "no" });
-                      }}
-                    />{" "}
-                    No, I did not sell it
-                  </label>
-                  {answer.sold === "yes" && (
-                    <AmountField
-                      id={id("sale-proceeds")}
-                      label="Total money received from the sale"
-                      hint="Enter the actual total paid to you when you sold the fund, not just the profit. Enter 0 if nothing was received."
-                      value={answer.moneyOut}
-                      onInput={(value) => {
-                        update(row.isin, { moneyOut: value });
-                      }}
-                    />
-                  )}
-                </>
-              )}
-              {row.detected === "Held" && row.value === 0 && (
-                <>
-                  <p>This update lists the fund at zero value. Do you still hold it?</p>
-                  <label>
-                    <input
-                      type="radio"
-                      name={id("zero")}
-                      checked={answer.zero === "keep"}
-                      onChange={() => {
-                        update(row.isin, { zero: "keep" });
-                      }}
-                    />{" "}
-                    Keep it active at zero
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name={id("zero")}
-                      checked={answer.zero === "close"}
-                      onChange={() => {
-                        update(row.isin, { zero: "close" });
-                      }}
-                    />{" "}
-                    It was fully sold
-                  </label>
-                  {answer.zero === "close" && (
-                    <AmountField
-                      id={id("sale-proceeds")}
-                      label="Total money received from the sale"
-                      hint="Enter the actual total paid to you when you sold the fund, not just the profit. Enter 0 if nothing was received."
-                      value={answer.moneyOut}
-                      onInput={(value) => {
-                        update(row.isin, { moneyOut: value });
-                      }}
-                    />
-                  )}
-                </>
-              )}
-              {row.detected === "Reappeared" && (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={answer.reopen}
-                    onChange={(event) => {
-                      update(row.isin, { reopen: event.currentTarget.checked });
-                    }}
-                  />{" "}
-                  This fund is held again
-                </label>
-              )}
-              <Presence show={showMoney && !(row.detected === "Held" && row.value === 0 && answer.zero === "close")}>
-                <div class="cash-movements">
-                  <div class="cash-movement-fields">
-                    <AmountField
-                      id={id("in")}
-                      label="Money added to this fund"
-                      describedBy={`${prefix}-movement-help`}
-                      value={answer.moneyIn}
-                      onInput={(value) => {
-                        update(row.isin, { moneyIn: value });
-                      }}
-                    />
-                    <AmountField
-                      id={id("out")}
-                      label="Money received from this fund"
-                      describedBy={`${prefix}-movement-help`}
-                      value={answer.moneyOut}
-                      onInput={(value) => {
-                        update(row.isin, { moneyOut: value });
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    class="link-button"
-                    disabled={locked || (amount(answer.moneyIn) === 0 && amount(answer.moneyOut) === 0)}
-                    onClick={() => {
-                      update(row.isin, { moneyIn: "0", moneyOut: "0" });
-                    }}
-                  >
-                    No money moved for this fund
-                  </button>
-                </div>
-              </Presence>
-              {error !== undefined && attempted && (
-                <p id={id("error")} class="field-error" role="alert">
-                  {error}
-                </p>
-              )}
-            </fieldset>
+              row={row}
+              answer={answer}
+              error={error}
+              showMoney={showMoney}
+              attempted={attempted}
+              locked={locked}
+              prefix={prefix}
+              update={update}
+            />
           );
         })}
 
@@ -662,51 +310,7 @@ export function CashQuestions(props: {
           </div>
         )}
 
-        {result?.ok === true && (
-          <section aria-labelledby={`${prefix}-summary-heading`} class="summary">
-            <h4 id={`${prefix}-summary-heading`}>What will be recorded for {formatDateLong(props.date)}</h4>
-            <ul class="fund-summary">
-              {rows.map((row) => {
-                const holding = result.state.snapshots[result.state.snapshots.length - 1]?.holdings[row.isin];
-                return holding === undefined ? null : (
-                  <li key={row.isin}>
-                    <p class="fund-summary-name">
-                      {result.state.funds.find((fund) => fund.isin === row.isin)?.name ?? row.name}
-                    </p>
-                    <dl class="facts">
-                      <div>
-                        <dt>After this update</dt>
-                        <dd>{ACTION_TEXT[holding.action]}</dd>
-                      </div>
-                      <div>
-                        <dt>Money added</dt>
-                        <dd>
-                          <Amount cents={holding.moneyIn} />
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Money received</dt>
-                        <dd>
-                          <Amount cents={holding.moneyOut} />
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Net invested</dt>
-                        <dd>
-                          <Amount cents={holding.netInvested} />
-                        </dd>
-                      </div>
-                    </dl>
-                  </li>
-                );
-              })}
-            </ul>
-            <p>
-              Check the money added and received for each fund, including both sides of any switch. Percentages that
-              depend on when cash moved are estimates.
-            </p>
-          </section>
-        )}
+        {result?.ok === true && <CashSummary result={result} rows={rows} prefix={prefix} date={props.date} />}
 
         <p class="hint">
           {props.onReview !== undefined
@@ -736,61 +340,7 @@ export function CashQuestions(props: {
             </p>
           )}
         </div>
-        {saving.name === "not-saved" && (
-          <div class="review-problem" role="alert">
-            <h4>Not saved</h4>
-            <p>{saving.message}</p>
-          </div>
-        )}
-        {saving.name === "refused" && (
-          <div class="review-problem" role="alert">
-            <h4>Not saved</h4>
-            {saving.outcome.status === "stale" && (
-              <p>
-                Another device changed your portfolio. This statement was not saved. Your inputs are still here. Check
-                the updated history and review your decisions before confirming again; reconnect in Your data if Google
-                could not be checked.
-              </p>
-            )}
-            {saving.outcome.status === "rejected" && (
-              <>
-                <p>The spreadsheet service checked the statement and did not accept it. Nothing was saved.</p>
-                <ul>
-                  {saving.outcome.messages.map((message) => (
-                    <li key={message}>{message}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-            {saving.outcome.status === "damaged" && (
-              <p>{saving.outcome.message} Nothing was saved. Do not record anything until the ledger is restored.</p>
-            )}
-          </div>
-        )}
-        {saving.name === "saved-not-reloaded" && (
-          <div class="review-problem" role="alert">
-            <h4>Saved, but not reloaded</h4>
-            <p>
-              The statement was recorded in your spreadsheet, but the ledger could not be read back. Do not record it
-              again. Checking reads your spreadsheet and writes nothing.
-            </p>
-            {props.save !== undefined && (
-              <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>
-                Check what happened
-              </button>
-            )}
-          </div>
-        )}
-        {saving.name === "unknown" && props.save !== undefined && (
-          <div class="review-problem" role="alert">
-            <h4>The result is not known</h4>
-            <p>{saving.message}</p>
-            <p>Do not try again yet. Checking reads your spreadsheet and writes nothing.</p>
-            <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>
-              Check what happened
-            </button>
-          </div>
-        )}
+        <SaveOutcome saving={saving} save={props.save} checkSave={checkSave} />
       </div>
     </section>
   );
