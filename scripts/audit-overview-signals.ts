@@ -1,9 +1,9 @@
 // Runs the real Portfolio view over invented, long recorded data, never a live account.
-import { runSyntheticJourney } from "./syntheticHarness.ts";
+import { runSyntheticJourney } from "./synthetic-harness.ts";
 
 const assertions = await runSyntheticJourney({
   name: "Portfolio signals",
-  entry: "tests/fixtures/OverviewBrowser.ts",
+  entry: "tests/fixtures/overview-browser.ts",
   directory: "dist/acceptance/overview-audit",
   port: Number(process.env["FOLIODASH_OVERVIEW_AUDIT_PORT"] ?? 4310),
   config: "config/vite.overview-audit.config.ts",

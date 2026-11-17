@@ -4,8 +4,8 @@ import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { readFiles, treeDigest, writeCaptureReceipt } from "./prepare-pages.ts";
-import { type LocalBrowser, withLocalBrowser } from "./localBrowser.ts";
-import { CAPTURED, type CapturedView, type RouteName } from "./readmeViews.ts";
+import { type LocalBrowser, withLocalBrowser } from "./local-browser.ts";
+import { CAPTURED, type CapturedView, type RouteName } from "./readme-views.ts";
 
 // Every README image is drawn without the page background, so the cards sit on GitHub's own light or dark canvas.
 // Opaque surfaces replace frosted glass, which would otherwise show whatever lies behind the picture through the bar.

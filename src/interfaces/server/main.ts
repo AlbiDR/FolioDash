@@ -2,9 +2,9 @@
 // adds one top-level function for each, because Apps Script finds callable
 // functions by name. Nothing here is reachable until a deployment is made.
 
-import { RowLedgerStore } from "../../adapters/ledger/RowLedgerStore";
-import { type SpreadsheetLike, SheetsRowSheet } from "../../adapters/appsscript/SheetsRowSheet";
-import type { ServiceEnvironment } from "../../applications/LedgerService";
+import { RowLedgerStore } from "../../adapters/ledger/row-ledger-store";
+import { type SpreadsheetLike, SheetsRowSheet } from "../../adapters/appsscript/sheets-row-sheet";
+import type { ServiceEnvironment } from "../../applications/ledger-service";
 import { createService } from "./service";
 
 declare const SpreadsheetApp: { openById(id: string): SpreadsheetLike; flush(): void };

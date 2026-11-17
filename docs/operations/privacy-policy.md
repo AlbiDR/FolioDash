@@ -17,17 +17,17 @@ Every claim in the policy below, with the evidence it rests on. If the app chang
 
 | Statement | Evidence |
 |---|---|
-| The browser talks to Google directly; FolioDash has no server of its own | `browserSession.ts` sends requests with `fetch` to Google only; decision FD-017 |
+| The browser talks to Google directly; FolioDash has no server of its own | `browser-session.ts` sends requests with `fetch` to Google only; decision FD-017 |
 | Only Google's Drive and Sheets APIs, its sign-in script and a link to your own sheet are involved | Hosts found in the built bundle on 2026-11-07: `www.googleapis.com`, `sheets.googleapis.com`, `accounts.google.com`, `docs.google.com` (the "Open in Google Sheets" link). `script.googleapis.com` is not in the bundle |
 | No analytics, advertising, tracking or cookies of FolioDash's own | Source search for analytics, tracker, beacon and cookie terms found none; no external fonts or stylesheets in `index.html` |
 | One spreadsheet, seen only through the `drive.file` permission | FD-017; scope constant in `session.ts` |
-| The account's email address is read once, to remember which account is yours | `AccountHint.ts` calls Drive's about endpoint for the email only; FD-022 |
+| The account's email address is read once, to remember which account is yours | `account-hint.ts` calls Drive's about endpoint for the email only; FD-022 |
 | The monthly bank statement is saved as read, including the holder name and contract numbers, in your sheet and never in the device copy | FD-019 |
-| Excel files are read in the browser | `ImportView.tsx` reads the chosen file with `file.arrayBuffer()` and parses it locally |
+| Excel files are read in the browser | `import-view.tsx` reads the chosen file with `file.arrayBuffer()` and parses it locally |
 | The device keeps a copy of portfolio and expense records, Google access of at most an hour, the remembered account, display choices and cached app files | Storage keys `foliodash.ledger.v1`, `foliodash.expenses.v1`, `foliodash.google-session.v1`, `foliodash.account-hint.v1`, `foliodash.client.v1`, `foliodash.privacy.v1`, `foliodash.sidebar.v1`; service worker cache; FD-018, FD-022 |
 | Forget this device removes the copies, Google access and remembered account, and asks Google to revoke the token if one is held | `Session.forgetDevice` clears the ledger and expense copies, the access store and the hint store, and calls `revoke` when a token is held |
 | It does not remove display choices or a client ID you typed | `forgetDevice` does not touch `foliodash.privacy.v1`, `foliodash.sidebar.v1` or `foliodash.client.v1` |
-| An expense backup is a file you download | `ExpenseDataTools.tsx` creates it with `URL.createObjectURL`; nothing is uploaded |
+| An expense backup is a file you download | `expense-data-tools.tsx` creates it with `URL.createObjectURL`; nothing is uploaded |
 | Google's script loads when a connection exists or you connect, never for the demo | Observed in the browser pane on 2026-11-07: no Google request for a signed-out visitor, script preloaded for a remembered connection |
 | Data sent to Google travels over HTTPS | Every Google endpoint in the bundle is an `https://` URL; the site's canonical address is `https://albidr.github.io/FolioDash/` |
 | The device copy is not encrypted | FD-018: a plain copy, with encryption at rest and a passcode offered and not chosen; the Your data page says anyone using the unlocked browser could see it |

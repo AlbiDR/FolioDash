@@ -11,7 +11,7 @@ import type {
   TidyOutcome,
   VerifyOutcome,
   Workbook,
-} from "../../../applications/SessionModel";
+} from "../../../applications/session-model";
 import {
   FRESH_RENEWAL,
   type RenewalHistory,
@@ -21,8 +21,8 @@ import {
   mayRenewAutomatically,
   renewalNeedsThePerson,
   signInOptionsFor,
-} from "../../../applications/RenewalPolicy";
-import { fetchAccountHint } from "../../../adapters/google/AccountHint";
+} from "../../../applications/renewal-policy";
+import { fetchAccountHint } from "../../../adapters/google/account-hint";
 import {
   type DirectDeps,
   attachDirect,
@@ -39,37 +39,37 @@ import {
   recoverRevisionDirect,
   tidyLedgerTab,
   statementTabTitle,
-} from "../../../adapters/google/DirectLedger";
-import type { RestClient } from "../../../adapters/google/Rest";
-import { type WorkbookIdentity, needsOrganization, writeGridTabs } from "../../../adapters/google/GoogleWorkbook";
+} from "../../../adapters/google/direct-ledger";
+import type { RestClient } from "../../../adapters/google/rest";
+import { type WorkbookIdentity, needsOrganization, writeGridTabs } from "../../../adapters/google/google-workbook";
 import {
   containsExpenseCommands,
   expenseView,
   EXPENSE_VIEW_TITLE,
   readExpenses,
-} from "../../../adapters/google/DirectExpenses";
-import { rawGrid } from "../../../applications/SheetGrid";
-import { readableView, previousReadableViews } from "../../../applications/ReadableView";
-import { VIEW_TAB } from "../../../adapters/google/SheetsLayout";
-import type { AttachItem } from "../../../applications/LedgerService";
-import type { BackfillStatement } from "../../../applications/BackfillReview";
-import type { FundCommand } from "../../../core/ImportPlan";
-import { type InterpretStatement, verifyRebuild } from "../../../applications/Rebuild";
-import { type IsoDate, toIsoDate } from "../../../core/IsoDate";
-import { type RawSheet, parseStoredSheet } from "../../../core/RawSheet";
-import { EMPTY_LEDGER, type LedgerState } from "../../../core/Ledger";
-import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../applications/ImportModel";
-import type { LedgerCache } from "../../../adapters/browser/LedgerCache";
-import type { ExpenseCache } from "../../../adapters/browser/ExpenseCache";
-import type { RevisionPendingStore } from "../../../adapters/browser/RevisionPending";
-import { ExpenseSession } from "./expenseSession";
-import { CheckpointSession } from "./checkpointSession";
+} from "../../../adapters/google/direct-expenses";
+import { rawGrid } from "../../../applications/sheet-grid";
+import { readableView, previousReadableViews } from "../../../applications/readable-view";
+import { VIEW_TAB } from "../../../adapters/google/sheets-layout";
+import type { AttachItem } from "../../../applications/ledger-service";
+import type { BackfillStatement } from "../../../applications/backfill-review";
+import type { FundCommand } from "../../../core/import-plan";
+import { type InterpretStatement, verifyRebuild } from "../../../applications/rebuild";
+import { type IsoDate, toIsoDate } from "../../../core/iso-date";
+import { type RawSheet, parseStoredSheet } from "../../../core/raw-sheet";
+import { EMPTY_LEDGER, type LedgerState } from "../../../core/ledger";
+import type { CheckResult, RecordRequest, RecordResult, RemoteSave } from "../../../applications/import-model";
+import type { LedgerCache } from "../../../adapters/browser/ledger-cache";
+import type { ExpenseCache } from "../../../adapters/browser/expense-cache";
+import type { RevisionPendingStore } from "../../../adapters/browser/revision-pending";
+import { ExpenseSession } from "./expense-session";
+import { CheckpointSession } from "./checkpoint-session";
 import {
   type CheckpointLock,
   type CheckpointStore,
   createCheckpointStore,
-} from "../../../adapters/browser/CheckpointStore";
-import type { KeyValueStore } from "../../../adapters/browser/LedgerCache";
+} from "../../../adapters/browser/checkpoint-store";
+import type { KeyValueStore } from "../../../adapters/browser/ledger-cache";
 
 /** The narrow permission: only files this app creates or the person opens with it. */
 export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";

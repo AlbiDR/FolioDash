@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STATEMENT_DUE_AFTER_DAYS, daysBetween, portfolioAttention } from "./attention";
-import { parseIsoDate, type IsoDate } from "../../../../core/IsoDate";
+import { parseIsoDate, type IsoDate } from "../../../../core/iso-date";
 
 function day(text: string): IsoDate {
   const date = parseIsoDate(text);

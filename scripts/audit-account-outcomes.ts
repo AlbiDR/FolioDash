@@ -1,9 +1,9 @@
 // Runs the real Your data screen and Session against FakeGoogle, never a live account.
-import { runSyntheticJourney } from "./syntheticHarness.ts";
+import { runSyntheticJourney } from "./synthetic-harness.ts";
 
 const assertions = await runSyntheticJourney({
   name: "Your data outcomes",
-  entry: "tests/fixtures/AccountBrowser.ts",
+  entry: "tests/fixtures/account-browser.ts",
   directory: "dist/acceptance/account-audit",
   port: Number(process.env["FOLIODASH_ACCOUNT_AUDIT_PORT"] ?? 4202),
   config: "config/vite.account-audit.config.ts",

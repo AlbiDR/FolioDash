@@ -1,33 +1,33 @@
-import { createExpenseCache } from "../../../adapters/browser/ExpenseCache";
-import { createRevisionPendingStore } from "../../../adapters/browser/RevisionPending";
-import { prepareManualStatement } from "../features/import/ManualStatement";
-import { createGoogleSessionStore } from "../../../adapters/browser/GoogleSession";
-import type { RenewalCoordination, SignInOptions, SignInResult } from "../../../applications/SessionModel";
-import { createAccountHintStore } from "../../../adapters/browser/ConnectionMemory";
+import { createExpenseCache } from "../../../adapters/browser/expense-cache";
+import { createRevisionPendingStore } from "../../../adapters/browser/revision-pending";
+import { prepareManualStatement } from "../features/import/manual-statement";
+import { createGoogleSessionStore } from "../../../adapters/browser/google-session";
+import type { RenewalCoordination, SignInOptions, SignInResult } from "../../../applications/session-model";
+import { createAccountHintStore } from "../../../adapters/browser/connection-memory";
 import { describe, expect, it } from "vitest";
-import { legacyJanuarySummary } from "../../../../tests/fixtures/LegacySummary";
-import { FakeGoogle } from "../../../../tests/fixtures/FakeGoogle";
-import { rawGrid } from "../../../applications/SheetGrid";
-import { OPENING, februarySheet, januarySheet } from "../../../../tests/fixtures/SavedMonths";
-import { ISIN_A, ISIN_B, syntheticSheet } from "../../../../tests/fixtures/SyntheticFideuramSheet";
-import type { AttachItem } from "../../../applications/LedgerService";
-import { planImport } from "../../../core/ImportPlan";
+import { legacyJanuarySummary } from "../../../../tests/fixtures/legacy-summary";
+import { FakeGoogle } from "../../../../tests/fixtures/fake-google";
+import { rawGrid } from "../../../applications/sheet-grid";
+import { OPENING, februarySheet, januarySheet } from "../../../../tests/fixtures/saved-months";
+import { ISIN_A, ISIN_B, syntheticSheet } from "../../../../tests/fixtures/synthetic-fideuram-sheet";
+import type { AttachItem } from "../../../applications/ledger-service";
+import { planImport } from "../../../core/import-plan";
 import {
   LEDGER_TAB,
   VIEW_TAB,
   ORGANIZATION_METADATA_KEY,
   ORGANIZATION_VERSION,
-} from "../../../adapters/google/SheetsLayout";
-import type { FundCommand, StatementInput } from "../../../core/ImportPlan";
-import { type IsoDate, parseIsoDate } from "../../../core/IsoDate";
-import { parseIsin } from "../../../core/Isin";
-import { parseExpenseAmounts } from "../../../core/WorkExpenses";
-import { saveExpense, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE } from "../../../adapters/google/DirectExpenses";
-import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/Money";
-import type { RecordRequest } from "../../../applications/ImportModel";
-import { presentStatement } from "../../../adapters/fideuram/FideuramPresentation";
-import { interpretStatement } from "./interpretStatement";
-import { type KeyValueStore, createLedgerCache } from "../../../adapters/browser/LedgerCache";
+} from "../../../adapters/google/sheets-layout";
+import type { FundCommand, StatementInput } from "../../../core/import-plan";
+import { type IsoDate, parseIsoDate } from "../../../core/iso-date";
+import { parseIsin } from "../../../core/isin";
+import { parseExpenseAmounts } from "../../../core/work-expenses";
+import { saveExpense, EXPENSE_LOG_TITLE, EXPENSE_VIEW_TITLE } from "../../../adapters/google/direct-expenses";
+import { type EuroCents, ZERO_CENTS, toEuroCents } from "../../../core/money";
+import type { RecordRequest } from "../../../applications/import-model";
+import { presentStatement } from "../../../adapters/fideuram/fideuram-presentation";
+import { interpretStatement } from "./interpret-statement";
+import { type KeyValueStore, createLedgerCache } from "../../../adapters/browser/ledger-cache";
 import { type SessionDeps, Session } from "./session";
 
 const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;

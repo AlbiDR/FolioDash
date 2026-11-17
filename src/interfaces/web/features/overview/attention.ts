@@ -1,5 +1,5 @@
-import { formatDateLong, type IsoDate } from "../../../../core/IsoDate";
-import type { OverviewModel } from "./OverviewModel";
+import { formatDateLong, type IsoDate } from "../../../../core/iso-date";
+import type { OverviewModel } from "./overview-model";
 
 /**
  * A statement is due once the latest one is older than a month and a little more, since an export can fall on any

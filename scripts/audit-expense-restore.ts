@@ -1,9 +1,9 @@
 // Runs the real expense data tools and ExpenseSession against FakeGoogle, never a live account.
-import { runSyntheticJourney } from "./syntheticHarness.ts";
+import { runSyntheticJourney } from "./synthetic-harness.ts";
 
 const assertions = await runSyntheticJourney({
   name: "Expense restore",
-  entry: "tests/fixtures/ExpenseRestoreBrowser.ts",
+  entry: "tests/fixtures/expense-restore-browser.ts",
   directory: "dist/acceptance/expense-restore-audit",
   port: Number(process.env["FOLIODASH_EXPENSE_RESTORE_AUDIT_PORT"] ?? 4200),
   config: "config/vite.expense-restore-audit.config.ts",

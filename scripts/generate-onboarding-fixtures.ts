@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { createOnboardingFixtures, ONBOARDING_EXPECTED } from "../tests/fixtures/OnboardingFiles";
+import { createOnboardingFixtures, ONBOARDING_EXPECTED } from "../tests/fixtures/onboarding-files";
 
 const OUTPUT = "dist/acceptance/onboarding";
 

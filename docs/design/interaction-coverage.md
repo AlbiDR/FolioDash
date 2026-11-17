@@ -91,214 +91,214 @@ One row is a source template; a fund-link template can render many controls. All
 
 | ID | Source | Element / family | Control or context | State review |
 |---|---|---|---|---|
-| 7f8f7894a445-1 | [App.tsx:339](../../src/interfaces/web/app/App.tsx#L339) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
-| 3bfe6fff2b29-1 | [App.tsx:366](../../src/interfaces/web/app/App.tsx#L366) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
-| da009fee0732-1 | [App.tsx:384](../../src/interfaces/web/app/App.tsx#L384) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
-| 6575b250d5c3-1 | [App.tsx:398](../../src/interfaces/web/app/App.tsx#L398) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
-| 9e89111936a6-1 | [App.tsx:409](../../src/interfaces/web/app/App.tsx#L409) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 6ac455bf0bfb-1 | [App.tsx:427](../../src/interfaces/web/app/App.tsx#L427) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| e9f1737c87e0-1 | [App.tsx:462](../../src/interfaces/web/app/App.tsx#L462) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
-| cc8374a68917-1 | [App.tsx:475](../../src/interfaces/web/app/App.tsx#L475) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
-| 0ae4a332d365-1 | [App.tsx:486](../../src/interfaces/web/app/App.tsx#L486) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
-| 4f9ff55e6f3e-1 | [App.tsx:491](../../src/interfaces/web/app/App.tsx#L491) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| d1b5caf7a0bd-1 | [App.tsx:613](../../src/interfaces/web/app/App.tsx#L613) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
-| e4b85c83f274-1 | [App.tsx:619](../../src/interfaces/web/app/App.tsx#L619) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4b205198dc1e-1 | [App.tsx:672](../../src/interfaces/web/app/App.tsx#L672) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
-| fbb0b395871f-1 | [AccountView.tsx:296](../../src/interfaces/web/features/account/AccountView.tsx#L296) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| d2c1f7c2e15c-1 | [AccountView.tsx:332](../../src/interfaces/web/features/account/AccountView.tsx#L332) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
-| 440fec218a94-1 | [AccountView.tsx:357](../../src/interfaces/web/features/account/AccountView.tsx#L357) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| cf3aa1c30ae7-1 | [AccountView.tsx:377](../../src/interfaces/web/features/account/AccountView.tsx#L377) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 59728ce8bfc5-1 | [AccountView.tsx:386](../../src/interfaces/web/features/account/AccountView.tsx#L386) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
-| dd261ffa2ce7-1 | [AccountView.tsx:421](../../src/interfaces/web/features/account/AccountView.tsx#L421) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 853aebc01024-1 | [AccountView.tsx:431](../../src/interfaces/web/features/account/AccountView.tsx#L431) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 9e9a67962c1a-1 | [AccountView.tsx:445](../../src/interfaces/web/features/account/AccountView.tsx#L445) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| fc05a936c8c9-1 | [AccountView.tsx:469](../../src/interfaces/web/features/account/AccountView.tsx#L469) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 383c3dfd904e-1 | [AccountView.tsx:495](../../src/interfaces/web/features/account/AccountView.tsx#L495) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 82f17080f033-1 | [AccountView.tsx:518](../../src/interfaces/web/features/account/AccountView.tsx#L518) | a / action | Checkpoints screen | SOURCE CLASSIFIED; STATES OPEN |
-| 1cb2b8595051-1 | [AccountView.tsx:521](../../src/interfaces/web/features/account/AccountView.tsx#L521) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 63597cc1fbdf-1 | [AccountView.tsx:531](../../src/interfaces/web/features/account/AccountView.tsx#L531) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 8475fa596300-1 | [AccountView.tsx:541](../../src/interfaces/web/features/account/AccountView.tsx#L541) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 6b5550870fa5-1 | [AccountView.tsx:569](../../src/interfaces/web/features/account/AccountView.tsx#L569) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 161f99a4773d-1 | [AccountView.tsx:585](../../src/interfaces/web/features/account/AccountView.tsx#L585) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
-| 60e960948fc2-1 | [AccountView.tsx:598](../../src/interfaces/web/features/account/AccountView.tsx#L598) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 89aba6e5ab63-1 | [AccountView.tsx:615](../../src/interfaces/web/features/account/AccountView.tsx#L615) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
-| 4c73fca0610c-1 | [AccountView.tsx:621](../../src/interfaces/web/features/account/AccountView.tsx#L621) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 82a0cea1caa2-1 | [AccountView.tsx:633](../../src/interfaces/web/features/account/AccountView.tsx#L633) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
-| b17867e45ea1-1 | [AccountView.tsx:640](../../src/interfaces/web/features/account/AccountView.tsx#L640) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
-| e9abdd4e5d5a-1 | [AccountView.tsx:660](../../src/interfaces/web/features/account/AccountView.tsx#L660) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
-| 1f7de1a0d5fe-1 | [GetStarted.tsx:38](../../src/interfaces/web/features/account/GetStarted.tsx#L38) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 52ec4b541dc0-1 | [GetStarted.tsx:59](../../src/interfaces/web/features/account/GetStarted.tsx#L59) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
-| 7e4ab131fac7-1 | [GetStarted.tsx:72](../../src/interfaces/web/features/account/GetStarted.tsx#L72) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 17062343f64d-1 | [CheckpointsView.tsx:121](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L121) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
-| 79f13ef4e6d6-1 | [CheckpointsView.tsx:148](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L148) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
-| d324840adeff-1 | [CheckpointsView.tsx:280](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L280) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
-| a5afba1766f8-1 | [CheckpointsView.tsx:288](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L288) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4da1de2122cf-1 | [CheckpointsView.tsx:300](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L300) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0aad0e693161-1 | [CheckpointsView.tsx:316](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L316) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e2b2c2eb1fe5-1 | [CheckpointsView.tsx:328](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L328) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
-| 21e8f5b48010-1 | [CheckpointsView.tsx:366](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L366) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
-| 35c3a7735cec-1 | [CheckpointsView.tsx:369](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L369) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
-| 0926421c9a6b-1 | [CheckpointsView.tsx:379](../../src/interfaces/web/features/checkpoints/CheckpointsView.tsx#L379) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 7fe3653f298a-1 | [ExpenseDataTools.tsx:158](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L158) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3d4cd178836e-1 | [ExpenseDataTools.tsx:169](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L169) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
-| 4dc4fbc5afa8-1 | [ExpenseDataTools.tsx:174](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L174) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |
-| 5ea70357dc5e-1 | [ExpenseDataTools.tsx:181](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L181) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 48411776595e-1 | [ExpenseDataTools.tsx:203](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L203) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0cebb31fb58b-1 | [ExpenseDataTools.tsx:220](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L220) | button / action | Restore expense history | SOURCE CLASSIFIED; STATES OPEN |
-| 4afff9761a43-1 | [ExpenseDataTools.tsx:231](../../src/interfaces/web/features/expenses/ExpenseDataTools.tsx#L231) | button / action | Check original recovery or save | SOURCE CLASSIFIED; STATES OPEN |
-| 5abf58ac8582-1 | [ExpensesView.tsx:386](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L386) | input / field | {'expense-${String(index)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 6c11e5dadfda-1 | [ExpensesView.tsx:463](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L463) | button / action | Continue with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 7a68d940ec29-1 | [ExpensesView.tsx:477](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L477) | button / action | Check records | SOURCE CLASSIFIED; STATES OPEN |
-| b3e2351700fb-1 | [ExpensesView.tsx:482](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L482) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 05357de23561-1 | [ExpensesView.tsx:493](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L493) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
-| 5e20c6f300a9-1 | [ExpensesView.tsx:539](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L539) | button / action | {stepName("Previous", previousDay)} | SOURCE CLASSIFIED; STATES OPEN |
-| aff5ca495571-1 | [ExpensesView.tsx:549](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L549) | button / action | Today | SOURCE CLASSIFIED; STATES OPEN |
-| 8fbbeded9f34-1 | [ExpensesView.tsx:558](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L558) | button / action | {stepName("Next", nextDay)} | SOURCE CLASSIFIED; STATES OPEN |
-| 9244c39d94ae-1 | [ExpensesView.tsx:570](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L570) | input / field | Jump to date | SOURCE CLASSIFIED; STATES OPEN |
-| 3a06689163a0-1 | [ExpensesView.tsx:588](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L588) | button / action | {'Previous workday, ${workdayLabel(previousWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 4f892c4faf84-1 | [ExpensesView.tsx:601](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L601) | button / action | {'Next workday, ${workdayLabel(nextWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 51df05e2998d-1 | [ExpensesView.tsx:668](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L668) | button / action | primary expense-save-button | SOURCE CLASSIFIED; STATES OPEN |
-| 50285313656c-1 | [ExpensesView.tsx:688](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L688) | button / action | Show amounts to edit | SOURCE CLASSIFIED; STATES OPEN |
-| 39580a49d6f5-1 | [ExpensesView.tsx:710](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L710) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| bc4e5c2072a6-1 | [ExpensesView.tsx:726](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L726) | button / action | Discard draft | SOURCE CLASSIFIED; STATES OPEN |
-| a434678708dc-1 | [ExpensesView.tsx:764](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L764) | button / action | Confirm correction | SOURCE CLASSIFIED; STATES OPEN |
-| a2a9c209979b-1 | [ExpensesView.tsx:767](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L767) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
-| 169197485381-1 | [ExpensesView.tsx:788](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L788) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
-| 4ce13af9669d-1 | [ExpensesView.tsx:796](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L796) | button / action | Save this day | SOURCE CLASSIFIED; STATES OPEN |
-| ffb1b3f16eb2-1 | [ExpensesView.tsx:799](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L799) | button / action | Discard and open day | SOURCE CLASSIFIED; STATES OPEN |
-| c39f1a570254-1 | [ExpensesView.tsx:819](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L819) | button / action | Check save outcome | SOURCE CLASSIFIED; STATES OPEN |
-| e2a6d41de61d-1 | [ExpensesView.tsx:826](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L826) | summary / action | Previous saved versions | SOURCE CLASSIFIED; STATES OPEN |
-| 6e0b766cbc3d-1 | [ExpensesView.tsx:834](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L834) | summary / action | Earlier version | SOURCE CLASSIFIED; STATES OPEN |
-| b1fac7d35d1d-1 | [ExpensesView.tsx:845](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L845) | button / action | Use these amounts | SOURCE CLASSIFIED; STATES OPEN |
-| 59ec84617bee-1 | [ExpensesView.tsx:872](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L872) | button / action | Previous week | SOURCE CLASSIFIED; STATES OPEN |
-| 7c93b68c42ef-1 | [ExpensesView.tsx:882](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L882) | button / action | Next week | SOURCE CLASSIFIED; STATES OPEN |
-| a8152062869d-1 | [ExpensesView.tsx:901](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L901) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| a5a989a1b61d-1 | [ExpensesView.tsx:948](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L948) | a / action | Review incomplete or conflicting days | SOURCE CLASSIFIED; STATES OPEN |
-| 66a9736e910f-1 | [ExpensesView.tsx:978](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L978) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 68aee71952ec-1 | [ExpensesView.tsx:1075](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1075) | summary / action | Where it goes | SOURCE CLASSIFIED; STATES OPEN |
-| fdfd9d3224ae-1 | [ExpensesView.tsx:1105](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1105) | summary / action | How these summaries work | SOURCE CLASSIFIED; STATES OPEN |
-| 8b11bf401c9b-1 | [ExpensesView.tsx:1108](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1108) | select / field | expense-policy | SOURCE CLASSIFIED; STATES OPEN |
-| 5cd46d083dfd-1 | [ExpensesView.tsx:1145](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1145) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 9bca667d8bce-1 | [ExpensesView.tsx:1157](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1157) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 6d0e38d3e519-1 | [ExpensesView.tsx:1174](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1174) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 0bafa83c7063-1 | [ExpensesView.tsx:1199](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1199) | summary / action | Version | SOURCE CLASSIFIED; STATES OPEN |
-| 7b9870dacaaa-1 | [ExpensesView.tsx:1210](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1210) | button / action | Review this version | SOURCE CLASSIFIED; STATES OPEN |
-| 750fad15db23-1 | [ExpensesView.tsx:1238](../../src/interfaces/web/features/expenses/ExpensesView.tsx#L1238) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 69c450a03734-1 | [HistoryView.tsx:295](../../src/interfaces/web/features/history/HistoryView.tsx#L295) | input / field | history-file | SOURCE CLASSIFIED; STATES OPEN |
-| 2d711aa853a8-1 | [HistoryView.tsx:341](../../src/interfaces/web/features/history/HistoryView.tsx#L341) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| ee6a79f932ea-1 | [HistoryView.tsx:394](../../src/interfaces/web/features/history/HistoryView.tsx#L394) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c48f76641718-1 | [HistoryView.tsx:419](../../src/interfaces/web/features/history/HistoryView.tsx#L419) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 2054efc5c8ed-1 | [BackfillEntry.tsx:273](../../src/interfaces/web/features/import/BackfillEntry.tsx#L273) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| bfeeedfcb079-1 | [BackfillEntry.tsx:284](../../src/interfaces/web/features/import/BackfillEntry.tsx#L284) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| e274d012cc3b-1 | [BackfillEntry.tsx:298](../../src/interfaces/web/features/import/BackfillEntry.tsx#L298) | input / field | backfill-file | SOURCE CLASSIFIED; STATES OPEN |
-| 55d79de76c56-1 | [BackfillEntry.tsx:313](../../src/interfaces/web/features/import/BackfillEntry.tsx#L313) | input / field | backfill-date | SOURCE CLASSIFIED; STATES OPEN |
-| 04422d232ecf-1 | [BackfillEntry.tsx:329](../../src/interfaces/web/features/import/BackfillEntry.tsx#L329) | input / field | {'backfill-name-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| ce025f2190bf-1 | [BackfillEntry.tsx:340](../../src/interfaces/web/features/import/BackfillEntry.tsx#L340) | input / field | {'backfill-isin-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 0c0538c45144-1 | [BackfillEntry.tsx:351](../../src/interfaces/web/features/import/BackfillEntry.tsx#L351) | input / field | {'backfill-value-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| a6b13d4d3a59-1 | [BackfillEntry.tsx:361](../../src/interfaces/web/features/import/BackfillEntry.tsx#L361) | button / action | {'Remove ${row.name.trim() &#124;&#124; 'fund ${String(index + 1)}'} from this draft'} | SOURCE CLASSIFIED; STATES OPEN |
-| 5835d5d41063-1 | [BackfillEntry.tsx:376](../../src/interfaces/web/features/import/BackfillEntry.tsx#L376) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
-| 20d0fddad34c-1 | [BackfillEntry.tsx:388](../../src/interfaces/web/features/import/BackfillEntry.tsx#L388) | button / action | Review this month | SOURCE CLASSIFIED; STATES OPEN |
-| e4d16775f803-1 | [BackfillEntry.tsx:395](../../src/interfaces/web/features/import/BackfillEntry.tsx#L395) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
-| f43da0fd8bda-1 | [BackfillEntry.tsx:422](../../src/interfaces/web/features/import/BackfillEntry.tsx#L422) | button / action | Add another earlier month | SOURCE CLASSIFIED; STATES OPEN |
-| 27bbc29da1da-1 | [BackfillEntry.tsx:434](../../src/interfaces/web/features/import/BackfillEntry.tsx#L434) | button / action | Review movements to first saved month | SOURCE CLASSIFIED; STATES OPEN |
-| 2ef14d8b6d2f-1 | [BackfillEntry.tsx:447](../../src/interfaces/web/features/import/BackfillEntry.tsx#L447) | button / action | Back to earlier months | SOURCE CLASSIFIED; STATES OPEN |
-| cd632dd54a71-1 | [BackfillEntry.tsx:470](../../src/interfaces/web/features/import/BackfillEntry.tsx#L470) | button / action | Back to movements | SOURCE CLASSIFIED; STATES OPEN |
-| 1662abe5cd4d-1 | [BackfillEntry.tsx:483](../../src/interfaces/web/features/import/BackfillEntry.tsx#L483) | div / scroll-region | Changes by month | SOURCE CLASSIFIED; STATES OPEN |
-| 69cfca9ee28b-1 | [BackfillEntry.tsx:519](../../src/interfaces/web/features/import/BackfillEntry.tsx#L519) | summary / action | Fund changes for | SOURCE CLASSIFIED; STATES OPEN |
-| 8a392fd57e1f-1 | [BackfillEntry.tsx:520](../../src/interfaces/web/features/import/BackfillEntry.tsx#L520) | div / scroll-region | {'Fund changes for ${formatDateLong(before.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 1d07ce24e198-1 | [BackfillEntry.tsx:579](../../src/interfaces/web/features/import/BackfillEntry.tsx#L579) | button / action | Confirm and save earlier statement | SOURCE CLASSIFIED; STATES OPEN |
-| 1f359e9658ff-1 | [BackfillEntry.tsx:594](../../src/interfaces/web/features/import/BackfillEntry.tsx#L594) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
-| b49afe2eb087-1 | [BackfillEntry.tsx:605](../../src/interfaces/web/features/import/BackfillEntry.tsx#L605) | button / action | Start a new review | SOURCE CLASSIFIED; STATES OPEN |
-| 6bb7c678a36b-1 | [BackfillEntry.tsx:633](../../src/interfaces/web/features/import/BackfillEntry.tsx#L633) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c7bd50d35f93-1 | [BackfillEntry.tsx:642](../../src/interfaces/web/features/import/BackfillEntry.tsx#L642) | button / action | Restore the history from before this change | SOURCE CLASSIFIED; STATES OPEN |
-| bca37bc30522-1 | [CashQuestions.tsx:142](../../src/interfaces/web/features/import/CashQuestions.tsx#L142) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
-| 162651b70a59-1 | [CashQuestions.tsx:415](../../src/interfaces/web/features/import/CashQuestions.tsx#L415) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c978e4f9d3fb-1 | [CashQuestions.tsx:426](../../src/interfaces/web/features/import/CashQuestions.tsx#L426) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c32117f4d096-1 | [CashQuestions.tsx:507](../../src/interfaces/web/features/import/CashQuestions.tsx#L507) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
-| 035afa5903bf-1 | [CashQuestions.tsx:522](../../src/interfaces/web/features/import/CashQuestions.tsx#L522) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| a6b6e9bd19f5-1 | [CashQuestions.tsx:533](../../src/interfaces/web/features/import/CashQuestions.tsx#L533) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 928e212328d9-1 | [CashQuestions.tsx:560](../../src/interfaces/web/features/import/CashQuestions.tsx#L560) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 581103870bcd-1 | [CashQuestions.tsx:571](../../src/interfaces/web/features/import/CashQuestions.tsx#L571) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| fc5aa7fbc428-1 | [CashQuestions.tsx:596](../../src/interfaces/web/features/import/CashQuestions.tsx#L596) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 9afa5774fb29-1 | [CashQuestions.tsx:628](../../src/interfaces/web/features/import/CashQuestions.tsx#L628) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
-| b95e2f3c4474-1 | [CashQuestions.tsx:713](../../src/interfaces/web/features/import/CashQuestions.tsx#L713) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| f648a1ac4d45-1 | [CashQuestions.tsx:773](../../src/interfaces/web/features/import/CashQuestions.tsx#L773) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
-| f648a1ac4d45-2 | [CashQuestions.tsx:784](../../src/interfaces/web/features/import/CashQuestions.tsx#L784) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
-| 0609ac607845-1 | [ExcelHistoryView.tsx:247](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L247) | button / action | Exclude statements from months already recorded or earlier | SOURCE CLASSIFIED; STATES OPEN |
-| a7985c3279f3-1 | [ExcelHistoryView.tsx:270](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L270) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c175e768fc98-1 | [ExcelHistoryView.tsx:281](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L281) | input / field | {'batch-date-${entry.id}'} | SOURCE CLASSIFIED; STATES OPEN |
-| d72ac031efb7-1 | [ExcelHistoryView.tsx:323](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L323) | button / action | Review selected statements in date order | SOURCE CLASSIFIED; STATES OPEN |
-| f3eb338cffb2-1 | [ExcelHistoryView.tsx:336](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L336) | summary / action | Checked readings from this sheet | SOURCE CLASSIFIED; STATES OPEN |
-| b7b828457ec7-1 | [ExcelHistoryView.tsx:394](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L394) | button / action | Confirm and save statements | SOURCE CLASSIFIED; STATES OPEN |
-| 72d05a07a09a-1 | [ExcelHistoryView.tsx:451](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L451) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 6e33247a60d8-1 | [ExcelHistoryView.tsx:462](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L462) | button / action | Resume remaining statements | SOURCE CLASSIFIED; STATES OPEN |
-| 0916714d33cb-1 | [ExcelHistoryView.tsx:478](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L478) | a / action | View your portfolio | SOURCE CLASSIFIED; STATES OPEN |
-| a04379874218-1 | [ExcelHistoryView.tsx:486](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L486) | button / action | Previous statement (keep answers) | SOURCE CLASSIFIED; STATES OPEN |
-| 3e3a72a822b2-1 | [ExcelHistoryView.tsx:491](../../src/interfaces/web/features/import/ExcelHistoryView.tsx#L491) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 66a498afe95d-1 | [ImportView.tsx:152](../../src/interfaces/web/features/import/ImportView.tsx#L152) | summary / action | Categories in the file | SOURCE CLASSIFIED; STATES OPEN |
-| 69152a5dd9c5-1 | [ImportView.tsx:207](../../src/interfaces/web/features/import/ImportView.tsx#L207) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
-| ae498c8dad4d-1 | [ImportView.tsx:236](../../src/interfaces/web/features/import/ImportView.tsx#L236) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
-| 79f5dade8d8d-1 | [ImportView.tsx:447](../../src/interfaces/web/features/import/ImportView.tsx#L447) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
-| afed44435086-1 | [ImportView.tsx:458](../../src/interfaces/web/features/import/ImportView.tsx#L458) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
-| 1d53e682419f-1 | [ImportView.tsx:473](../../src/interfaces/web/features/import/ImportView.tsx#L473) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
-| 1672104f17d7-1 | [ImportView.tsx:514](../../src/interfaces/web/features/import/ImportView.tsx#L514) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
-| 4dcb51399dd6-1 | [ManualEntry.tsx:116](../../src/interfaces/web/features/import/ManualEntry.tsx#L116) | input / field | manual-date | SOURCE CLASSIFIED; STATES OPEN |
-| 03e5af196279-1 | [ManualEntry.tsx:143](../../src/interfaces/web/features/import/ManualEntry.tsx#L143) | input / field | {'${row.id}-name'} | SOURCE CLASSIFIED; STATES OPEN |
-| ca852b559107-1 | [ManualEntry.tsx:154](../../src/interfaces/web/features/import/ManualEntry.tsx#L154) | input / field | {'${row.id}-isin'} | SOURCE CLASSIFIED; STATES OPEN |
-| d9fa7a43c31e-1 | [ManualEntry.tsx:169](../../src/interfaces/web/features/import/ManualEntry.tsx#L169) | input / field | {'${row.id}-value'} | SOURCE CLASSIFIED; STATES OPEN |
-| 764f0d6a4efb-1 | [ManualEntry.tsx:199](../../src/interfaces/web/features/import/ManualEntry.tsx#L199) | button / action | { row.known ? 'Mark ${row.name} as no longer held' : 'Remove ${row.name.trim() &#124;&#124; 'ne | SOURCE CLASSIFIED; STATES OPEN |
-| 31d8bbb2682a-1 | [ManualEntry.tsx:228](../../src/interfaces/web/features/import/ManualEntry.tsx#L228) | button / action | Undo removal | SOURCE CLASSIFIED; STATES OPEN |
-| 57b165255b56-1 | [ManualEntry.tsx:247](../../src/interfaces/web/features/import/ManualEntry.tsx#L247) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
-| fa9cb20ed6c8-1 | [ManualEntry.tsx:259](../../src/interfaces/web/features/import/ManualEntry.tsx#L259) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 1131f710d800-1 | [ManualEntry.tsx:294](../../src/interfaces/web/features/import/ManualEntry.tsx#L294) | button / action | Continue to movements and review | SOURCE CLASSIFIED; STATES OPEN |
-| ed3a3cc85c5b-1 | [ManualEntry.tsx:307](../../src/interfaces/web/features/import/ManualEntry.tsx#L307) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
-| e6648569ee50-1 | [FundView.tsx:27](../../src/interfaces/web/features/overview/FundView.tsx#L27) | div / scroll-region | {props.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 782b7655f368-1 | [FundView.tsx:126](../../src/interfaces/web/features/overview/FundView.tsx#L126) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
-| 4c5f7d474900-1 | [FundView.tsx:218](../../src/interfaces/web/features/overview/FundView.tsx#L218) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
-| fc77891a3f99-1 | [FundView.tsx:230](../../src/interfaces/web/features/overview/FundView.tsx#L230) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 5430336f2e7b-1 | [MonthsView.tsx:129](../../src/interfaces/web/features/overview/MonthsView.tsx#L129) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| ac15e670bba4-1 | [MonthsView.tsx:139](../../src/interfaces/web/features/overview/MonthsView.tsx#L139) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
-| d5e1ae642511-1 | [MonthsView.tsx:224](../../src/interfaces/web/features/overview/MonthsView.tsx#L224) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
-| 402594012f3c-1 | [MonthsView.tsx:284](../../src/interfaces/web/features/overview/MonthsView.tsx#L284) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| a21e76a8cb12-1 | [MonthsView.tsx:300](../../src/interfaces/web/features/overview/MonthsView.tsx#L300) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
-| 6ebc441d7f3c-1 | [MonthsView.tsx:311](../../src/interfaces/web/features/overview/MonthsView.tsx#L311) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
-| d66d052d4dc7-1 | [MonthsView.tsx:322](../../src/interfaces/web/features/overview/MonthsView.tsx#L322) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
-| e335b5b03c6f-1 | [MonthsView.tsx:378](../../src/interfaces/web/features/overview/MonthsView.tsx#L378) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
-| 14d7ee1248f7-1 | [OverviewView.tsx:148](../../src/interfaces/web/features/overview/OverviewView.tsx#L148) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
-| dc181204d20e-1 | [OverviewView.tsx:214](../../src/interfaces/web/features/overview/OverviewView.tsx#L214) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
-| 51654294e7ec-1 | [OverviewView.tsx:273](../../src/interfaces/web/features/overview/OverviewView.tsx#L273) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| cd6e27a5069a-1 | [OverviewView.tsx:338](../../src/interfaces/web/features/overview/OverviewView.tsx#L338) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
-| c661106939c0-1 | [OverviewView.tsx:342](../../src/interfaces/web/features/overview/OverviewView.tsx#L342) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 68a8e6821fcc-1 | [OverviewView.tsx:391](../../src/interfaces/web/features/overview/OverviewView.tsx#L391) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| 1adfabbf5374-1 | [OverviewView.tsx:439](../../src/interfaces/web/features/overview/OverviewView.tsx#L439) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| d15b250c73d1-1 | [OverviewView.tsx:531](../../src/interfaces/web/features/overview/OverviewView.tsx#L531) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f8eb4a83ac21-1 | [OverviewView.tsx:549](../../src/interfaces/web/features/overview/OverviewView.tsx#L549) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| 8fb853b0b790-1 | [OverviewView.tsx:553](../../src/interfaces/web/features/overview/OverviewView.tsx#L553) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| a3b42fb80947-1 | [OverviewView.tsx:572](../../src/interfaces/web/features/overview/OverviewView.tsx#L572) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| d26691e1b44e-1 | [OverviewView.tsx:590](../../src/interfaces/web/features/overview/OverviewView.tsx#L590) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| e1310bc9d59b-1 | [OverviewView.tsx:605](../../src/interfaces/web/features/overview/OverviewView.tsx#L605) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
-| 45d25dddcf83-1 | [OverviewView.tsx:635](../../src/interfaces/web/features/overview/OverviewView.tsx#L635) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
-| ccb9ad2c4dec-1 | [OverviewView.tsx:672](../../src/interfaces/web/features/overview/OverviewView.tsx#L672) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 4afa284758ac-1 | [OverviewView.tsx:688](../../src/interfaces/web/features/overview/OverviewView.tsx#L688) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
-| 734b64bb7d8b-1 | [OverviewView.tsx:714](../../src/interfaces/web/features/overview/OverviewView.tsx#L714) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
-| 9f09e0df905f-1 | [OverviewView.tsx:769](../../src/interfaces/web/features/overview/OverviewView.tsx#L769) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 420c555a86da-1 | [OverviewView.tsx:778](../../src/interfaces/web/features/overview/OverviewView.tsx#L778) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| c4dacc13aa28-1 | [OverviewView.tsx:812](../../src/interfaces/web/features/overview/OverviewView.tsx#L812) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| f4734e648b87-1 | [OverviewView.tsx:902](../../src/interfaces/web/features/overview/OverviewView.tsx#L902) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 47bc7d2ce3b3-1 | [OverviewView.tsx:912](../../src/interfaces/web/features/overview/OverviewView.tsx#L912) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
-| 1c0d8ddeecc2-1 | [Donut.tsx:57](../../src/interfaces/web/presentation/charts/Donut.tsx#L57) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 9a5163ecbca4-1 | [LineChart.tsx:271](../../src/interfaces/web/presentation/charts/LineChart.tsx#L271) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| f6a398e76940-1 | [LineChart.tsx:358](../../src/interfaces/web/presentation/charts/LineChart.tsx#L358) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| db78101e8509-1 | [LineChart.tsx:460](../../src/interfaces/web/presentation/charts/LineChart.tsx#L460) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 37279bf88696-1 | [LineChart.tsx:482](../../src/interfaces/web/presentation/charts/LineChart.tsx#L482) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| 1ff44a326f34-1 | [LineChart.tsx:486](../../src/interfaces/web/presentation/charts/LineChart.tsx#L486) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
-| 833981defd7c-1 | [LineChart.tsx:507](../../src/interfaces/web/presentation/charts/LineChart.tsx#L507) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 948b52cd4381-1 | [MonthlyBars.tsx:115](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L115) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 211cc70dbd48-1 | [MonthlyBars.tsx:192](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L192) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
-| 979cada298aa-1 | [MonthlyBars.tsx:223](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L223) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
-| a16d9513965d-1 | [MonthlyBars.tsx:236](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L236) | summary / action | Show the values as a table | SOURCE CLASSIFIED; STATES OPEN |
-| 016de3052a48-1 | [MonthlyBars.tsx:237](../../src/interfaces/web/presentation/charts/MonthlyBars.tsx#L237) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 34696a11ba2e-1 | [PerformanceBars.tsx:26](../../src/interfaces/web/presentation/charts/PerformanceBars.tsx#L26) | a / action | {'perf-row${row.dim === true ? " dim" : ""}'} | SOURCE CLASSIFIED; STATES OPEN |
+| ba191ec28307-1 | [app.tsx:339](../../src/interfaces/web/app/app.tsx#L339) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
+| 6134114000df-1 | [app.tsx:366](../../src/interfaces/web/app/app.tsx#L366) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
+| c60f916ac1a8-1 | [app.tsx:384](../../src/interfaces/web/app/app.tsx#L384) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
+| a314ef428d46-1 | [app.tsx:398](../../src/interfaces/web/app/app.tsx#L398) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
+| 36a3e172e6a3-1 | [app.tsx:409](../../src/interfaces/web/app/app.tsx#L409) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 1b66e4769484-1 | [app.tsx:427](../../src/interfaces/web/app/app.tsx#L427) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 6e8dcfbf07a1-1 | [app.tsx:462](../../src/interfaces/web/app/app.tsx#L462) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
+| 3b78cad91efd-1 | [app.tsx:475](../../src/interfaces/web/app/app.tsx#L475) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
+| 5cdfcaea4025-1 | [app.tsx:486](../../src/interfaces/web/app/app.tsx#L486) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
+| 183905081449-1 | [app.tsx:491](../../src/interfaces/web/app/app.tsx#L491) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 064606dcccac-1 | [app.tsx:613](../../src/interfaces/web/app/app.tsx#L613) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
+| d9bb3dc3c1a3-1 | [app.tsx:619](../../src/interfaces/web/app/app.tsx#L619) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| cb7374053013-1 | [app.tsx:672](../../src/interfaces/web/app/app.tsx#L672) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
+| 7aefc514b9da-1 | [account-view.tsx:296](../../src/interfaces/web/features/account/account-view.tsx#L296) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 45e76251e46f-1 | [account-view.tsx:332](../../src/interfaces/web/features/account/account-view.tsx#L332) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
+| c8339cbc641f-1 | [account-view.tsx:357](../../src/interfaces/web/features/account/account-view.tsx#L357) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 246bba0dbbd2-1 | [account-view.tsx:377](../../src/interfaces/web/features/account/account-view.tsx#L377) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 81a45f9e9647-1 | [account-view.tsx:386](../../src/interfaces/web/features/account/account-view.tsx#L386) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
+| 6084f8a39323-1 | [account-view.tsx:421](../../src/interfaces/web/features/account/account-view.tsx#L421) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| ca5df0c55fcd-1 | [account-view.tsx:431](../../src/interfaces/web/features/account/account-view.tsx#L431) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 82cf355d89b7-1 | [account-view.tsx:445](../../src/interfaces/web/features/account/account-view.tsx#L445) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 90edddf9d0ed-1 | [account-view.tsx:469](../../src/interfaces/web/features/account/account-view.tsx#L469) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 00bd8d6fdc5c-1 | [account-view.tsx:495](../../src/interfaces/web/features/account/account-view.tsx#L495) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 57a6a8d0a0e2-1 | [account-view.tsx:518](../../src/interfaces/web/features/account/account-view.tsx#L518) | a / action | Checkpoints screen | SOURCE CLASSIFIED; STATES OPEN |
+| a040f1d9b984-1 | [account-view.tsx:521](../../src/interfaces/web/features/account/account-view.tsx#L521) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 8e3159e9f439-1 | [account-view.tsx:531](../../src/interfaces/web/features/account/account-view.tsx#L531) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 7b2612342608-1 | [account-view.tsx:541](../../src/interfaces/web/features/account/account-view.tsx#L541) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| c0222bec8dd9-1 | [account-view.tsx:569](../../src/interfaces/web/features/account/account-view.tsx#L569) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 941a0947ab4e-1 | [account-view.tsx:585](../../src/interfaces/web/features/account/account-view.tsx#L585) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
+| 12cb25b81bfc-1 | [account-view.tsx:598](../../src/interfaces/web/features/account/account-view.tsx#L598) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| f441d11c74f0-1 | [account-view.tsx:615](../../src/interfaces/web/features/account/account-view.tsx#L615) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
+| 01e36f15a222-1 | [account-view.tsx:621](../../src/interfaces/web/features/account/account-view.tsx#L621) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 0fce5f00add6-1 | [account-view.tsx:633](../../src/interfaces/web/features/account/account-view.tsx#L633) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
+| 53b6edd1db16-1 | [account-view.tsx:640](../../src/interfaces/web/features/account/account-view.tsx#L640) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
+| e5998a8773e2-1 | [account-view.tsx:660](../../src/interfaces/web/features/account/account-view.tsx#L660) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
+| 34b238e379d3-1 | [get-started.tsx:38](../../src/interfaces/web/features/account/get-started.tsx#L38) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 1b2d6955418b-1 | [get-started.tsx:59](../../src/interfaces/web/features/account/get-started.tsx#L59) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
+| 56991a97d0b5-1 | [get-started.tsx:72](../../src/interfaces/web/features/account/get-started.tsx#L72) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 99ade33edeeb-1 | [checkpoints-view.tsx:121](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L121) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
+| 5f839d31bca2-1 | [checkpoints-view.tsx:148](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L148) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
+| cf7a6afc5921-1 | [checkpoints-view.tsx:280](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L280) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
+| f9bd2f9a23de-1 | [checkpoints-view.tsx:288](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L288) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2a8698cac4d9-1 | [checkpoints-view.tsx:300](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L300) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2d6e7a441ed7-1 | [checkpoints-view.tsx:316](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L316) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 55a4a17869f1-1 | [checkpoints-view.tsx:328](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L328) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
+| a1faa757a9e8-1 | [checkpoints-view.tsx:366](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L366) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
+| f742351aba49-1 | [checkpoints-view.tsx:369](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L369) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
+| 69fd8dab50bd-1 | [checkpoints-view.tsx:379](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L379) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| e7f0ed9b6deb-1 | [expense-data-tools.tsx:158](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L158) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4bc397f59864-1 | [expense-data-tools.tsx:169](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L169) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
+| df97eafc8842-1 | [expense-data-tools.tsx:174](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L174) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |
+| 7088bdbc3e39-1 | [expense-data-tools.tsx:181](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L181) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 8b299e717e2e-1 | [expense-data-tools.tsx:203](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L203) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e4fdb435d953-1 | [expense-data-tools.tsx:220](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L220) | button / action | Restore expense history | SOURCE CLASSIFIED; STATES OPEN |
+| d7a0af4325b5-1 | [expense-data-tools.tsx:231](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L231) | button / action | Check original recovery or save | SOURCE CLASSIFIED; STATES OPEN |
+| b9913b667947-1 | [expenses-view.tsx:386](../../src/interfaces/web/features/expenses/expenses-view.tsx#L386) | input / field | {'expense-${String(index)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 98ea46c00155-1 | [expenses-view.tsx:463](../../src/interfaces/web/features/expenses/expenses-view.tsx#L463) | button / action | Continue with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 7d4c744251af-1 | [expenses-view.tsx:477](../../src/interfaces/web/features/expenses/expenses-view.tsx#L477) | button / action | Check records | SOURCE CLASSIFIED; STATES OPEN |
+| c5450bc4df39-1 | [expenses-view.tsx:482](../../src/interfaces/web/features/expenses/expenses-view.tsx#L482) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 1652ed28b427-1 | [expenses-view.tsx:493](../../src/interfaces/web/features/expenses/expenses-view.tsx#L493) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
+| 204b5b26909c-1 | [expenses-view.tsx:539](../../src/interfaces/web/features/expenses/expenses-view.tsx#L539) | button / action | {stepName("Previous", previousDay)} | SOURCE CLASSIFIED; STATES OPEN |
+| df28ccefaa27-1 | [expenses-view.tsx:549](../../src/interfaces/web/features/expenses/expenses-view.tsx#L549) | button / action | Today | SOURCE CLASSIFIED; STATES OPEN |
+| 7c3901f7eed0-1 | [expenses-view.tsx:558](../../src/interfaces/web/features/expenses/expenses-view.tsx#L558) | button / action | {stepName("Next", nextDay)} | SOURCE CLASSIFIED; STATES OPEN |
+| 56bc06b2efde-1 | [expenses-view.tsx:570](../../src/interfaces/web/features/expenses/expenses-view.tsx#L570) | input / field | Jump to date | SOURCE CLASSIFIED; STATES OPEN |
+| 34c9e88babf4-1 | [expenses-view.tsx:588](../../src/interfaces/web/features/expenses/expenses-view.tsx#L588) | button / action | {'Previous workday, ${workdayLabel(previousWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| fb967adea8dc-1 | [expenses-view.tsx:601](../../src/interfaces/web/features/expenses/expenses-view.tsx#L601) | button / action | {'Next workday, ${workdayLabel(nextWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| da8b652f405a-1 | [expenses-view.tsx:668](../../src/interfaces/web/features/expenses/expenses-view.tsx#L668) | button / action | primary expense-save-button | SOURCE CLASSIFIED; STATES OPEN |
+| 7539bcbd02ee-1 | [expenses-view.tsx:688](../../src/interfaces/web/features/expenses/expenses-view.tsx#L688) | button / action | Show amounts to edit | SOURCE CLASSIFIED; STATES OPEN |
+| acb11a293869-1 | [expenses-view.tsx:710](../../src/interfaces/web/features/expenses/expenses-view.tsx#L710) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2fb2da0a7806-1 | [expenses-view.tsx:726](../../src/interfaces/web/features/expenses/expenses-view.tsx#L726) | button / action | Discard draft | SOURCE CLASSIFIED; STATES OPEN |
+| dca712f4640c-1 | [expenses-view.tsx:764](../../src/interfaces/web/features/expenses/expenses-view.tsx#L764) | button / action | Confirm correction | SOURCE CLASSIFIED; STATES OPEN |
+| b7fac690cc75-1 | [expenses-view.tsx:767](../../src/interfaces/web/features/expenses/expenses-view.tsx#L767) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
+| 7a4af8c3137d-1 | [expenses-view.tsx:788](../../src/interfaces/web/features/expenses/expenses-view.tsx#L788) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
+| 57cf8d469576-1 | [expenses-view.tsx:796](../../src/interfaces/web/features/expenses/expenses-view.tsx#L796) | button / action | Save this day | SOURCE CLASSIFIED; STATES OPEN |
+| cd9b6d34b9f6-1 | [expenses-view.tsx:799](../../src/interfaces/web/features/expenses/expenses-view.tsx#L799) | button / action | Discard and open day | SOURCE CLASSIFIED; STATES OPEN |
+| 8bed296b14b9-1 | [expenses-view.tsx:819](../../src/interfaces/web/features/expenses/expenses-view.tsx#L819) | button / action | Check save outcome | SOURCE CLASSIFIED; STATES OPEN |
+| 539fcf57c347-1 | [expenses-view.tsx:826](../../src/interfaces/web/features/expenses/expenses-view.tsx#L826) | summary / action | Previous saved versions | SOURCE CLASSIFIED; STATES OPEN |
+| b5aec61da421-1 | [expenses-view.tsx:834](../../src/interfaces/web/features/expenses/expenses-view.tsx#L834) | summary / action | Earlier version | SOURCE CLASSIFIED; STATES OPEN |
+| 0677a620d7ae-1 | [expenses-view.tsx:845](../../src/interfaces/web/features/expenses/expenses-view.tsx#L845) | button / action | Use these amounts | SOURCE CLASSIFIED; STATES OPEN |
+| 80e9459b6fe9-1 | [expenses-view.tsx:872](../../src/interfaces/web/features/expenses/expenses-view.tsx#L872) | button / action | Previous week | SOURCE CLASSIFIED; STATES OPEN |
+| f397c2ee140e-1 | [expenses-view.tsx:882](../../src/interfaces/web/features/expenses/expenses-view.tsx#L882) | button / action | Next week | SOURCE CLASSIFIED; STATES OPEN |
+| 2349ac4c33fa-1 | [expenses-view.tsx:901](../../src/interfaces/web/features/expenses/expenses-view.tsx#L901) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0334c531e990-1 | [expenses-view.tsx:948](../../src/interfaces/web/features/expenses/expenses-view.tsx#L948) | a / action | Review incomplete or conflicting days | SOURCE CLASSIFIED; STATES OPEN |
+| 6537037cd125-1 | [expenses-view.tsx:978](../../src/interfaces/web/features/expenses/expenses-view.tsx#L978) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 18fe24c50e4e-1 | [expenses-view.tsx:1075](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1075) | summary / action | Where it goes | SOURCE CLASSIFIED; STATES OPEN |
+| 78b72ef17376-1 | [expenses-view.tsx:1105](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1105) | summary / action | How these summaries work | SOURCE CLASSIFIED; STATES OPEN |
+| c41645ca3481-1 | [expenses-view.tsx:1108](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1108) | select / field | expense-policy | SOURCE CLASSIFIED; STATES OPEN |
+| b2c1525c8a8d-1 | [expenses-view.tsx:1145](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1145) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 19600da2c6f6-1 | [expenses-view.tsx:1157](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1157) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 7c4e49581ffb-1 | [expenses-view.tsx:1174](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1174) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4bea6e2e02d2-1 | [expenses-view.tsx:1199](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1199) | summary / action | Version | SOURCE CLASSIFIED; STATES OPEN |
+| a3ee741d09c3-1 | [expenses-view.tsx:1210](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1210) | button / action | Review this version | SOURCE CLASSIFIED; STATES OPEN |
+| bc8ec95a8de5-1 | [expenses-view.tsx:1238](../../src/interfaces/web/features/expenses/expenses-view.tsx#L1238) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 1714900b765d-1 | [history-view.tsx:295](../../src/interfaces/web/features/history/history-view.tsx#L295) | input / field | history-file | SOURCE CLASSIFIED; STATES OPEN |
+| e6311de0b8ea-1 | [history-view.tsx:341](../../src/interfaces/web/features/history/history-view.tsx#L341) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| c482dfce264b-1 | [history-view.tsx:394](../../src/interfaces/web/features/history/history-view.tsx#L394) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3bbc96f60d24-1 | [history-view.tsx:419](../../src/interfaces/web/features/history/history-view.tsx#L419) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2216f877cf7d-1 | [backfill-entry.tsx:273](../../src/interfaces/web/features/import/backfill-entry.tsx#L273) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0a36ae252a2b-1 | [backfill-entry.tsx:284](../../src/interfaces/web/features/import/backfill-entry.tsx#L284) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 9aebfbdc3586-1 | [backfill-entry.tsx:298](../../src/interfaces/web/features/import/backfill-entry.tsx#L298) | input / field | backfill-file | SOURCE CLASSIFIED; STATES OPEN |
+| 039f91d6d9e0-1 | [backfill-entry.tsx:313](../../src/interfaces/web/features/import/backfill-entry.tsx#L313) | input / field | backfill-date | SOURCE CLASSIFIED; STATES OPEN |
+| f9463f02257d-1 | [backfill-entry.tsx:329](../../src/interfaces/web/features/import/backfill-entry.tsx#L329) | input / field | {'backfill-name-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| f8060d556bd4-1 | [backfill-entry.tsx:340](../../src/interfaces/web/features/import/backfill-entry.tsx#L340) | input / field | {'backfill-isin-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 37419e0a7c83-1 | [backfill-entry.tsx:351](../../src/interfaces/web/features/import/backfill-entry.tsx#L351) | input / field | {'backfill-value-${String(row.id)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 5e64fee63f91-1 | [backfill-entry.tsx:361](../../src/interfaces/web/features/import/backfill-entry.tsx#L361) | button / action | {'Remove ${row.name.trim() &#124;&#124; 'fund ${String(index + 1)}'} from this draft'} | SOURCE CLASSIFIED; STATES OPEN |
+| 2b0d98236002-1 | [backfill-entry.tsx:376](../../src/interfaces/web/features/import/backfill-entry.tsx#L376) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
+| d5d137ceb880-1 | [backfill-entry.tsx:388](../../src/interfaces/web/features/import/backfill-entry.tsx#L388) | button / action | Review this month | SOURCE CLASSIFIED; STATES OPEN |
+| 731c4e114863-1 | [backfill-entry.tsx:395](../../src/interfaces/web/features/import/backfill-entry.tsx#L395) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
+| 9c4274e039ba-1 | [backfill-entry.tsx:422](../../src/interfaces/web/features/import/backfill-entry.tsx#L422) | button / action | Add another earlier month | SOURCE CLASSIFIED; STATES OPEN |
+| 36d56c4384ac-1 | [backfill-entry.tsx:434](../../src/interfaces/web/features/import/backfill-entry.tsx#L434) | button / action | Review movements to first saved month | SOURCE CLASSIFIED; STATES OPEN |
+| 73c2eb51ca97-1 | [backfill-entry.tsx:447](../../src/interfaces/web/features/import/backfill-entry.tsx#L447) | button / action | Back to earlier months | SOURCE CLASSIFIED; STATES OPEN |
+| 36644094418b-1 | [backfill-entry.tsx:470](../../src/interfaces/web/features/import/backfill-entry.tsx#L470) | button / action | Back to movements | SOURCE CLASSIFIED; STATES OPEN |
+| eff1bf7b0614-1 | [backfill-entry.tsx:483](../../src/interfaces/web/features/import/backfill-entry.tsx#L483) | div / scroll-region | Changes by month | SOURCE CLASSIFIED; STATES OPEN |
+| 96e0018b854a-1 | [backfill-entry.tsx:519](../../src/interfaces/web/features/import/backfill-entry.tsx#L519) | summary / action | Fund changes for | SOURCE CLASSIFIED; STATES OPEN |
+| e5a03307bd87-1 | [backfill-entry.tsx:520](../../src/interfaces/web/features/import/backfill-entry.tsx#L520) | div / scroll-region | {'Fund changes for ${formatDateLong(before.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| ea24cf99356f-1 | [backfill-entry.tsx:579](../../src/interfaces/web/features/import/backfill-entry.tsx#L579) | button / action | Confirm and save earlier statement | SOURCE CLASSIFIED; STATES OPEN |
+| 6f3448b04ff2-1 | [backfill-entry.tsx:594](../../src/interfaces/web/features/import/backfill-entry.tsx#L594) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| c911260ac6f7-1 | [backfill-entry.tsx:605](../../src/interfaces/web/features/import/backfill-entry.tsx#L605) | button / action | Start a new review | SOURCE CLASSIFIED; STATES OPEN |
+| b74d1ed1e85a-1 | [backfill-entry.tsx:633](../../src/interfaces/web/features/import/backfill-entry.tsx#L633) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| ec8c4bc8e227-1 | [backfill-entry.tsx:642](../../src/interfaces/web/features/import/backfill-entry.tsx#L642) | button / action | Restore the history from before this change | SOURCE CLASSIFIED; STATES OPEN |
+| 36f447d7f20a-1 | [cash-questions.tsx:142](../../src/interfaces/web/features/import/cash-questions.tsx#L142) | input / field | {props.id} | SOURCE CLASSIFIED; STATES OPEN |
+| 08e3d6be1e14-1 | [cash-questions.tsx:415](../../src/interfaces/web/features/import/cash-questions.tsx#L415) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f1e88e00c898-1 | [cash-questions.tsx:426](../../src/interfaces/web/features/import/cash-questions.tsx#L426) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 536b48f299ad-1 | [cash-questions.tsx:507](../../src/interfaces/web/features/import/cash-questions.tsx#L507) | input / field | {id("name")} | SOURCE CLASSIFIED; STATES OPEN |
+| 95aa55ccda98-1 | [cash-questions.tsx:522](../../src/interfaces/web/features/import/cash-questions.tsx#L522) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| ae0a63bf37f5-1 | [cash-questions.tsx:533](../../src/interfaces/web/features/import/cash-questions.tsx#L533) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 27a2c31d4f06-1 | [cash-questions.tsx:560](../../src/interfaces/web/features/import/cash-questions.tsx#L560) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| e2d42d10656a-1 | [cash-questions.tsx:571](../../src/interfaces/web/features/import/cash-questions.tsx#L571) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 92c76e94f213-1 | [cash-questions.tsx:596](../../src/interfaces/web/features/import/cash-questions.tsx#L596) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d6244abfcc93-1 | [cash-questions.tsx:628](../../src/interfaces/web/features/import/cash-questions.tsx#L628) | button / action | No money moved for this fund | SOURCE CLASSIFIED; STATES OPEN |
+| 4183aa3b87c5-1 | [cash-questions.tsx:713](../../src/interfaces/web/features/import/cash-questions.tsx#L713) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 3a71ef179eb4-1 | [cash-questions.tsx:773](../../src/interfaces/web/features/import/cash-questions.tsx#L773) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| 3a71ef179eb4-2 | [cash-questions.tsx:784](../../src/interfaces/web/features/import/cash-questions.tsx#L784) | button / action | Check what happened | SOURCE CLASSIFIED; STATES OPEN |
+| e15754094f00-1 | [excel-history-view.tsx:247](../../src/interfaces/web/features/import/excel-history-view.tsx#L247) | button / action | Exclude statements from months already recorded or earlier | SOURCE CLASSIFIED; STATES OPEN |
+| 7ee8a3898195-1 | [excel-history-view.tsx:270](../../src/interfaces/web/features/import/excel-history-view.tsx#L270) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 073125319048-1 | [excel-history-view.tsx:281](../../src/interfaces/web/features/import/excel-history-view.tsx#L281) | input / field | {'batch-date-${entry.id}'} | SOURCE CLASSIFIED; STATES OPEN |
+| cd017c46f3cb-1 | [excel-history-view.tsx:323](../../src/interfaces/web/features/import/excel-history-view.tsx#L323) | button / action | Review selected statements in date order | SOURCE CLASSIFIED; STATES OPEN |
+| 046fe196ccba-1 | [excel-history-view.tsx:336](../../src/interfaces/web/features/import/excel-history-view.tsx#L336) | summary / action | Checked readings from this sheet | SOURCE CLASSIFIED; STATES OPEN |
+| 309da23a261f-1 | [excel-history-view.tsx:394](../../src/interfaces/web/features/import/excel-history-view.tsx#L394) | button / action | Confirm and save statements | SOURCE CLASSIFIED; STATES OPEN |
+| 6f42b8f5069f-1 | [excel-history-view.tsx:451](../../src/interfaces/web/features/import/excel-history-view.tsx#L451) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 40701317c0ec-1 | [excel-history-view.tsx:462](../../src/interfaces/web/features/import/excel-history-view.tsx#L462) | button / action | Resume remaining statements | SOURCE CLASSIFIED; STATES OPEN |
+| 6114d3d29340-1 | [excel-history-view.tsx:478](../../src/interfaces/web/features/import/excel-history-view.tsx#L478) | a / action | View your portfolio | SOURCE CLASSIFIED; STATES OPEN |
+| b8997719f6cd-1 | [excel-history-view.tsx:486](../../src/interfaces/web/features/import/excel-history-view.tsx#L486) | button / action | Previous statement (keep answers) | SOURCE CLASSIFIED; STATES OPEN |
+| ed8bd80a7872-1 | [excel-history-view.tsx:491](../../src/interfaces/web/features/import/excel-history-view.tsx#L491) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 0d31c387aab1-1 | [import-view.tsx:152](../../src/interfaces/web/features/import/import-view.tsx#L152) | summary / action | Categories in the file | SOURCE CLASSIFIED; STATES OPEN |
+| a16abe18f55e-1 | [import-view.tsx:207](../../src/interfaces/web/features/import/import-view.tsx#L207) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
+| 07d379d4ae87-1 | [import-view.tsx:236](../../src/interfaces/web/features/import/import-view.tsx#L236) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
+| c7d02f2d8ea0-1 | [import-view.tsx:447](../../src/interfaces/web/features/import/import-view.tsx#L447) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
+| 433af233c51f-1 | [import-view.tsx:458](../../src/interfaces/web/features/import/import-view.tsx#L458) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
+| 9afbc4887c4a-1 | [import-view.tsx:473](../../src/interfaces/web/features/import/import-view.tsx#L473) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
+| a4ef13a46b03-1 | [import-view.tsx:514](../../src/interfaces/web/features/import/import-view.tsx#L514) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
+| e431be296b26-1 | [manual-entry.tsx:116](../../src/interfaces/web/features/import/manual-entry.tsx#L116) | input / field | manual-date | SOURCE CLASSIFIED; STATES OPEN |
+| 1e0dc92f72a2-1 | [manual-entry.tsx:143](../../src/interfaces/web/features/import/manual-entry.tsx#L143) | input / field | {'${row.id}-name'} | SOURCE CLASSIFIED; STATES OPEN |
+| a2d7f0f324c4-1 | [manual-entry.tsx:154](../../src/interfaces/web/features/import/manual-entry.tsx#L154) | input / field | {'${row.id}-isin'} | SOURCE CLASSIFIED; STATES OPEN |
+| 4994d47aca6b-1 | [manual-entry.tsx:169](../../src/interfaces/web/features/import/manual-entry.tsx#L169) | input / field | {'${row.id}-value'} | SOURCE CLASSIFIED; STATES OPEN |
+| 6e912cb7bb16-1 | [manual-entry.tsx:199](../../src/interfaces/web/features/import/manual-entry.tsx#L199) | button / action | { row.known ? 'Mark ${row.name} as no longer held' : 'Remove ${row.name.trim() &#124;&#124; 'ne | SOURCE CLASSIFIED; STATES OPEN |
+| 9f597aa228ee-1 | [manual-entry.tsx:228](../../src/interfaces/web/features/import/manual-entry.tsx#L228) | button / action | Undo removal | SOURCE CLASSIFIED; STATES OPEN |
+| bc944ff3d1ae-1 | [manual-entry.tsx:247](../../src/interfaces/web/features/import/manual-entry.tsx#L247) | button / action | Add another fund | SOURCE CLASSIFIED; STATES OPEN |
+| 1d4c3cc72be0-1 | [manual-entry.tsx:259](../../src/interfaces/web/features/import/manual-entry.tsx#L259) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d65f630467b4-1 | [manual-entry.tsx:294](../../src/interfaces/web/features/import/manual-entry.tsx#L294) | button / action | Continue to movements and review | SOURCE CLASSIFIED; STATES OPEN |
+| 1b068865a785-1 | [manual-entry.tsx:307](../../src/interfaces/web/features/import/manual-entry.tsx#L307) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
+| 359e0963cf8b-1 | [fund-view.tsx:27](../../src/interfaces/web/features/overview/fund-view.tsx#L27) | div / scroll-region | {props.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 4e4374fc2eb6-1 | [fund-view.tsx:126](../../src/interfaces/web/features/overview/fund-view.tsx#L126) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
+| 162f2f7b39ad-1 | [fund-view.tsx:218](../../src/interfaces/web/features/overview/fund-view.tsx#L218) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
+| 399094bfaa4d-1 | [fund-view.tsx:230](../../src/interfaces/web/features/overview/fund-view.tsx#L230) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 64d4cd976df9-1 | [months-view.tsx:129](../../src/interfaces/web/features/overview/months-view.tsx#L129) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 63093a33b00c-1 | [months-view.tsx:139](../../src/interfaces/web/features/overview/months-view.tsx#L139) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
+| e0abd83f2dac-1 | [months-view.tsx:224](../../src/interfaces/web/features/overview/months-view.tsx#L224) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
+| 07ea2365793b-1 | [months-view.tsx:284](../../src/interfaces/web/features/overview/months-view.tsx#L284) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d126bd399f6c-1 | [months-view.tsx:300](../../src/interfaces/web/features/overview/months-view.tsx#L300) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
+| 36aa1201392b-1 | [months-view.tsx:311](../../src/interfaces/web/features/overview/months-view.tsx#L311) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
+| e31f7b55bac2-1 | [months-view.tsx:322](../../src/interfaces/web/features/overview/months-view.tsx#L322) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
+| 4eeac9ba431c-1 | [months-view.tsx:378](../../src/interfaces/web/features/overview/months-view.tsx#L378) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
+| 84451b3ea669-1 | [overview-view.tsx:148](../../src/interfaces/web/features/overview/overview-view.tsx#L148) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
+| a4c93f8cd63a-1 | [overview-view.tsx:214](../../src/interfaces/web/features/overview/overview-view.tsx#L214) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
+| c73bc9e313d7-1 | [overview-view.tsx:273](../../src/interfaces/web/features/overview/overview-view.tsx#L273) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4c27cd5734fc-1 | [overview-view.tsx:338](../../src/interfaces/web/features/overview/overview-view.tsx#L338) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
+| 68f008a1b407-1 | [overview-view.tsx:342](../../src/interfaces/web/features/overview/overview-view.tsx#L342) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 60fa8838eb0c-1 | [overview-view.tsx:391](../../src/interfaces/web/features/overview/overview-view.tsx#L391) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| 4e586bf3824f-1 | [overview-view.tsx:439](../../src/interfaces/web/features/overview/overview-view.tsx#L439) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
+| 3a1966c1235b-1 | [overview-view.tsx:531](../../src/interfaces/web/features/overview/overview-view.tsx#L531) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 666619ba1abe-1 | [overview-view.tsx:549](../../src/interfaces/web/features/overview/overview-view.tsx#L549) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 4e03b4ce4b63-1 | [overview-view.tsx:553](../../src/interfaces/web/features/overview/overview-view.tsx#L553) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 450d53e47884-1 | [overview-view.tsx:572](../../src/interfaces/web/features/overview/overview-view.tsx#L572) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 0372fc3024cd-1 | [overview-view.tsx:590](../../src/interfaces/web/features/overview/overview-view.tsx#L590) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| 989c1d126d60-1 | [overview-view.tsx:605](../../src/interfaces/web/features/overview/overview-view.tsx#L605) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
+| bffbb0413bfa-1 | [overview-view.tsx:635](../../src/interfaces/web/features/overview/overview-view.tsx#L635) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
+| e503cad438ed-1 | [overview-view.tsx:672](../../src/interfaces/web/features/overview/overview-view.tsx#L672) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 15ea4c589343-1 | [overview-view.tsx:688](../../src/interfaces/web/features/overview/overview-view.tsx#L688) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
+| ea2d48ce66a5-1 | [overview-view.tsx:714](../../src/interfaces/web/features/overview/overview-view.tsx#L714) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
+| d11943c73288-1 | [overview-view.tsx:769](../../src/interfaces/web/features/overview/overview-view.tsx#L769) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| d735dd60ef9b-1 | [overview-view.tsx:778](../../src/interfaces/web/features/overview/overview-view.tsx#L778) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| d7e935b414ad-1 | [overview-view.tsx:812](../../src/interfaces/web/features/overview/overview-view.tsx#L812) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| de46d013615c-1 | [overview-view.tsx:902](../../src/interfaces/web/features/overview/overview-view.tsx#L902) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| afb61224b2be-1 | [overview-view.tsx:912](../../src/interfaces/web/features/overview/overview-view.tsx#L912) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| d8d6a251e8a5-1 | [donut.tsx:57](../../src/interfaces/web/presentation/charts/donut.tsx#L57) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 7f473b4575d1-1 | [line-chart.tsx:271](../../src/interfaces/web/presentation/charts/line-chart.tsx#L271) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| a110d5b535d9-1 | [line-chart.tsx:358](../../src/interfaces/web/presentation/charts/line-chart.tsx#L358) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:460](../../src/interfaces/web/presentation/charts/line-chart.tsx#L460) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 458c1b118a98-1 | [line-chart.tsx:482](../../src/interfaces/web/presentation/charts/line-chart.tsx#L482) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:486](../../src/interfaces/web/presentation/charts/line-chart.tsx#L486) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| d18972a7565d-1 | [line-chart.tsx:507](../../src/interfaces/web/presentation/charts/line-chart.tsx#L507) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| b8aea119d3dc-1 | [monthly-bars.tsx:115](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L115) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 9b0ee110f1fd-1 | [monthly-bars.tsx:192](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L192) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
+| e12440fad7f8-1 | [monthly-bars.tsx:223](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L223) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
+| 754edc475ea5-1 | [monthly-bars.tsx:236](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L236) | summary / action | Show the values as a table | SOURCE CLASSIFIED; STATES OPEN |
+| 580ca891139d-1 | [monthly-bars.tsx:237](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L237) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| 222973826ac1-1 | [performance-bars.tsx:26](../../src/interfaces/web/presentation/charts/performance-bars.tsx#L26) | a / action | {'perf-row${row.dim === true ? " dim" : ""}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 87821db5ad79-1 | [privacy.tsx:49](../../src/interfaces/web/presentation/privacy/privacy.tsx#L49) | button / action | privacy-toggle | SOURCE CLASSIFIED; STATES OPEN |
 | f217f265fce6-1 | [index.html:71](../../src/interfaces/web/public/privacy/index.html#L71) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
 | 0c4e99920444-1 | [index.html:107](../../src/interfaces/web/public/privacy/index.html#L107) | a / action | Google's privacy policy | SOURCE CLASSIFIED; STATES OPEN |
@@ -308,9 +308,9 @@ One row is a source template; a fund-link template can render many controls. All
 | ed2d1530e46f-1 | [index.html:141](../../src/interfaces/web/public/privacy/index.html#L141) | a / action | github.com/AlbiDR/FolioDash | SOURCE CLASSIFIED; STATES OPEN |
 | f217f265fce6-2 | [index.html:145](../../src/interfaces/web/public/privacy/index.html#L145) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
 | 145a635bff48-1 | [index.html:147](../../src/interfaces/web/public/privacy/index.html#L147) | a / action | Back to FolioDash | SOURCE CLASSIFIED; STATES OPEN |
-| 303548eba8f8-1 | [DeferredView.tsx:13](../../src/interfaces/web/shared/ui/DeferredView.tsx#L13) | button / action | Reload view | SOURCE CLASSIFIED; STATES OPEN |
-| 18b15b9fbea7-1 | [PageNav.tsx:18](../../src/interfaces/web/shared/ui/PageNav.tsx#L18) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
-| c024e169481d-1 | [RangeSelector.tsx:40](../../src/interfaces/web/shared/ui/RangeSelector.tsx#L40) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |
+| c40ccf39b1a8-1 | [deferred-view.tsx:13](../../src/interfaces/web/shared/ui/deferred-view.tsx#L13) | button / action | Reload view | SOURCE CLASSIFIED; STATES OPEN |
+| 0aecfa0f060a-1 | [page-nav.tsx:18](../../src/interfaces/web/shared/ui/page-nav.tsx#L18) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
+| a337f0db5759-1 | [range-selector.tsx:40](../../src/interfaces/web/shared/ui/range-selector.tsx#L40) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |
 
 <!-- interaction-inventory:end -->
 

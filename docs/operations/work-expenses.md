@@ -20,7 +20,7 @@ Hide amounts retains the editor's five fields, optional group, date controls, fo
 
 ## Versioned reporting choices
 
-`work-expenses-v3` is the canonical implementation in `src/core/WorkExpenses.ts`. On 2026-11-05 the owner clarified that the tracker measures the cost of working in the city rather than at home, and explicitly selected both Dinner and Other Expenses as optional. The subsequent owner request allows either optional cost to close the day on its own, including explicit zero. This supersedes v2's optional-only partial classification and v1's requirement to fill all five fields. Historical optional-only days are reclassified for reporting; saved blanks, commands and backups are not rewritten. Averaging-method choices remain visible and selectable; the optional-field clarification does not imply approval of every reporting preference. No private legacy formula is executed.
+`work-expenses-v3` is the canonical implementation in `src/core/work-expenses.ts`. On 2026-11-05 the owner clarified that the tracker measures the cost of working in the city rather than at home, and explicitly selected both Dinner and Other Expenses as optional. The subsequent owner request allows either optional cost to close the day on its own, including explicit zero. This supersedes v2's optional-only partial classification and v1's requirement to fill all five fields. Historical optional-only days are reclassified for reporting; saved blanks, commands and backups are not rewritten. Averaging-method choices remain visible and selectable; the optional-field clarification does not imply approval of every reporting preference. No private legacy formula is executed.
 
 | Metric / state | Implemented definition |
 |---|---|

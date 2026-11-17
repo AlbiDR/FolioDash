@@ -31,7 +31,7 @@
     "capture:readme": "node scripts/capture-readme.ts",
     "docs:readme": "node scripts/render-readme-gallery.ts",
     "prepare:pages": "node scripts/prepare-pages.ts",
-    "verify:pages": "node --test scripts/prepare-pages.test.ts scripts/readmeViews.test.ts",
+    "verify:pages": "node --test scripts/prepare-pages.test.ts scripts/readme-views.test.ts",
     "inventory:interactions": "node scripts/verify-interactions.ts --write",
     "verify:interactions": "node scripts/verify-interactions.ts",
     "audit:interactions": "node scripts/audit-interactions.ts",
