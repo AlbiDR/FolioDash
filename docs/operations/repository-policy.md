@@ -55,20 +55,13 @@ Cross-layer tests now compile under the tooling configuration, which supplies No
 
 The contributor allowlist records ADR as an exact alternate name for the already-approved AlbiDR GitHub no-reply address. Upstream commit `b3ed60e` used that identity. All author/co-author/automation checks remain enabled; no history was rewritten.
 
-## Tooling floor, 2026-11-17
+## Tooling floor and lean root, 2026-11-17
 
-Phase 1 of the organization standard added the baselines every contributor and tool shares. It changes no source behavior, layer, financial rule or write path.
+Phase 1 of the organization standard added a pinned formatter and a built-output oracle. It changes no source behavior, layer, financial rule or write path, and it adds nothing to the repository root.
 
-| File | Why it is at the root |
-|---|---|
-| `.editorconfig` | Editors resolve it upward from the edited file. It fixes UTF-8, LF, two-space indentation, a final newline and trimmed trailing whitespace, except in Markdown where two trailing spaces are a hard line break. |
-| `.gitattributes` | Git reads it from the working-tree root. It normalises text to LF, marks images as binary and marks the lockfile as generated. |
-| `.nvmrc` | Version managers read it from the root. It names the Node release CI runs; `engines` in `package.json` remains the minimum. |
-| `.vscode/` | Shared editor settings that apply the formatter and recommend three extensions. It holds no personal preferences. |
+The root is the first thing a visitor sees, so it holds only the documentation entry points, the package manifest and lockfile, the ignore file and six folders. Editor, version-manager and Git-attribute dotfiles (`.editorconfig`, `.gitattributes`, `.nvmrc`, `.vscode/`, `.prettierrc`, `.git-blame-ignore-revs`) are deliberately not adopted: the formatter configuration lives in `config/prettier.json` and is passed explicitly by the `format` scripts, `engines` in `package.json` states the Node minimum, and CI pins the Node release. The policy test rejects those dotfiles, so a later change cannot reintroduce them without a documented decision. The cost is that editors do not auto-apply the formatter on save, and GitHub's blame view does not skip the format commit automatically; use `git blame --ignore-rev fcff873` locally.
 
-The root allowlist in `scripts/repositoryPolicy.ts` lists exactly these entries and its test covers them and a rejected look-alike (`.prettierrc`). The formatter configuration lives in `config/prettier.json` and is passed explicitly, so it needs no root dotfile.
-
-`npm run format:check` reports 238 files that the formatter would change. The repository-wide format is a separate, behavior-neutral commit that is added to `.git-blame-ignore-revs`; the check joins `verify` in that commit, not before it.
+`npm run format` applies the formatter and `npm run format:check` verifies it. The first repository-wide format, commit `fcff873`, is a separate mechanical commit; `verify` runs the check from the commit after it.
 
 ## Built-output oracle
 
@@ -76,4 +69,4 @@ A reorganization must not change a built byte. `npm run oracle -- write <file>` 
 
 The normal web build stamps the git revision, a `-dirty` flag and the current minute into the bundle. Content-hashed filenames cascade from that stamp, so any uncommitted change or minute boundary renames every output file. `FOLIODASH_BUILD_STAMP` pins the whole label; the oracle sets it and normal builds do not.
 
-To regenerate the baseline, check out the tag `checkpoint-2026-11-17`, apply only the `FOLIODASH_BUILD_STAMP` handling in `config/vite.config.ts`, and run the `write` command. Verified 2026-11-17: the phase 1 branch produced 32 built files byte-identical to the checkpoint build. The oracle proves identical output on one machine and Node version; it does not prove identical output across operating systems or Node releases, and it cannot detect a change that leaves built bytes the same but alters tests or documentation.
+To regenerate the baseline, check out the tag `checkpoint-2026-11-17`, apply only the `FOLIODASH_BUILD_STAMP` handling in `config/vite.config.ts`, and run the `write` command. Verified 2026-11-17: the phase 1 branch produced 32 built files byte-identical to the checkpoint build. The oracle proves identical output on one machine and Node version; it does not prove identical output across operating systems or Node releases, and it cannot detect a change that leaves built bytes the same but alters tests or documentation. The format commit `fcff873` is the one deliberate exception: formatting changes the unminified Apps Script bundle and splits some minified JSX text children, which was shown equivalent but not byte-identical. Structural phases after it compare against a baseline recorded at `fcff873`, built the same way.
