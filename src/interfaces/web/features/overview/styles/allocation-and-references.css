@@ -1,0 +1,107 @@
+/* ---------- Allocation: the ring and its legend ---------- */
+.allocation-card {
+  align-self: start;
+}
+.allocation-card .legend a {
+  padding-block: var(--space-2);
+}
+@media (max-width: 47.5rem) {
+  .allocation-card {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    column-gap: var(--space-3);
+    align-items: center;
+  }
+  .allocation-card > :not(.donut):not(.legend) {
+    grid-column: 1 / -1;
+  }
+  .allocation-card > .donut {
+    grid-column: 1;
+    width: 7rem;
+    margin: 0;
+  }
+  .allocation-card > .legend {
+    grid-column: 2;
+  }
+  .allocation-card .donut-number {
+    font-size: max(var(--text-lead), min(1.75rem, 16cqi));
+  }
+  .allocation-card .donut[data-inspecting="true"] .donut-number {
+    font-size: max(var(--text-body), min(1.25rem, 13cqi));
+  }
+  .allocation-card .legend a {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "dot name" "dot value";
+    column-gap: var(--space-2);
+    row-gap: 0;
+    align-items: center;
+  }
+  .allocation-card .legend .dot {
+    grid-area: dot;
+  }
+  .allocation-card .legend-name {
+    grid-area: name;
+  }
+  .allocation-card .legend-value {
+    grid-area: value;
+    font-size: var(--text-small);
+  }
+}
+
+/* ---------- Reference rows: trends, definitions, the demo picker ---------- */
+.analysis-grid {
+  margin-top: var(--space-3);
+}
+/* Cards size to their content: a short list beside a tall chart ends where its content ends instead of stretching into empty space. */
+.analysis-grid {
+  align-items: start;
+}
+.glossary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: var(--space-2) 0 0;
+}
+.glossary dt {
+  font-weight: var(--weight-semibold);
+}
+.glossary dd {
+  margin: var(--space-1) 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+.glossary-subheading {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+.dashboard-glossary > .hint {
+  margin-top: var(--space-3);
+}
+.demo-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: var(--space-1) 0 var(--space-2);
+  list-style: none;
+  font-size: var(--text-small);
+}
+.demo-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding-inline: var(--space-2);
+  border-radius: var(--shape-sm);
+  text-decoration: none;
+}
+.demo-nav a[aria-current="page"] {
+  color: var(--color-text);
+  font-weight: var(--weight-bold);
+}
+.demo-label {
+  flex-basis: 100%;
+  color: var(--color-muted);
+  font-weight: var(--weight-semibold);
+}

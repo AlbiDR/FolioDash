@@ -1,0 +1,146 @@
+/* The portfolio family: Portfolio, Fund and Month by month.
+ * Reading order is DOM order. Wide screens only place the same blocks side by side. Every size is a role from
+ * tokens.css; nothing here invents one. A card holds one group; rows inside it are rows, never cards. */
+
+/* ---------- The summary: one headline figure, then the rest of the story ---------- */
+.hero {
+  --hero-gain: var(--color-hero-gain);
+  --hero-rule: color-mix(in srgb, var(--color-hero-muted) 40%, transparent);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  border-radius: var(--shape-lg);
+  background: var(--color-hero);
+  color: var(--color-on-hero);
+  box-shadow: none;
+}
+
+.hero .gain {
+  color: var(--hero-gain);
+}
+.hero .loss {
+  color: var(--color-on-hero);
+}
+.hero .masked {
+  color: inherit;
+}
+.hero .pill {
+  background: color-mix(in srgb, var(--color-on-hero) 14%, transparent);
+  color: inherit;
+}
+.hero .pill.gain {
+  background: color-mix(in srgb, var(--hero-gain) 20%, transparent);
+  color: var(--hero-gain);
+}
+.hero .pill.loss {
+  background: color-mix(in srgb, var(--color-on-hero) 14%, transparent);
+  color: var(--color-on-hero);
+}
+
+/* The date or identity on the left, the one action that belongs to this summary on the right. */
+.hero-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.hero-context {
+  min-width: 0;
+  margin: 0;
+  color: var(--color-hero-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+.hero-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--color-on-hero) 38%, transparent);
+  border-radius: var(--shape-full);
+  background: transparent;
+  color: var(--color-on-hero);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hero-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.hero-label {
+  margin: 0;
+  color: var(--color-hero-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+.hero-value {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-display);
+  font-weight: var(--weight-bold);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-caption {
+  margin: var(--space-1) 0 0;
+  color: var(--color-hero-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+.hero-delta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.hero-delta-label {
+  color: var(--color-hero-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+}
+.hero-gain {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hero-rule);
+}
+.hero-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.hero .facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hero-rule);
+}
+.hero .facts dt {
+  color: var(--color-hero-muted);
+}
+.copy-feedback {
+  margin: 0;
+  color: var(--color-hero-muted);
+  font-size: var(--text-small);
+}
+.hero .copy-feedback:not(:empty) {
+  margin-bottom: var(--space-2);
+}

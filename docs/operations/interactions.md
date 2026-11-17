@@ -2,7 +2,7 @@
 
 The inventory contains **92** named behaviours: the original 32, five additional microanimations (33-37), five additional functional microinteractions (38-42), and two further sets of 25 motion touchpoints (43-67 and 68-92). A touchpoint means a particular control/state receiving motion feedback, not a unique keyframe: related controls deliberately share easing and choreography. Existing chart reveals, card entry animations and mobile date sliders are outside this count.
 
-The shared presentation layers are `src/interfaces/web/shared/ui/interactions.css` and `motion.css`, imported after the base styles. Motion durations, distances and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
+The shared presentation layers are `src/interfaces/web/shared/ui/interactions/` and `src/interfaces/web/shared/ui/motion/` (a few CSS files each, imported in order), imported after the base styles. Motion durations, distances and easing come from `shared/tokens.css`. Functional interactions remain in their owning UI components; the financial kernel and persistence are unchanged.
 
 > **Amended 2026-11-08 by the [UI system](../design/ui-system.md).** Cards, charts, stat blocks, facts, glossary entries and import-review totals no longer react to hover, keyboard focus within or press, because none of them can be pressed. The hover lift of the four gain cards, the card edge and elevation, and the inspection surface on facts, glossary entries and totals described below (and the matching touchpoints and evidence) are removed. Feedback stays on links, buttons, fields, rows that open something, chart marks and the allocation legend.
 
@@ -145,7 +145,7 @@ Allocation inspection stays inside its own component, so pointer movement does n
 
 A control keeps one shape through rest, press, selection and animation. These rules are in the shared layers, not per control:
 
-- **Pressed state.** `interactions.css` draws one translucent layer, in the control's own text colour, as that control's background image. A background is clipped by the element's border radius, so the pressed shape is the control's shape. It has zero specificity, so a control with its own pressed style replaces it. Fields take focus instead of a pressed layer.
+- **Pressed state.** `interactions/controls.css` draws one translucent layer, in the control's own text colour, as that control's background image. A background is clipped by the element's border radius, so the pressed shape is the control's shape. It has zero specificity, so a control with its own pressed style replaces it. Fields take focus instead of a pressed layer.
 - **No browser tap highlight.** It is a rectangle that ignores shapes, so `-webkit-tap-highlight-color` is transparent at the root and inherited. Before this, only `<button>` turned it off; links, summaries and labels (the dock among them) showed a rectangle before the rounded animation.
 - **Hover only where a pointer can hover.** Every `:hover` style sits inside `@media (hover: hover) and (pointer: fine)`. An unconditional hover style sticks after a tap on a touch screen and looks like a selection.
 - **An indicator takes its host's radius.** The sliding dock selection and the dock items share `--nav-radius`; the period selector's indicator inherits its container's radius.
@@ -202,7 +202,7 @@ These checks exercise the actual local production renderer, with service workers
 
 ## Motion refinement, 2026-11-10
 
-The owner's request adds 42 touchpoints to the existing system in `src/interfaces/web/shared/ui/motion.css`. These use the existing duration, distance and easing tokens. State transitions reverse from their current rendered position when interrupted. There are no delayed controls, staggered financial rows or interpolated amounts. Privacy values still disappear immediately. Hover feedback is restricted to fine pointers; focus outlines remain immediate.
+The owner's request adds 42 touchpoints to the existing system in `src/interfaces/web/shared/ui/motion/`. These use the existing duration, distance and easing tokens. State transitions reverse from their current rendered position when interrupted. There are no delayed controls, staggered financial rows or interpolated amounts. Privacy values still disappear immediately. Hover feedback is restricted to fine pointers; focus outlines remain immediate.
 
 | Group | Count | Implemented touchpoints, in source order |
 |---|---|---|

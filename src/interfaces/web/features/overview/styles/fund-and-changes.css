@@ -1,0 +1,130 @@
+/* ---------- Fund: the figures strip across the top, then the chart, then the statement history ---------- */
+.fund-figures {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(4, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hero-rule);
+}
+.fund-figure {
+  min-width: 0;
+}
+.fund-figure > dd {
+  margin: var(--space-1) 0 0;
+}
+.fund-figure > .hero-value {
+  margin-top: var(--space-1);
+}
+.fund-hero .hero-caption {
+  margin-top: var(--space-3);
+}
+@media (max-width: 73.75rem) {
+  .fund-figures {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .fund-figure-main {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 47.5rem) {
+  .fund-figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.fund-history .more {
+  margin-top: var(--space-2);
+}
+.fund-history .row-link {
+  margin-top: var(--space-2);
+}
+
+/* ---------- Changes: three rows in one card ---------- */
+.period-results {
+  container: periods / inline-size;
+  display: grid;
+  align-content: start;
+  gap: 0;
+  min-width: 0;
+}
+.period-results > .card-title {
+  margin-bottom: var(--space-1);
+}
+.period-results > .stat {
+  padding-block: var(--space-3);
+}
+.period-results > .stat + .stat {
+  border-top: 1px solid var(--color-border);
+}
+.period-results > .stat:last-of-type {
+  padding-bottom: 0;
+}
+.period-results > .footnote {
+  margin-top: var(--space-3);
+}
+.stat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 4.5rem;
+  grid-template-areas: "label label spark" "value pill spark" "caption caption spark";
+  align-items: center;
+  justify-items: start;
+  column-gap: var(--space-2);
+  row-gap: 0;
+  min-width: 0;
+}
+.stat > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.stat > .card-label {
+  grid-area: label;
+}
+.stat > .stat-value {
+  grid-area: value;
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat > .pill {
+  grid-area: pill;
+}
+.stat > .stat-caption {
+  grid-area: caption;
+  margin: 0;
+}
+.stat > .sparkline {
+  grid-area: spark;
+  justify-self: end;
+  width: 4.5rem;
+  height: 3rem;
+  margin: 0;
+}
+@container periods (min-width: 38rem) {
+  .period-results {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--space-4);
+  }
+  .period-results > .card-title,
+  .period-results > .footnote {
+    grid-column: 1 / -1;
+  }
+  .period-results > .stat,
+  .period-results > .stat:last-of-type {
+    padding-block: var(--space-2) 0;
+  }
+  .period-results > .stat + .stat {
+    border-top: 0;
+  }
+  .stat {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "label label" "value pill" "caption caption" "spark spark";
+  }
+  .stat > .sparkline {
+    width: 100%;
+    height: 2.5rem;
+    justify-self: stretch;
+  }
+}

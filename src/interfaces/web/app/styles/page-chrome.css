@@ -1,0 +1,266 @@
+/* ---------- Page identity and global controls ---------- */
+
+.topbar {
+  position: sticky;
+  top: var(--page-inset);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--shape-xl);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 0 0 1px var(--glass-edge);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  border: 0;
+  border-radius: var(--shape-full);
+  cursor: pointer;
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    transform var(--duration-short) var(--ease-spring);
+}
+
+.icon-button:active {
+  scale: var(--motion-control-press);
+}
+
+.topbar-title {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.topbar-title h1 {
+  overflow: hidden;
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eyebrow {
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.topbar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.status-chip {
+  --dot: var(--color-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--shape-full);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+a.status-chip,
+button.status-chip {
+  color: inherit;
+  text-decoration: none;
+}
+
+button.status-chip {
+  border: 0;
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.link-button {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+}
+
+.status-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+/* Phones draw the short word; the full sentence stays the accessible name. */
+.source-short {
+  display: none;
+}
+a.icon-button {
+  text-decoration: none;
+}
+
+.status-chip.synced {
+  --dot: var(--color-gain);
+}
+
+.status-chip.local,
+.status-chip.demo {
+  --dot: #ff9500;
+}
+
+.privacy-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 11.75rem;
+  height: 2.25rem;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  border: 0;
+  border-radius: var(--shape-full);
+  cursor: pointer;
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard),
+    transform var(--duration-short) var(--ease-spring);
+}
+
+.privacy-toggle:active {
+  scale: var(--motion-control-press);
+}
+
+.privacy-toggle[aria-pressed="true"] {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+/* On a phone the bar scrolls away like a large title, and the privacy control shrinks to its icon. */
+@media (max-width: 47.5rem) {
+  .topbar {
+    position: static;
+  }
+
+  .privacy-toggle {
+    min-width: 2.25rem;
+    width: 2.25rem;
+    padding: 0;
+  }
+
+  .toggle-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---------- The dashboard grid ---------- */
+
+.dash {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+.cell-3 {
+  grid-column: span 3;
+}
+
+.cell-4 {
+  grid-column: span 4;
+}
+
+.cell-6 {
+  grid-column: span 6;
+}
+
+.cell-8 {
+  grid-column: span 8;
+}
+
+.cell-12 {
+  grid-column: span 12;
+}
+
+.dash > * {
+  min-width: 0;
+  animation: rise var(--duration-feedback) var(--ease-standard);
+}
+
+@keyframes rise {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(var(--motion-nudge));
+  }
+}
+
+@media (max-width: 73.75rem) {
+  .cell-3,
+  .cell-4 {
+    grid-column: span 6;
+  }
+
+  .cell-8 {
+    grid-column: span 12;
+  }
+
+  .hero.cell-4 {
+    grid-column: span 12;
+  }
+}
+
+/* On a phone every card takes the full width: a figure is never clipped to fit a half-width tile. */
+@media (max-width: 47.5rem) {
+  .cell-3,
+  .cell-4,
+  .cell-6,
+  .cell-8,
+  .hero.cell-4 {
+    grid-column: span 12;
+  }
+}
+
+.cell-3 > .card,
+.cell-4 > .card,
+.cell-8 > .card,
+.cell-8 > .chart,
+.cell-4 > .chart {
+  height: 100%;
+}
+
+/* ---------- Cards: solid tonal surfaces. Glass is for the bars above, never for figures. ---------- */
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--shape-lg);
+  padding: var(--card-padding);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border),
+    var(--shadow-card);
+}

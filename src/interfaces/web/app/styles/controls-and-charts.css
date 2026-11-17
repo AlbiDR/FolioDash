@@ -1,0 +1,294 @@
+/* ---------- Controls ---------- */
+
+.segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  border-radius: var(--shape-full);
+}
+
+.segmented button {
+  min-width: var(--touch-target);
+  height: 1.9rem;
+  padding: 0 0.8rem;
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--shape-full);
+  cursor: pointer;
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard),
+    transform var(--duration-short) var(--ease-spring);
+}
+
+.segmented button:active {
+  scale: var(--motion-control-press);
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.segmented a {
+  display: grid;
+  place-items: center;
+  min-width: 2.9rem;
+  height: 1.9rem;
+  padding: 0 0.9rem;
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  border-radius: var(--shape-full);
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard);
+}
+
+.segmented a[aria-current="page"] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.control-label {
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 47.5rem) {
+  .control-label {
+    display: none;
+  }
+}
+
+/* ---------- Allocation, bars, rankings ---------- */
+
+.donut {
+  position: relative;
+  container-type: inline-size;
+  width: min(100%, 11.25rem);
+  aspect-ratio: 1;
+  margin: 0 auto 0.9rem;
+}
+
+.donut svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.donut-slice {
+  fill: var(--series-color);
+}
+
+.donut-centre {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.donut-number {
+  font-size: var(--text-figure);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.donut-caption {
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.legend {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--series-color);
+}
+
+.legend-name {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-weight: var(--weight-semibold);
+}
+
+.legend-value {
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bars {
+  margin: 0;
+}
+
+.bars svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.bars-zero {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.bar.gain {
+  fill: var(--color-gain);
+}
+
+.bar.loss {
+  fill: var(--color-loss);
+}
+
+.perf {
+  container-type: inline-size;
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.perf-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--touch-target);
+  padding: 0.45rem 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.perf-row.dim {
+  opacity: 0.6;
+}
+
+.perf-name {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-weight: var(--weight-semibold);
+}
+
+.perf-track {
+  position: relative;
+  height: 0.65rem;
+  background: var(--color-surface-2);
+  border-radius: var(--shape-full);
+}
+
+.perf-track::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.perf-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--shape-full);
+}
+
+.perf-bar.gain {
+  background: var(--color-gain);
+}
+
+.perf-bar.loss {
+  background: var(--color-loss);
+}
+
+.perf-value {
+  min-width: 4.25rem;
+  text-align: right;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Amounts and privacy ---------- */
+
+/*
+ * Shown and hidden amounts share one fixed width, chosen for the largest figure the
+ * layout expects, never taken from the data. The layout therefore does not move when
+ * the choice changes, and a hidden amount's width says nothing about its size.
+ */
+.amount {
+  display: inline-block;
+  min-width: 11ch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.amount.signed {
+  min-width: 12ch;
+}
+
+/* Where an amount sits next to a label it takes its own width and may wrap rather than clip. */
+.hero .amount,
+.stat .amount,
+.hint .amount,
+.footnote .amount,
+fieldset p .amount,
+.chart-readout .amount,
+.facts .amount,
+.holding .amount {
+  min-width: 0;
+  max-width: 100%;
+  text-align: inherit;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.masked {
+  letter-spacing: 0.12em;
+  color: var(--color-muted);
+  user-select: none;
+}

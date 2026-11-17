@@ -1,0 +1,192 @@
+/* ---------- Holdings: a row per fund ---------- */
+.portfolio-explore {
+  padding: var(--space-2) var(--card-padding);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--shape-lg);
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+/* One row: where to jump on the left, the month-by-month comparison on the right. Holdings follow directly, so this stays slim. */
+.portfolio-explore-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.portfolio-explore-row > .page-nav {
+  min-width: 0;
+}
+.portfolio-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.portfolio-history-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  padding-inline: var(--space-3);
+  border-radius: var(--shape-full);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+.portfolio-holdings {
+  container: holdings / inline-size;
+  align-self: start;
+}
+.fund-search {
+  margin: var(--space-2) 0;
+  gap: var(--space-1);
+}
+.fund-search > .hint {
+  line-height: var(--leading-body);
+}
+.mobile-holdings {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mobile-holdings li + li {
+  border-top: 1px solid var(--color-border);
+}
+/* Sorting: column headers on the table, one list on a phone. Both change the same order. */
+.holdings-sort-mobile {
+  display: none;
+  margin: var(--space-2) 0;
+}
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--shape-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.holdings-table th:first-child .sort-button {
+  margin-inline-start: calc(var(--space-1) * -1);
+}
+.holdings-table thead th:not(:first-child) .sort-button {
+  margin-inline-end: calc(var(--space-1) * -1);
+}
+.holdings-table thead th[aria-sort="ascending"] .sort-button::after {
+  content: "\2191" / "";
+}
+.holdings-table thead th[aria-sort="descending"] .sort-button::after {
+  content: "\2193" / "";
+}
+.holdings-table thead th[aria-sort]:not([aria-sort="none"]) {
+  color: var(--color-text);
+}
+@container holdings (max-width: 42rem) {
+  .desktop-holdings {
+    display: none;
+  }
+  .mobile-holdings {
+    display: block;
+  }
+  .holdings-sort-mobile {
+    display: grid;
+  }
+}
+.holding {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 1.125rem;
+  grid-template-areas: "id headline chevron" "detail detail detail";
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: var(--space-2);
+  padding: var(--space-3) var(--space-1);
+  border-radius: var(--shape-sm);
+  color: inherit;
+  text-decoration: none;
+}
+.holding-id {
+  grid-area: id;
+  display: grid;
+  min-width: 0;
+}
+.holding-name {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.holding-headline {
+  grid-area: headline;
+  display: grid;
+  justify-items: end;
+  gap: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+.holding-value {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+.holding > svg {
+  grid-area: chevron;
+  color: var(--color-muted);
+}
+.holding-detail {
+  grid-area: detail;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+.holding-fact {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+}
+.holding-label {
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+}
+.holding-meta {
+  display: block;
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
+}
+.recent-fund-history {
+  margin-top: var(--space-3);
+}
+/* A statement list: a date on the left, figures on the right, the same rows as Holdings. */
+.statement-table th:first-child {
+  width: 44%;
+}
+.statement-table thead th {
+  padding-top: 0;
+}
+/* On a phone the date may wrap onto two lines so both figures stay in view without sideways scrolling. */
+@media (max-width: 47.5rem) {
+  .statement-table th:first-child {
+    width: 26%;
+  }
+  .statement-table th,
+  .statement-table td {
+    padding-inline: 0.25rem;
+  }
+}
+.recent-fund-history-group {
+  margin-block: var(--space-3);
+}
+.recent-fund-history-group h4 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
