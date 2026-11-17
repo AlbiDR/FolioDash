@@ -63,6 +63,10 @@ The root is the first thing a visitor sees, so it holds only the documentation e
 
 `npm run format` applies the formatter and `npm run format:check` verifies it. The first repository-wide format, commit `fcff873`, is a separate mechanical commit; `verify` runs the check from the commit after it.
 
+## Structure ratchet, 2026-11-17
+
+`npm run verify:structure` enforces the [naming and structure contract](../architecture/naming-contract.md): kebab-case file and folder names, at most 400 lines per code file and at most 20 code files directly in a folder. Limits are in `config/structure.json`. The violations that exist today are recorded in `config/structure-baseline.json`; the check fails on a new violation and on a recorded one that has been fixed but not removed (`--shrink`), so the record only shrinks. It reads tracked and new non-ignored paths and line counts, runs inside `verify` right after the repository policy, and does not judge whether a name or a split is a good one.
+
 ## Built-output oracle
 
 A reorganization must not change a built byte. `npm run oracle -- write <file>` builds the web app and the Apps Script bundle with a pinned stamp and records the SHA-256 of every built file except source maps. `npm run oracle -- check <file>` builds the same way and fails on any added, removed or changed file. The snapshot holds hashes only.

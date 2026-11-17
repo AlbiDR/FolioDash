@@ -7,7 +7,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import process from "node:process";
-import { digestDifferences, digestTree, parseDigest } from "./oracleSnapshot.ts";
+import { digestDifferences, digestTree, parseDigest } from "./oracle-snapshot.ts";
 
 // Only the two build outputs: dist/ also collects audit reports and other files that are not product.
 const OUTPUTS = ["web", "apps-script"] as const;

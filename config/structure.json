@@ -1,0 +1,6 @@
+{
+  "codeExtensions": [".ts", ".tsx", ".css"],
+  "namedAreas": ["src", "tests", "scripts", "config"],
+  "maxLinesPerFile": 400,
+  "maxCodeFilesPerDirectory": 20
+}

@@ -5,6 +5,7 @@ Each rule has one authoritative home. Other documents link to that home rather t
 | Document | Owns | Status |
 |---|---|---|
 | [CleanStack Architecture](architecture/cleanstack.md) | Product boundaries, dependency law, financial/data invariants, safety and governance | Draft for owner review |
+| [Naming and structure contract](architecture/naming-contract.md) | File, folder, command and tag names, size limits, the shared vocabulary and the ratchet that enforces them | Implemented as a ratchet 2026-11-17; symbol-name lint planned |
 | [Google-backed architecture](architecture/google-sheets-backend.md) | Selected GitHub/Sheets/Apps Script direction, service/data boundaries, credential correction and runtime proof gates | Direction selected; protocol proposed and unverified |
 | [Work expenses tracker preparation](architecture/work-expenses-tracker.md) | Original parity scope, confirmed day semantics, workbook compatibility proposal and setup/view safeguards | Followed by authorised implementation; live expense proof pending |
 | [Work expenses implementation](operations/work-expenses.md) | Current tracker journey, reporting definitions, checked Google records, complete correction backup/recovery and evidence | Implemented locally; provider and physical-device acceptance pending |
