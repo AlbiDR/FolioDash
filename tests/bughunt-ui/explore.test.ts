@@ -1,14 +1,14 @@
 import { it } from "vitest";
-import { parseIsoDate, type IsoDate } from "../../src/core/IsoDate";
-import { toEuroCents, type EuroCents } from "../../src/core/Money";
-import { expenseReport, type ExpenseDay } from "../../src/core/WorkExpenses";
-import { computeLineChart } from "../../src/interfaces/web/presentation/charts/lineChartGeometry";
-import { positionAxisLabels } from "../../src/interfaces/web/presentation/charts/axisLabels";
-import { monthLabel, utcTime, euroLabel } from "../../src/interfaces/web/features/overview/chartData";
-import { describeAge } from "../../src/interfaces/web/features/account/timeAgo";
-import { formatPercent } from "../../src/core/Percent";
-import { motionMilliseconds } from "../../src/interfaces/web/shared/ui/motionTiming";
-import { maskNumbers } from "../../src/interfaces/web/presentation/privacy/privacyChoice";
+import { parseIsoDate, type IsoDate } from "../../src/core/iso-date";
+import { toEuroCents, type EuroCents } from "../../src/core/money";
+import { expenseReport, type ExpenseDay } from "../../src/core/work-expenses";
+import { computeLineChart } from "../../src/interfaces/web/presentation/charts/line-chart-geometry";
+import { positionAxisLabels } from "../../src/interfaces/web/presentation/charts/axis-labels";
+import { monthLabel, utcTime, euroLabel } from "../../src/interfaces/web/features/overview/chart-data";
+import { describeAge } from "../../src/interfaces/web/features/account/time-ago";
+import { formatPercent } from "../../src/core/percent";
+import { motionMilliseconds } from "../../src/interfaces/web/shared/ui/motion-timing";
+import { maskNumbers } from "../../src/interfaces/web/presentation/privacy/privacy-choice";
 
 const d = (s: string): IsoDate => parseIsoDate(s) as IsoDate;
 const c = (n: number): EuroCents => toEuroCents(n) as EuroCents;

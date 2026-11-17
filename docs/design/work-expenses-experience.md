@@ -31,7 +31,7 @@ No blended net-worth total, gain-versus-lunch comparison, budget score, savings 
 
 ### Pass 1 audit and consolidation
 
-Source reviewed at preparation revision `ebef320`: `App.tsx`, `routes.ts`, `OverviewView.tsx`, `AccountView.tsx`, privacy presentation, shared tokens, and the mobile, interaction and web quality contracts. A final cross-check also read the concurrent dashboard consolidation: total gain stays in the portfolio hero, three period cards follow, chart controls sit outside the shared header and deeper analysis uses disclosure. This plan follows that hierarchy and leaves that work's implementation ownership intact.
+Source reviewed at preparation revision `ebef320`: `app.tsx`, `routes.ts`, `overview-view.tsx`, `account-view.tsx`, privacy presentation, shared tokens, and the mobile, interaction and web quality contracts. A final cross-check also read the concurrent dashboard consolidation: total gain stays in the portfolio hero, three period cards follow, chart controls sit outside the shared header and deeper analysis uses disclosure. This plan follows that hierarchy and leaves that work's implementation ownership intact.
 
 | Finding | Resolution in this plan |
 |---|---|

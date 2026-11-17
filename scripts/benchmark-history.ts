@@ -1,12 +1,12 @@
 import { performance } from "node:perf_hooks";
 import { arch, cpus, platform } from "node:os";
-import { syntheticHistory } from "../tests/fixtures/SyntheticHistory";
-import { validateLedger } from "../src/core/Ledger";
-import { computeMetrics } from "../src/core/Metrics";
-import { overviewFromLedger } from "../src/interfaces/web/app/overviewFromLedger";
-import { computeDashboard } from "../src/interfaces/web/features/overview/dashboardData";
-import { computeLineChart } from "../src/interfaces/web/presentation/charts/lineChartGeometry";
-import { type LedgerRow, RowLedgerStore } from "../src/adapters/ledger/RowLedgerStore";
+import { syntheticHistory } from "../tests/fixtures/synthetic-history";
+import { validateLedger } from "../src/core/ledger";
+import { computeMetrics } from "../src/core/metrics";
+import { overviewFromLedger } from "../src/interfaces/web/app/overview-from-ledger";
+import { computeDashboard } from "../src/interfaces/web/features/overview/dashboard-data";
+import { computeLineChart } from "../src/interfaces/web/presentation/charts/line-chart-geometry";
+import { type LedgerRow, RowLedgerStore } from "../src/adapters/ledger/row-ledger-store";
 
 const SAMPLES = 7;
 function measure(run: () => unknown): { medianMs: number; p95Ms: number; worstMs: number } | { error: string } {

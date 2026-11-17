@@ -5,7 +5,7 @@ import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync 
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pngContent } from "./png-content.ts";
-import { MOBILE_IMAGES, README_IMAGES } from "./readmeViews.ts";
+import { MOBILE_IMAGES, README_IMAGES } from "./readme-views.ts";
 
 export { README_IMAGES };
 const RECEIPT = "screenshots.json";
@@ -155,7 +155,7 @@ function images(root: string): { name: string; sha256: string; width: number; he
   if (!lstatSync(root).isDirectory()) throw new Error("Screenshot root must be an ordinary directory.");
   const names = readdirSync(root).sort();
   if (JSON.stringify(names.filter((name) => name !== RECEIPT)) !== JSON.stringify([...README_IMAGES].sort()))
-    throw new Error("Screenshot folder does not hold exactly the images in scripts/readmeViews.ts.");
+    throw new Error("Screenshot folder does not hold exactly the images in scripts/readme-views.ts.");
   const result = README_IMAGES.map((name) => {
     const file = join(root, name);
     const stat = lstatSync(file);
@@ -191,7 +191,7 @@ function images(root: string): { name: string; sha256: string; width: number; he
       throw new Error(`${name} must be drawn without a page background.`);
     const framing = MOBILE_IMAGES.has(name) ? [] : framingProblems(layout);
     if (framing.length > 0)
-      throw new Error(`${name} is framed badly: ${framing.join("; ")}. Adjust its crop in scripts/readmeViews.ts.`);
+      throw new Error(`${name} is framed badly: ${framing.join("; ")}. Adjust its crop in scripts/readme-views.ts.`);
     for (let row = 0; row < height; row++)
       if ((pixels[row * rowSize] ?? 255) > 4) throw new Error("Invalid screenshot row filter.");
     return { name, sha256: sha256(bytes), width, height };

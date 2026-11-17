@@ -1,9 +1,9 @@
 // Runs the real cash-question step against a synthetic ledger, never a live account.
-import { runSyntheticJourney } from "./syntheticHarness.ts";
+import { runSyntheticJourney } from "./synthetic-harness.ts";
 
 const assertions = await runSyntheticJourney({
   name: "Sale and reopening",
-  entry: "tests/fixtures/SaleBrowser.ts",
+  entry: "tests/fixtures/sale-browser.ts",
   directory: "dist/acceptance/sale-audit",
   port: Number(process.env["FOLIODASH_SALE_AUDIT_PORT"] ?? 4201),
   config: "config/vite.sale-audit.config.ts",

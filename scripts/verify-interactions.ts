@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { discoverInteractions, inventoryTable } from "./interactionInventory.ts";
+import { discoverInteractions, inventoryTable } from "./interaction-inventory.ts";
 
 const document = "docs/design/interaction-coverage.md";
 const start = "<!-- interaction-inventory:start -->";

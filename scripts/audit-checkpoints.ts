@@ -1,9 +1,9 @@
 // Runs the real checkpoint screen and CheckpointSession against FakeGoogle in a browser, never a live account.
-import { runSyntheticJourney } from "./syntheticHarness.ts";
+import { runSyntheticJourney } from "./synthetic-harness.ts";
 
 const assertions = await runSyntheticJourney({
   name: "Checkpoints",
-  entry: "tests/fixtures/CheckpointsBrowser.ts",
+  entry: "tests/fixtures/checkpoints-browser.ts",
   directory: "dist/acceptance/checkpoints-audit",
   port: Number(process.env["FOLIODASH_CHECKPOINTS_AUDIT_PORT"] ?? 4201),
   config: "config/vite.checkpoints-audit.config.ts",

@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
-import { architectureProblems, pathProblems } from "./repositoryPolicy.ts";
+import { architectureProblems, pathProblems } from "./repository-policy.ts";
 
 // Include new, non-ignored files so local verification also checks unstaged additions.
 const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], {

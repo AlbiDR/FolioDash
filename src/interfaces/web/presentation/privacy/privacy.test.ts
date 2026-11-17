@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EuroCents } from "../../../../core/Money";
+import type { EuroCents } from "../../../../core/money";
 import {
   MASK,
   type PrivacyStorage,
@@ -7,7 +7,7 @@ import {
   maskNumbers,
   readPrivacyChoice,
   writePrivacyChoice,
-} from "./privacyChoice";
+} from "./privacy-choice";
 
 const memory = (): PrivacyStorage & { data: Map<string, string> } => {
   const data = new Map<string, string>();

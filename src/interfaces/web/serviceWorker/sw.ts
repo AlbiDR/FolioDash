@@ -1,10 +1,10 @@
 /// <reference lib="webworker" />
 // The service worker: keeps the app's own files so it opens instantly and works offline.
-// It never handles anything but those files (see cachePolicy.ts), so Google's APIs and the
+// It never handles anything but those files (see cache-policy.ts), so Google's APIs and the
 // person's data are never stored here. A new version waits until the app asks for it, so a
 // page is never swapped under someone mid-import.
 
-import { cacheNameFor, isOldCache, isPageLoad, shouldHandle, standalonePageKey } from "./cachePolicy";
+import { cacheNameFor, isOldCache, isPageLoad, shouldHandle, standalonePageKey } from "./cache-policy";
 
 declare const self: ServiceWorkerGlobalScope;
 /** Replaced at build time (config/pwa.ts): every built file, relative to this worker, and a fingerprint of them. */

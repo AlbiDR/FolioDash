@@ -1,7 +1,7 @@
-// Rewrites the README gallery from scripts/readmeViews.ts. `--check` fails instead of writing.
+// Rewrites the README gallery from scripts/readme-views.ts. `--check` fails instead of writing.
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { withGallery } from "./readmeViews.ts";
+import { withGallery } from "./readme-views.ts";
 
 const path = resolve("README.md");
 const current = readFileSync(path, "utf8");

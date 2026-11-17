@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { withLocalBrowser } from "./localBrowser.ts";
+import { withLocalBrowser } from "./local-browser.ts";
 
 interface RenderedControl {
   readonly id: string;

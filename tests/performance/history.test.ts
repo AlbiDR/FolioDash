@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { syntheticHistory } from "../fixtures/SyntheticHistory";
-import { validateLedger } from "../../src/core/Ledger";
-import { computeMetrics } from "../../src/core/Metrics";
-import { overviewFromLedger } from "../../src/interfaces/web/app/overviewFromLedger";
+import { syntheticHistory } from "../fixtures/synthetic-history";
+import { validateLedger } from "../../src/core/ledger";
+import { computeMetrics } from "../../src/core/metrics";
+import { overviewFromLedger } from "../../src/interfaces/web/app/overview-from-ledger";
 
 describe("synthetic history growth", () => {
   it("keeps every fund, date and independently calculated baseline through a large projection", () => {

@@ -2,7 +2,7 @@
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { withLocalBrowser } from "./localBrowser.ts";
+import { withLocalBrowser } from "./local-browser.ts";
 
 const directory = resolve("dist/acceptance/expense-audit");
 const html = resolve(directory, "index.html");
@@ -16,7 +16,7 @@ try {
   execFileSync(
     "node_modules/.bin/esbuild",
     [
-      "tests/fixtures/ExpenseBrowser.ts",
+      "tests/fixtures/expense-browser.ts",
       "--bundle",
       "--platform=browser",
       "--format=esm",
