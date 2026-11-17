@@ -49,9 +49,7 @@ function filesUnder(directory: string): string[] {
   });
 }
 
-// Check artwork and PNG integrity independently of compression, plus the safe circle.
-execFileSync(process.execPath, ["--test", "scripts/artifacts/png-content.test.ts"], { stdio: "inherit" });
-execFileSync(process.execPath, ["--test", "scripts/artifacts/icon-raster.test.ts"], { stdio: "inherit" });
+// The artwork and PNG tests run in `npm run test:scripts`; here the icons are only checked against their source.
 execFileSync(process.execPath, ["scripts/artifacts/icons.ts", "--check"], { stdio: "inherit" });
 
 const manifest = JSON.parse(readFileSync(`${PUBLIC}/manifest.webmanifest`, "utf8")) as Manifest;

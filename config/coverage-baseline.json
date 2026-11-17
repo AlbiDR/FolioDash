@@ -1,0 +1,38 @@
+{
+  "src/adapters": {
+    "lines": 94.8,
+    "branches": 82.7
+  },
+  "src/applications": {
+    "lines": 97,
+    "branches": 88.6
+  },
+  "src/core": {
+    "lines": 97.8,
+    "branches": 92.4
+  },
+  "src/interfaces/server": {
+    "lines": 45.1,
+    "branches": 100
+  },
+  "src/interfaces/web/app": {
+    "lines": 69.6,
+    "branches": 61.3
+  },
+  "src/interfaces/web/features": {
+    "lines": 13.2,
+    "branches": 10.8
+  },
+  "src/interfaces/web/presentation": {
+    "lines": 22,
+    "branches": 12
+  },
+  "src/interfaces/web/service-worker": {
+    "lines": 45.2,
+    "branches": 60
+  },
+  "src/interfaces/web/shared": {
+    "lines": 34.8,
+    "branches": 20.8
+  }
+}

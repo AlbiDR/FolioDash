@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/api/schema/stryker-core.json",
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "config/vitest.config.ts"
+  },
+  "mutate": ["src/core/**/*.ts", "!src/core/**/*.test.ts", "!src/core/**/*-builders.ts"],
+  "coverageAnalysis": "perTest",
+  "ignorePatterns": ["dist", ".claude", ".git", "docs", "scripts", "private", ".Monthly Exports"],
+  "tempDirName": "dist/stryker-tmp",
+  "cleanTempDir": true,
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": {
+    "fileName": "dist/mutation/report.json"
+  },
+  "thresholds": {
+    "high": 90,
+    "low": 80,
+    "break": 80
+  },
+  "ignoreStatic": true
+}

@@ -30,6 +30,8 @@ export function pathProblems(files: readonly string[]): string[] {
       problems.push(`${file}: configuration directory contains non-configuration content`);
     if (file.startsWith("scripts/") && !file.endsWith(".ts"))
       problems.push(`${file}: tooling directory contains non-tooling content`);
+    if (/\.test\.tsx?$/.test(file) && !/^(?:src|tests|scripts)\//.test(file))
+      problems.push(`${file}: a test file must live in src, tests or scripts, where a test runner looks`);
     if (file.startsWith("tests/") && !file.endsWith(".ts"))
       problems.push(`${file}: tests must be TypeScript; binary fixtures need a reviewed policy exception`);
     if (file.startsWith("src/adapters/") && file.split("/").length < 4)

@@ -33,7 +33,7 @@ const checksum = CHECKSUMS[target];
 if (checksum === undefined)
   throw new Error(`Workflow verification supports Linux and macOS on x64/arm64, not ${target}.`);
 
-const root = fileURLToPath(new URL("..", import.meta.url));
+const root = fileURLToPath(new URL("../..", import.meta.url));
 const cache = join(tmpdir(), "foliodash-actionlint");
 mkdirSync(cache, { recursive: true, mode: 0o700 });
 const archiveName = `actionlint_${VERSION}_${target}.tar.gz`;
@@ -84,8 +84,38 @@ try {
   });
   if (checked.error !== undefined) throw checked.error;
   process.exitCode = checked.status ?? 1;
-  if (process.exitCode === 0)
-    console.log(`Workflow verification passed: actionlint ${VERSION}, ${String(files.length)} files.`);
+  if (process.exitCode === 0) {
+    // A workflow runs commands that `npm run verify` never does, so a moved script can break CI unnoticed.
+    // Every npm script a workflow names, and every script path a workflow or package.json names, must exist.
+    const scripts = (
+      JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { scripts: Record<string, string> }
+    ).scripts;
+    const broken: string[] = [];
+    const paths = /(?:^|\s|")((?:scripts|config|src)\/[\w./-]+\.(?:ts|json|js))/gmu;
+    for (const file of files) {
+      const text = readFileSync(file, "utf8");
+      for (const match of text.matchAll(/npm run ([a-z:-]+)/gu)) {
+        if (scripts[match[1] ?? ""] === undefined) broken.push(`${file}: npm script ${match[1] ?? ""} does not exist`);
+      }
+      for (const match of text.matchAll(paths)) {
+        if (!existsSync(join(root, match[1] ?? ""))) broken.push(`${file}: names missing ${match[1] ?? ""}`);
+      }
+    }
+    for (const [name, command] of Object.entries(scripts)) {
+      for (const match of command.matchAll(paths)) {
+        if (!existsSync(join(root, match[1] ?? "")))
+          broken.push(`package.json script ${name}: names missing ${match[1] ?? ""}`);
+      }
+    }
+    if (broken.length > 0) {
+      console.error(`Workflow references are broken:\n${broken.join("\n")}`);
+      process.exitCode = 1;
+    } else {
+      console.log(
+        `Workflow verification passed: actionlint ${VERSION}, ${String(files.length)} files, every referenced script exists.`,
+      );
+    }
+  }
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }
