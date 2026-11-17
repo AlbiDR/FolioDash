@@ -1,392 +1,391 @@
-# FolioDash: CleanStack Architecture
+# FolioDash architecture (CleanStack)
 
-Status: **Draft for owner review - not yet accepted**  
-Decision type: Authoritative Design Reference (ADR)  
-Created: 2026-11-01  
-Scope: PWA, calculation kernel, import pipeline, private persistence, synchronisation and recovery
+| | |
+|---|---|
+| **Status** | **Revision 2026-11-18, awaiting owner acceptance.** It replaces the draft of 2026-11-01. Section 15 states which decisions the owner has already made. Nothing here authorises provisioning, publication, real-data migration or licensing. |
+| **Type** | Authoritative Design Reference (ADR): the one place that states what FolioDash is, how it is built and the standards every change must keep |
+| **Scope** | The PWA, the calculation kernel, import, private persistence, synchronisation, recovery, the repository and the engineering standards |
+| **Decisions** | `FD-nnn` identifiers refer to the owner's private decision register |
+| **Map** | [Documentation map](../README.md) lists the subordinate documents; the [repository map](repository-map.md) shows the real folders and layer imports |
 
-**2026-11-01 amendment - FD-013:** the owner selected GitHub-managed frontend delivery, a user-owned private Google workbook and Apps Script as the service/backend. [Google-backed architecture](google-sheets-backend.md) defines that direction and the still-unverified FD-014 runtime route. No separate database provider is required; GitHub secrets are not the browser's data connection. Remaining proposed rules below must be read with this amendment, not as a claim that any service is deployed.
+## 0. How to use this document
 
-**2026-11-05 amendment - FD-021:** the owner's persistence and two-device request permits short-lived Google access in tab-scoped `sessionStorage`, bounded automatic reads and an atomic predecessor marker in direct Sheets write batches. FD-021 and [Google setup](../operations/google-setup.md) define storage boundaries, expiry, draft safeguards and concurrency/live-proof limits. This supersedes memory-only token persistence; financial rules, consent and unknown-outcome recovery remain unchanged.
+- **Normative words.** MUST, MUST NOT and SHOULD carry their usual force. Text without them describes the current state.
+- **Rule IDs.** Every rule starts with a permanent ID such as `PRN-3` or `FIN-12`. Cite rules by ID, never by position or paraphrase. An ID is never renumbered or reused: a withdrawn rule keeps its ID and is marked **Withdrawn**. `npm run verify:docs` fails when an ID is duplicated, skipped or cited anywhere without being defined here.
+- **Section numbers are stable.** Other documents cite "CleanStack section 5.2". A section is added at the end of its level, never inserted, and `npm run verify:docs` checks every such citation.
+- **State words.** Decided means the owner decided it. Implemented means it is in reviewed source. Verified means a named check passed with evidence. Open means undecided or unproven. The [documentation map](../README.md) defines the same vocabulary. Nothing is called Verified without the named check.
+- **Precedence.** This document outranks the subordinate documents, which outrank code comments. A conflict is a defect in the lower one and is fixed by amending upward first.
+- **Amendment.** A change to a financial definition, the dependency law, a privacy boundary, write authority, retention or the engineering standards needs the owner's approval and is recorded in section 16 in the same commit as the change.
 
-**2026-11-07 amendment - FD-022:** the owner's top-priority request that the Google connection stay on keeps short-lived access and the account's sign-in hint on the device (`localStorage`, falling back to `sessionStorage` and memory) and renews access quietly on the person's next click. This supersedes FD-021's tab-only storage; it adds no refresh token, server, scope or secret, and financial rules, consent and unknown-outcome recovery remain unchanged. See FD-022 and [Google setup](../operations/google-setup.md).
+## 1. Purpose
 
-**2026-11-17 amendment - organization standard, phases 1 to 6:** the owner asked for a behaviour-neutral reorganization of folders, names, formatting and enforcement, with every convention checked by a machine rather than described in prose, and with the root kept as lean as possible because it is the first thing a visitor sees. Phase 1 adds a pinned formatter configured under `config/` and a built-output oracle (`npm run verify:oracle`) that proves a restructure changes no built byte; it adds no root entry. Phase 2 applies the formatter once, as a mechanical commit. Phase 3 adds the [naming and structure contract](naming-contract.md) and a ratchet check that blocks new violations while the recorded ones are fixed. Phase 4 renames every code file to kebab-case, groups the crowded folders by domain concept, arranges `scripts/` by purpose and regroups the npm script names, all inside the existing layers and with built output proved equivalent. Phase 5 splits the oversized files along responsibilities that already existed, with built CSS identical and rendered behaviour unchanged. Phase 6 adds a documentation check and a generated [repository map](repository-map.md) so the documents cannot drift from the files. None of these phases adds a feature, layer or financial rule. Later phases amend this document as they land; see [Repository policy](../operations/repository-policy.md).
-
-## 1. Purpose and authority
-
-FolioDash turns dated fund valuations and explicitly recorded cash movements into a clear personal portfolio history. It is a proposed successor to the working Google Sheets application, not a destructive rewrite of that application.
-
-This document is the canonical architecture proposal. The owner's private decision register records what is approved, proposed or unresolved; the web quality contract defines how user-visible requirements are proven. Normative words below describe the required implementation **if this draft is accepted**, not controls that already exist.
-
-Changes to financial definitions, dependency direction, privacy boundaries, write authority or retention require an explicit amendment before implementation. Styling changes do not get to change accounting.
+FolioDash turns dated fund valuations and explicitly recorded cash movements into a clear personal portfolio history, with a work-expenses tracker and value-only checkpoints beside it. It is the successor to the owner's working Google Sheets application and never modifies that application.
 
 ## 2. Product boundary
 
-The first product targets one user's fund portfolio with a guided Excel import, portfolio overview, fund comparison, individual-fund history, corrections and complete backup/restore. The same account is intended to work on Mac and Android through one responsive, installable web application.
-
-Normal use must be self-contained: no AI, Apps Script editor, code changes, hidden-table maintenance, terminal command or manual recalculation is required.
-
-The candidate history model accepts multiple **dated** observations per month. A monthly dashboard is a projection over that history, not a one-record-per-month storage limitation. Exact rules are in section 5 and decision FD-006.
-
-Out of initial scope:
-
-- Bank credentials, scraping, automated bank access and trading.
-- Investment advice, forecasts, live market prices and automatic fund-switch recommendations.
-- Offline financial writes or automatic background submission of paused imports.
-- Shared portfolio editing, multiple currencies and a generic multi-bank parser before needed.
-- Automatically uploading original statements or publishing the personal portfolio.
-
-There is no affiliation with or endorsement by a bank, fund manager or hosting provider.
+- **SCO-1** The product serves one person's fund portfolio, on Mac and Android, through one responsive installable web application.
+- **SCO-2** Normal use is self-contained: it MUST NOT require AI, the Apps Script editor, a code change, hidden-table maintenance, a terminal command or a manual recalculation.
+- **SCO-3** History accepts multiple dated observations per month. A monthly dashboard is a projection over that history, not a one-record-per-month storage limit (FD-006, section 5).
+- **SCO-4** Out of scope: bank credentials, scraping, automated bank access and trading; investment advice, forecasts, live market prices and automatic fund-switch recommendations; offline financial writes and background submission of paused imports; shared editing, multiple currencies and a generic multi-bank parser before they are needed; publishing the personal portfolio.
+- **SCO-5** The exact bank statement as read leaves the device only into the person's own workbook (FD-019). Archiving original XLSX bytes in Drive is Open (FD-004).
+- **SCO-6** There is no affiliation with, or endorsement by, a bank, a fund manager or a hosting provider.
 
 ## 3. Architectural principles
 
-1. **KISS and YAGNI:** implement the smallest system that satisfies current invariants; no speculative services, over-engineered backend wrappers, or empty directory hierarchy.
-2. **Single source of truth:** one canonical implementation per financial rule and calculation; one owner for each document, token, schema, and state transition.
-3. **Pure kernel:** financial types, calculations, and parsing logic do not depend on UI frameworks, browsers, networks, storage, locale APIs, or cloud SDKs.
-4. **Single responsibility and dependency inversion:** application use cases depend on narrow ports; external adapters and UI components implement them.
-5. **Parse, don't validate:** raw inputs from bank exports, manual forms, and Google workbook reads are parsed at the adapter boundary into strict domain types where invalid financial states are unrepresentable.
-6. **Fail closed:** uncertain ownership, invalid money, contradictory evidence, or ambiguous save status stops further financial writes and UI commits.
-7. **Least astonishment:** preview and save describe the exact same reviewed information; failed charts or rendering errors cannot invalidate an already-saved statement.
-8. **Mistake-proofing:** prevent duplicate commits, race conditions, and unsafe state transitions structurally through strict typing and state checks rather than relying on warning text.
-9. **Idempotency and determinism:** statement imports, ledger writes, and remote sync operations are deterministic and idempotent; re-running an import or retrying an interrupted network sync produces zero duplicate mutations.
-10. **Immutable ledger facts:** confirmed historical financial entries are append-only; adjustments and corrections are modeled as explicit compensating transactions rather than silent in-place edits.
-11. **Explicit policy:** mathematical identities, versioned financial definitions, display tokens, and operational limits are different categories. Financial formulas do not self-calibrate against portfolio performance. Limits and visual margins are named and tested, not scattered literals.
-12. **Offline-first and sync clarity:** as a static PWA hosted on GitHub Pages, the application maintains zero trust in ephemeral client storage - all invariants execute locally within the pure kernel before sync. Cached projections remain readable offline, while authentication expiry, stale cache timestamps, and uncommitted local drafts are surfaced explicitly so they are never mistaken for authoritative ledger commits.
-13. **Evidence over assertion:** unit tests, simulated browser checks, and live-device checks prove different things. An unrun gate remains unrun.
-14. **Proportionate dependencies:** every production dependency has a purpose, maintenance/security review, and licence check. Necessary parsing and chart libraries are not forbidden merely to claim zero dependencies.
+The principles are the owner's wording and are not edited by revisions of this document.
+
+1. **PRN-1 KISS and YAGNI:** implement the smallest system that satisfies current invariants; no speculative services, over-engineered backend wrappers, or empty directory hierarchy.
+2. **PRN-2 Single source of truth:** one canonical implementation per financial rule and calculation; one owner for each document, token, schema, and state transition.
+3. **PRN-3 Pure kernel:** financial types, calculations, and parsing logic do not depend on UI frameworks, browsers, networks, storage, locale APIs, or cloud SDKs.
+4. **PRN-4 Single responsibility and dependency inversion:** application use cases depend on narrow ports; external adapters and UI components implement them.
+5. **PRN-5 Parse, don't validate:** raw inputs from bank exports, manual forms, and Google workbook reads are parsed at the adapter boundary into strict domain types where invalid financial states are unrepresentable.
+6. **PRN-6 Fail closed:** uncertain ownership, invalid money, contradictory evidence, or ambiguous save status stops further financial writes and UI commits.
+7. **PRN-7 Least astonishment:** preview and save describe the exact same reviewed information; failed charts or rendering errors cannot invalidate an already-saved statement.
+8. **PRN-8 Mistake-proofing:** prevent duplicate commits, race conditions, and unsafe state transitions structurally through strict typing and state checks rather than relying on warning text.
+9. **PRN-9 Idempotency and determinism:** statement imports, ledger writes, and remote sync operations are deterministic and idempotent; re-running an import or retrying an interrupted network sync produces zero duplicate mutations.
+10. **PRN-10 Immutable ledger facts:** confirmed historical financial entries are append-only; adjustments and corrections are modeled as explicit compensating transactions rather than silent in-place edits.
+11. **PRN-11 Explicit policy:** mathematical identities, versioned financial definitions, display tokens, and operational limits are different categories. Financial formulas do not self-calibrate against portfolio performance. Limits and visual margins are named and tested, not scattered literals.
+12. **PRN-12 Offline-first and sync clarity:** as a static PWA hosted on GitHub Pages, the application maintains zero trust in ephemeral client storage - all invariants execute locally within the pure kernel before sync. Cached projections remain readable offline, while authentication expiry, stale cache timestamps, and uncommitted local drafts are surfaced explicitly so they are never mistaken for authoritative ledger commits.
+13. **PRN-13 Evidence over assertion:** unit tests, simulated browser checks, and live-device checks prove different things. An unrun gate remains unrun.
+14. **PRN-14 Proportionate dependencies:** every production dependency has a purpose, maintenance/security review, and licence check. Necessary parsing and chart libraries are not forbidden merely to claim zero dependencies.
 
 Git is authoritative for code, schema, and static assets, **not a store of the user's financial records**. The committed ledger in the user's private Google workbook is authoritative for confirmed financial facts; local caches, bento dashboard tiles, and chart values are strictly projections. Bank tabs alone cannot reconstruct cash movements and opening capital.
 
-
 ## 4. Structural architecture
 
-This is a target map, not an instruction to create empty folders now:
+### 4.1 System and dependency law
 
-```text
-src/
-  core/                    Pure domain values, lifecycle and calculation policies
-  applications/            Use cases, ports and typed outcomes
-  adapters/                XLSX, persistence, auth, cache, clocks and cryptography
-  interfaces/
-    web/
-      app/                 Routes, shell and composition root
-      features/            Import, overview, funds, history and recovery interfaces
-      shared/              Domain-blind UI primitives and design tokens
-      presentation/        Financial display, charts and privacy presentation
-    server/                Apps Script API handlers and server composition root
-tests/                     Contract, integration and end-to-end tests
-scripts/                   Build and verification tooling only
-config/                    Tool/deployment configuration when explicit paths are supported
-migrations/                Versioned Google workbook schema/policy migrations
-public/                    Public application assets only
-docs/                      Design authority, decisions and verification contracts
-```
+- **ARC-1** FolioDash is a static PWA built and published from GitHub. The repository, its builds and the public demonstration contain synthetic data only. Implemented: GitHub Pages serves the artifact checked by CI.
+- **ARC-2** The person's own Google spreadsheet holds the ledger. The browser signs the person in with the narrow `drive.file` permission, creates and finds that spreadsheet, and reads and writes it through the Sheets API. No FolioDash server, database provider or per-person deployment exists. Decided (FD-017) and Implemented; proof on a real Google account is Open.
+- **ARC-3** The Apps Script service in `src/interfaces/server` and its deploy workflow are superseded by ARC-2. They are removed only after the live proof (FD-017) and MUST NOT be a dependency of the browser build.
+- **ARC-4** There is one calculation kernel and one versioned policy. The browser and Apps Script builds MUST preserve the same kernel semantics. A formula is never duplicated in a component, a report or a chart callback.
+- **ARC-5** The Google direction stores readable records in a private workbook. It does not claim FolioDash end-to-end encryption; an E2EE variant needs a superseding decision and a different validation contract (section 8).
+- **ARC-6** GitHub secrets belong to CI and deployment, never to the browser runtime. A static site cannot keep a secret, and a public OAuth client ID is not a credential. See [Google-backed architecture](google-sheets-backend.md).
+- **ARC-7** The stack is TypeScript, Preact, Vite, npm with one lockfile, Vitest, ESLint with typescript-eslint, `d3-scale`, `d3-shape` and `d3-array` for SVG charts, esbuild for the Apps Script bundle, Prettier for formatting, and GitHub Pages for hosting (FD-008). Changing a runtime, framework, package manager or test tool is an amendment. Pages visibility, the production origin and deployment tooling stay Open.
+- **ARC-8** There is one dependency manifest and no monorepo or package catalogue until a demonstrated packaging need exists.
 
-Use one dependency manifest and one lockfile initially. A monorepo/package catalogue requires a demonstrated packaging need; it is not created to imitate another project. Google-backed storage/service is selected; framework, authenticated deployment route, build tooling and package-manager choices remain open.
-
-### 4.1 Dependency law
+The layers and the imports each may make, as the repository enforces them:
 
 ```yaml
 # @machine-readable: architecture-isolation
-# Import directions enforced by npm run verify:repository; runtime purity also needs review and tests.
+# Enforced by npm run verify:repository; runtime purity also needs review and tests.
 layers:
   - id: core
+    path: src/core
     allowed_imports: []
     forbidden_runtime_apis: [dom, node, network, storage, cloud-sdk, locale]
   - id: applications
+    path: src/applications
     allowed_imports: [core]
     dependency_access: ports-only
   - id: adapters
+    path: src/adapters
     allowed_imports: [applications, core]
     role: port-implementation
-  - id: interfaces/web/shared
+  - id: web/shared
+    path: src/interfaces/web/shared
     allowed_imports: []
     role: domain-blind-ui-and-tokens
-  - id: interfaces/web/presentation
-    allowed_imports: [applications, core, interfaces/web/shared]
+  - id: web/presentation
+    path: src/interfaces/web/presentation
+    allowed_imports: [applications, core, web/shared]
     role: domain-aware-display-without-infrastructure
-  - id: interfaces/web/features
-    allowed_imports: [applications, core, interfaces/web/shared, interfaces/web/presentation]
-    forbidden_imports: [adapters, interfaces/server, other-web-features]
-  - id: interfaces/web/app
-    allowed_imports: [applications, core, adapters, interfaces/web/shared, interfaces/web/presentation, interfaces/web/features]
+  - id: web/features
+    path: src/interfaces/web/features
+    allowed_imports: [applications, core, web/shared, web/presentation]
+    forbidden_imports: [adapters, server, other-web-features]
+  - id: web/app
+    path: src/interfaces/web/app
+    allowed_imports: [applications, core, adapters, web/shared, web/presentation, web/features]
     role: composition-root
-  - id: interfaces/server
+  - id: web/service-worker
+    path: src/interfaces/web/service-worker
+    allowed_imports: []
+    role: public-asset-cache-policy-and-worker-entry
+  - id: server
+    path: src/interfaces/server
     allowed_imports: [applications, core, adapters]
-    forbidden_imports: [interfaces/web]
+    forbidden_imports: [web]
     role: composition-root
 ```
 
-An eventual TypeScript/framework import checker must translate these semantic rules into real path checks, including relative imports and barrel re-exports. UI/framework imports are allowed in web interfaces, not in the kernel. The dedicated web service-worker area imports only within itself. The app must not import server code or Apps Script adapters. Adapter directories may not become a way to bypass narrower environment capabilities; the browser build must exclude server adapters and secrets.
-
-Features never import another feature's components, stores or private state. Shared business behavior belongs in the kernel/use cases; shared visual behavior belongs in the UI primitives. Only the composition root wires concrete infrastructure into feature use cases.
-
-2026-11-04 organization amendment: existing financial chart widgets and amount privacy presentation live in `interfaces/web/presentation`, because they consume domain values and formatting. `shared` remains domain-blind. Overview-specific data selection and chart ranges belong to the overview feature; account age text belongs to account. Cross-workflow import and session contracts live in `applications`. This changes dependency ownership, not accounting, privacy policy or write authority. The implementation and enforcement limits are recorded in [Repository policy](../operations/repository-policy.md). Concrete browser identity and storage adapters live in `adapters/browser`, with browser compiler capabilities; they do not belong in the app composition root or the pure-runtime compilation. Transitive browser/server isolation is checked through intermediate adapters as well as direct imports.
-
-There is one calculation kernel and one versioned policy, not separate web/server formula implementations. The Google-backed direction uses readable private workbook records and Apps Script financial validation; it does not claim FolioDash E2EE. Cross-runtime browser/Apps Script builds must preserve the same kernel semantics. An E2EE variant would require a new decision and a different validation contract.
+- **ARC-9** Imports follow the layers above. `npm run verify:repository` enforces this for relative, type-only, re-exported and literal dynamic imports, for cycles including type-only edges, for browser/server isolation through intermediate adapters, and for production source never importing tests or fixtures. The [repository map](repository-map.md) draws the real graph.
+- **ARC-10** UI and framework imports are allowed in the web interfaces and never in the kernel. The kernel uses no DOM, Node, network, storage, cloud SDK or locale API.
+- **ARC-11** A feature never imports another feature's components, stores or private state. Shared business behaviour belongs in the kernel and use cases, shared visual behaviour in the shared primitives. Only the composition root wires concrete infrastructure into use cases.
+- **ARC-12** Browser identity and storage adapters live in `src/adapters/browser`. The browser build excludes server adapters and secrets, and an adapter folder is never a way around a narrower environment capability.
+- **ARC-13** `shared` is domain-blind. Financial chart widgets and amount privacy presentation live in `presentation`; overview data selection and chart ranges belong to the overview feature; cross-workflow import and session contracts live in `applications`.
+- **ARC-14** There are no barrel or re-export files, and no new wrapper or interface for every function.
 
 ### 4.2 State ownership
 
-- Component state owns temporary interaction details, not confirmed financial facts.
-- Feature state owns a bounded workflow, never another feature's private state.
-- Application state exposes the coherent account/portfolio revision and use-case outcomes.
-- Infrastructure state owns connection, session, cache and update lifecycle.
-- The private ledger owns confirmed records. No global UI store is a second ledger.
+- **ARC-15** Component state owns temporary interaction details, never confirmed financial facts. Feature state owns one bounded workflow, never another feature's private state. Application state exposes the coherent portfolio revision and use-case outcomes. Infrastructure state owns connection, session, cache and update lifecycle.
+- **ARC-16** The private ledger owns confirmed records. No global UI store is a second ledger.
+- **ARC-17** A query never performs a hidden financial mutation. A command is explicit and returns an acknowledgement, a committed revision or a typed failure; a safe commit receipt does not break command/query separation.
 
-Queries do not perform hidden financial mutations. Commands are explicit and may return an acknowledgement, committed revision or typed failure; command/query separation does not forbid a safe commit receipt.
+### 4.3 Repository
 
-### 4.3 Lean root contract
+The root is the first thing a visitor sees, so it is an entry and control surface and nothing more (FD-015).
 
-The repository root is the project's entry/control surface, not a general storage directory. A file does not belong there merely because it affects the whole application. The owner's root-minimality direction is recorded in FD-015; the concrete allowlist below is a proposed implementation contract.
+- **REP-1** The root holds `README.md`, `AGENTS.md`, `.gitignore`, `package.json`, `package-lock.json` and the folders `.github`, `config`, `docs`, `scripts`, `src` and `tests`. `npm run verify:repository` rejects anything else. Everything else has a home in the table below.
+- **REP-2** A new root entry needs a written reason that a tool-supported explicit path under `config/` cannot meet. Editor, version-manager and Git-attribute dotfiles are deliberately absent, and the policy test rejects them. A forwarding wrapper or duplicate configuration is never added to hide a file.
+- **REP-3** Root material is never a TODO, plan, notes, fix or final document, an unreviewed dump, an archived version, a ZIP bundle, a copied bank export, a generated screenshot, an experiment script or a second implementation left beside the canonical source.
+- **REP-4** Private financial files belong outside the repository. An ignore rule is defence in depth, not evidence that anything was audited, and a hidden folder is not a privacy boundary.
+- **REP-5** Build output, dependencies, caches and reports are ignored artifacts. No folder is created empty or for a future need (PRN-1).
+- **REP-6** `LICENSE` and `CHANGELOG.md` appear when licensing (FD-011, Open) and releases exist. Reusing legacy source needs a licence and provenance review.
+- **REP-7** File and folder names, file length, folder size, domain grouping and vocabulary follow the [naming and structure contract](naming-contract.md), enforced by `npm run verify:structure`.
 
-**Present foundation:** `README.md`, `AGENTS.md`, `.gitignore`, the package manifest and lockfile, the tool-discovery files listed below, and the designated folders. Create other paths only when they contain a current, justified responsibility.
-
-| Content | Canonical home | Root rule |
-|---|---|---|
-| Project introduction and contribution/architecture pointers | `README.md` | Keep short; do not duplicate architecture documents |
-| Agent working agreement | `AGENTS.md` | Root discovery entry; point to canonical policy |
-| Repository ignore policy | `.gitignore` | Root discovery entry; not a security guarantee |
-| Formatter configuration | `config/prettier.json` | Explicit path in the `format` scripts; no root dotfile |
-| Editor, version-manager and Git-attribute dotfiles | none | Deliberately absent: the tools that read them also work from `package.json` `engines`, the formatter configuration and CI, so the root does not carry them. The policy test rejects them |
-| Product, architecture, decisions and operations documents | `docs/` | No additional root-level planning/audit/design Markdown files |
-| Financial/application/UI/server source | `src/` layers | No loose `.ts`, `.js`, `.gs` or parallel legacy source trees at root |
-| Cross-layer tests and synthetic fixtures | `tests/` | Unit tests remain adjacent to their subject under the naming contract |
-| Executable development/build/verification utilities | `scripts/` | No ad hoc root shell/Node/Python scripts |
-| Tool/deployment settings | `config/` | Prefer explicit config paths when supported without breaking tooling |
-| Workbook schema/policy migrations | `migrations/` | No root migration dumps or one-time fix scripts |
-| Public passthrough assets | `public/` | No loose icons, logos, screenshots or manifest copies at root |
-| Repository-host-required metadata | `.github/` | Only when actually needed; no duplicated policy documents |
-
-**Justified root exceptions, only after the relevant tool/policy is selected:**
-
-- One dependency manifest and the chosen package manager's single lockfile.
-- A conventional HTML entry point, compiler configuration or build-tool configuration when root discovery is required or a root location is materially simpler/more reliable than an override.
-- `LICENSE` after licensing is chosen; `CHANGELOG.md` once actual releases need it.
-- A non-secret environment example only where the chosen setup genuinely needs it. Actual local environment files remain ignored and are not project source.
-
-Record each tooling exception, owner and reason in the eventual tool configuration decision (FD-008). A necessary `index.html` or `tsconfig.json` is not architectural clutter. Do not add forwarding wrappers, duplicate configuration, extra build steps or broken default discovery merely to move a file out of sight. Prefer tool-supported explicit paths; keep an unavoidable root configuration narrow.
-
-Forbidden root material includes TODO/PLAN/NOTES/FIX/FINAL documents, unreviewed dumps, archived versions, ZIP bundles, copied bank exports, generated screenshots, experiment scripts and a second implementation left beside the canonical source. Private financial files belong outside the repository regardless of visibility or ignore status. A hidden folder is not a privacy boundary.
-
-Build output (`dist/`, `build/`), dependencies, caches and test reports may be generated locally under the chosen tool contract, but are ignored artifacts, not tracked architecture directories. Their existence does not justify committing output or creating empty placeholder folders.
-
-**Current user-supplied material:** `.Monthly Exports/` holds the owner's private bank exports. It is git-ignored, covered by the repository policy and never published; the ignore rules are defence in depth, not evidence that its contents were audited. The pre-FolioDash Sheets scripts (`App Scripts/`) were removed at the owner's request on 2026-11-17 and were never tracked.
-
-Before source implementation, add a root-policy check that inspects tracked paths and rejects new unapproved root entries or committed generated/private artifacts. Test the check with both a deliberate violation and legitimate tooling exceptions. Inspect ignored/untracked local material separately before publication; a passing tracked-file check cannot certify its confidentiality. Implemented 2026-11-04 as `npm run verify:repository`, including deliberate violation tests; see [Repository policy](../operations/repository-policy.md).
+| Content | Home |
+|---|---|
+| Introduction and pointers | `README.md` |
+| Agent working agreement | `AGENTS.md` |
+| Source in the layers of section 4.1 | `src/` |
+| Public passthrough assets | `src/interfaces/web/public/` |
+| Unit tests | beside their subject |
+| Cross-layer tests and synthetic fixtures | `tests/` |
+| Executable tooling, by purpose | `scripts/verify`, `audit`, `artifacts`, `docs`, `lib` |
+| Tool and deployment settings, reached by explicit path | `config/` |
+| Documents | `docs/architecture`, `docs/design`, `docs/operations` |
+| Repository-host metadata and workflows | `.github/` |
 
 ## 5. Financial and temporal contract
 
 ### 5.1 Identity, money and dates
 
-- Identity is the validated ISIN within an account/portfolio, never row position or display name.
-- A closed fund remains in historical records. Absence from an extract is not proof of sale.
-- Persist EUR money as exact integer cents, with checked arithmetic and explicit bounds. Do not use binary floating-point for stored cash amounts.
-- Rates are calculated ratios with explicit denominator validity and finite-result checks. Unknown is not zero. A UI dash represents an unavailable result, not a persisted number.
-- Preserve actual statement dates as date-only ISO values. Store import/commit timestamps separately as instants. Do not silently use import time as valuation time or shift dates through time-zone conversion.
-- One canonical locale boundary parses Italian manual amounts. The bank adapter validates its own supported numeric representations. Formatting never changes stored values.
+- **FIN-1** Identity is the validated ISIN within a portfolio, never row position or display name. A closed fund stays in historical records, and absence from an extract is not proof of sale.
+- **FIN-2** EUR money is stored as exact integer cents with checked arithmetic and explicit bounds. Stored cash is never a binary floating-point number.
+- **FIN-3** A rate is a calculated ratio with an explicit denominator and a finite-result check. Unknown is not zero, and a UI dash means an unavailable result, never a persisted number.
+- **FIN-4** A statement date is a date-only ISO value. Import and commit times are stored separately as instants. Import time is never used as valuation time, and a date is never shifted by a time-zone conversion.
+- **FIN-5** One locale boundary parses Italian manual amounts. The bank adapter validates its own supported numeric forms. Formatting never changes a stored value.
 
-### 5.2 Separate observations from movements
+### 5.2 Observations and movements
 
-The proposed model distinguishes funds, valuation snapshots, opening balances, cash movements, import evidence and revisions. Reporting reads those facts; it does not infer missing contributions from price changes.
+The model keeps funds, valuation snapshots, opening balances, cash movements, import evidence and revisions apart. Reporting reads those facts and never infers a missing contribution from a price change.
 
-- Net invested = explicit opening net invested + subsequent money in - full money out.
-- Euro gain = fund value - net invested; portfolio gain includes retained results from closed funds.
-- Interval gain = change in euro gain, with recorded cash handled separately through net invested.
-- Withdrawals record full proceeds, not merely profit. Switches record both gross sides even when net cash is zero.
-- Bank market value and fiscal acquisition cost are not substitutes for opening net invested.
-- Cash movements have either a known actual date or an explicit interval with unknown exact timing. Do not invent dates or silently allocate an uncertain interval when a new intermediate snapshot is added.
-- A movement has stable identity and can be counted only once. Interval provenance and allocations cannot cause duplication across reports.
-- A first observation does not manufacture a return for the period before it. Closure/reopening retains euro history and explicitly separates comparable holding episodes.
-
-Multiple snapshots do not turn estimated cash-timing percentages into TWR, IRR or annualised returns. Any new return methodology needs its own decision, required input evidence and independent examples.
+- **FIN-6** Net invested is the explicit opening net invested plus later money in, minus full money out. Euro gain is fund value minus net invested, and portfolio gain includes the retained results of closed funds.
+- **FIN-7** Interval gain is the change in euro gain, with recorded cash handled through net invested.
+- **FIN-8** A withdrawal records full proceeds, not only profit. A switch records both gross sides even when net cash is zero.
+- **FIN-9** Bank market value and fiscal acquisition cost are not substitutes for opening net invested.
+- **FIN-10** A cash movement has a known date or an explicit interval with unknown timing. A date is never invented, and an uncertain interval is never silently allocated when a new intermediate snapshot arrives.
+- **FIN-11** A movement has a stable identity and is counted once. Interval provenance and allocations cannot duplicate it across reports.
+- **FIN-12** A first observation does not manufacture a return for the period before it. Closing and reopening a fund keeps euro history and separates comparable holding episodes.
+- **FIN-13** Several snapshots never turn an estimated cash-timing percentage into a time-weighted, internal-rate or annualised return. A new return method needs its own decision, input evidence and independent examples (FD-007).
 
 ### 5.3 Reporting policy
 
-The candidate policy is one coherent snapshot per valuation date; a different observation on that date requires an explicit revision, not an automatic second record. Intraday observations are not initially supported.
+The accepted initial policy is `legacy-parity-v1` (FD-007): the labelled definitions of the legacy sheet are preserved for parity, and every other method stays Open.
 
-Monthly reporting chooses the latest recorded snapshot in each month. It must distinguish an in-progress/as-of month from a true month-end valuation. Actual dates remain discoverable. Charts use real date spacing, not equally spaced categorical labels that imply equal elapsed time.
-
-MoM compares selected monthly observations; change since previous snapshot is a separate metric. Monthly averages do not weight a month more heavily because it has more snapshots. Missing comparable months stay unavailable unless a separately approved method supports them.
-
-YtD/YoY baseline selection and the percentage denominator are versioned policies, not incidental array searches. The Sheets project's January-snapshot YtD is **not** a 1 January calendar-year return. Preserve and label that baseline during parity work; adopting conventional calendar-year or nearest-date policies requires FD-007 approval and an explicit transition. Never silently relabel an interval estimate as an annual return.
-
-The opening technical test set must include hand-calculated cash-flow examples independently of migrated Sheets outputs. Known historical mistakes are not canonised merely because a legacy export contains them.
+- **FIN-14** One coherent snapshot exists per valuation date. A different observation on that date needs an explicit revision, not a second record. Intraday observations are not supported.
+- **FIN-15** Monthly reporting uses the latest snapshot in each month and distinguishes an as-of month from a true month-end. Actual dates stay discoverable, and charts space points by real date.
+- **FIN-16** Month-on-month compares selected monthly observations, and change since the previous snapshot is a separate metric. A month is not weighted more because it has more snapshots, and a missing comparable month stays unavailable unless a separately approved method covers it.
+- **FIN-17** The baseline and denominator for year-to-date and year-on-year are versioned policy, not an incidental array search. The legacy January-snapshot year-to-date is not a 1 January calendar-year return: it is preserved and labelled, and adopting another definition needs FD-007 approval and an explicit transition. An interval estimate is never relabelled as an annual return.
+- **FIN-18** The kernel's technical tests include hand-calculated cash-flow examples that are independent of migrated sheet output. A known historical mistake is not canonised because a legacy export contains it.
 
 ## 6. Import and validation boundary
 
 ### 6.1 Read, review, commit
 
-The proposed path is:
-
 ```text
 User-selected XLSX
   -> bounded local parsing
   -> validated candidate observations and provenance
-  -> review date, identities, totals, lifecycle and cash inputs
+  -> review of date, identities, totals, lifecycle and cash inputs
   -> explicit confirmation against a known portfolio revision
-  -> authorised atomic commit
+  -> checked atomic commit to the person's workbook
   -> verified commit receipt
   -> rebuildable views and synchronised devices
 ```
 
-Client validation provides usable feedback; it is not an authorisation boundary. Apps Script validates shape, caller/workbook authorisation, expected revision and financial semantics before publishing a commit. No browser secret or client-selected owner field substitutes for that boundary.
-
-Every external value crosses validation and mapping before the kernel: files, API responses, restored backups, local caches, routes and user input. Type declarations alone do not validate runtime input.
+- **IMP-1** Every external value crosses validation and mapping before the kernel: files, API responses, restored backups, local caches, routes and user input. A type declaration does not validate runtime input.
+- **IMP-2** The ledger rules run in the browser under the direct route (FD-017). The checked row protocol, with its checksums and predecessor marker, makes a partial write or a hand edit detectable on read and on the next write; it does not make one impossible. No client-selected owner field substitutes for Google's authentication.
 
 ### 6.2 File safety and evidence
 
-- Support a named, versioned Fideuram XLSX layout first. Unsupported input fails clearly rather than being guessed into a valid portfolio.
-- Set measured limits for compressed/uncompressed file size, rows, sheets and parsing time. Parse heavy files outside the main UI thread when measurements justify it; do not upload more data solely to move computation off-device.
-- Do not execute macros, spreadsheet formulas, external links or active content. Formula-valued financial cells need an explicit supported policy; otherwise reject them.
-- Reconcile fund rows to the funds-only subtotal. Account cash and unused personal identifiers are excluded from the candidate model.
-- Preserve missing, empty and numeric zero as distinct states where they carry financial meaning. Validate ISIN checksums, duplicates, negative/overflow money and subtotal mismatches.
-- Hash original file bytes without rewriting the file. If a semantic fingerprint is also used, version its canonicalisation independently of display formats and source-file hashing.
-- A checksum proves equality to recorded bytes/values, not bank authenticity or ownership. Never treat a filename's recognised date as proof without user review.
-- Google-native bank import tabs are part of the selected storage direction. FD-004 still decides precisely which source fields are retained and whether full original XLSX bytes are archived in Drive; a converted tab is not a byte-identical source backup. A hash cannot reconstruct a lost source file.
-- Retain only the approved extracted evidence and provenance. Reconstructed historical statements remain labelled reconstructed; they do not become bank-issued originals.
+- **IMP-3** A named, versioned Fideuram XLSX layout is supported first. Unsupported input fails clearly and is never guessed into a valid portfolio.
+- **IMP-4** Measured limits bound compressed and uncompressed size, rows, sheets and parsing time. Heavy parsing moves off the main thread only when measurements justify it, and data is never uploaded merely to move computation.
+- **IMP-5** Macros, formulas, external links and active content are never executed. A formula-valued financial cell is rejected unless a supported policy exists.
+- **IMP-6** Fund rows are reconciled to the funds-only subtotal. Account cash and unused personal identifiers are excluded from the candidate model.
+- **IMP-7** Missing, empty and numeric zero stay distinct where they carry meaning. ISIN checksums, duplicates, negative or overflowing money and subtotal mismatches are validated.
+- **IMP-8** Original file bytes are hashed without rewriting the file, and a semantic fingerprint, if used, has its own versioned canonicalisation. A checksum proves equality to recorded bytes, never bank authenticity or ownership, and a recognised filename date is never proof without user review.
+- **IMP-9** A save stores the month's exact bank statement as read, with the decisions made about it, in the same all-or-nothing request as the ledger (FD-019), so the ledger can be rebuilt from those records. A converted tab is not a byte-identical source backup, and a hash cannot reconstruct a lost file. The exact retained fields and any full-XLSX archive are Open (FD-004). Reconstructed historical statements stay labelled reconstructed.
 
 ### 6.3 Explicit consent
 
-Preview is non-mutating. Choosing a file, recognising its name or calculating a preview does not save financial history. A coherent review ends with one clear confirmation; it should not require a second hidden-menu save.
+- **IMP-10** Preview never mutates. Choosing a file, recognising its name or calculating a preview does not save history.
+- **IMP-11** A review ends with one clear confirmation, never a second hidden-menu save. New identities, missing funds, reopening, opening capital and movements are handled inside that workflow, and a missing financial fact is asked for, never guessed.
 
-New identities, missing funds, reopening, opening capital and movements must be handled inside that same understandable workflow. Do not guess missing financial facts to avoid asking a necessary question.
+## 7. Writes, integrity and cross-device consistency
 
-## 7. Transactional integrity and cross-device consistency
+The ledger is a versioned, coherent set of committed facts in the person's workbook. Sheets offers no general multi-request transaction, so publication relies on a checked append protocol described in [Google-backed architecture](google-sheets-backend.md#7-commit-publication-and-concurrent-access).
 
-The ledger is a versioned, coherent set of committed facts in the user's Google workbook. Sheets does not provide a general multi-request database transaction: the Apps Script protocol must prove atomic publication of complete revisions, partial-write handling, lock scope and command reconciliation. [Google-backed commit protocol](google-sheets-backend.md#7-commit-publication-and-concurrent-access) owns this implementation contract.
-
-Every mutating command carries a unique idempotency key and expected portfolio revision. Owner identity comes from the authenticated Google execution context, not a trusted client-provided owner field. The service checks ownership/revision, stages the complete statement/movements/evidence payload, and publishes only a verifiably complete financial revision. Unsupported external workbook edits are not covered by script locks and must be detected rather than assumed safe.
-
-- An identical retried command returns the same outcome without another financial write.
-- Reusing a key with a different payload is rejected.
-- Duplicate file and same-date checks are account/portfolio-scoped and race-safe, not browser-only checks.
-- A conflicting second device gets an actionable stale-review outcome; no silent last-write-wins.
-- After an ambiguous timeout, query the command outcome before any retry. Do not assume failure means no commit.
-- Show success only after authoritative acknowledgement/reconciliation. A chart or synchronisation failure after commit says **saved; view needs attention**, not **import failed; try again**.
-- Retries, deadlines and file sizes have named, bounded configuration. Retry only an operation with a known safe protocol.
-
-Corrections supersede a prior revision and preserve its provenance. An earlier-history correction or backfill must replay/revalidate affected balances and lifecycle transitions and show the impact before committing. Do not claim arbitrary backfill support until that path passes its own release gate.
-
-An account/portfolio deletion is different from a correction. Deletion removes user-controlled active records and device caches according to an approved retention policy; backup expiry and non-financial operational records are disclosed. A closed fund is never automatically pruned as stale application data.
+- **WRI-1** Every mutating command carries a unique idempotency key and the expected portfolio revision. A retried identical command returns the same outcome without another write, and reusing a key with a different payload is rejected.
+- **WRI-2** A write publishes a complete revision atomically: the statement, movements and evidence go in one request that also claims its predecessor, so a competing second device gets a stale-review outcome and never a silent last write.
+- **WRI-3** After an ambiguous timeout the command outcome is read before any retry. Failure is never assumed to mean no commit, and a financial write is never blindly retried.
+- **WRI-4** Success is shown only after authoritative acknowledgement or reconciliation. A failure of a chart or a refresh after a commit says **saved; view needs attention**, never **import failed; try again**.
+- **WRI-5** Retries, deadlines and file sizes have named, bounded configuration, and only an operation with a known safe protocol is retried.
+- **WRI-6** An unsupported edit made directly in the spreadsheet is detected, never assumed safe.
+- **WRI-7** A correction supersedes a prior revision and keeps its provenance. A backfill or earlier-history correction replays and revalidates affected balances and lifecycle, and shows its impact before committing.
+- **WRI-8** Deletion is not a correction. Deleting removes user-controlled active records and device caches under an approved retention policy (FD-009, Open), and a closed fund is never pruned as stale application data.
 
 ## 8. Privacy, authentication and storage
 
-FD-013 selects user-owned Google Sheets and Apps Script. FD-003 records the privacy consequences: the workbook is readable to authorised Google/application execution, not FolioDash E2EE. FD-005/FD-014 still block real-data integration until caller identity, scopes, deployment ownership and browser connectivity are proven. No independent database provider is introduced by this amendment.
-
-In this model:
-
-- The repository, CI, builds and public demonstrations contain synthetic data only. Ignore rules do not replace secret/content scanning.
-- Public application code and private financial data remain separate. Frontend filtering, an obscure URL and a private repository are not access control.
-- Every financial read/write enforces authenticated ownership at the trusted server/database boundary. Two accounts must be unable to read, infer or mutate each other's records by changing IDs.
-- Administrative credentials and encryption secrets are never embedded in the browser build. Authentication/session ownership, revocation, expiry and recovery must be explicitly designed in FD-005; no custom password cryptography.
-- Use encrypted transport and selected-provider storage protections, with their real administrative-access limits disclosed. Standard at-rest encryption is not described as end-to-end encryption.
-- No analytics, advertising, session replay, general CDN runtime code or third-party error payloads containing financial data by default. A Google-hosted identity loader, if required, is an explicit reviewed auth/CSP exception, not a general third-party-script allowance.
-- Redact logs and support exports. Do not log statements, balances, file contents, filenames containing account details, tokens or full request bodies.
-- Prefer one isolated application origin; define production, preview and synthetic-demo boundaries before deployment. A personal dataset must never be used to seed preview builds.
-- Verify hosting cost/limits and data location before adoption; a free tier is not a permanent availability, privacy or compliance guarantee.
-
-An E2EE variant requires a superseding storage/validation decision plus documented key creation, device enrolment, recovery, rotation, lost-device revocation and encrypted migrations. The current Sheets direction does not provide it. Authorised Apps Script/frontend code still processes user data; user ownership and a private repository do not make compromised code harmless.
+- **PRV-1** The repository, CI, builds and public demonstrations contain synthetic data only. Ignore rules do not replace content and secret scanning.
+- **PRV-2** Public application code and private financial data stay separate. Frontend filtering, an obscure URL and a private repository are not access control.
+- **PRV-3** The person's own Google account is the owner of the data and the only authority over it. The app sees only files it created or the person opened with it (`drive.file`). Two accounts MUST be unable to read, infer or mutate each other's records by changing an identifier. FolioDash keeps no credential store and no custom password cryptography; session ownership, revocation and recovery remain Open (FD-005).
+- **PRV-4** Google access is short-lived with no refresh token. It and the account's sign-in hint stay on the device in `localStorage`, falling back to `sessionStorage` and memory, and are renewed quietly on the person's next click (FD-022). No administrative credential, encryption secret or server secret is in the browser build.
+- **PRV-5** The device holds a rebuildable copy of the ledger, never financial authority, with a visible **Forget this device** control. Signing out wipes it (FD-018). The copy is not encrypted at rest, and the policy page discloses that.
+- **PRV-6** There is no analytics, advertising, session replay, general CDN runtime code or third-party error payload that could contain financial data. Google's identity loader is an explicit, reviewed authentication and CSP exception, not a general allowance.
+- **PRV-7** Logs and support exports are redacted: no statements, balances, file contents, filenames with account details, tokens or full request bodies.
+- **PRV-8** One isolated application origin is preferred, and production, preview and demonstration boundaries are defined before deployment. A personal dataset never seeds a preview build.
+- **PRV-9** Transport is encrypted and the provider's storage protections are used with their real administrative-access limits disclosed. Ordinary at-rest encryption is never described as end-to-end encryption, and user ownership or a private repository does not make compromised code harmless.
+- **PRV-10** Hosting cost, limits and data location are verified before adoption, and a free tier is not a guarantee of availability, privacy or compliance. The privacy review of the Google direction remains Open (FD-003).
 
 ## 9. Offline and PWA lifecycle
 
-The proposal allows offline **viewing** of an explicitly downloaded account-scoped cache, not offline financial writes. The user's committed Google workbook ledger is authoritative. Cached records show last synchronisation and revision; no stale cache is presented as a freshly confirmed portfolio. Live means fresh authorised revision reads on defined events, not guaranteed push updates or automatic acceptance of unreviewed bank-tab edits.
-
-Device caching of sensitive records is a disclosed policy, not an install side effect. Signing out/account switching clears account-owned memory and persistent caches before another account can see them. Browser storage can be removed and is never the only backup.
-
-The service worker caches versioned public app assets. It must not indiscriminately cache authenticated API responses, tokens, source documents or financial exports. A compatible explicit data-cache adapter owns approved offline records.
-
-An available update must not discard an unsaved import, mix incompatible schemas or force a reload during confirmation. Cache/database upgrades are versioned, recoverable and tested; invalid cache is quarantined/reloaded from authority, not silently promoted. Offline account revocation cannot be guaranteed instantaneous; the device privacy implications must be disclosed.
+- **OFF-1** Offline use is viewing only, of an account-scoped device copy. There is no offline financial write (FD-010, SCO-4). Each cached record shows its last synchronisation and revision, and a stale cache is never presented as a freshly confirmed portfolio.
+- **OFF-2** Live means fresh authorised reads on defined events, not push updates and not automatic acceptance of unreviewed edits to bank tabs.
+- **OFF-3** Caching sensitive records on the device is a disclosed policy, not an install side effect. Signing out or switching account clears account-owned memory and persistent caches before another account can see them, and browser storage is never the only backup.
+- **OFF-4** The service worker caches versioned public app assets. It never caches authenticated responses, tokens, source documents or financial exports.
+- **OFF-5** An update never discards an unsaved import, mixes incompatible schemas or forces a reload during confirmation. Cache and database upgrades are versioned, recoverable and tested, and an invalid cache is quarantined and reloaded from the authority, never silently promoted. The device-privacy implications of offline account revocation are disclosed.
 
 ## 10. Backup, restore and migration
 
-Synchronisation, revision history and disaster-recovery backups are separate capabilities.
+Synchronisation, revision history and disaster-recovery backup are separate capabilities. Persistence retention and restore targets are Open (FD-009).
 
-- Provide a complete, versioned machine-readable export plus human-readable financial tables. Include policy versions, provenance and explicit exclusions such as locally retained original documents.
-- Protect portable financial backups appropriately; FD-003/FD-009 decide encryption, key recovery and provider retention. Never imply that a plaintext download is encrypted.
-- Restore validates format, integrity and financial invariants, previews its effect and commits atomically with a recoverable prior revision. It never silently merges duplicate movements or overwrites another account.
-- Provider backups require a tested recovery process and documented recovery-point/recovery-time targets before release. Merely enabling a backup setting is not a restore test.
-- Account deletion documents live-data deletion and finite backup-retention behaviour; do not promise immediate deletion of every provider copy without evidence.
-- Sheets migration is read-only against the original workbook. Preserve dates, cash provenance, lifecycle and reporting policy; explicitly flag reconstructed/unverified facts.
-- Compare migrated results to independently understood cases and the established workbook, report differences and get approval before adopting the new system. No manual re-entry of all historical statements as the default migration path.
-
-No production dataset is copied into repository fixtures to simplify migration testing.
+- **BAK-1** A complete, versioned, machine-readable export is provided with human-readable financial tables. It includes policy versions, provenance and any explicit exclusion such as locally retained originals.
+- **BAK-2** A portable backup is protected appropriately. A plaintext download is never implied to be encrypted (FD-003, FD-009).
+- **BAK-3** Restore validates format, integrity and financial invariants, previews its effect, and commits atomically with a recoverable prior revision. It never silently merges duplicate movements or overwrites another account.
+- **BAK-4** A provider backup needs a tested recovery process and documented recovery targets before release. Enabling a backup setting is not a restore test.
+- **BAK-5** Deletion documents live-data removal and finite backup retention, and promises no immediate deletion of every provider copy without evidence.
+- **BAK-6** Migration from the legacy sheet is read-only against the original workbook. Dates, cash provenance, lifecycle and reporting policy are preserved, and reconstructed or unverified facts are flagged.
+- **BAK-7** Migrated results are compared with independently understood cases and the established workbook, differences are reported, and approval is obtained before real data is adopted. Re-entering all statements by hand is never the default path, and no production dataset is copied into a fixture.
 
 ## 11. Interface, visual and error contracts
 
-The detailed acceptance home is `../operations/web-quality.md`.
+The acceptance home is [web quality](../operations/web-quality.md), the design system is [UI system](../design/ui-system.md), and the control inventory is [interaction coverage](../design/interaction-coverage.md).
 
-- One token system owns type, spacing, colour, radii, motion and chart styling. Components consume semantic tokens; they do not invent local visual scales.
-- One term per concept. Default UI and documentation are English; default financial formatting is Italian/EUR. Locale and language are independent. Do not inherit Relay's Italian-only copy rule.
-- Keep the navy/blue direction and neutral capital/value styling. Performance meaning uses signs and labels, not colour alone. Fund-comparison colours identify funds, not winners/losers.
-- A consistent responsive outer inset replaces the spreadsheet's literal 25px grid buffer; do not reproduce cell mechanics in a web layout.
-- Custom icons use one accessible SVG primitive. No decorative emoji or icon-library dependency by default. Apply non-scaling stroke where relevant to stroked paths, not as a substitute for accessible names.
-- Charts are projections through one renderer adapter, not a second calculation engine. Missing points remain gaps; zero is not missing; timestamps are genuinely spaced; all plotted series inform bounds.
-- Auto-scaled axes disclose their scale. Chart line steepness is not a cross-fund return comparison. Logarithmic display is not a global default and cannot hide non-positive financial values.
-- Chart-source values and bounds must be checked independently. A DOM screenshot approximation does not prove the live chart rendered.
-- Initial setup is guided and minimal; no giant maintenance menu. Every core operation works with keyboard and touch and exposes the next useful action.
-- Errors are typed, complete, wrapping, selectable and safely copyable. They preserve the draft and state whether a financial save occurred, did not occur or is still being reconciled.
+- **UXC-1** One token system owns type, spacing, colour, radii, motion and chart styling. Components consume semantic tokens and invent no local scale.
+- **UXC-2** One term names one concept ([vocabulary](naming-contract.md#vocabulary)). The default language of the interface and documents is English, and the default financial format is Italian and EUR. Locale and language are independent.
+- **UXC-3** Meaning never rests on colour alone: gains and losses use signs and labels, and fund-comparison colours identify funds, not winners.
+- **UXC-4** Every interactive control has perceptible hover and focus, press and release, and relevant state feedback. After a control is added or changed, the inventory is regenerated and reviewed and the rendered audit runs. A state stays OPEN until its own evidence exists, and an animation count or a matching selector is not that evidence.
+- **UXC-5** Motion respects reduced motion, privacy hiding is immediate, and financial geometry is exact.
+- **UXC-6** Custom icons use one accessible SVG primitive. There is no decorative emoji or icon-library dependency by default.
+- **UXC-7** Charts are projections through one renderer, not a second calculation engine. A missing point stays a gap, zero is not missing, timestamps are truly spaced, and every plotted series informs the bounds. An auto-scaled axis discloses its scale, steepness is not a cross-fund return comparison, and a logarithmic display is never a global default or a way to hide a non-positive value.
+- **UXC-8** Chart source values and bounds are checked independently. A DOM screenshot approximation does not prove the chart rendered.
+- **UXC-9** Setup is guided and minimal. Every core operation works with keyboard and touch and exposes the next useful action.
+- **UXC-10** An error is typed, complete, wrapping, selectable and safely copyable. It preserves the draft and states whether a financial save occurred, did not occur or is still being reconciled.
+- **UXC-11** A substantial interface addition or redesign requires consulting the [Astryx reference](../design/astryx-reference.md) and recording the reference considered and the adaptation or the reason for departing from it. FolioDash's own design, financial, privacy and interaction contracts remain authoritative.
 
-## 12. Conventions and governance
+## 12. Conventions, standards and governance
 
-Use English source, comments, docs and commit messages. Directories and Markdown documents use `kebab-case`; `README.md`, `AGENTS.md` and established ecosystem filenames are explicit exceptions. Domain/UI type files use `PascalCase` when a typed-language stack is adopted; functions and variables use `camelCase`; named constants use `UPPER_SNAKE_CASE`; SQL objects, if used, follow one documented `snake_case` policy. Name by domain and role, not `misc`, `helpers2`, `final` or `new-version`.
+### 12.1 Conventions
 
-Tests use one documented adjacent `<Subject>.test.*` convention for module tests and `tests/` for cross-layer contracts. Feature public APIs are explicit; private imports and re-export bypasses are forbidden. Avoid barrel cycles and a new wrapper/interface for every function.
+- **STD-1** Source, comments, documents and commit messages are in English. File and folder names are kebab-case, types and components are PascalCase, functions and variables are camelCase, and a named policy constant is UPPER_SNAKE_CASE. A name states domain and role, never `misc`, `helpers2`, `final` or `new-version`. The [naming and structure contract](naming-contract.md) is the full rule.
+- **STD-2** A unit test sits beside its subject as `<name>.test.ts(x)`, and `tests/` holds only tests that span layers with their synthetic fixtures.
+- **STD-3** A workbook schema change is an ordered, reviewed migration in source with a drift check. History already applied is never rewritten, and an untracked dashboard edit is not a deployment strategy.
+- **STD-4** A commit subject is `<type>: <summary>` with the types in the naming contract. Releases follow Semantic Versioning, with a changelog once releases exist.
 
-Schema changes are ordered reviewed migrations in source, with reproducible application and drift checks. Untracked dashboard edits are not a schema deployment strategy. Do not rewrite applied migration history.
+### 12.2 Engineering standards
 
-Choose the runtime, package manager and test tools through FD-008 before scaffolding. Centralise versions, keep one lockfile, remove unused dependencies and build only the required environment surfaces. A framework-specific rule is not smuggled into the pure kernel.
+These standards bind every future change, and every future session MUST follow them. Each is enforced by `npm run verify` unless its entry says otherwise.
 
-Adopt Conventional Commits, Semantic Versioning for releases and a curated changelog once implementation starts. Licensing and source headers require FD-011; no licence is inherited by copying another project's header. Reusing legacy source requires a licence/provenance review.
+- **STD-5** A convention is real only when a machine fails the build if it is broken. A rule that cannot yet be checked is written down as Not yet enforced, with the check that will enforce it, and is never presented as a standard.
+- **STD-6** A new rule arrives with a ratchet. Existing violations are recorded, a new violation fails, and a recorded violation that has been fixed MUST leave the record, so the record only shrinks. A rule becomes plainly blocking when its record is empty. A record is never regrown to make a check pass.
+- **STD-7** A restructure changes behaviour in no way and proves it. A move or rename is its own commit, a format-only change is its own commit, and neither shares a commit with a logic change. The proof is the evidence [repository policy](../operations/repository-policy.md) names: the full gate, the byte oracle or a stated equivalence check, the rendered audits and the screenshots. A claim of neutrality without that evidence is not made.
+- **STD-8** The root stays minimal (REP-1, REP-2), a folder holds at most 20 code files and a code file at most 400 lines, and a split follows a responsibility that already exists. A remaining exception is recorded with its reason, never hidden.
+- **STD-9** Documents are checked against the files. Every link, heading anchor and backticked repository path resolves, every document is reachable from the documentation map, every section and rule citation resolves, and a generated document is never edited by hand.
+- **STD-10** No speculative layer, empty folder, placeholder service or unused dependency is added. Each dependency has a recorded purpose, a licence and a review in [dependency maintenance](../operations/dependencies.md), and a formatter or generator is pinned exactly.
+- **STD-11** Evidence is never overstated. A synthetic or mocked run is never called live verification, an unrun gate stays unrun, and a required check is never bypassed or weakened to pass (PRN-13).
+- **STD-12** Large or structural work happens on its own branch or worktree and is merged in verified steps. A commit names its paths explicitly, carries one concern, and is verified green before it is pushed. History is never force-pushed, and another session's run is never pushed over.
+- **STD-13** A rule change is made here first, with its section 16 entry, and then in the subordinate documents and the code. A decision the owner has not made is never settled silently (section 15).
+- **STD-14** Required failures block integration and deployment, and a documented failure is still a failure. A defect report separates confirmed cause from hypothesis, and a fix carries prevention for its failure class and a regression test where feasible.
 
-A defect report distinguishes confirmed root cause from hypothesis. A fix includes prevention for the failure class and a regression test when feasible. Never waive a failed release gate or weaken validation to ship a cosmetic repair. Import and root-policy enforcement is executable and tested with deliberate violations; this does not prove every architecture or runtime invariant.
+### 12.3 Adoption status of the standard
+
+The organization standard is adopted in eleven phases. Phases 1 to 6 are in place; the rest are planned and are not claimed until they land.
+
+| Phase | Result | State |
+|---|---|---|
+| 1 | Pinned formatter and the byte oracle (`npm run verify:oracle`); lean root kept | Implemented |
+| 2 | Repository formatted once; formatting gated | Implemented |
+| 3 | Naming and structure contract with a ratchet (STD-6) | Implemented |
+| 4 | Kebab-case files, concept folders, scripts by purpose, script namespaces | Implemented |
+| 5 | Oversized files split; three session classes remain recorded | Implemented, with an open exception |
+| 6 | Documentation check, generated repository map, this revision, rule IDs | Implemented |
+| 7 | Coverage ratchet, component tests, property and mutation tests, rendered audits and accessibility in CI, visual baselines | Planned |
+| 8 | Motion tokens and style lint, controls from primitives only | Planned |
+| 9 | Dependency updates, secret scanning, required checks and templates on GitHub | Planned; repository settings need the owner's approval |
+| 10 | Every report-only rule becomes blocking | Planned |
+| 11 | Health scorecard, setup and doctor commands | Planned |
 
 ## 13. Proof obligations and release gates
 
-Required categories before the corresponding capability is called supported:
-
-1. **Kernel:** independent examples/properties for exact cents, flows versus gains, lifecycle, missing data, temporal baselines, monthly selection, arithmetic bounds and deterministic replay.
-2. **Parsing:** synthetic supported exports, optional blanks, date/text differences, European separators, invalid identifiers/subtotals, duplicate rows, unsupported/formula files and bounded hostile XLSX inputs.
-3. **Commit:** idempotency, stale previews, two-device races, commit timeouts, lost acknowledgements, corrections, failed-before/after-commit stages and atomic recovery.
-4. **Security/privacy:** real authorisation policy tests across two accounts; forbidden upload/log/build payload checks; logout/cache isolation; session-expiry, deletion and recovery tests.
-5. **PWA/browser:** real rendered charts and source values, install/update lifecycle, local-file import, responsive keyboard/touch flows, offline status and no offline mutation in supported engines.
-6. **Recovery/migration:** full export/restore, damaged backup rejection, declared evidence omissions and read-only Sheets parity with explicit exception reporting.
-7. **Deployment:** exact verified build revision, headers/caching boundaries, private API denial from unauthenticated and wrong-account requests, and real Mac/Android journeys with synthetic financial data.
-
-Each gate reports PASS, FAIL or BLOCKED/NOT RUN, with revision, environment, method and evidence. Syntax checks and mocked charts cannot satisfy actual renderer gates. Tools must not invent measurements or report unavailable manual checks as successful.
-
-The first implementation supplies reproducible dependency installation, type checks if applicable, lint, dependency-boundary tests, unit/contract tests, production build, privacy/artifact scanning and browser journeys. `npm run verify` now covers repository boundaries, types, lint, unit/contract tests and production/PWA/Apps Script builds. Content/privacy scanning and full browser/live acceptance remain separate incomplete gates. Required failures block integration/deployment; a documented failure is still a failure.
+- **GAT-1** A capability is called supported only with evidence in its category: **kernel** (independent examples and properties for exact cents, flows versus gains, lifecycle, missing data, baselines and deterministic replay); **parsing** (synthetic exports, blanks, European separators, invalid identifiers and subtotals, duplicates, unsupported and formula files, bounded hostile XLSX); **commit** (idempotency, stale previews, two-device races, timeouts, lost acknowledgements, corrections and atomic recovery); **security and privacy** (authorisation across two accounts, forbidden upload, log and build payload checks, cache isolation, session expiry, deletion); **PWA and browser** (real rendered charts and source values, install and update, local-file import, keyboard and touch, offline status); **recovery and migration** (full export and restore, damaged backup rejection, read-only parity); **deployment** (the exact verified revision, headers and caching, private denial to anonymous and wrong-account requests, real Mac and Android journeys with synthetic data).
+- **GAT-2** Each gate reports PASS, FAIL or BLOCKED / NOT RUN, with revision, environment, method and evidence. A syntax check or a mocked chart cannot satisfy a renderer gate, and a tool never invents a measurement or reports an unavailable manual check as done.
+- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit and contract tests, the Pages assembly test, the production build, the PWA check and the Apps Script bundle check. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
+- **GAT-4** The rendered interaction audit and the seven synthetic journeys are not part of `npm run verify`. They run in the Node 22 CI job and block release assembly, and README capture runs for a release from `main`. A change to the interface runs them locally before it is pushed, including `npm run capture:readme`, and reports the result.
+- **GAT-5** Content and privacy scanning, live-Google proof, real-device proof and a restore drill are not yet gates. They remain Open and are never implied by a green `verify`.
 
 ## 14. Forbidden paths
 
-1. Treating a row, alias or filename as financial identity or authenticity.
-2. Deriving opening capital or unrecorded movements from market value.
-3. Double-counting interval cash flows after a more granular import.
-4. Treating a missing fund as sold, or pruning a closed fund's history.
-5. Using display formatting or rewritten workbook cells as an unstable evidence fingerprint.
-6. Blindly replaying an ambiguously completed save or letting two devices silently overwrite each other.
-7. Calling a failed chart a failed financial commit or inviting an already-saved month to be reimported.
-8. Using browser caches, chart series or editable UI state as the financial ledger.
-9. Accepting client owner IDs as authorisation or using a public frontend secret.
-10. Uploading original documents/identifiers or enabling telemetry outside the approved data policy.
-11. Claiming end-to-end encryption, permanent backups, instant deletion, precision or compliance without proof.
-12. Queuing offline financial writes or forcing an update through an unsaved review.
-13. Duplicating financial formulas in components, SQL reports or chart callbacks.
-14. Implicitly changing YtD/YoY definitions while migrating or redesigning.
-15. Treating a synthetic screenshot, a coverage percentage or a mock API pass as live production verification.
-16. Publishing or provisioning infrastructure on the strength of a draft design alone.
+1. **BAN-1** Treating a row, alias or filename as financial identity or authenticity.
+2. **BAN-2** Deriving opening capital or unrecorded movements from market value.
+3. **BAN-3** Double-counting interval cash flows after a more granular import.
+4. **BAN-4** Treating a missing fund as sold, or pruning a closed fund's history.
+5. **BAN-5** Using display formatting or rewritten workbook cells as an unstable evidence fingerprint.
+6. **BAN-6** Blindly replaying an ambiguously completed save, or letting two devices silently overwrite each other.
+7. **BAN-7** Calling a failed chart a failed financial commit, or inviting an already-saved month to be reimported.
+8. **BAN-8** Using browser caches, chart series or editable UI state as the financial ledger.
+9. **BAN-9** Accepting a client-supplied owner as authorisation, or putting a secret in the public frontend.
+10. **BAN-10** Uploading original documents or identifiers, or enabling telemetry, outside the approved data policy.
+11. **BAN-11** Claiming end-to-end encryption, permanent backups, instant deletion, precision or compliance without proof.
+12. **BAN-12** Queuing offline financial writes, or forcing an update through an unsaved review.
+13. **BAN-13** Duplicating a financial formula in a component, a report or a chart callback.
+14. **BAN-14** Changing a year-to-date or year-on-year definition implicitly while migrating or redesigning.
+15. **BAN-15** Treating a synthetic screenshot, a coverage percentage or a mock pass as live verification.
+16. **BAN-16** Publishing or provisioning infrastructure on the strength of a design alone.
+17. **BAN-17** Bypassing, weakening or deleting a required check, or regrowing a ratchet record, to make a change pass.
+18. **BAN-18** Stating a convention as a standard when nothing enforces it, or editing a generated document by hand.
 
-## 15. Initial sequence and alternatives
+## 15. Decision status
 
-1. Review the Google-backed amendment and settle source-retention/auth/deployment details (FD-004, FD-005, FD-008, FD-014), plus FD-007 accounting policy, before security-dependent implementation. Prove the actual Google browser route with a synthetic workbook first.
-2. Establish minimal repository controls and executable boundary/privacy gates, without copying personal data.
-3. Specify and test the pure financial model and versioned reporting policies with independent synthetic examples.
-4. Define the import/review/commit protocol and implement a fully bounded synthetic XLSX vertical slice.
-5. Add approved private persistence, authenticated ownership and tested revision/idempotency semantics.
-6. Deliver the three views and real chart tests; then add account-scoped offline viewing and install/update tests.
-7. Prove backup/restore and a read-only migration; validate Mac-to-Android synchronisation on a deployed synthetic account.
-8. Only after explicit approval, migrate real data privately while preserving the working spreadsheet and a tested rollback path.
+States are the owner's, taken from the private register. "In the repository" is what the code and documents show today. A decision the owner has not made is not settled here.
 
-Alternatives not selected by this proposal: continuing to expand Apps Script UI workarounds; separate native Mac/Android implementations; browser-only storage as the sole cross-device ledger; public static JSON as portfolio storage; blanket offline write queues; and a large service/monorepo platform before a working vertical slice.
+| FD | Subject | Register state | In the repository |
+|---|---|---|---|
+| 001 | Product boundary and delivery | Proposed | Implemented as SCO-1 to SCO-6 |
+| 002 | Dependency law | Proposed | Implemented and enforced (ARC-9) |
+| 003 | Cloud privacy and encryption | Constrained by FD-013; review pending | Disclosed (PRV-5, PRV-9); review Open |
+| 004 | Original-source retention | Open in detail | Exact statement stored per FD-019; archive Open |
+| 005 | Authentication and sessions | Open | Google sign-in only; revocation and recovery Open |
+| 006 | Snapshot granularity | Proposed | Implemented (FIN-14) |
+| 007 | Reporting and migration policy | Accepted for `legacy-parity-v1`; all else Open | Implemented (FIN-17) |
+| 008 | Stack, hosting, dependencies | Partly selected | Implemented (ARC-7); hosting details Open |
+| 009 | Backup, restore, deletion, retention | Open | Not implemented as a gate |
+| 010 | Offline and update behaviour | Proposed | Implemented (OFF-1 to OFF-5) |
+| 011 | Licence, authorship, reuse | Open | No licence file (REP-6) |
+| 012 | Quality targets and test environment | Proposed | Measurements Open |
+| 013 | Google-backed application | Direction selected | Implemented (ARC-1, ARC-2) |
+| 014 | Browser to Apps Script route | Proposed, not verified | Superseded by FD-017 for new users |
+| 015 | Lean repository root | Principle selected | Implemented and enforced (REP-1, REP-2) |
+| 016 | Apps Script source sync | Owner direction, not set up | Not set up; removal follows FD-017 |
+| 017 | Direct browser-to-Google storage | Accepted; not verified on real Google | Implemented (ARC-2); live proof Open |
+| 018 | Browser copy of the ledger | Accepted | Implemented (PRV-5) |
+| 019 | Each month keeps its exact statement | Accepted; not verified on real Google | Implemented (IMP-9); live proof Open |
+| 020 | Work expenses tracker | Implementation authorised | Implemented locally; live proof Open |
+| 021 | Persistent access and competing saves | Owner-requested; tab-only storage superseded by FD-022 | Implemented locally; live race proof Open |
+| 022 | Remembered Google connection | Owner-requested | Implemented locally; real renewal not verified |
+| 026 | Value-only checkpoints | Owner-requested | Implemented locally; live behaviour Open |
 
-FD-013 replaces the earlier provider-neutral cloud proposal with Google-backed storage/service. E2EE would require an explicit different design; the exact runtime connection remains proposed under FD-014. The document is not a deployment authorisation.
+Open decisions that gate work: FD-004, FD-005, FD-009 and FD-011. Real-data migration, cloud provisioning, publication changes and licensing each need the owner's explicit authority; this document is not that authority.
+
+## 16. Amendment record
+
+| Date | Basis | Change |
+|---|---|---|
+| 2026-11-01 | FD-013 | Google Sheets and Apps Script replace the provider-neutral cloud proposal; GitHub secrets are not a browser runtime bridge |
+| 2026-11-01 | FD-017, FD-018, FD-019 | The browser talks to Google directly under `drive.file`; the device copy is an accelerator; each month keeps its exact statement |
+| 2026-11-04 | Organization audit | Presentation ownership and the repository policy (ARC-13, REP-1) |
+| 2026-11-05 | FD-021 | Short-lived access survives a reload; the write batch claims its predecessor |
+| 2026-11-07 | FD-022 | The connection is remembered on the device and renewed on the next click; refresh tokens are not used |
+| 2026-11-17 | Organization standard, phases 1 to 6 | Formatter, byte oracle, naming and structure contract with a ratchet, kebab-case and concept folders, oversized files split, documentation check and generated map |
+| 2026-11-18 | Owner request | Principles revised by the owner (PRN-1 to PRN-14); this document restructured into addressable rules with permanent IDs, brought up to the current state and given its engineering standards (section 12) |

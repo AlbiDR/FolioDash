@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
 import { renderMap } from "../docs/repository-map-render.ts";
-import { linkProblems, orphanProblems, pathProblems, type DocumentFile } from "./docs-policy.ts";
+import { ruleProblems, linkProblems, orphanProblems, pathProblems, type DocumentFile } from "./docs-policy.ts";
 
 const files = [
   ...new Set(
@@ -31,6 +31,10 @@ const documents: DocumentFile[] = files
   )
   .map((path) => ({ path, text: readFileSync(path, "utf8") }));
 
+const adr = documents.find((doc) => doc.path === "docs/architecture/cleanstack.md") ?? {
+  path: "docs/architecture/cleanstack.md",
+  text: "",
+};
 const MAP = "docs/architecture/repository-map.md";
 const mapProblems =
   exists(MAP) && readFileSync(MAP, "utf8") === renderMap(files, (file) => readFileSync(file, "utf8"))
@@ -40,6 +44,7 @@ const problems = [
   ...linkProblems(documents, exists),
   ...pathProblems(documents, exists),
   ...orphanProblems(documents),
+  ...ruleProblems(adr, documents),
   ...mapProblems,
 ];
 if (problems.length > 0) {
