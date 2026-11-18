@@ -92,7 +92,6 @@ src/
 
 ```text
 tests/
-├── bughunt-ui/
 ├── fixtures/
 │   ├── google-adapters/
 │   └── session/
