@@ -35,7 +35,7 @@
 .segmented button[aria-pressed="true"] {
   background: var(--color-surface);
   color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-handle);
 }
 
 .segmented a {
@@ -57,7 +57,7 @@
 .segmented a[aria-current="page"] {
   background: var(--color-surface);
   color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-handle);
 }
 
 .mode-row {

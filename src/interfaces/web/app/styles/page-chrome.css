@@ -123,7 +123,7 @@ a.icon-button {
 
 .status-chip.local,
 .status-chip.demo {
-  --dot: #ff9500;
+  --dot: var(--color-caution);
 }
 
 .privacy-toggle {

@@ -315,6 +315,7 @@
   grid-template-rows: 1fr;
   opacity: 1;
   margin-block-end: 0;
+  /* style-allow layout-motion: a dismissed notice collapses by animating its grid row from 1fr to 0fr, which animates to and from auto height without measuring it */
   transition:
     grid-template-rows var(--duration-medium) var(--ease-standard),
     opacity var(--duration-short) var(--ease-standard),

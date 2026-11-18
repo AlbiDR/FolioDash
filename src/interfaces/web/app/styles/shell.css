@@ -171,6 +171,7 @@ select:focus-visible {
   }
 
   .shell {
+    /* style-allow layout-motion: the sidebar collapses by animating its grid track, so the main column reflows with it */
     transition: grid-template-columns var(--duration-medium) var(--ease-standard);
   }
 

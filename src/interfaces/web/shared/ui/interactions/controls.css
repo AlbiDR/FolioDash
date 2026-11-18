@@ -115,6 +115,7 @@ button:focus-visible {
   background: var(--color-surface);
   box-shadow: 0 1px 3px var(--color-border);
   transform: translateX(calc(var(--segment-index) * (100% + 2px)));
+  /* style-allow layout-motion: the selection pill is sized from the segment count, so it animates its width when the options change; scaling would distort its rounded ends */
   transition:
     transform var(--duration-feedback) var(--ease-standard),
     width var(--duration-short) var(--ease-standard);
