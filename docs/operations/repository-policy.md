@@ -67,6 +67,28 @@ The root is the first thing a visitor sees, so it holds only the documentation e
 
 `npm run verify:structure` enforces the [naming and structure contract](../architecture/naming-contract.md): kebab-case file and folder names, at most 400 lines per code file and at most 20 code files directly in a folder. Limits are in `config/structure.json`. The violations that exist today are recorded in `config/structure-baseline.json`; the check fails on a new violation and on a recorded one that has been fixed but not removed (`--shrink`), so the record only shrinks. It reads tracked and new non-ignored paths and line counts, runs inside `verify` right after the repository policy, and does not judge whether a name or a split is a good one.
 
+## Health, setup and doctor, 2026-11-18
+
+`npm run health` measures the repository from its tracked files alone: no test run, no network, the same answer twice. `npm run health -- --compare <directory>` sets it beside another checkout. `npm run doctor` reports the Node release against `engines`, the installed packages against their pins (a pinned version must match exactly, which would have caught the test runner that moved to a new release during the test-layer work), Chrome for the audits, and whether the Git hooks are installed. `npm run setup` checks Node, runs `npm ci --ignore-scripts` and shows the next commands; it changes no setting and installs no hook.
+
+Measured on 2026-11-18 against the tag `checkpoint-2026-11-17`, taken before the organization work:
+
+| Measure | Checkpoint | Now |
+|---|---|---|
+| Root entries | 11 | 11 |
+| Files over 400 lines | 19 | 3 |
+| Folders over 20 code files | 6 | 0 |
+| Most code files in one folder | 35 | 20 |
+| Largest code file (lines) | 1,773 | 1,512 |
+| 95th percentile file (lines) | 434 | 342 |
+| Test files | 93 | 127 |
+| Addressable rules (IDs) | 0 | 155 |
+| Steps in `npm run verify` | 11 | 18 |
+| Production dependencies | 4 | 4 |
+| Development dependencies | 11 | 17 |
+
+Raw line totals are not compared: Prettier expanded the code and stylesheets, and about 150 files were added, mostly tests and policy modules. The checkpoint figure of 19 files over the limit was counted before formatting; with the formatter applied the same files would have numbered 35, so the real reduction is larger than the table shows. The three remaining files are the session classes in [Session split design](../architecture/session-split-design.md).
+
 ## Content check, pinned actions and commit subjects, 2026-11-18
 
 `npm run verify:content` ends `verify`, where the build output exists. It scans every tracked text file and the built `dist/web` and `dist/apps-script` for private keys, Google client secrets, API keys and access or refresh tokens, GitHub tokens, IBANs whose ISO 13616 check digit is right, and Italian fiscal codes. It reports the file and line and never the matched text. GitHub's own secret scanning and push protection stay on; this adds the financial identifiers they do not know and the files that ship to a visitor. It cannot read meaning: a real amount or a name written in prose is not caught, and a public OAuth client ID is deliberately not flagged because it is public by design.
