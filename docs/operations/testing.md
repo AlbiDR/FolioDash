@@ -51,6 +51,8 @@ Stryker changes the kernel in small ways and checks that a test fails. Static mu
 
 **Ranked backlog.** `backfill.ts` and `ledger.ts` come first: they are the least tested business rules and 51 of their mutants are in code no test reaches. Then `work-expenses.ts` (117 survivors) and `import-plan.ts`. A survivor is not always a bug: some are equivalent mutants (a change with no observable effect) or changes to a message string. Each file needs a human reading of its survivors before a test is written, and these gaps are fixed in their own commits, never inside a refactor (`STD-7`). The run included one test-helper file as if it were product code (`work-expenses-builders.ts`, 71%); it is now excluded.
 
+**Session code.** The session classes in `src/interfaces/web/app/session/` were measured on 2026-11-18 before they were split (57.55%) and again after (57.63%), so the verbatim split did not lose a test's reach. The weakest layers are the readable-view organization (`session-tidy.ts`, 46%) and the save port (`session-records.ts`, 51%, with 139 mutants in code no test reaches). That is a backlog for tests written in their own commits, not a floor yet; the configuration was a one-off and is not part of `npm run audit:mutation`.
+
 ## Decisions not taken, with reasons
 
 - **Component tests with jsdom.** Not adopted. The rendered audits already exercise the real components in real Chrome with real layout, focus and pseudo-states; a simulated DOM would duplicate that with weaker evidence and add a dependency. Revisit if a component needs fast isolated tests.

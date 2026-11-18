@@ -8,7 +8,7 @@ What the system is, its boundaries and its invariants.
 
 | Document | Owns | Status |
 |---|---|---|
-| [CleanStack Architecture](architecture/cleanstack.md) | The authoritative reference: scope, principles, layers and dependency law, repository, financial and import contracts, writes, privacy, offline, backup, interface contracts, engineering standards, release gates, forbidden paths and decision status, with permanent rule IDs | Revision 2026-11-18, awaiting owner acceptance |
+| [CleanStack Architecture](architecture/cleanstack.md) | The authoritative reference: scope, principles, layers and dependency law, repository, financial and import contracts, writes, privacy, offline, backup, interface contracts, engineering standards, release gates, forbidden paths and decision status, with permanent rule IDs | Revision 2026-11-18, in force under the owner's delegation; owner confirmation still to be recorded |
 | [Naming and structure contract](architecture/naming-contract.md) | File, folder, command and tag names, size limits, the shared vocabulary and the ratchet that enforces them | Implemented as a ratchet 2026-11-17; symbol-name lint planned |
 | [Repository map](architecture/repository-map.md) | Generated folder tree and layer dependency diagram, taken from the real files and imports | Generated; `npm run verify:docs` fails when it is stale |
 | [Session split design](architecture/session-split-design.md) | Measured anatomy of the three former oversized session classes, the split that was done, a shared-store design that was considered, the safety plan and the decisions it left | Implemented as a verbatim base-class split; the original proposal is kept |
