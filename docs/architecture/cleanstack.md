@@ -301,10 +301,11 @@ These standards bind every future change, and every future session MUST follow t
 - **STD-13** A rule change is made here first, with its section 16 entry, and then in the subordinate documents and the code. A decision the owner has not made is never settled silently (section 15).
 - **STD-14** Required failures block integration and deployment, and a documented failure is still a failure. A defect report separates confirmed cause from hypothesis, and a fix carries prevention for its failure class and a regression test where feasible.
 - **STD-15** A test asserts something. `npm run verify:tests` fails a test file that contains no assertion, because a test that can never fail proves nothing and only looks like coverage. The check is per file: it cannot see a single assertion-free test inside a file that asserts elsewhere.
+- **STD-16** The repository describes and diagnoses itself. `npm run setup` prepares a fresh clone, `npm run doctor` checks a machine (the Node release, the installed packages against their exact pins, Chrome for the audits), and `npm run health` reports where the repository stands from its files alone and, with `--compare`, beside an older checkout. They report and never change a setting; a Git hook is installed only on request.
 
 ### 12.3 Adoption status of the standard
 
-The organization standard is adopted in eleven phases. Phases 1 to 10 are in place; the rest are planned and are not claimed until they land.
+The organization standard is adopted in eleven phases. All eleven phases are in place. A later change to the standard is an amendment (section 0), not a twelfth phase.
 
 | Phase | Result | State |
 |---|---|---|
@@ -318,7 +319,7 @@ The organization standard is adopted in eleven phases. Phases 1 to 10 are in pla
 | 8 | Style ratchet for motion tokens, colour tokens and cheap properties; reduced-motion audit in CI; primitives-only controls, Stylelint and a feature generator decided against for now ([testing](../operations/testing.md)) | Implemented |
 | 9 | Content scan of tracked files and built output, pinned-action check, commit-subject check with opt-in local hooks. GitHub settings inspected read-only and unchanged: Dependabot version updates and required checks stay off by the owner's decision | Implemented; hooks not installed |
 | 10 | Every rule whose record emptied became plainly blocking: style (ten exceptions resolved) and accessibility. Three records remain, with their reasons: the structure record (the three session classes, with a [design](session-split-design.md) awaiting review) and the coverage and mutation floors, which are ratchets by nature | Implemented, with three recorded exceptions |
-| 11 | Health scorecard, setup and doctor commands | Planned |
+| 11 | Health scorecard (`npm run health`), `npm run setup` and `npm run doctor`, a measured before and after, and this record | Implemented |
 
 ## 13. Proof obligations and release gates
 
@@ -393,6 +394,7 @@ Open decisions that gate work: FD-004, FD-005, FD-009 and FD-011. Real-data migr
 | 2026-11-07 | FD-022 | The connection is remembered on the device and renewed on the next click; refresh tokens are not used |
 | 2026-11-17 | Organization standard, phases 1 to 6 | Formatter, byte oracle, naming and structure contract with a ratchet, kebab-case and concept folders, oversized files split, documentation check and generated map |
 | 2026-11-18 | Organization standard, phase 7 | Coverage and accessibility ratchets, property tests, kernel mutation floor, one test runner layout and a workflow-reference gate (GAT-3, GAT-4, GAT-6) |
+| 2026-11-18 | Organization standard, phase 11 | Health scorecard, setup and doctor commands (STD-16); all eleven phases in place |
 | 2026-11-18 | Organization standard, phase 10 | The style and accessibility records are gone and both checks are blocking; layout transitions carry reasoned waivers (UXC-12) |
 | 2026-11-18 | Organization standard, phase 9 | Content scan as a gate (GAT-5), pinned-action check, commit-subject check and opt-in local hooks (STD-4) |
 | 2026-11-18 | Organization standard, phase 8 | Style ratchet for motion and colour tokens and cheap properties, reduced-motion audit (UXC-12, UXC-13) |
