@@ -36,7 +36,7 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
     mobile: "portfolio-mobile.png",
     crop: {
       include:
-        ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.movers-card,.period-results,.portfolio-explore",
+        ".get-started,.hero,.portfolio-trend,.portfolio-holdings,.allocation-card,.movers-card,.period-results,.portfolio-explore",
       hide: ".dashboard-analysis",
     },
   },
