@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **Revision 2026-11-18, awaiting owner acceptance.** It replaces the draft of 2026-11-01. Section 15 states which decisions the owner has already made. Nothing here authorises provisioning, publication, real-data migration or licensing. |
+| **Status** | **Revision 2026-11-18, in force from that date under the owner's delegation of the reorganization; the owner's own confirmation is still to be recorded.** It replaces the draft of 2026-11-01. Section 15 states which decisions the owner has already made. Nothing here authorises provisioning, publication, real-data migration or licensing. |
 | **Type** | Authoritative Design Reference (ADR): the one place that states what FolioDash is, how it is built and the standards every change must keep |
 | **Scope** | The PWA, the calculation kernel, import, private persistence, synchronisation, recovery, the repository and the engineering standards |
 | **Decisions** | `FD-nnn` identifiers refer to the owner's private decision register |
