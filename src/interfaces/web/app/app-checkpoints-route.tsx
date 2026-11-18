@@ -3,7 +3,7 @@ import type { SessionState } from "../../../applications/session/session-model";
 import type { IsoDate } from "../../../core/values/iso-date";
 import type { Checkpoint } from "../../../core/portfolio/checkpoints";
 import { CheckpointsView } from "./app-views";
-import type { CheckpointSessionState } from "./session/checkpoint-session";
+import type { CheckpointSessionState } from "./session/checkpoint/checkpoint-session-core";
 import type { Session } from "./session/session";
 
 export function CheckpointsRoute(props: {
