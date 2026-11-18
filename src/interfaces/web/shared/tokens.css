@@ -15,6 +15,7 @@
   --color-hero-gain: #8ce0ba;
   --card-padding: clamp(1rem, 1.7vw, 1.5rem);
   --shadow-card: 0 4px 24px rgba(16, 19, 28, 0.025);
+  --shadow-handle: 0 1px 3px rgba(0, 0, 0, 0.18);
   --color-surface: #ffffff;
   --surface-low: #f6f8fc;
   --color-surface-2: #eef1f8;
@@ -37,6 +38,7 @@
 
   --color-gain: #0b6e48;
   --color-loss: #bd2548;
+  --color-caution: #ff9500;
   --color-error: #c62850;
   --color-notice: rgba(255, 149, 0, 0.14);
   --color-notice-text: #8a4b00;

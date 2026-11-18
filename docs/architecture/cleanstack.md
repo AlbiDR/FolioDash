@@ -274,7 +274,7 @@ The acceptance home is [web quality](../operations/web-quality.md), the design s
 - **UXC-9** Setup is guided and minimal. Every core operation works with keyboard and touch and exposes the next useful action.
 - **UXC-10** An error is typed, complete, wrapping, selectable and safely copyable. It preserves the draft and states whether a financial save occurred, did not occur or is still being reconciled.
 - **UXC-11** A substantial interface addition or redesign requires consulting the [Astryx reference](../design/astryx-reference.md) and recording the reference considered and the adaptation or the reason for departing from it. FolioDash's own design, financial, privacy and interaction contracts remain authoritative.
-- **UXC-12** A transition or animation takes its duration and easing from the motion tokens, a colour comes from a colour token, and only transform and opacity animate. Zero and `linear` are the only literals allowed. `npm run verify:style` holds the existing exceptions as a ratchet (STD-6).
+- **UXC-12** A transition or animation takes its duration and easing from the motion tokens, a colour comes from a colour token, and only transform and opacity animate. Zero and `linear` are the only literals allowed. `npm run verify:style` is blocking; a deliberate layout transition carries a reasoned `style-allow` waiver beside the declaration.
 - **UXC-13** Under `prefers-reduced-motion` nothing transitions or animates, smooth scrolling is off, and hiding amounts is immediate. `npm run audit:reduced-motion` checks this in the real renderer on every screen.
 
 ## 12. Conventions, standards and governance
@@ -303,7 +303,7 @@ These standards bind every future change, and every future session MUST follow t
 
 ### 12.3 Adoption status of the standard
 
-The organization standard is adopted in eleven phases. Phases 1 to 9 are in place; the rest are planned and are not claimed until they land.
+The organization standard is adopted in eleven phases. Phases 1 to 10 are in place; the rest are planned and are not claimed until they land.
 
 | Phase | Result | State |
 |---|---|---|
@@ -316,7 +316,7 @@ The organization standard is adopted in eleven phases. Phases 1 to 9 are in plac
 | 7 | Coverage ratchet, property tests, accessibility audit in CI, kernel mutation floor, workflow-reference gate; component tests, visual baselines and a browser matrix decided against or deferred ([testing](../operations/testing.md)) | Implemented, with a mutation backlog |
 | 8 | Style ratchet for motion tokens, colour tokens and cheap properties; reduced-motion audit in CI; primitives-only controls, Stylelint and a feature generator decided against for now ([testing](../operations/testing.md)) | Implemented |
 | 9 | Content scan of tracked files and built output, pinned-action check, commit-subject check with opt-in local hooks. GitHub settings inspected read-only and unchanged: Dependabot version updates and required checks stay off by the owner's decision | Implemented; hooks not installed |
-| 10 | Every report-only rule becomes blocking | Planned |
+| 10 | Every rule whose record emptied became plainly blocking: style (ten exceptions resolved) and accessibility. Three records remain, with their reasons: the structure record (the three session classes) and the coverage and mutation floors, which are ratchets by nature | Implemented, with three recorded exceptions |
 | 11 | Health scorecard, setup and doctor commands | Planned |
 
 ## 13. Proof obligations and release gates
@@ -392,6 +392,7 @@ Open decisions that gate work: FD-004, FD-005, FD-009 and FD-011. Real-data migr
 | 2026-11-07 | FD-022 | The connection is remembered on the device and renewed on the next click; refresh tokens are not used |
 | 2026-11-17 | Organization standard, phases 1 to 6 | Formatter, byte oracle, naming and structure contract with a ratchet, kebab-case and concept folders, oversized files split, documentation check and generated map |
 | 2026-11-18 | Organization standard, phase 7 | Coverage and accessibility ratchets, property tests, kernel mutation floor, one test runner layout and a workflow-reference gate (GAT-3, GAT-4, GAT-6) |
+| 2026-11-18 | Organization standard, phase 10 | The style and accessibility records are gone and both checks are blocking; layout transitions carry reasoned waivers (UXC-12) |
 | 2026-11-18 | Organization standard, phase 9 | Content scan as a gate (GAT-5), pinned-action check, commit-subject check and opt-in local hooks (STD-4) |
 | 2026-11-18 | Organization standard, phase 8 | Style ratchet for motion and colour tokens and cheap properties, reduced-motion audit (UXC-12, UXC-13) |
 | 2026-11-18 | Owner request | Principles revised by the owner (PRN-1 to PRN-14); this document restructured into addressable rules with permanent IDs, brought up to the current state and given its engineering standards (section 12) |

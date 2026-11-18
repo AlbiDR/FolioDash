@@ -10,7 +10,7 @@ Status: **Implemented as a ratchet, 2026-11-17** (organization standard, phase 3
 | Layer imports follow the dependency law; no cycles | `npm run verify:repository` | Blocking |
 | Code is formatted by the pinned formatter | `npm run format:check` | Blocking |
 | File names, folder names, file length and folder size below | `npm run verify:structure` | Ratchet: no new violation; recorded ones tolerated |
-| Motion durations, easings and colours come from tokens, and only transform and opacity animate | `npm run verify:style` | Ratchet: no new exception; recorded ones tolerated |
+| Motion durations, easings and colours come from tokens, and only transform and opacity animate unless a reasoned waiver says why | `npm run verify:style` | Blocking |
 | Nothing moves under reduced motion; hiding amounts is immediate | `npm run audit:reduced-motion` | Blocking in CI |
 | Each area of `src/` keeps at least its recorded line and branch coverage | `npm run verify:coverage` | Ratchet: floors only rise |
 | A test file lives where a runner looks; every npm script and script path a workflow names exists | `npm run verify:repository`, `npm run verify:workflows` | Blocking |

@@ -84,3 +84,42 @@ describe("bookkeeping", () => {
     expect(styleViolations(sheet(css)).map((v) => v.endsWith("#2"))).toEqual([false, true]);
   });
 });
+
+describe("waivers", () => {
+  const waived = (declaration: string, rule = "layout-motion", reason = "the bar grows to its completion"): string =>
+    `.a {\n  /* style-allow ${rule}: ${reason} */\n  ${declaration}\n}`;
+
+  it("lets a reasoned waiver cover the declaration directly below it", () => {
+    expect(rules(waived("transition: width var(--duration-short);"))).toEqual([]);
+    expect(
+      rules(waived("transition:\n    transform var(--duration-press),\n    width var(--duration-short);")),
+    ).toEqual([]);
+  });
+
+  it("covers that one declaration and no other", () => {
+    const css =
+      ".a {\n  /* style-allow layout-motion: the bar grows to its completion */\n  transition: width var(--duration-short);\n  transition: height var(--duration-short);\n}";
+    expect(rules(css)).toEqual(["layout-motion"]);
+  });
+
+  it("does not accept a waiver with no real reason, and still reports the declaration", () => {
+    expect(rules(waived("transition: width var(--duration-short);", "layout-motion", "ok")).sort()).toEqual([
+      "layout-motion",
+      "waiver-without-reason",
+    ]);
+  });
+
+  it("does not accept a waiver for a rule that cannot be waived, so a colour still becomes a token", () => {
+    expect(rules(waived("color: #fff;", "raw-color", "brand colour of the mark")).sort()).toEqual([
+      "raw-color",
+      "unknown-waiver",
+    ]);
+  });
+
+  it("reports a waiver that nothing used, so it cannot outlive the code it excused", () => {
+    expect(rules(waived("transition: opacity var(--duration-short);"))).toEqual(["unused-waiver"]);
+    expect(
+      rules(".a {\n  color: var(--text);\n  /* style-allow layout-motion: the bar grows to its completion */\n}"),
+    ).toEqual(["unused-waiver"]);
+  });
+});

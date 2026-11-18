@@ -5,6 +5,7 @@
   transition: opacity var(--duration-feedback) var(--ease-standard);
 }
 .spark-line {
+  /* style-allow layout-motion: stroke width changes paint only and never layout, and gives the inspected line its emphasis */
   transition: stroke-width var(--duration-feedback) var(--ease-standard);
 }
 .hero::before,
@@ -25,6 +26,7 @@
 .donut-slice {
   stroke: var(--color-surface);
   stroke-width: 0;
+  /* style-allow layout-motion: stroke width changes paint only and never layout, and separates the active slice of the ring */
   transition:
     opacity var(--duration-short) var(--ease-standard),
     stroke-width var(--duration-short) var(--ease-standard);
