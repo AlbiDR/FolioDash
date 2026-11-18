@@ -15,7 +15,7 @@ import { watchGoogleFreshness } from "../../../adapters/browser/connection/googl
 import { armGestureRenewal } from "../../../adapters/browser/connection/gesture-renewal";
 import { prepareGoogleIdentity } from "../../../adapters/browser/connection/google-identity";
 import { createBrowserSession, watchOtherWindows } from "./session/browser-session";
-import { DRIVE_FILE_SCOPE } from "./session/session";
+import { DRIVE_FILE_SCOPE } from "./session/stack/session-policy";
 import { type ChartRange, resolveRange } from "../features/overview/model/chart-range";
 import { resolveClientId } from "../../../adapters/browser/connection/client-id";
 import { demoVariantFrom } from "./demo/demo-portfolio";

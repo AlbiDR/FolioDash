@@ -1,6 +1,17 @@
 # Splitting the session classes: design
 
-Status: **Proposed, for owner review. No code has been changed.** It answers the three entries left in `config/structure-baseline.json`: `session.ts` (1,512 lines), `checkpoint-session.ts` (649) and `expense-session.ts` (437), all in `src/interfaces/web/app/session/`. Rules cited are in [CleanStack](cleanstack.md): `PRN-6`, `PRN-9`, `WRI-1` to `WRI-4`, `STD-6`, `STD-7` and `GAT-6`.
+Status: **Implemented on 2026-11-18, by a different technique than the one proposed below** (see Outcome). It answered the three entries that were left in the structure record: `session.ts` (1,512 lines), `checkpoint-session.ts` (649) and `expense-session.ts` (437), all in `src/interfaces/web/app/session/`. Rules cited are in [CleanStack](cleanstack.md): `PRN-6`, `PRN-9`, `WRI-1` to `WRI-4`, `STD-6`, `STD-7` and `GAT-6`.
+
+## Outcome
+
+The proposal below (a shared store and collaborators that own their fields) would have changed how state is owned in the code that writes the person's financial record. The work was done instead as a verbatim move along the seams the measurement found, which keeps the class API and every method body as it was:
+
+- Each class became an abstract base that holds the shared state and guards, with the commands in the derived class: `ExpenseSession` over `ExpenseSessionCore` (`session/expense/`), `CheckpointSession` over `CheckpointSessionCore` (`session/checkpoint/`).
+- `Session` became a chain of five layers in `session/stack/`: `SessionCore` (state, listeners, background work), `SessionAccess` (Google access and renewal), `SessionTidy` (readable views and organization), `SessionSync` (connecting, loading, restoring, history check), `SessionRecords` (the save port), then `Session` itself (construction, forgetting the device, blocked messages). A layer that must call a later one declares it `abstract`. Shared words and the dependency type live in `session-policy.ts`.
+- Moves are verbatim: a line-level comparison against the previous files shows only class headers, `private` to `protected`, the constructor wiring and one hook (`unauthorized`, which replaces the inline 401 handling in the constructor). Public names and signatures are unchanged, and no test needed editing beyond the import paths of `SessionDeps` and `DRIVE_FILE_SCOPE`.
+- The structure record is empty, so `npm run verify:structure` is plainly blocking (`STD-6`).
+
+The trade-off is that inheritance keeps one object with all fields reachable from every layer, so the copied skeleton is reduced but not removed, and a collaborator design remains available if ownership boundaries are wanted later. The original proposal follows unchanged for the record.
 
 ## Why these three are different
 
@@ -60,5 +71,3 @@ Expected result: every file at or below 400 lines, with `Session` near 300.
 1. **Approach.** Shared store with collaborators that own their fields (this design), or plain operation functions that take an explicit context object. The store reduces the copied skeleton; the functions are a smaller change but leave the three skeletons duplicated.
 2. **Mutation baseline for the session code.** Recommended before any move. It costs one run of about ten minutes and may surface missing tests on the write path first.
 3. **Order and pace.** One class per session of work, with your review of the first commit before the next, or the whole sequence in one pass.
-
-Until this is decided and done, the three entries stay in the structure record with the reason above, and `npm run verify:structure` still blocks any new violation.

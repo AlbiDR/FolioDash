@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ratchet, structureViolations, type StructureOptions } from "../../scripts/verify/code/structure-policy";
+import { structureViolations, type StructureOptions } from "../../scripts/verify/code/structure-policy";
 
 const options: StructureOptions = {
   codeExtensions: [".ts", ".tsx", ".css"],
@@ -55,20 +55,5 @@ describe("size limits", () => {
   it("rejects a directory with more code files than the limit, counting only direct children", () => {
     const direct = ["a", "b", "c", "d"].map((name) => file(`src/core/${name}.ts`));
     expect(structureViolations([...direct, file("src/core/deep/e.ts")], options)).toEqual(["max-files src/core"]);
-  });
-});
-
-describe("ratchet", () => {
-  it("tolerates recorded violations", () => {
-    expect(ratchet(["max-lines src/a.ts"], ["max-lines src/a.ts"])).toEqual({ added: [], fixed: [] });
-  });
-  it("reports a new violation", () => {
-    expect(ratchet(["max-lines src/a.ts", "file-name src/B.ts"], ["max-lines src/a.ts"])).toEqual({
-      added: ["file-name src/B.ts"],
-      fixed: [],
-    });
-  });
-  it("reports a recorded violation that no longer exists, so the record can only shrink", () => {
-    expect(ratchet([], ["max-lines src/a.ts"])).toEqual({ added: [], fixed: ["max-lines src/a.ts"] });
   });
 });

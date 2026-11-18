@@ -66,7 +66,8 @@ src/
         │   │   ├── checkpoint-suites/
         │   │   ├── expense/
         │   │   ├── expense-suites/
-        │   │   └── session-suites/
+        │   │   ├── session-suites/
+        │   │   └── stack/
         │   └── styles/
         ├── features/
         │   ├── account/

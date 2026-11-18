@@ -313,12 +313,12 @@ The organization standard is adopted in eleven phases. All eleven phases are in 
 | 2 | Repository formatted once; formatting gated | Implemented |
 | 3 | Naming and structure contract with a ratchet (STD-6) | Implemented |
 | 4 | Kebab-case files, concept folders, scripts by purpose, script namespaces | Implemented |
-| 5 | Oversized files split; three session classes remain recorded | Implemented, with an open exception |
+| 5 | Oversized files split, the three session classes last, as verbatim base-class splits ([design](session-split-design.md)) | Implemented |
 | 6 | Documentation check, generated repository map, this revision, rule IDs | Implemented |
 | 7 | Coverage ratchet, property tests, accessibility audit in CI, kernel mutation floor, workflow-reference gate; component tests, visual baselines and a browser matrix decided against or deferred ([testing](../operations/testing.md)) | Implemented, with a mutation backlog |
 | 8 | Style ratchet for motion tokens, colour tokens and cheap properties; reduced-motion audit in CI; primitives-only controls, Stylelint and a feature generator decided against for now ([testing](../operations/testing.md)) | Implemented |
 | 9 | Content scan of tracked files and built output, pinned-action check, commit-subject check with opt-in local hooks. GitHub settings inspected read-only and unchanged: Dependabot version updates and required checks stay off by the owner's decision | Implemented; hooks not installed |
-| 10 | Every rule whose record emptied became plainly blocking: style (ten exceptions resolved) and accessibility. Three records remain, with their reasons: the structure record (the three session classes, with a [design](session-split-design.md) awaiting review) and the coverage and mutation floors, which are ratchets by nature | Implemented, with three recorded exceptions |
+| 10 | Every rule whose record emptied became plainly blocking: style (ten exceptions resolved) and accessibility. The structure record emptied last, when the session classes were split, so that check is plainly blocking too. Two records remain, with their reasons: the coverage and mutation floors, which are ratchets by nature | Implemented, with two recorded floors |
 | 11 | Health scorecard (`npm run health`), `npm run setup` and `npm run doctor`, a measured before and after, and this record | Implemented |
 
 ## 13. Proof obligations and release gates

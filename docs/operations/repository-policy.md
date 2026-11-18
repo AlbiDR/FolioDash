@@ -65,7 +65,7 @@ The root is the first thing a visitor sees, so it holds only the documentation e
 
 ## Structure ratchet, 2026-11-17
 
-`npm run verify:structure` enforces the [naming and structure contract](../architecture/naming-contract.md): kebab-case file and folder names, at most 400 lines per code file and at most 20 code files directly in a folder. Limits are in `config/structure.json`. The violations that exist today are recorded in `config/structure-baseline.json`; the check fails on a new violation and on a recorded one that has been fixed but not removed (`--shrink`), so the record only shrinks. It reads tracked and new non-ignored paths and line counts, runs inside `verify` right after the repository policy, and does not judge whether a name or a split is a good one.
+`npm run verify:structure` enforces the [naming and structure contract](../architecture/naming-contract.md): kebab-case file and folder names, at most 400 lines per code file and at most 20 code files directly in a folder. Limits are in `config/structure.json`. It is plainly blocking: any violation fails, because the record of tolerated violations is empty and was removed. It reads tracked and new non-ignored paths and line counts, runs inside `verify` right after the repository policy, and does not judge whether a name or a split is a good one.
 
 ## Health, setup and doctor, 2026-11-18
 
@@ -87,7 +87,7 @@ Measured on 2026-11-18 against the tag `baseline-2026-11-17`, taken before the o
 | Production dependencies | 4 | 4 |
 | Development dependencies | 11 | 17 |
 
-Raw line totals are not compared: Prettier expanded the code and stylesheets, and about 150 files were added, mostly tests and policy modules. The checkpoint figure of 19 files over the limit was counted before formatting; with the formatter applied the same files would have numbered 35, so the real reduction is larger than the table shows. The three remaining files are the session classes in [Session split design](../architecture/session-split-design.md).
+Raw line totals are not compared: Prettier expanded the code and stylesheets, and about 150 files were added, mostly tests and policy modules. The checkpoint figure of 19 files over the limit was counted before formatting; with the formatter applied the same files would have numbered 35, so the real reduction is larger than the table shows. The three files that remained at that point, the session classes, were split afterwards ([Session split design](../architecture/session-split-design.md)), so none is over the limit now.
 
 ## Content check, pinned actions and commit subjects, 2026-11-18
 
@@ -109,7 +109,7 @@ Front matter with a status and a review date on every document was considered an
 
 ## Oversized files, 2026-11-18
 
-`config/structure-baseline.json` now records three files above 400 lines: `session.ts` (1,512 lines), `checkpoint-session.ts` (649) and `expense-session.ts` (437) in `src/interfaces/web/app/session/`. Each is one class whose methods share private state (the token, the generation counter and the current ledger), so getting under the limit means introducing collaborator classes or passing a context object, which is a design change and not a mechanical move. [Session split design](../architecture/session-split-design.md) measures them, proposes the split and sets the safety plan that comes before any code moves. They stay recorded, with the reason, until that design is done and verified. Their tests were split like the others.
+The last three files above 400 lines were the session classes: `session.ts` (1,512 lines), `checkpoint-session.ts` (649) and `expense-session.ts` (437) in `src/interfaces/web/app/session/`. Each was one class whose methods share state, so they were measured and designed first ([Session split design](../architecture/session-split-design.md)) and then split as verbatim moves into an abstract base and a derived class (`Session` into a chain of five layers). The structure record is empty and its file is gone. Their tests were split like the others.
 
 The phase 5 splits were validated by evidence, not by the byte oracle: the built CSS of every asset is identical to the pre-split build; the full gate passes with the same 1,114 tests; the rendered interaction audit reports the same 128 assertions and 915 control samples across 27 states, and the seven synthetic journeys the same assertion counts; the README screenshots are byte-identical image by image (15 of 15); the interaction inventory lists the same 220 controls; and the Apps Script bundle holds the same 161 top-level declarations, emitted in a different module order. JavaScript chunks for the split views differ in layout, which is expected when modules move.
 
