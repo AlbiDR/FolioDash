@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TOKEN_FILES, styleViolations } from "../../scripts/verify/style-policy";
+import { TOKEN_FILES, styleViolations } from "../../scripts/verify/code/style-policy";
 
 const sheet = (text: string, path = "src/interfaces/web/app/styles/example.css") => [{ path, text }];
 const rules = (text: string, path?: string): string[] =>

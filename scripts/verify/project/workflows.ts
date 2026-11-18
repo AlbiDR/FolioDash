@@ -17,6 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { unpinnedActions } from "./workflow-policy.ts";
 
 const VERSION = "1.7.12";
 // Published checksums: https://github.com/rhysd/actionlint/releases/tag/v1.7.12
@@ -33,7 +34,7 @@ const checksum = CHECKSUMS[target];
 if (checksum === undefined)
   throw new Error(`Workflow verification supports Linux and macOS on x64/arm64, not ${target}.`);
 
-const root = fileURLToPath(new URL("../..", import.meta.url));
+const root = fileURLToPath(new URL("../../..", import.meta.url));
 const cache = join(tmpdir(), "foliodash-actionlint");
 mkdirSync(cache, { recursive: true, mode: 0o700 });
 const archiveName = `actionlint_${VERSION}_${target}.tar.gz`;
@@ -94,6 +95,8 @@ try {
     const paths = /(?:^|\s|")((?:scripts|config|src)\/[\w./-]+\.(?:ts|json|js))/gmu;
     for (const file of files) {
       const text = readFileSync(file, "utf8");
+      for (const reference of unpinnedActions(text))
+        broken.push(`${file}: action is not pinned to a commit SHA (${reference})`);
       for (const match of text.matchAll(/npm run ([a-z:-]+)/gu)) {
         if (scripts[match[1] ?? ""] === undefined) broken.push(`${file}: npm script ${match[1] ?? ""} does not exist`);
       }

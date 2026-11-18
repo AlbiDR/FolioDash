@@ -284,7 +284,7 @@ The acceptance home is [web quality](../operations/web-quality.md), the design s
 - **STD-1** Source, comments, documents and commit messages are in English. File and folder names are kebab-case, types and components are PascalCase, functions and variables are camelCase, and a named policy constant is UPPER_SNAKE_CASE. A name states domain and role, never `misc`, `helpers2`, `final` or `new-version`. The [naming and structure contract](naming-contract.md) is the full rule.
 - **STD-2** A unit test sits beside its subject as `<name>.test.ts(x)`, and `tests/` holds only tests that span layers with their synthetic fixtures.
 - **STD-3** A workbook schema change is an ordered, reviewed migration in source with a drift check. History already applied is never rewritten, and an untracked dashboard edit is not a deployment strategy.
-- **STD-4** A commit subject is `<type>: <summary>` with the types in the naming contract. Releases follow Semantic Versioning, with a changelog once releases exist.
+- **STD-4** A commit subject is `<type>: <summary>` with the types in the naming contract. Releases follow Semantic Versioning, with a changelog once releases exist. `npm run setup:hooks` installs an opt-in local check of the subject; it is not a CI gate, because an edit made directly on GitHub does not follow it.
 
 ### 12.2 Engineering standards
 
@@ -303,7 +303,7 @@ These standards bind every future change, and every future session MUST follow t
 
 ### 12.3 Adoption status of the standard
 
-The organization standard is adopted in eleven phases. Phases 1 to 8 are in place; the rest are planned and are not claimed until they land.
+The organization standard is adopted in eleven phases. Phases 1 to 9 are in place; the rest are planned and are not claimed until they land.
 
 | Phase | Result | State |
 |---|---|---|
@@ -315,7 +315,7 @@ The organization standard is adopted in eleven phases. Phases 1 to 8 are in plac
 | 6 | Documentation check, generated repository map, this revision, rule IDs | Implemented |
 | 7 | Coverage ratchet, property tests, accessibility audit in CI, kernel mutation floor, workflow-reference gate; component tests, visual baselines and a browser matrix decided against or deferred ([testing](../operations/testing.md)) | Implemented, with a mutation backlog |
 | 8 | Style ratchet for motion tokens, colour tokens and cheap properties; reduced-motion audit in CI; primitives-only controls, Stylelint and a feature generator decided against for now ([testing](../operations/testing.md)) | Implemented |
-| 9 | Dependency updates, secret scanning, required checks and templates on GitHub | Planned; repository settings need the owner's approval |
+| 9 | Content scan of tracked files and built output, pinned-action check, commit-subject check with opt-in local hooks. GitHub settings inspected read-only and unchanged: Dependabot version updates and required checks stay off by the owner's decision | Implemented; hooks not installed |
 | 10 | Every report-only rule becomes blocking | Planned |
 | 11 | Health scorecard, setup and doctor commands | Planned |
 
@@ -323,9 +323,9 @@ The organization standard is adopted in eleven phases. Phases 1 to 8 are in plac
 
 - **GAT-1** A capability is called supported only with evidence in its category: **kernel** (independent examples and properties for exact cents, flows versus gains, lifecycle, missing data, baselines and deterministic replay); **parsing** (synthetic exports, blanks, European separators, invalid identifiers and subtotals, duplicates, unsupported and formula files, bounded hostile XLSX); **commit** (idempotency, stale previews, two-device races, timeouts, lost acknowledgements, corrections and atomic recovery); **security and privacy** (authorisation across two accounts, forbidden upload, log and build payload checks, cache isolation, session expiry, deletion); **PWA and browser** (real rendered charts and source values, install and update, local-file import, keyboard and touch, offline status); **recovery and migration** (full export and restore, damaged backup rejection, read-only parity); **deployment** (the exact verified revision, headers and caching, private denial to anonymous and wrong-account requests, real Mac and Android journeys with synthetic data).
 - **GAT-2** Each gate reports PASS, FAIL or BLOCKED / NOT RUN, with revision, environment, method and evidence. A syntax check or a mocked chart cannot satisfy a renderer gate, and a tool never invents a measurement or reports an unavailable manual check as done.
-- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the style ratchet, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit, property and contract tests with coverage, the coverage ratchet, the script tests, the production build, the PWA check and the Apps Script bundle check. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
+- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the style ratchet, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit, property and contract tests with coverage, the coverage ratchet, the script tests, the production build, the PWA check, the Apps Script bundle check and the content scan. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
 - **GAT-4** The rendered interaction audit, the seven synthetic journeys, the accessibility audit and the reduced-motion audit are not part of `npm run verify`. They run in the Node 22 CI job and block release assembly, and README capture runs for a release from `main`. A change to the interface runs them locally before it is pushed, including `npm run capture:readme`, and reports the result.
-- **GAT-5** Content and privacy scanning, live-Google proof, real-device proof and a restore drill are not yet gates. They remain Open and are never implied by a green `verify`.
+- **GAT-5** A scan of tracked files and built output for credentials and financial identifiers is a gate (`npm run verify:content`). It cannot read meaning, so a real figure or a name in prose is not caught, and the content review in REP-4 still applies. Live-Google proof, real-device proof and a restore drill are not yet gates. They remain Open and are never implied by a green `verify`.
 - **GAT-6** Mutation testing of the kernel runs on demand (`npm run audit:mutation`). Its score MUST NOT fall below the floor recorded in `config/stryker.config.json`, and surviving mutants are a ranked backlog fixed in their own commits, never inside a restructure (STD-7). See [testing](../operations/testing.md).
 
 ## 14. Forbidden paths
@@ -392,5 +392,6 @@ Open decisions that gate work: FD-004, FD-005, FD-009 and FD-011. Real-data migr
 | 2026-11-07 | FD-022 | The connection is remembered on the device and renewed on the next click; refresh tokens are not used |
 | 2026-11-17 | Organization standard, phases 1 to 6 | Formatter, byte oracle, naming and structure contract with a ratchet, kebab-case and concept folders, oversized files split, documentation check and generated map |
 | 2026-11-18 | Organization standard, phase 7 | Coverage and accessibility ratchets, property tests, kernel mutation floor, one test runner layout and a workflow-reference gate (GAT-3, GAT-4, GAT-6) |
+| 2026-11-18 | Organization standard, phase 9 | Content scan as a gate (GAT-5), pinned-action check, commit-subject check and opt-in local hooks (STD-4) |
 | 2026-11-18 | Organization standard, phase 8 | Style ratchet for motion and colour tokens and cheap properties, reduced-motion audit (UXC-12, UXC-13) |
 | 2026-11-18 | Owner request | Principles revised by the owner (PRN-1 to PRN-14); this document restructured into addressable rules with permanent IDs, brought up to the current state and given its engineering standards (section 12) |

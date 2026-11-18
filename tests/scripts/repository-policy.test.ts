@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowedDependency, architectureProblems, pathProblems } from "../../scripts/verify/repository-policy";
+import { allowedDependency, architectureProblems, pathProblems } from "../../scripts/verify/code/repository-policy";
 
 const core = "src/core/Money.ts";
 const app = "src/interfaces/web/app/App.tsx";

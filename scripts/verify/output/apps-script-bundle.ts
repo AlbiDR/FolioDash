@@ -3,7 +3,7 @@
 // spreadsheet, and checks the four operations work end to end on synthetic data.
 
 import vm from "node:vm";
-import { OPERATIONS, buildAppsScript } from "../artifacts/apps-script.ts";
+import { OPERATIONS, buildAppsScript } from "../../artifacts/apps-script.ts";
 
 const { code, manifest } = await buildAppsScript();
 const failures: string[] = [];

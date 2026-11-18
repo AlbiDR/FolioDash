@@ -5,7 +5,7 @@ import {
   coverageProblems,
   raisedFloors,
   type FileCoverage,
-} from "../../scripts/verify/coverage-policy";
+} from "../../scripts/verify/code/coverage-policy";
 
 const file = (lines: [number, number], branches: [number, number]): FileCoverage => ({
   lines: { total: lines[0], covered: lines[1] },

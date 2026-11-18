@@ -11,7 +11,7 @@ import { resolve } from "node:path";
 import process from "node:process";
 import { withLocalBrowser } from "../lib/local-browser.ts";
 import { createSteps } from "./interactions/browser-steps.ts";
-import { ratchet } from "../verify/structure-policy.ts";
+import { ratchet } from "../verify/code/structure-policy.ts";
 
 const ROUTES = ["overview", "months", "checkpoints", "expenses", "import", "history", "connection"] as const;
 const VIEWPORTS = [

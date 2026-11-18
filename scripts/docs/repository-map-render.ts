@@ -2,7 +2,7 @@
 // dependency diagram. It is pure, so `npm run docs:map` writes it and `npm run verify:docs` checks it is current.
 
 import ts from "typescript";
-import { layer } from "../verify/repository-policy.ts";
+import { layer } from "../verify/code/repository-policy.ts";
 
 const NODE_OF = (name: string): string => (name.startsWith("feature:") ? "features" : name);
 const ORDER = [
