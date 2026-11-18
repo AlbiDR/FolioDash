@@ -40,7 +40,7 @@ The ratchet records today's violations in `config/structure-baseline.json`. A ne
 
 - npm scripts are `<namespace>:<action>` with namespaces `verify`, `audit`, `build`, `format`, `capture` and `docs`; a script with no namespace is a developer entry point (`dev`, `test`, `lint`, `setup`, `doctor`, `health`). Generated documents are `docs:*`, generated fixtures and artifacts are `build:*`, and the built-output oracle is `verify:oracle`.
 - Commit subjects are `<type>: <summary>`. Types in use: `feat`, `fix`, `docs`, `design`, `test`, `ci`, `chore`, plus `refactor` and `style`. A few early subjects are plain sentences; history is not rewritten.
-- A tag that freezes a state before a structural change is `baseline-YYYY-MM-DD`. The tag created on 2026-11-17 is named `checkpoint-2026-11-17`, before this rule existed and before the clash described below was noticed. Renaming a published tag needs the owner's go-ahead, so it is left as it is.
+- A tag that freezes a state before a structural change is `baseline-YYYY-MM-DD`. The first one, taken on 2026-11-17 before the organization work, was first published as `checkpoint-2026-11-17`, before this rule existed and before the clash described below was noticed. It was renamed to `baseline-2026-11-17` on 2026-11-18 under the owner's delegation; the commit is the same.
 
 ## Vocabulary
 
