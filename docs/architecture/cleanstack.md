@@ -317,7 +317,7 @@ The organization standard is adopted in eleven phases. Phases 1 to 10 are in pla
 | 7 | Coverage ratchet, property tests, accessibility audit in CI, kernel mutation floor, workflow-reference gate; component tests, visual baselines and a browser matrix decided against or deferred ([testing](../operations/testing.md)) | Implemented, with a mutation backlog |
 | 8 | Style ratchet for motion tokens, colour tokens and cheap properties; reduced-motion audit in CI; primitives-only controls, Stylelint and a feature generator decided against for now ([testing](../operations/testing.md)) | Implemented |
 | 9 | Content scan of tracked files and built output, pinned-action check, commit-subject check with opt-in local hooks. GitHub settings inspected read-only and unchanged: Dependabot version updates and required checks stay off by the owner's decision | Implemented; hooks not installed |
-| 10 | Every rule whose record emptied became plainly blocking: style (ten exceptions resolved) and accessibility. Three records remain, with their reasons: the structure record (the three session classes) and the coverage and mutation floors, which are ratchets by nature | Implemented, with three recorded exceptions |
+| 10 | Every rule whose record emptied became plainly blocking: style (ten exceptions resolved) and accessibility. Three records remain, with their reasons: the structure record (the three session classes, with a [design](session-split-design.md) awaiting review) and the coverage and mutation floors, which are ratchets by nature | Implemented, with three recorded exceptions |
 | 11 | Health scorecard, setup and doctor commands | Planned |
 
 ## 13. Proof obligations and release gates
