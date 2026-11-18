@@ -98,6 +98,7 @@ jobs:
           npm run audit:overview-signals
           npm run audit:checkpoints
           npm run audit:accessibility
+          npm run audit:reduced-motion
 
       - name: Capture current README views
         if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
