@@ -11,6 +11,7 @@ Implemented 2026-11-18 as phase 7 of the organization standard. This document ow
 | Script | `npm run test:scripts` (`node --test`) | The tooling: icon drawing, PNG integrity, Pages assembly, README manifest | `npm run verify`, CI |
 | Rendered interaction | `npm run audit:interactions` and seven synthetic journeys | Real Chrome, signed-out demo: control feedback, journeys, recovery, sale and reopening | CI, and locally after an interface change |
 | Accessibility | `npm run audit:accessibility` | axe-core rules on 7 screens, 2 widths and 2 colour schemes | CI, and locally after an interface change |
+| Reduced motion | `npm run audit:reduced-motion` | With `prefers-reduced-motion`, no transition or animation on any element or pseudo-element of 7 screens at 2 widths, smooth scrolling off, amounts hide at once | CI, and locally after an interface change |
 | Mutation | `npm run audit:mutation` | Whether the kernel tests notice a deliberate bug | On demand, about 9 minutes |
 
 None of this is live-Google or real-device proof (`GAT-5`). Every run uses synthetic data.
@@ -19,6 +20,7 @@ None of this is live-Google or real-device proof (`GAT-5`). Every run uses synth
 
 - **Coverage.** `npm test` measures V8 coverage and `npm run verify:coverage` compares each area of `src/` with `config/coverage-baseline.json`. A drop in lines or branches fails, a new area needs a floor, and `-- --raise` only ever raises a floor. Measured at the start: `src/core` 97.8% lines and 92.4% branches, `src/applications` 97.0% and 88.6%, `src/adapters` 94.8% and 82.7%. The web layers are low in unit coverage (features 13.2%, presentation 22.0%, shared 34.8%) because the rendered audits, not unit tests, exercise them; the floors record that honestly.
 - **Accessibility.** `config/accessibility-baseline.json` is empty: the demo screens pass the automated rules, and the audit was proven to detect an injected missing label, missing alt text and low contrast. Any new violation fails; the record can only shrink. Automated rules find roughly a third of real problems, so a pass is not a conformance claim.
+- **Style.** `npm run verify:style` reads every stylesheet and records exceptions to UXC-12 in `config/style-baseline.json`: a duration or easing written out instead of a token (none), a raw colour (4), and a layout property transitioned or animated (6). Each recorded layout transition is deliberate, such as the sidebar grid, the allocation bars and the disclosure rows, and each raw colour is a local tint or a shadow; they are recorded, not hidden, and none may be added. The record only shrinks.
 - **Structure and documents.** See [Repository policy](repository-policy.md).
 
 ## Property tests
@@ -55,6 +57,12 @@ Stryker changes the kernel in small ways and checks that a test fails. Static mu
 - **Visual baselines.** Not adopted as a gate. Screenshots differ by operating system and Chrome build, so a baseline taken on one machine would fail on CI. Screenshots were compared byte for byte as a one-off proof during the file splits, on one machine.
 - **Browser matrix (WebKit, Firefox).** Not yet. It needs a decision between adding Playwright or extending the in-house Chrome harness, and real Android and Safari proof remains an Open gate in any case (`GAT-5`).
 - **Property tests for `metrics.ts` and `ledger.ts`.** Next after the mutation backlog, since those files are where the survivors are.
+
+## Style and motion: decisions not taken, with reasons
+
+- **Stylelint.** Not adopted. The rules needed are three, Prettier already puts one declaration on each line, and Stylelint would add a large dependency tree for them. The checker is one pure module with its own tests (`scripts/verify/style-policy.ts`) and follows the same ratchet as the structure and accessibility records. Revisit if the rule set grows well beyond motion, colour and cheap properties.
+- **A separate rule that controls come only from shared primitives.** Not adopted. `npm run verify:interactions` already finds every control in the source, fails on any that has no classified family and contract, and the rendered audit samples each one; a second rule would restate it (UXC-4).
+- **A `new:feature` generator.** Not adopted yet. The features do not share one shape (overview has a `model/` folder, import has many step views), and generating a shape that does not exist would break PRN-1. When the next feature is added, its folder becomes the template and the generator can follow.
 
 ## Conventions
 
