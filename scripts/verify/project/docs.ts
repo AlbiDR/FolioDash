@@ -4,7 +4,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
-import { renderMap } from "../docs/repository-map-render.ts";
+import { renderMap } from "../../docs/repository-map-render.ts";
 import { ruleProblems, linkProblems, orphanProblems, pathProblems, type DocumentFile } from "./docs-policy.ts";
 
 const files = [

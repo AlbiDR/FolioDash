@@ -11,7 +11,7 @@ Status: **Built and checked in desktop Chrome on 2026-11-02. Not yet checked on 
 | Service worker | `src/interfaces/web/service-worker/` | Keeps the app's own files so it opens instantly and works offline. Rules in `cache-policy.ts`, worker in `sw.ts` |
 | Build step | `config/pwa.ts` | After the build, bundles the worker with the list of built files and a fingerprint of their contents. Unchanged files keep the saved copy |
 | Registration and update notice | `src/interfaces/web/app/platform/service-worker.ts`, `app.tsx` | Registers the worker and shows "A new version of FolioDash is ready. Reload to update" |
-| Check | `scripts/verify/pwa.ts`, run by `npm run verify` after the build | Manifest fields, icon files and sizes, a maskable icon, a worker that lists every built file, and the page's manifest and icon links |
+| Check | `scripts/verify/output/pwa.ts`, run by `npm run verify` after the build | Manifest fields, icon files and sizes, a maskable icon, a worker that lists every built file, and the page's manifest and icon links |
 
 ## Privacy and safety rules
 

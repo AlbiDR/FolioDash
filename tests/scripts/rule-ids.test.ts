@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ruleDefinitions, ruleProblems, sectionNumbers, type DocumentFile } from "../../scripts/verify/docs-policy";
+import {
+  ruleDefinitions,
+  ruleProblems,
+  sectionNumbers,
+  type DocumentFile,
+} from "../../scripts/verify/project/docs-policy";
 
 const adr = (text: string): DocumentFile => ({ path: "docs/architecture/cleanstack.md", text });
 const other = (text: string): DocumentFile => ({ path: "docs/operations/x.md", text });

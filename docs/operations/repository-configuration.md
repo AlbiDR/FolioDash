@@ -39,10 +39,10 @@ Public OAuth client IDs are public by design, so they are variables and never se
 | File | Purpose |
 |---|---|
 | `.github/allowed-contributors.json` | The only humans whose attribution is accepted; GitHub no-reply addresses only, never a personal address |
-| `scripts/verify/contributors.ts` | Fails on any author or co-author that is not approved, or whose metadata names an AI system or automation. Dependency-free, so it needs no tooling decision |
+| `scripts/verify/project/contributors.ts` | Fails on any author or co-author that is not approved, or whose metadata names an AI system or automation. Dependency-free, so it needs no tooling decision |
 | `.github/workflows/verify.yml` | Runs contributor attribution through `npm run verify` on each supported Node version with complete history; no separate attribution workflow |
-| `scripts/verify/workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
-| `scripts/verify/punctuation.ts`, `scripts/verify/punctuation-policy.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
+| `scripts/verify/project/workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
+| `scripts/verify/code/punctuation.ts`, `scripts/verify/code/punctuation-policy.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
 | `.github/CODEOWNERS` | Review ownership of `.github/`, `docs/architecture/` (CleanStack and the other architecture documents) and `scripts/` |
 | `.github/pull_request_template.md` | Includes the conformance check against CleanStack |
 | `.github/SECURITY.md`, `.github/CONTRIBUTING.md` | Short, and they point to the docs rather than repeat them |
@@ -62,6 +62,8 @@ Attribution failure blocks the dependent site deployment. CODEOWNERS and quality
 [GitHub Actions](github-actions.md) owns triggers, the dependency graph, cancellation, artifact ownership, maintenance and verification limits.
 
 Settings applied by the owner's request: secret scanning and push protection, Dependabot alerts, private vulnerability reporting, and the rule that every action must be pinned to a full commit SHA. A ruleset `Protect main` blocks deleting `main` and force-pushing to it; nobody is exempt.
+
+**Read-only inspection, 2026-11-18, changed nothing.** The live settings match this section: the repository is public; secret scanning and push protection are enabled; the `Protect main` ruleset is active; SHA pinning is required for actions; the `github-pages` environment is restricted to custom branch policies; and `apps-script-deploy` still has no protection rule. Three things are off and unmentioned above: Dependabot security updates (consistent with the decision below), secret scanning for non-provider patterns, and secret-scanning validity checks. The last two are optional features the owner has not been asked about.
 
 **No scheduled Dependabot updates, by design:** the attribution policy rejects any commit authored by automation, and Dependabot's commits are bot-authored, so its pull requests fail it. Version updates are off (no `dependabot.yml`), alerts stay on, the weekly Verify run audits dependencies, and updates are made by hand (a pinned action is updated by editing its SHA). Dependabot security-update pull requests are turned off in the repository settings (owner, 2026-11-02) for the same reason.
 

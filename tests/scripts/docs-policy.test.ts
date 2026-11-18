@@ -6,7 +6,7 @@ import {
   pathProblems,
   slug,
   type DocumentFile,
-} from "../../scripts/verify/docs-policy";
+} from "../../scripts/verify/project/docs-policy";
 
 const present = new Set(["docs/README.md", "docs/architecture/a.md", "docs/operations/b.md", "src/core/money.ts"]);
 const folders = new Set(["docs", "docs/architecture", "docs/operations", "src", "src/core"]);

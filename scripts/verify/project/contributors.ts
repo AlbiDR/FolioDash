@@ -13,7 +13,7 @@ interface Human {
 }
 
 const policy = JSON.parse(
-  readFileSync(new URL("../../.github/allowed-contributors.json", import.meta.url), "utf8"),
+  readFileSync(new URL("../../../.github/allowed-contributors.json", import.meta.url), "utf8"),
 ) as {
   readonly humans?: unknown;
 };

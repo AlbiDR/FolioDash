@@ -110,7 +110,11 @@ scripts/
 │   └── interactions/
 ├── docs/
 ├── lib/
+├── setup/
 └── verify/
+    ├── code/
+    ├── output/
+    └── project/
 ```
 
 ```text

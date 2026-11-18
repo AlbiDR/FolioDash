@@ -60,7 +60,7 @@ Stryker changes the kernel in small ways and checks that a test fails. Static mu
 
 ## Style and motion: decisions not taken, with reasons
 
-- **Stylelint.** Not adopted. The rules needed are three, Prettier already puts one declaration on each line, and Stylelint would add a large dependency tree for them. The checker is one pure module with its own tests (`scripts/verify/style-policy.ts`) and follows the same ratchet as the structure and accessibility records. Revisit if the rule set grows well beyond motion, colour and cheap properties.
+- **Stylelint.** Not adopted. The rules needed are three, Prettier already puts one declaration on each line, and Stylelint would add a large dependency tree for them. The checker is one pure module with its own tests (`scripts/verify/code/style-policy.ts`) and follows the same ratchet as the structure and accessibility records. Revisit if the rule set grows well beyond motion, colour and cheap properties.
 - **A separate rule that controls come only from shared primitives.** Not adopted. `npm run verify:interactions` already finds every control in the source, fails on any that has no classified family and contract, and the rendered audit samples each one; a second rule would restate it (UXC-4).
 - **A `new:feature` generator.** Not adopted yet. The features do not share one shape (overview has a `model/` folder, import has many step views), and generating a shape that does not exist would break PRN-1. When the next feature is added, its folder becomes the template and the generator can follow.
 
