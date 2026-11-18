@@ -63,6 +63,7 @@ src/
         │   ├── platform/
         │   ├── session/
         │   │   ├── checkpoint-suites/
+        │   │   ├── expense/
         │   │   ├── expense-suites/
         │   │   └── session-suites/
         │   └── styles/
