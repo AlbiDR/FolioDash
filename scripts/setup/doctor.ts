@@ -82,7 +82,8 @@ findings.push({
 });
 
 const label: Record<Level, string> = { pass: "ok  ", warn: "warn", fail: "FAIL", info: "info" };
-for (const finding of findings) console.log(`${label[finding.level]}  ${finding.name.padEnd(14)}${finding.detail}`);
+const width = Math.max(14, ...findings.map((finding) => finding.name.length + 2));
+for (const finding of findings) console.log(`${label[finding.level]}  ${finding.name.padEnd(width)}${finding.detail}`);
 const failed = findings.filter((finding) => finding.level === "fail").length;
 console.log(
   failed === 0 ? "\nReady to work. Next: npm run verify." : `\n${String(failed)} problems to fix before working.`,
