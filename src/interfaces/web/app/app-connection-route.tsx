@@ -6,7 +6,7 @@ import { rememberClientId } from "../../../adapters/browser/connection/client-id
 import { AccountView, ExpenseDataTools } from "./app-views";
 import { browserPrivacyStorage } from "./app-model";
 import type { CheckpointSessionState } from "./session/checkpoint-session";
-import type { ExpenseSessionState } from "./session/expense-session";
+import type { ExpenseSessionState } from "./session/expense/expense-session-core";
 import type { Session } from "./session/session";
 
 export function ConnectionRoute(props: {

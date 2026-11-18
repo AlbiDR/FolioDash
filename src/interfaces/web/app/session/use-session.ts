@@ -1,7 +1,7 @@
 import type { SessionState } from "../../../../applications/session/session-model";
 import { useEffect, useState } from "preact/hooks";
 import type { Session } from "./session";
-import type { ExpenseSessionState } from "./expense-session";
+import type { ExpenseSessionState } from "./expense/expense-session-core";
 import type { CheckpointSessionState } from "./checkpoint-session";
 
 export function useExpenses(session: Session): ExpenseSessionState {

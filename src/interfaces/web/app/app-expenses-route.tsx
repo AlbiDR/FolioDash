@@ -5,7 +5,7 @@ import type { IsoDate } from "../../../core/values/iso-date";
 import type { ExpenseCommand, ExpenseDay } from "../../../core/expenses/work-expenses";
 import { describeConnect } from "../features/account/account-text";
 import { ExpensesView } from "./app-views";
-import type { ExpenseSessionState } from "./session/expense-session";
+import type { ExpenseSessionState } from "./session/expense/expense-session-core";
 import type { Session } from "./session/session";
 
 export function ExpensesRoute(props: {
