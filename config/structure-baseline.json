@@ -1,4 +1,1 @@
-[
-  "max-lines src/interfaces/web/app/session/checkpoint-session.ts",
-  "max-lines src/interfaces/web/app/session/session.ts"
-]
+["max-lines src/interfaces/web/app/session/session.ts"]

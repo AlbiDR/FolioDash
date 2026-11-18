@@ -2,7 +2,7 @@ import type { SessionState } from "../../../../applications/session/session-mode
 import { useEffect, useState } from "preact/hooks";
 import type { Session } from "./session";
 import type { ExpenseSessionState } from "./expense/expense-session-core";
-import type { CheckpointSessionState } from "./checkpoint-session";
+import type { CheckpointSessionState } from "./checkpoint/checkpoint-session-core";
 
 export function useExpenses(session: Session): ExpenseSessionState {
   const [state, setState] = useState(session.expenses.state);

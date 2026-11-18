@@ -62,6 +62,7 @@ src/
         │   ├── demo/
         │   ├── platform/
         │   ├── session/
+        │   │   ├── checkpoint/
         │   │   ├── checkpoint-suites/
         │   │   ├── expense/
         │   │   ├── expense-suites/
