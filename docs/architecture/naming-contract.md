@@ -23,7 +23,7 @@ Status: **Implemented as a ratchet, 2026-11-17** (organization standard, phase 3
 | Commit subjects | `scripts/verify/project/commit-message.ts`, installed as a local hook by `npm run setup:hooks` | Opt-in; not in CI, because a direct edit on GitHub does not follow it |
 | Branch and tag names | Review only | Not yet enforced |
 
-The ratchet records today's violations in `config/structure-baseline.json`. A new violation fails the check. A recorded violation that has been fixed also fails until it is removed with `npm run verify:structure -- --shrink`, so the record can only get shorter. Limits live in `config/structure.json`. The target is an empty record, at which point the ratchet is simply a blocking rule.
+The check is plainly blocking: any violation fails `npm run verify:structure`. It began as a ratchet with a record of violations (`STD-6`); the record was emptied on 2026-11-18, when the last three oversized files were split, and was then removed. Limits live in `config/structure.json`.
 
 ## Files and folders
 

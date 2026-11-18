@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type SessionDeps } from "../session";
+import type { SessionDeps } from "../stack/session-policy";
 import {
   date,
   statement,

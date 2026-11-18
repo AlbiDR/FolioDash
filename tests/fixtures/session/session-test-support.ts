@@ -9,7 +9,8 @@ import type { RecordRequest } from "../../../src/applications/import/import-mode
 import { presentStatement } from "../../../src/adapters/fideuram/fideuram-presentation";
 import { interpretStatement } from "../../../src/interfaces/web/app/session/interpret-statement";
 import { type KeyValueStore, createLedgerCache } from "../../../src/adapters/browser/storage/ledger-cache";
-import { type SessionDeps, Session } from "../../../src/interfaces/web/app/session/session";
+import { Session } from "../../../src/interfaces/web/app/session/session";
+import type { SessionDeps } from "../../../src/interfaces/web/app/session/stack/session-policy";
 
 export const cents = (value: number): EuroCents => toEuroCents(Math.round(value * 100)) ?? ZERO_CENTS;
 export const date = (text: string): IsoDate => parseIsoDate(text) as IsoDate;

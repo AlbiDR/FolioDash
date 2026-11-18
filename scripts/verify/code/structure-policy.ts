@@ -1,5 +1,5 @@
 // The naming and size contract from docs/architecture/naming-contract.md, as a pure function.
-// Each violation is the string "<rule> <path>", so a violation list can be stored and compared as a ratchet.
+// Each violation is the string "<rule> <path>", so a violation list reads and compares as plain text.
 
 export interface StructureOptions {
   readonly codeExtensions: readonly string[];
@@ -41,17 +41,4 @@ export function structureViolations(files: readonly CodeFile[], options: Structu
     if (count > options.maxCodeFilesPerDirectory) violations.add(`max-files ${directory}`);
   }
   return [...violations].sort();
-}
-
-/** A ratchet tolerates the recorded violations, rejects new ones and demands that fixed ones leave the record. */
-export function ratchet(
-  current: readonly string[],
-  baseline: readonly string[],
-): { readonly added: string[]; readonly fixed: string[] } {
-  const now = new Set(current);
-  const recorded = new Set(baseline);
-  return {
-    added: current.filter((violation) => !recorded.has(violation)),
-    fixed: baseline.filter((violation) => !now.has(violation)),
-  };
 }

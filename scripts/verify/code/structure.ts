@@ -1,17 +1,13 @@
-// Enforces the naming and size contract (docs/architecture/naming-contract.md) as a ratchet.
-// Existing violations are recorded in config/structure-baseline.json and tolerated; a new violation fails, and so
-// does a recorded violation that no longer exists, so the record can only shrink.
-//   npm run verify:structure             check
-//   npm run verify:structure -- --shrink remove recorded violations that are fixed (it never adds one)
-//   npm run verify:structure -- --init   record the current violations once, when no record exists
+// Enforces the naming and size contract (docs/architecture/naming-contract.md). The record of tolerated violations
+// is empty, so the check is plainly blocking (docs/architecture/cleanstack.md STD-6): any violation fails.
+//   npm run verify:structure
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
-import { ratchet, structureViolations, type CodeFile, type StructureOptions } from "./structure-policy.ts";
+import { structureViolations, type CodeFile, type StructureOptions } from "./structure-policy.ts";
 
 const CONFIG = "config/structure.json";
-const BASELINE = "config/structure-baseline.json";
 
 function strings(value: unknown, name: string): string[] {
   if (!Array.isArray(value) || !value.every((item): item is string => typeof item === "string")) {
@@ -57,33 +53,10 @@ const files: CodeFile[] = paths.map((path) => ({
   lines: readFileSync(path, "utf8").split("\n").length - 1,
 }));
 const current = structureViolations(files, options);
-const write = (violations: readonly string[]): void => {
-  writeFileSync(BASELINE, `${JSON.stringify(violations, null, 2)}\n`);
-};
-
-if (process.argv.includes("--init")) {
-  if (existsSync(BASELINE)) throw new Error(`${BASELINE} already exists; the record may only shrink.`);
-  write(current);
-  console.log(`Structure record created: ${String(current.length)} violations recorded.`);
-} else {
-  const baseline = strings(JSON.parse(readFileSync(BASELINE, "utf8")), BASELINE);
-  const { added, fixed } = ratchet(current, baseline);
-  if (process.argv.includes("--shrink")) {
-    write(baseline.filter((violation) => !fixed.includes(violation)));
-    console.log(`Structure record shrunk: ${String(fixed.length)} fixed violations removed.`);
-  } else if (added.length > 0) {
-    console.error(
-      `Structure check failed: ${String(added.length)} new violations of docs/architecture/naming-contract.md.\n${added.join("\n")}`,
-    );
-    process.exit(1);
-  } else if (fixed.length > 0) {
-    console.error(
-      `Structure record is stale: ${String(fixed.length)} recorded violations are fixed. Run npm run verify:structure -- --shrink.\n${fixed.join("\n")}`,
-    );
-    process.exit(1);
-  } else {
-    console.log(
-      `Structure check passed: no new violations; ${String(baseline.length)} recorded violations remain to be fixed.`,
-    );
-  }
+if (current.length > 0) {
+  console.error(
+    `Structure check failed: ${String(current.length)} violations of docs/architecture/naming-contract.md.\n${current.join("\n")}`,
+  );
+  process.exit(1);
 }
+console.log(`Structure check passed: ${String(files.length)} code files, no violation.`);
