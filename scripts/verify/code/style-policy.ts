@@ -1,5 +1,5 @@
 // The style contract as pure functions (docs/architecture/cleanstack.md UXC-12): one token system owns motion and
-// colour, and only cheap properties animate. Each violation is a string that names the rule, the file and the
+// colour, and no layout-forcing property animates. Each violation is a string that names the rule, the file and the
 // declaration, so a finding is specific and stable.
 
 export interface StyleFile {
@@ -15,7 +15,7 @@ const MOTION_PROPERTY = /^(?:transition|animation)(?:-duration|-delay|-timing-fu
 const MOTION_LITERAL =
   /(?<![\w.-])(?:(?:\d*\.?\d*[1-9]\d*m?s|ease(?:-in|-out|-in-out)?)(?![\w-])|cubic-bezier\(|steps\()/;
 const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/;
-// Properties that force layout or paint of other elements when animated; transform and opacity are cheap.
+// Properties that force layout of other elements when animated. Transform, opacity and paint-only properties are not listed.
 const LAYOUT_PROPERTY =
   /(?<![\w-])(?:width|height|min-width|max-width|min-height|max-height|top|left|right|bottom|margin(?:-[a-z]+)?|padding(?:-[a-z]+)?|font-size|line-height|gap|inset|border-width|grid-template-rows|grid-template-columns|stroke-width|all)(?![\w-])/;
 
