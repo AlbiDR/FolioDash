@@ -41,7 +41,7 @@ await withLocalBrowser(
 const { assertions, controlSamples } = counters;
 writeFileSync(
   resolve(output, "report.json"),
-  `${JSON.stringify({ assertions, controlSamples, states: report, problems, limits: ["Synthetic local Chromium only", "Pseudo-state sampling proves CSS response; actual range keys/clicks are tested separately", "Real Google, physical devices, other engines and screen readers not verified"] }, null, 2)}\n`,
+  `${JSON.stringify({ assertions, controlSamples, states: report, problems, limits: ["Synthetic local Chromium only", "Pseudo-state sampling proves CSS response; actual range keys/clicks are tested separately", "Real Google, physical devices, other engines and screen readers not verified", "The fine-pointer card lift is asserted only where the renderer reports a fine pointer; elsewhere the absence of a lift is asserted"] }, null, 2)}\n`,
 );
 if (problems.length) throw new Error(`Interaction audit failed:\n${problems.join("\n")}`);
 console.log(

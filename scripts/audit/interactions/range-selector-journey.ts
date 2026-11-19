@@ -203,13 +203,20 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "(()=>{const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
   )) as { x: number; y: number };
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: hoverCard.x, y: hoverCard.y });
-  // The lift is a 220ms transition that begins at the first style read on a slow renderer, so wait for it to settle rather than sampling a fixed time.
+  // Hover feedback is restricted to fine pointers. Some renderers, including the Linux headless Chrome in CI, report no fine
+  // pointer, and no CDP emulation can change that. So a hovered card must lift where a fine pointer exists and must not lift
+  // where it does not. The lift is a 220ms transition, so a lift is awaited rather than sampled after a fixed delay.
+  const finePointer = (await evaluate("matchMedia('(hover: hover) and (pointer: fine)').matches")) === true;
   await waitFor(
     async () =>
       (await evaluate(
-        "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='0px -2px'&&getComputedStyle(window.auditCard).boxShadow.includes('inset')",
+        finePointer
+          ? "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='0px -2px'&&getComputedStyle(window.auditCard).boxShadow.includes('inset')"
+          : "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='none'",
       )) === true,
-    "fine-pointer card hover lifts the card and brightens its edge",
+    finePointer
+      ? "fine-pointer card hover lifts the card and brightens its edge"
+      : "a renderer without a fine pointer leaves a hovered card unlifted",
   );
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
   await delay(260);
