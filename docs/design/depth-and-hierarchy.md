@@ -1,6 +1,6 @@
 # Depth and hierarchy
 
-Status: **Draft 2026-11-19. Proposed, not implemented.** Owner request after comparing FolioDash with a public studio dashboard: find what makes its screens read as polished, and decide which of those ideas fit FolioDash's contracts. This record changes no token value and no layout. Each decision that changes what a person sees needs the owner's approval before code.
+Status: **Draft 2026-11-19. Owner decided D2 on 2026-11-19: keep the card lift. The other decisions are still proposed, not implemented.** Owner request after comparing FolioDash with a public studio dashboard: find what makes its screens read as polished, and decide which of those ideas fit FolioDash's contracts. This record changes no token value and no layout. Each decision that changes what a person sees needs the owner's approval before code.
 
 Authority: [UI system](ui-system.md) (type, shape, containers and the rules for the next change), [interaction coverage](interaction-coverage.md), [motion layer](motion-layer.md), the [dashboard coherence](dashboard-coherence.md) record, and the financial and privacy rules in [CleanStack](../architecture/cleanstack.md). Where this draft and those records disagree, the existing record stands until the owner decides.
 
@@ -28,7 +28,7 @@ Contrast was computed from the token values in `shared/tokens.css`.
 - Depth comes almost entirely from `--shadow-card` (a 2.5% alpha shadow in light, 12% in dark) and the inset hairline. Cards separate from the page by about 1.1:1.
 - The hero (`.hero`) is the one dark card on Portfolio. It is flat, with `box-shadow: none`, so its emphasis comes from colour alone.
 - No card in the app is a link as a whole, so the card lift added on 2026-11-19 currently applies only to cards with no action.
-- The container rule in [UI system](ui-system.md) says cards have no hover feedback, and that a card is not a button. The 2026-11-19 card lift contradicts it. This is the one place where the code and the design record disagree today.
+- The container rule in [UI system](ui-system.md) said cards have no hover feedback. The 2026-11-19 card lift contradicted it, and the owner decided to keep the lift. The UI system's container paragraph and rule 3 now say so, so the code and the design record agree.
 
 ## Decisions proposed
 
@@ -37,7 +37,7 @@ Contrast was computed from the token values in `shared/tokens.css`.
 - `card`: the default container. Keep the surface and the radius (16px). Strengthen the edge so it can be seen without relying on the shadow (see question 2).
 - `hero`: the one primary figure per screen. Keep the navy. Optionally add a soft shadow token for it, judged visually before adoption.
 
-**D2. Cards do not lift.** A card is a container. Any hover feedback belongs to the link or button inside it, which already has feedback under the interaction contract. The card lift is removed from cards with no action. If a whole card ever becomes a link, it gets its own record and its own audit assertion.
+**D2. Cards keep the fine-pointer lift (decided 2026-11-19).** A card lifts two pixels and brightens its edge on a fine pointer, and nothing inside it moves. That is container feedback, and the UI system now states it. Press and focus feedback still belong to the links and buttons inside the card. If a whole card ever becomes a link, it gets its own record and its own audit assertion.
 
 **D3. One dark primary card per screen.** This matches the demo and the current Portfolio. The hero stays the only inverted card. Other cards do not take the navy.
 
@@ -55,10 +55,11 @@ Out of scope: layout changes, new components, the timeline or scheduling ideas f
 
 - **Contrast.** Each token pair in the table above is measured again after any change, in light and dark. The method is the WCAG relative-luminance ratio from the resolved token values.
 - **Visual review.** Before and after screenshots of Portfolio, light and dark, on desktop and phone. Markup changes also re-run the README capture (UI system rule 6), because the main verification does not cover it.
-- **Audits.** The range journey currently asserts that a hovered card lifts (`0px -2px`). If D2 is accepted, that assertion changes to the opposite: a hovered card with no action does not lift, while its links keep their feedback. Reduced motion is unaffected, because this record adds no motion.
+- **Audits.** The range journey asserts that a hovered card lifts (`0px -2px`) where a fine pointer exists, and that it stays unlifted where none does. Both stay as they are, because D2 keeps the lift. Reduced motion is unaffected, because this record adds no motion.
 
 ## Questions for the owner
 
-1. **D2.** Accept removing the card lift from cards with no action? This reverses part of the 2026-11-19 approval. The draft recommends it, because no card is a link as a whole.
-2. **Edge contrast.** The edge is currently 1.24 to 1.32:1. WCAG 1.4.11 asks for 3:1 only where a boundary is needed to identify an interactive component, and cards are not controls. Should the card edge be raised to a measured middle, such as at least 1.5:1, and reviewed for accessibility? The draft recommends that, and not 3:1, which would look heavy on every card.
-3. **Astryx depth patterns.** Should the Astryx elevation and card patterns be reviewed before D1 is decided? The draft has not done that review.
+1. **Edge contrast.** The edge is currently 1.24 to 1.32:1. WCAG 1.4.11 asks for 3:1 only where a boundary is needed to identify an interactive component, and cards are not controls. Should the card edge be raised to a measured middle, such as at least 1.5:1, and reviewed for accessibility? The draft recommends that, and not 3:1, which would look heavy on every card.
+2. **Astryx depth patterns.** Should the Astryx elevation and card patterns be reviewed before D1 is decided? The draft has not done that review.
+
+Decided: D2, keep the fine-pointer card lift (owner, 2026-11-19).
