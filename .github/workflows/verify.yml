@@ -115,6 +115,21 @@ jobs:
           name: web-build
           path: dist/web
 
+      # The rendered audits measure text and geometry. Naming the browser and the font that the system stack resolves to
+      # lets a geometry failure be read against the runner it ran on, and a missing browser fails here, not in the audit.
+      - name: Check the browser and the system font
+        run: |
+          if ! command -v google-chrome > /dev/null; then
+            echo "::error::Google Chrome is required for the rendered audits."
+            exit 1
+          fi
+          google-chrome --version
+          if command -v fc-match > /dev/null; then
+            echo "system-ui resolves to: $(fc-match system-ui)"
+          else
+            echo "fc-match is not installed, so the system font is unknown."
+          fi
+
       - name: Audit the built site in Chrome
         timeout-minutes: 6
         run: npm run audit:rendered
