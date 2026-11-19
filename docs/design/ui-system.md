@@ -87,7 +87,7 @@ Every interactive control inherits the [interaction coverage contract](interacti
 
 ### Containers
 
-A card is allowed for the one primary group of a screen, a chart, a list scanned row by row, and an outcome panel. Rows, hairlines and spacing do everything else. Cards, charts and stat blocks have no hover, focus or press feedback of their own; the links and buttons inside carry it. Hover applies only to things that can be pressed, and only under `(hover: hover) and (pointer: fine)`.
+A card is allowed for the one primary group of a screen, a chart, a list scanned row by row, and an outcome panel. Rows, hairlines and spacing do everything else. A card lifts two pixels and brightens its edge on a fine pointer (`(hover: hover) and (pointer: fine)`). That lift is container feedback, the one hover a card has, and nothing inside the card moves. Cards, charts and stat blocks have no press or focus feedback of their own; the links and buttons inside carry it. Hover applies only to things that can be pressed, and to cards on a fine pointer.
 
 ### Wide screens
 
@@ -139,7 +139,7 @@ Also checked:
 
 1. Pick a type role and a shape; do not add a size or a radius.
 2. Reach for an existing part before writing one: key and value list, disclosure group, notice, banner, table or `.facts` list, `fieldset`.
-3. A static element gets no hover. A card is not a button.
+3. A static element gets no hover, except a card's fine-pointer lift, which is its one container feedback. A card is never a button.
 4. Put the action of a notice on its own row.
 5. Do not use `!important` to win an order fight; fix the specificity or the order.
 6. Re-run the README capture after any markup change, because the main verification does not cover it.
