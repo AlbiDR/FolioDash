@@ -29,7 +29,8 @@ How the interface looks, moves and is organised.
 | [Dashboard coherence](design/dashboard-coherence.md) | Product narrative, progressive bento hierarchy, consistent supporting workflows and detail refinement | Partly superseded 2026-11-08 by the structural redesign; product narrative and later financial/chart amendments remain; historical results retained |
 | [Work expenses experience plan](design/work-expenses-experience.md) | Consolidated product narrative, navigation, bento composition, daily journeys, motion and implementation sequence; includes a static layout study | Partly superseded 2026-11-08 by the structural redesign for layout and order; domain, privacy and recovery rules remain; design rationale retained |
 | [Interaction coverage](design/interaction-coverage.md) | Complete source control inventory, shared feedback contract, rendered discovery and state-by-state coverage gaps | Source audit and shared control implementation; browser evidence tracked in the document |
-| [Motion layer](design/motion-layer.md) | Proposed shared motion primitives, behaviour-neutral migration order and the proof each step needs | Proposed 2026-11-19; not started |
+| [Motion layer](design/motion-layer.md) | Shared motion primitives, behaviour-neutral migration order, stylesheet owners and the proof each step needs | Steps 1 to 5 done 2026-11-19; step 4 closed without code |
+| [Depth and hierarchy](design/depth-and-hierarchy.md) | Depth levels for cards, hero emphasis, card hover policy and edge contrast, from a comparison with a public dashboard | Draft 2026-11-19; not implemented, owner decisions open |
 
 ## Operations
 
