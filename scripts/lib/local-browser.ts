@@ -4,6 +4,11 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { stripVTControlCharacters } from "node:util";
+import { PermanentStartupError, startWithRetries } from "./startup-retry.ts";
+
+/** Chrome occasionally starts without exposing its debugging port on a shared runner. A fresh profile usually fixes
+ * that, so start-up gets a bounded number of attempts. Assertion failures are never retried. */
+const CHROME_START_ATTEMPTS = 3;
 
 export interface LocalBrowser {
   readonly origin: string;
@@ -17,6 +22,29 @@ export interface LocalBrowser {
   readonly waitFor: (check: () => Promise<boolean>, description: string) => Promise<void>;
 }
 
+function errorText(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/** The first line of a browser exception, so a failure names its check without the whole stack. */
+function exceptionSummary(details: unknown): string {
+  if (typeof details !== "object" || details === null) return "";
+  const record = details as Record<string, unknown>;
+  const exception = record["exception"];
+  const description =
+    typeof exception === "object" && exception !== null
+      ? (exception as Record<string, unknown>)["description"]
+      : undefined;
+  const text = typeof description === "string" ? description : record["text"];
+  const line = typeof text === "string" ? (text.split("\n")[0] ?? "").slice(0, 200) : "";
+  return line === "" ? "" : `: ${line}`;
+}
+
+/** Names an origin the page tried to reach. An opaque origin, such as a data: URL, has no host to show. */
+function describeOrigin(url: URL): string {
+  return url.origin === "null" ? `${url.protocol} (opaque)` : url.origin;
+}
+
 /** Fresh signed-out browser, production preview, service-worker bypass and local-only network.
  * Shared by README capture and the interaction audit; never attaches to a person's browser. */
 export async function withLocalBrowser(
@@ -28,7 +56,8 @@ export async function withLocalBrowser(
   const chromePath =
     process.env["CHROME_PATH"] ??
     (process.platform === "darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" : "google-chrome");
-  const profile = mkdtempSync(join(tmpdir(), "foliodash-readme-"));
+  // Each Chrome attempt gets its own profile. The directory is empty until the first attempt creates it.
+  let profile = "";
   const pending = new Map<
     number,
     {
@@ -69,7 +98,8 @@ export async function withLocalBrowser(
 
   async function evaluate(expression: string): Promise<unknown> {
     const response = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
-    if (response["exceptionDetails"] !== undefined) throw new Error("Browser evaluation failed.");
+    if (response["exceptionDetails"] !== undefined)
+      throw new Error(`Browser evaluation failed${exceptionSummary(response["exceptionDetails"])}.`);
     return object(response["result"])["value"];
   }
 
@@ -89,7 +119,8 @@ export async function withLocalBrowser(
       awaitPromise: true,
       returnByValue: true,
     });
-    if (response["exceptionDetails"] !== undefined) throw new Error("Browser evaluation failed.");
+    if (response["exceptionDetails"] !== undefined)
+      throw new Error(`Browser evaluation failed${exceptionSummary(response["exceptionDetails"])}.`);
     return object(response["result"])["value"];
   }
 
@@ -98,7 +129,7 @@ export async function withLocalBrowser(
     const url = new URL(String(request["url"]));
     if (url.origin === ORIGIN) await call("Fetch.continueRequest", { requestId: params["requestId"] });
     else {
-      blockedOrigins.add(url.origin);
+      blockedOrigins.add(describeOrigin(url));
       await call("Fetch.failRequest", { requestId: params["requestId"], errorReason: "BlockedByClient" });
     }
   }
@@ -111,8 +142,14 @@ export async function withLocalBrowser(
         if (operation === undefined) return;
         pending.delete(response["id"]);
         clearTimeout(operation.timer);
-        if (response["error"] !== undefined) operation.reject(new Error("Browser command failed."));
-        else operation.resolve(object(response["result"]));
+        if (response["error"] !== undefined) {
+          const failure = response["error"];
+          const reason =
+            typeof failure === "object" && failure !== null
+              ? (failure as Record<string, unknown>)["message"]
+              : undefined;
+          operation.reject(new Error(`Browser command failed${exceptionSummary({ text: reason })}.`));
+        } else operation.resolve(object(response["result"]));
       } else if (response["method"] === "Fetch.requestPaused") {
         void intercept(object(response["params"])).catch(() => {
           browserErrors.push("Network interception failed.");
@@ -152,7 +189,7 @@ export async function withLocalBrowser(
     await waitFor(
       async () => {
         if (chrome?.exitCode !== null && chrome?.exitCode !== undefined)
-          throw new Error(`Chrome exited during startup (${String(chrome.exitCode)}). ${chromeDiagnostics}`);
+          throw new Error(`Chrome exited during startup (${String(chrome.exitCode)}).`);
         try {
           const debugPort = Number(readFileSync(join(profile, "DevToolsActivePort"), "utf8").split("\n")[0]);
           if (!Number.isInteger(debugPort) || debugPort <= 0) return false;
@@ -209,6 +246,58 @@ export async function withLocalBrowser(
     });
   }
 
+  // Starts one Chrome attempt with a fresh profile. A failed attempt releases its process, socket and profile first.
+  async function discardAttempt(): Promise<void> {
+    socket?.close();
+    socket = undefined;
+    await stop(chrome);
+    chrome = undefined;
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  }
+
+  async function startChrome(): Promise<void> {
+    profile = mkdtempSync(join(tmpdir(), "foliodash-readme-"));
+    chromeDiagnostics = "";
+    const started = spawn(
+      chromePath,
+      [
+        "--headless",
+        "--disable-gpu",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--hide-scrollbars",
+        "--remote-debugging-port=0",
+        `--user-data-dir=${profile}`,
+        "about:blank",
+      ],
+      { stdio: ["ignore", "ignore", "pipe"] },
+    );
+    chrome = started;
+    started.stderr.on("data", (chunk: Buffer) => {
+      chromeDiagnostics = (chromeDiagnostics + stripVTControlCharacters(chunk.toString())).slice(-8000);
+    });
+    // Listen before the check below: an unlaunchable executable reports an error event on the next tick.
+    started.on("error", () => {
+      browserErrors.push("Could not start Chrome. Check CHROME_PATH.");
+    });
+    if (started.pid === undefined) {
+      await discardAttempt();
+      throw new PermanentStartupError("Could not start Chrome. Check CHROME_PATH.");
+    }
+    try {
+      await connectBrowser();
+    } catch (error) {
+      await discardAttempt();
+      const reason = errorText(error).replace(/\.$/u, "");
+      throw new Error(
+        `Could not connect to the fresh synthetic Chrome profile. ${reason}.${chromeDiagnostics === "" ? "" : `\n${chromeDiagnostics}`}`,
+        { cause: error },
+      );
+    }
+  }
+
   try {
     preview = spawn(
       process.execPath,
@@ -234,35 +323,15 @@ export async function withLocalBrowser(
       browserErrors.push("Could not start the local preview.");
     });
     await waitFor(localReady, "the local production preview");
-    chrome = spawn(
-      chromePath,
-      [
-        "--headless",
-        "--disable-gpu",
-        "--disable-background-networking",
-        "--disable-component-update",
-        "--no-first-run",
-        "--no-default-browser-check",
-        "--hide-scrollbars",
-        "--remote-debugging-port=0",
-        `--user-data-dir=${profile}`,
-        "about:blank",
-      ],
-      { stdio: ["ignore", "ignore", "pipe"] },
-    );
-    chrome.stderr?.on("data", (chunk: Buffer) => {
-      chromeDiagnostics = (chromeDiagnostics + stripVTControlCharacters(chunk.toString())).slice(-8000);
+    await startWithRetries("Starting the synthetic Chrome", startChrome, {
+      attempts: CHROME_START_ATTEMPTS,
+      onRetry: (error, nextAttempt) => {
+        const firstLine = errorText(error).split("\n")[0] ?? "";
+        console.warn(
+          `${firstLine} Retrying with a fresh profile (attempt ${String(nextAttempt)} of ${String(CHROME_START_ATTEMPTS)}).`,
+        );
+      },
     });
-    chrome.on("error", () => {
-      browserErrors.push("Could not start Chrome. Check CHROME_PATH.");
-    });
-    try {
-      await connectBrowser();
-    } catch (error) {
-      throw new Error(`Could not connect to the fresh synthetic Chrome profile. ${chromeDiagnostics}`, {
-        cause: error,
-      });
-    }
     await call("Runtime.enable");
     await call("Page.enable");
     await call("Network.enable");
@@ -270,8 +339,9 @@ export async function withLocalBrowser(
     await call("Fetch.enable", { patterns: [{ urlPattern: "*", requestStage: "Request" }] });
     await run({ origin: ORIGIN, call, evaluate, evaluateWith, waitFor });
     if (browserErrors.length > 0 || blockedOrigins.size > 0) {
+      const names = [...blockedOrigins].slice(0, 5).join(", ");
       throw new Error(
-        `Browser check failed: ${browserErrors.join(" ") || "no runtime errors"}; ${String(blockedOrigins.size)} nonlocal origin(s) blocked.`,
+        `Browser check failed: ${browserErrors.join(" ") || "no runtime errors"}; ${String(blockedOrigins.size)} nonlocal origin(s) blocked${names === "" ? "" : `: ${names}`}.`,
       );
     }
   } finally {
@@ -294,6 +364,6 @@ export async function withLocalBrowser(
     await stop(chrome, closingBrowser);
     await stop(preview);
     // Chrome helpers can finish profile writes just after its main process exits.
-    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    if (profile !== "") rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 }
