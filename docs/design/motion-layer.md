@@ -1,6 +1,6 @@
 # Motion layer
 
-Status: **Revised 2026-11-19 after review. Steps 1 to 3 done; step 4 closed without code, because its conditions are not met.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, the bar morph and presence use them. The changes are behaviour-neutral: the rendered audits pass, and the import journey also asserts presence shifts. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
+Status: **Revised 2026-11-19 after review. Steps 1 to 3 done; step 4 closed without code, because its conditions are not met; step 5 recorded the motion stylesheets and their owners.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, the bar morph and presence use them. The changes are behaviour-neutral: the rendered audits pass, and the import journey also asserts presence shifts. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-12, UXC-13 and ARC-13, the [interaction coverage](interaction-coverage.md) contract and the [rendered interaction audit](../operations/interactions.md). Architecture, not a redesign, so the [Astryx reference](astryx-reference.md) is not the governing reference for the mechanics. Any visual change still follows its own design record.
 
@@ -47,6 +47,32 @@ Each step is behaviour-neutral, so the built output and the audits must not chan
 3. **Chart hooks and page motion.** Move `use-geometry-morph.ts`, `use-update-fade.ts` and `use-page-motion.ts` onto Animate and Settle. Check the chart geometry tests and the reduced-motion audit. Done: the update fade and the geometry morph run on Animate and Settle, and a new geometry still replaces a morph in progress. The page controller keeps its handler order and its timeouts, so the page motion tests are unchanged. A route check in the range journey proves the exit and arrival in the browser, since no audit covered them before.
 4. **Reorder, and Tween when a consumer exists.** Generalise the reorder technique only when a second keyed consumer needs it. Closed 2026-11-19 without code. The only user-driven reorder is the holdings sort, which the row glide already serves on both the table and the phone list. The bar morph is keyed by month, but a period change triggers it and it applies an affine map, so it is a different motion and not a second reorder. No animation-frame caller tweens a value, so no tween is built. Revisit when a second user-driven reorder appears, or when a value needs to count up.
 5. **Remove duplicated timing and inventory the CSS.** Delete constants the migrated code no longer uses, regenerate the interaction inventory (UXC-4), and list every motion stylesheet with its owner.
+
+## Motion stylesheets and their owners (step 5, 2026-11-19)
+
+Seventeen stylesheets carry transitions, animations or keyframes. Each has one owner: the design record that governs its area. The owners are proposed here and can change when a record changes hands. Step 5 moved no value and changed no motion. It recorded the list and corrected a comment that had gone stale. No constant was dead: every motion token is read somewhere, and each exported helper is used by its own module or by its tests, so there was nothing to delete.
+
+| Stylesheet | Motion it holds | Owner |
+|---|---|---|
+| `shared/ui/control-feedback.css` | press, hover and focus feedback for every semantic control | [Interaction coverage](interaction-coverage.md) |
+| `shared/ui/interactions/controls.css` | control feedback for the numbered additions | [Interaction coverage](interaction-coverage.md) |
+| `shared/ui/interactions/content.css` | disclosure opening and closing, guide and confirmation cues | [Interaction coverage](interaction-coverage.md) |
+| `shared/ui/motion/refinement.css` | arrivals, surfaces, presence and card hover | This record |
+| `shared/ui/motion/navigation-and-workflow.css` | navigation and workflow motion | This record |
+| `shared/ui/motion/charts-and-content.css` | legend and content-state feedback | This record; chart marks follow [interaction coverage](interaction-coverage.md) |
+| `shared/ui/motion/static-and-native.css` | native and static elements, and the sparkline area | This record |
+| `presentation/charts/charts.css` | chart series reveal and emphasis | [Interaction coverage](interaction-coverage.md) |
+| `app/styles/shell.css` | sidebar and layout transitions | [UI system](ui-system.md) |
+| `app/styles/page-chrome.css` | page identity, page arrival and global controls | [UI system](ui-system.md) |
+| `app/styles/controls-and-charts.css` | segmented controls and their feedback | [UI system](ui-system.md) |
+| `app/styles/forms-and-buttons.css` | form labels and import screens | [UI system](ui-system.md) |
+| `app/styles/tables.css` | table row feedback | [UI system](ui-system.md) |
+| `app/styles/content-and-notices.css` | notice and busy-state motion | [UI system](ui-system.md) |
+| `features/overview/styles/holdings-and-attention.css` | holdings share bars and attention | [Dashboard coherence](dashboard-coherence.md) |
+| `features/expenses/styles/categories-and-record.css` | expense categories and record arrival | [Work and expenses](work-expenses-experience.md) |
+| `features/expenses/styles/responsive-and-hover.css` | expense layout and hover | [Work and expenses](work-expenses-experience.md) |
+
+A check that every motion stylesheet appears in this table is not yet part of `npm run verify`. Adding one would stop the list drifting, and it is the next thing to propose if the table is kept.
 
 ## Proof
 
