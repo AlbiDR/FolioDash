@@ -7,7 +7,7 @@ Open decisions: the owner's private decision register
 
 These are product/release requirements, not optional polish. The repository now has a local PWA, CI and tests. Individual requirements still need their named evidence; implementation does not imply full acceptance.
 
-FD-013 selects GitHub frontend delivery with user-owned private Google Sheets and an Apps Script service. [Google-backed architecture](../architecture/google-sheets-backend.md) owns its storage/transport protocol and FD-014 proof gates; a separate database is not assumed. A GitHub secret cannot supply private browser-runtime access. Live browser-to-Google feasibility is NOT RUN.
+FD-013 selects GitHub frontend delivery with user-owned private Google Sheets; FD-017 moved browser access to direct Sheets access, and the Apps Script service was removed on 2026-11-19. [Google-backed architecture](../architecture/google-sheets-backend.md) owns its storage/transport protocol and FD-014 proof gates; a separate database is not assumed. A GitHub secret cannot supply private browser-runtime access. Live browser-to-Google feasibility is NOT RUN.
 
 ## 1. User-facing journeys
 
@@ -95,7 +95,7 @@ Initial design targets, **not measured results**:
 - Import preparation does not repeatedly rebuild dashboards; commit refreshes the affected coherent projections.
 - XLSX parsing and chart dependencies load on demand where appropriate, not on the public/login critical path.
 - Cache coherent reads within their explicit lifetime; never cache away authorisation or commit/revision checks.
-- Batch Apps Script/Sheets reads and writes; no sheet formatting, resizing or spreadsheet chart construction in the service path. Measure actual API execution/consent/round-trip latency and quota failures, not just local parsing.
+- Batch Sheets reads and writes; no sheet formatting, resizing or spreadsheet chart construction in the service path. Measure actual API execution/consent/round-trip latency and quota failures, not just local parsing.
 
 FD-012 must set actual reference devices, dataset sizes, network conditions, warm/cold definitions, end-to-end import/selection targets and bundle budgets before performance is accepted. Measure multiple runs and report median and tail/worst cases, including file selection, parsing, review, server confirmation and sync separately. Exclude human review time only when explicitly stated.
 

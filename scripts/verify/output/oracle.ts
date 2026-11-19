@@ -9,8 +9,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import process from "node:process";
 import { digestDifferences, digestTree, parseDigest } from "./oracle-snapshot.ts";
 
-// Only the two build outputs: dist/ also collects audit reports and other files that are not product.
-const OUTPUTS = ["web", "apps-script"] as const;
+// Only the build output: dist/ also collects audit reports and other files that are not product.
+const OUTPUTS = ["web"] as const;
 const [mode, file] = process.argv.slice(2);
 
 if ((mode !== "write" && mode !== "check") || file === undefined) {
@@ -19,9 +19,7 @@ if ((mode !== "write" && mode !== "check") || file === undefined) {
 }
 
 const env = { ...process.env, FOLIODASH_BUILD_STAMP: "oracle" };
-for (const script of ["build", "build:apps-script"]) {
-  execFileSync("npm", ["run", "--silent", script], { env, stdio: ["ignore", "ignore", "inherit"] });
-}
+execFileSync("npm", ["run", "--silent", "build"], { env, stdio: ["ignore", "ignore", "inherit"] });
 const current = Object.fromEntries(
   OUTPUTS.flatMap((output) =>
     Object.entries(digestTree(`dist/${output}`)).map(([name, digest]) => [`${output}/${name}`, digest]),

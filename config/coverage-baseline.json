@@ -11,10 +11,6 @@
     "lines": 97.8,
     "branches": 92.4
   },
-  "src/interfaces/server": {
-    "lines": 45.1,
-    "branches": 100
-  },
   "src/interfaces/web/app": {
     "lines": 69.6,
     "branches": 61.3

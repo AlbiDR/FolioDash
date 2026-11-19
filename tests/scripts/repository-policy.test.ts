@@ -101,8 +101,6 @@ describe("dependency law", () => {
     [feature, otherFeature],
     [shared, core],
     [shared, presentation],
-    [app, "src/interfaces/server/main.ts"],
-    [app, "src/adapters/appsscript/SheetsRowSheet.ts"],
   ])("rejects %s -> %s", (from, to) => {
     expect(allowedDependency(from, to)).toBe(false);
   });
@@ -171,24 +169,4 @@ describe("dependency law", () => {
       ]),
     ).toEqual([]);
   });
-});
-
-it("rejects browser-to-server dependencies hidden behind an intermediate adapter", () => {
-  expect(
-    architectureProblems([
-      { file: app, text: 'import "../../../adapters/google/Rest";' },
-      { file: adapter, text: 'import "../appsscript/SheetsRowSheet";' },
-      { file: "src/adapters/appsscript/SheetsRowSheet.ts", text: "" },
-    ]).join("\n"),
-  ).toContain("Browser dependency reaches forbidden environment");
-});
-
-it("rejects server-to-browser dependencies hidden behind an intermediate adapter", () => {
-  expect(
-    architectureProblems([
-      { file: "src/interfaces/server/main.ts", text: 'import "../../adapters/google/Rest";' },
-      { file: adapter, text: 'import "../browser/GoogleIdentity";' },
-      { file: "src/adapters/browser/GoogleIdentity.ts", text: "" },
-    ]).join("\n"),
-  ).toContain("Server dependency reaches forbidden environment");
 });

@@ -9,7 +9,6 @@ Implemented 2026-11-04 under the owner's organization audit request. Architectur
 | `src/core/` | Pure financial values, ledger invariants and canonical calculations |
 | `src/applications/` | Use cases, ports and shared workflow contracts; source and session value contracts |
 | `src/adapters/` | External formats, Google transport, ledger persistence and concrete browser identity/storage under `browser/` |
-| `src/interfaces/server/` | Retained Apps Script composition and service entry |
 | `src/interfaces/web/app/` | Browser composition, routing, session orchestration and infrastructure wiring; concrete browser identity/storage implementations belong in adapters |
 | `src/interfaces/web/features/` | Isolated account, import, history and overview workflows; overview data selection and chart ranges |
 | `src/interfaces/web/presentation/` | Domain-aware chart and amount/privacy presentation shared by workflows |
@@ -19,15 +18,15 @@ Implemented 2026-11-04 under the owner's organization audit request. Architectur
 | `tests/` | Synthetic fixtures and checks spanning layers; unit tests stay adjacent to their subject |
 | `scripts/`, `config/`, `docs/`, `.github/` | Tooling, explicitly addressed settings, documentation and GitHub discovery metadata |
 
-There are no empty directories for future migrations or services. The retained Apps Script implementation has an explicit FD-017 removal condition; it is not an accidental second implementation to delete during cleanup. Local user-supplied legacy/private folders are not production dependencies and are outside this audit's migration authority.
+There are no empty directories for future migrations or services. Local user-supplied legacy/private folders are not production dependencies and are outside this audit's migration authority.
 
 ## Reproducible checks
 
 `npm run verify:repository` checks tracked files plus new non-ignored files. Deleted working-tree files are omitted, so a move can be verified before staging. CI sees the committed checkout. It enforces the current root entry allowlist, known generated/private artifact paths and extensions, source-layer ownership, import direction and production dependency cycles.
 
-The TypeScript syntax walker checks relative imports, type-only imports, re-exports, literal dynamic imports, import type expressions and CommonJS import syntax. Nonliteral module loads, unresolved aliases and unapproved external packages fail closed. Production source cannot import tests or fixtures. Adjacent tests may cross layers and use test dependencies; they are excluded from the production dependency graph. CSS is resolved as a web style dependency, not parsed as TypeScript. The checker does not analyze CSS dependency direction. Transitive source dependencies are also traversed to prevent browser roots from reaching server/Apps Script implementations, or server roots from reaching browser implementations, through intermediate adapters.
+The TypeScript syntax walker checks relative imports, type-only imports, re-exports, literal dynamic imports, import type expressions and CommonJS import syntax. Nonliteral module loads, unresolved aliases and unapproved external packages fail closed. Production source cannot import tests or fixtures. Adjacent tests may cross layers and use test dependencies; they are excluded from the production dependency graph. CSS is resolved as a web style dependency, not parsed as TypeScript. The checker does not analyze CSS dependency direction. Transitive source dependencies are also traversed through intermediate adapters, so the layer rules cannot be bypassed by an indirect import.
 
-The UI external-package allowlist covers the selected Preact and d3 modules. Core and applications cannot import runtime packages. The worker imports only within its area. The browser app cannot import server entry points or Apps Script adapters. Import cycles include type-only edges, keeping contracts independent of the implementations that consume them.
+The UI external-package allowlist covers the selected Preact and d3 modules. Core and applications cannot import runtime packages. The worker imports only within its area. Import cycles include type-only edges, keeping contracts independent of the implementations that consume them.
 
 `tests/scripts/repository-policy.test.ts` exercises approved entry points and deliberate violations: private/generated paths, forbidden layer directions, cross-feature imports, barrels, dynamic imports, unresolved dependencies and cycles. `npm run verify` runs the checker before types, lint, tests and builds. Existing CI invokes that command, so no duplicate verification policy is needed.
 
@@ -91,7 +90,7 @@ Raw line totals are not compared: Prettier expanded the code and stylesheets, an
 
 ## Content check, pinned actions and commit subjects, 2026-11-18
 
-`npm run verify:content` ends `verify`, where the build output exists. It scans every tracked text file and the built `dist/web` and `dist/apps-script` for private keys, Google client secrets, API keys and access or refresh tokens, GitHub tokens, IBANs whose ISO 13616 check digit is right, and Italian fiscal codes. It reports the file and line and never the matched text. GitHub's own secret scanning and push protection stay on; this adds the financial identifiers they do not know and the files that ship to a visitor. It cannot read meaning: a real amount or a name written in prose is not caught, and a public OAuth client ID is deliberately not flagged because it is public by design.
+`npm run verify:content` ends `verify`, where the build output exists. It scans every tracked text file and the built `dist/web` for private keys, Google client secrets, API keys and access or refresh tokens, GitHub tokens, IBANs whose ISO 13616 check digit is right, and Italian fiscal codes. It reports the file and line and never the matched text. GitHub's own secret scanning and push protection stay on; this adds the financial identifiers they do not know and the files that ship to a visitor. It cannot read meaning: a real amount or a name written in prose is not caught, and a public OAuth client ID is deliberately not flagged because it is public by design.
 
 `npm run verify:workflows` also fails when any `uses:` in a workflow is not a full commit SHA or a local path, so a bad edit fails before GitHub's runtime setting would reject it.
 
@@ -115,7 +114,7 @@ The phase 5 splits were validated by evidence, not by the byte oracle: the built
 
 ## Built-output oracle
 
-A reorganization must not change a built byte. `npm run verify:oracle -- write <file>` builds the web app and the Apps Script bundle with a pinned stamp and records the SHA-256 of every built file except source maps. `npm run verify:oracle -- check <file>` builds the same way and fails on any added, removed or changed file. The snapshot holds hashes only.
+A reorganization must not change a built byte. `npm run verify:oracle -- write <file>` builds the web app with a pinned stamp and records the SHA-256 of every built file except source maps. `npm run verify:oracle -- check <file>` builds the same way and fails on any added, removed or changed file. The snapshot holds hashes only.
 
 The normal web build stamps the git revision, a `-dirty` flag and the current minute into the bundle. Content-hashed filenames cascade from that stamp, so any uncommitted change or minute boundary renames every output file. `FOLIODASH_BUILD_STAMP` pins the whole label; the oracle sets it and normal builds do not.
 

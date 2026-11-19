@@ -1,5 +1,4 @@
-// SHA-256 in plain code, so the same checksum can be computed in the browser and
-// in Apps Script without depending on either runtime's crypto API.
+// SHA-256 in plain code, so the same checksum can be computed without depending on a runtime's crypto API.
 
 const ROUND_CONSTANTS = new Uint32Array([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,

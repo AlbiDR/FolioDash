@@ -42,7 +42,7 @@ describe("pinned actions", () => {
 describe("workflow names", () => {
   it("accepts a file named for its display name, including a proper noun", () => {
     expect(workflowNameViolations("codeql.yml", "name: CodeQL\n")).toEqual([]);
-    expect(workflowNameViolations("deploy-apps-script.yml", "name: Deploy Apps Script\n")).toEqual([]);
+    expect(workflowNameViolations("release-site.yml", "name: Release site\n")).toEqual([]);
     expect(
       workflowNameViolations("deploy-site.yml", "name: Deploy site\n\njobs:\n  release:\n    name: Verify\n"),
     ).toEqual([]);

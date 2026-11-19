@@ -18,7 +18,7 @@ export interface AreaCoverage {
 
 export type Floors = Readonly<Record<string, AreaCoverage>>;
 
-/** `src/core/values/money.ts` belongs to `src/core`; interfaces are split deeper (`src/interfaces/server`, `src/interfaces/web/features`). */
+/** `src/core/values/money.ts` belongs to `src/core`; interfaces are split deeper (`src/interfaces/web/features`). */
 export function areaOf(path: string): string {
   const parts = path.split("/");
   const depth = path.startsWith("src/interfaces/web/") ? 4 : path.startsWith("src/interfaces/") ? 3 : 2;

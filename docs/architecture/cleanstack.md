@@ -57,11 +57,11 @@ Git is authoritative for code, schema, and static assets, **not a store of the u
 
 - **ARC-1** FolioDash is a static PWA built and published from GitHub. The repository, its builds and the public demonstration contain synthetic data only. Implemented: GitHub Pages serves the artifact checked by CI.
 - **ARC-2** The person's own Google spreadsheet holds the ledger. The browser signs the person in with the narrow `drive.file` permission, creates and finds that spreadsheet, and reads and writes it through the Sheets API. No FolioDash server, database provider or per-person deployment exists. Decided (FD-017) and Implemented; proof on a real Google account is Open.
-- **ARC-3** The Apps Script service in `src/interfaces/server` and its deploy workflow are superseded by ARC-2. They are removed only after the live proof (FD-017) and MUST NOT be a dependency of the browser build.
-- **ARC-4** There is one calculation kernel and one versioned policy. The browser and Apps Script builds MUST preserve the same kernel semantics. A formula is never duplicated in a component, a report or a chart callback.
+- **ARC-3** The Apps Script service and its deploy workflow were removed on 2026-11-19 by the owner's decision, before the FD-017 live proof was recorded. The direct browser route (ARC-2) is the only service path, its live proof is still open, and the browser build MUST NOT depend on any server-side runtime.
+- **ARC-4** There is one calculation kernel and one versioned policy. The browser build MUST preserve the same kernel semantics whenever the kernel changes. A formula is never duplicated in a component, a report or a chart callback.
 - **ARC-5** The Google direction stores readable records in a private workbook. It does not claim FolioDash end-to-end encryption; an E2EE variant needs a superseding decision and a different validation contract (section 8).
 - **ARC-6** GitHub secrets belong to CI and deployment, never to the browser runtime. A static site cannot keep a secret, and a public OAuth client ID is not a credential. See [Google-backed architecture](google-sheets-backend.md).
-- **ARC-7** The stack is TypeScript, Preact, Vite, npm with one lockfile, Vitest, ESLint with typescript-eslint, `d3-scale`, `d3-shape` and `d3-array` for SVG charts, esbuild for the Apps Script bundle, Prettier for formatting, and GitHub Pages for hosting (FD-008). Changing a runtime, framework, package manager or test tool is an amendment. Pages visibility, the production origin and deployment tooling stay Open.
+- **ARC-7** The stack is TypeScript, Preact, Vite, npm with one lockfile, Vitest, ESLint with typescript-eslint, `d3-scale`, `d3-shape` and `d3-array` for SVG charts, esbuild for the history benchmark, Prettier for formatting, and GitHub Pages for hosting (FD-008). Changing a runtime, framework, package manager or test tool is an amendment. Pages visibility, the production origin and deployment tooling stay Open.
 - **ARC-8** There is one dependency manifest and no monorepo or package catalogue until a demonstrated packaging need exists.
 
 The layers and the imports each may make, as the repository enforces them:
@@ -102,11 +102,6 @@ layers:
     path: src/interfaces/web/service-worker
     allowed_imports: []
     role: public-asset-cache-policy-and-worker-entry
-  - id: server
-    path: src/interfaces/server
-    allowed_imports: [applications, core, adapters]
-    forbidden_imports: [web]
-    role: composition-root
 ```
 
 - **ARC-9** Imports follow the layers above. `npm run verify:repository` enforces this for relative, type-only, re-exported and literal dynamic imports, for cycles including type-only edges, for browser/server isolation through intermediate adapters, and for production source never importing tests or fixtures. The [repository map](repository-map.md) draws the real graph.
@@ -325,7 +320,7 @@ The organization standard is adopted in eleven phases. All eleven phases are in 
 
 - **GAT-1** A capability is called supported only with evidence in its category: **kernel** (independent examples and properties for exact cents, flows versus gains, lifecycle, missing data, baselines and deterministic replay); **parsing** (synthetic exports, blanks, European separators, invalid identifiers and subtotals, duplicates, unsupported and formula files, bounded hostile XLSX); **commit** (idempotency, stale previews, two-device races, timeouts, lost acknowledgements, corrections and atomic recovery); **security and privacy** (authorisation across two accounts, forbidden upload, log and build payload checks, cache isolation, session expiry, deletion); **PWA and browser** (real rendered charts and source values, install and update, local-file import, keyboard and touch, offline status); **recovery and migration** (full export and restore, damaged backup rejection, read-only parity); **deployment** (the exact verified revision, headers and caching, private denial to anonymous and wrong-account requests, real Mac and Android journeys with synthetic data).
 - **GAT-2** Each gate reports PASS, FAIL or BLOCKED / NOT RUN, with revision, environment, method and evidence. A syntax check or a mocked chart cannot satisfy a renderer gate, and a tool never invents a measurement or reports an unavailable manual check as done.
-- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the style check, the test-assertion check, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit, property and contract tests with coverage, the coverage ratchet, the script tests, the production build, the PWA check, the Apps Script bundle check and the content scan. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
+- **GAT-3** `npm run verify` is the single local and CI gate. It runs the repository policy, the structure ratchet, the documentation check, the style check, the test-assertion check, the format check, the interaction inventory, the contributor and punctuation checks, type checks, lint, the unit, property and contract tests with coverage, the coverage ratchet, the script tests, the production build, the PWA check and the content scan. CI runs it on Node 22, alongside workflow linting, CodeQL and dependency review ([GitHub Actions](../operations/github-actions.md)).
 - **GAT-4** The rendered interaction audit, the seven synthetic journeys, the accessibility audit and the reduced-motion audit are not part of `npm run verify`. They run in the Node 22 CI job and block release assembly, and README capture runs for a release from `main`. A change to the interface runs them locally before it is pushed, including `npm run capture:readme`, and reports the result.
 - **GAT-5** A scan of tracked files and built output for credentials and financial identifiers is a gate (`npm run verify:content`). It cannot read meaning, so a real figure or a name in prose is not caught, and the content review in REP-4 still applies. Live-Google proof, real-device proof and a restore drill are not yet gates. They remain Open and are never implied by a green `verify`.
 - **GAT-6** Mutation testing of the kernel runs on demand (`npm run audit:mutation`). Its score MUST NOT fall below the floor recorded in `config/stryker.config.json`, and surviving mutants are a ranked backlog fixed in their own commits, never inside a restructure (STD-7). See [testing](../operations/testing.md).
@@ -370,9 +365,9 @@ States are the owner's, taken from the private register. "In the repository" is 
 | 011 | Licence, authorship, reuse | Open | No licence file (REP-6) |
 | 012 | Quality targets and test environment | Proposed | Measurements Open |
 | 013 | Google-backed application | Direction selected | Implemented (ARC-1, ARC-2) |
-| 014 | Browser to Apps Script route | Proposed, not verified | Superseded by FD-017 for new users |
+| 014 | Browser to Apps Script route | Removed 2026-11-19 | Superseded by FD-017; the service and its deploy workflow were removed by the owner's decision |
 | 015 | Lean repository root | Principle selected | Implemented and enforced (REP-1, REP-2) |
-| 016 | Apps Script source sync | Owner direction, not set up | Not set up; removal follows FD-017 |
+| 016 | Apps Script source sync | Removed 2026-11-19 | Removed with the Apps Script service |
 | 017 | Direct browser-to-Google storage | Accepted; not verified on real Google | Implemented (ARC-2); live proof Open |
 | 018 | Browser copy of the ledger | Accepted | Implemented (PRV-5) |
 | 019 | Each month keeps its exact statement | Accepted; not verified on real Google | Implemented (IMP-9); live proof Open |
@@ -398,4 +393,6 @@ Open decisions that gate work: FD-004, FD-005, FD-009 and FD-011. Real-data migr
 | 2026-11-18 | Organization standard, phase 10 | The style and accessibility records are gone and both checks are blocking; layout transitions carry reasoned waivers (UXC-12) |
 | 2026-11-18 | Organization standard, phase 9 | Content scan as a gate (GAT-5), pinned-action check, commit-subject check and opt-in local hooks (STD-4) |
 | 2026-11-18 | Organization standard, phase 8 | Style ratchet for motion and colour tokens and cheap properties, reduced-motion audit (UXC-12, UXC-13) |
+| 2026-11-19 | Apps Script removal | The Apps Script service, its client and its deploy workflow removed by the owner's decision; ARC-3 amended. The FD-017 live proof is still open |
+| 2026-11-19 | Workflow redesign | Check and Release site workflows; the site is built once and shared by the audits and Pages; the audits run as one script |
 | 2026-11-18 | Owner request | Principles revised by the owner (PRN-1 to PRN-14); this document restructured into addressable rules with permanent IDs, brought up to the current state and given its engineering standards (section 12) |

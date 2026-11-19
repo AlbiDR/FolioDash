@@ -7,7 +7,7 @@ import { join } from "node:path";
 import process from "node:process";
 import { contentProblems, type ContentFile } from "./content-policy.ts";
 
-const BUILT = ["dist/web", "dist/apps-script"];
+const BUILT = ["dist/web"];
 
 function filesUnder(directory: string): string[] {
   return readdirSync(directory).flatMap((name) => {

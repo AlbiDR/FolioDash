@@ -27,7 +27,7 @@ Added 2026-11-17 for the organization standard. Prettier 3.9.10, MIT licence, de
 
 ## Test layer, 2026-11-18
 
-Added for phase 7 of the organization standard. All are development dependencies, installed with `--ignore-scripts`, exact-pinned, and none ships in the application or the Apps Script bundle.
+Added for phase 7 of the organization standard. All are development dependencies, installed with `--ignore-scripts`, exact-pinned, and none ships in the application.
 
 | Package | Version | Licence | Published | Purpose |
 |---|---|---|---|---|
