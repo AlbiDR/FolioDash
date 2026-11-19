@@ -1,6 +1,6 @@
 # Motion layer
 
-Status: **Revised 2026-11-19 after review. Steps 1 and 2 done.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, the bar morph and presence use them. The changes are behaviour-neutral: the rendered audits pass, and the import journey also asserts presence shifts. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
+Status: **Revised 2026-11-19 after review. Steps 1 to 3 done.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, the bar morph and presence use them. The changes are behaviour-neutral: the rendered audits pass, and the import journey also asserts presence shifts. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-12, UXC-13 and ARC-13, the [interaction coverage](interaction-coverage.md) contract and the [rendered interaction audit](../operations/interactions.md). Architecture, not a redesign, so the [Astryx reference](astryx-reference.md) is not the governing reference for the mechanics. Any visual change still follows its own design record.
 
@@ -44,7 +44,7 @@ Each step is behaviour-neutral, so the built output and the audits must not chan
 
 1. **Animate and Settle, then row glide and bar morph.** Add the primitives with their own tests, and move `row-glide.ts` and `bar-morph.ts` onto them. Their existing stub tests and the holdings and range journeys are the proof.
 2. **Presence.** Move `presence.tsx` onto Animate. Check the rendered audits for every screen that opens or closes a panel. Done: the sibling shifts run on Animate, with the same carry-over. The import journey asserts the shift on removal and on undo, because no audit covered it before.
-3. **Chart hooks and page motion.** Move `use-geometry-morph.ts`, `use-update-fade.ts` and `use-page-motion.ts` onto Animate and Settle. Check the chart geometry tests and the reduced-motion audit.
+3. **Chart hooks and page motion.** Move `use-geometry-morph.ts`, `use-update-fade.ts` and `use-page-motion.ts` onto Animate and Settle. Check the chart geometry tests and the reduced-motion audit. Done: the update fade and the geometry morph run on Animate and Settle, and a new geometry still replaces a morph in progress. The page controller keeps its handler order and its timeouts, so the page motion tests are unchanged. A route check in the range journey proves the exit and arrival in the browser, since no audit covered them before.
 4. **Reorder, and Tween when a consumer exists.** Generalise the reorder technique only when a second keyed consumer needs it.
 5. **Remove duplicated timing and inventory the CSS.** Delete constants the migrated code no longer uses, regenerate the interaction inventory (UXC-4), and list every motion stylesheet with its owner.
 
