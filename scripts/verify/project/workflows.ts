@@ -14,10 +14,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { unpinnedActions } from "./workflow-policy.ts";
+import { unpinnedActions, workflowNameViolations } from "./workflow-policy.ts";
 
 const VERSION = "1.7.12";
 // Published checksums: https://github.com/rhysd/actionlint/releases/tag/v1.7.12
@@ -89,12 +89,15 @@ try {
     // A workflow runs commands that `npm run verify` never does, so a moved script can break CI unnoticed.
     // Every npm script a workflow names, and every script path a workflow or package.json names, must exist.
     const scripts = (
-      JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { scripts: Record<string, string> }
+      JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
+        scripts: Record<string, string>;
+      }
     ).scripts;
     const broken: string[] = [];
     const paths = /(?:^|\s|")((?:scripts|config|src)\/[\w./-]+\.(?:ts|json|js))/gmu;
     for (const file of files) {
       const text = readFileSync(file, "utf8");
+      broken.push(...workflowNameViolations(basename(file), text));
       for (const reference of unpinnedActions(text))
         broken.push(`${file}: action is not pinned to a commit SHA (${reference})`);
       for (const match of text.matchAll(/npm run ([a-z:-]+)/gu)) {

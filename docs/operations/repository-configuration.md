@@ -54,7 +54,8 @@ Attribution failure blocks the dependent site deployment. CODEOWNERS and quality
 | Workflow or file | What it does |
 |---|---|
 | `verify.yml` | Single orchestrator: actionlint, one Node 22 verification and audit job, then Pages publication for current `main` push/manual runs. PR, scheduled and other-branch manual runs verify only |
-| `deploy-pages.yml` | Reusable deployment only; consumes the checked Node 22 artifact in the caller's run after verification succeeds; never rebuilds |
+| `deploy-site.yml` | Manual entry point on current `main`; calls `verify.yml` and never duplicates its checks |
+| `publish-verified-site.yml` | Reusable deployment only; consumes the checked Node 22 artifact in the caller's run after verification succeeds; never rebuilds |
 | `codeql.yml` | Independent static analysis of TypeScript on pushes, pull requests, weekly and manual dispatch; uploads results to code scanning |
 | `dependency-review.yml` | PR dependency review with the same moderate-or-greater vulnerability threshold as npm audit |
 | `deploy-apps-script.yml` | Retained manual deployment, current `main` and owner only; verifies complete history and audits before any credential file or remote write |

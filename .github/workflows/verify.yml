@@ -130,4 +130,4 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: ./.github/workflows/publish-pages.yml
+    uses: ./.github/workflows/publish-verified-site.yml
