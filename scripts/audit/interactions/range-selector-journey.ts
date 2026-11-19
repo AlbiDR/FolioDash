@@ -228,4 +228,21 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
   );
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
   await delay(260);
+  // A route change moves the current page out before the next screen mounts, and the next page arrives afterwards.
+  await evaluate("location.hash='#expenses'");
+  await delay(40);
+  await check(
+    "document.getElementById('main-content').getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().fill==='forwards')",
+    "a route change moves the current page out before the next one mounts",
+  );
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "!document.getElementById('main-content').inert&&!document.querySelector('[data-page-exiting]')&&document.getElementById('main-content').getAnimations().every(a=>a.playState!=='running')",
+      )) === true,
+    "the next page settles in and is interactive",
+  );
+  await check("location.hash==='#expenses'", "the route change reaches the expenses screen");
+  // The journeys that follow start from the Portfolio, as they always have.
+  await visit("overview");
 }
