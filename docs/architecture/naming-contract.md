@@ -20,6 +20,7 @@ Status: **Implemented as a ratchet, 2026-11-17** (organization standard, phase 3
 | Node release and installed packages against their pins | `npm run doctor` | Diagnosis, run before working; not a gate |
 | Credentials and financial identifiers in tracked files and built output | `npm run verify:content` | Blocking |
 | Every workflow action is pinned to a commit SHA | `npm run verify:workflows` | Blocking |
+| Every action has one commit across all workflows; every job that runs steps has a timeout; no checkout keeps its credentials | `npm run verify:workflows` | Blocking |
 | Every workflow file is named for its display name, which starts with a capital | `npm run verify:workflows` | Blocking |
 | Commit subjects | `scripts/verify/project/commit-message.ts`, installed as a local hook by `npm run setup:hooks` | Opt-in; not in CI, because a direct edit on GitHub does not follow it |
 | Branch and tag names | Review only | Not yet enforced |

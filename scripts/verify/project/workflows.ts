@@ -17,7 +17,13 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { unpinnedActions, workflowNameViolations } from "./workflow-policy.ts";
+import {
+  actionVersionConflicts,
+  checkoutsKeepingCredentials,
+  jobsWithoutTimeout,
+  unpinnedActions,
+  workflowNameViolations,
+} from "./workflow-policy.ts";
 
 const VERSION = "1.7.12";
 // Published checksums: https://github.com/rhysd/actionlint/releases/tag/v1.7.12
@@ -95,9 +101,21 @@ try {
     ).scripts;
     const broken: string[] = [];
     const paths = /(?:^|\s|")((?:scripts|config|src)\/[\w./-]+\.(?:ts|json|js))/gmu;
+    const compositeActions = readdirSync(join(root, ".github/actions"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(root, ".github/actions", entry.name, "action.yml"));
+    const texts = new Map<string, string>();
+    for (const file of [...files, ...compositeActions]) texts.set(file, readFileSync(file, "utf8"));
+    broken.push(...actionVersionConflicts(texts));
     for (const file of files) {
-      const text = readFileSync(file, "utf8");
+      const text = texts.get(file) ?? "";
       broken.push(...workflowNameViolations(basename(file), text));
+      for (const job of jobsWithoutTimeout(text)) broken.push(`${file}: job ${job} has no timeout-minutes`);
+      for (const line of checkoutsKeepingCredentials(text))
+        broken.push(`${file}: line ${String(line)}: checkout keeps its credentials (persist-credentials: false)`);
+    }
+    for (const file of [...files, ...compositeActions]) {
+      const text = texts.get(file) ?? "";
       for (const reference of unpinnedActions(text))
         broken.push(`${file}: action is not pinned to a commit SHA (${reference})`);
       for (const match of text.matchAll(/npm run ([a-z:-]+)/gu)) {
