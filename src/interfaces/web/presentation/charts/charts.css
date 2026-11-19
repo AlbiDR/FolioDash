@@ -118,7 +118,8 @@
   stroke-linecap: round;
 }
 
-/* Present the entire financial shape immediately; only its emphasis settles. */
+/* Present the entire financial shape on first paint; only its emphasis settles. A period change morphs the drawn lines
+ * between axes instead (use-geometry-morph.ts). */
 .chart-series {
   animation: chart-reveal var(--duration-medium) var(--ease-standard);
 }

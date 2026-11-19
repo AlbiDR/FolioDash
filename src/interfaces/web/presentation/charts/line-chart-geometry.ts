@@ -61,6 +61,8 @@ export interface ChartGeometry {
   readonly xTicks: readonly { readonly time: number; readonly x: number }[];
   readonly yTicks: readonly { readonly value: number; readonly y: number }[];
   readonly series: readonly PlottedSeries[];
+  /** The axis bounds this geometry was drawn to, so a period change can morph from one set of axes to another. Null when empty. */
+  readonly domain: { readonly time: readonly [number, number]; readonly value: readonly [number, number] } | null;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -103,7 +105,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       maxValue = Math.max(maxValue, point.value);
     }
   }
-  if (!observed) return { empty: true, plot, xTicks: [], yTicks: [], series: [] };
+  if (!observed) return { empty: true, plot, xTicks: [], yTicks: [], series: [], domain: null };
 
   if (minTime === maxTime) {
     minTime -= DAY_MS;
@@ -192,5 +194,9 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
       .map((date) => ({ time: date.getTime(), x: round(xScale(date)) })),
     yTicks: yTickValues.map((value) => ({ value, y: round(yScale(value)) })),
     series: plotted,
+    domain: {
+      time: [minTime, maxTime],
+      value: [minValue - buffer, maxValue + buffer],
+    },
   };
 }
