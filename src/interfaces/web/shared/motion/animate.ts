@@ -5,6 +5,10 @@ import { prefersReducedMotion } from "./reduced-motion";
 export interface MotionTiming {
   readonly duration: number;
   readonly easing: string;
+  /** How the motion holds its end state. Omitted, the motion ends and the element returns to rest. */
+  readonly fill?: FillMode;
+  /** How the motion combines with the element's other transforms. Omitted, it replaces them. */
+  readonly composite?: CompositeOperation;
 }
 
 /**
@@ -19,6 +23,16 @@ export function timingFrom(
   return {
     duration: motionMilliseconds(style.getPropertyValue(durationToken)),
     easing: style.getPropertyValue(easingToken).trim(),
+  };
+}
+
+/** The options a motion passes to the Web Animations API. Only what the caller set is passed. */
+function optionsFor(timing: MotionTiming): KeyframeAnimationOptions {
+  return {
+    duration: timing.duration,
+    easing: timing.easing,
+    ...(timing.fill === undefined ? {} : { fill: timing.fill }),
+    ...(timing.composite === undefined ? {} : { composite: timing.composite }),
   };
 }
 
@@ -43,7 +57,7 @@ export function createMotion(reduced: () => boolean = prefersReducedMotion): Mot
       current.get(element)?.cancel();
       current.delete(element);
       if (reduced() || typeof element.animate !== "function") return null;
-      const animation = element.animate(frames, { duration: timing.duration, easing: timing.easing });
+      const animation = element.animate(frames, optionsFor(timing));
       current.set(element, animation);
       return animation;
     },
