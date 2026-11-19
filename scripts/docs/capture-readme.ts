@@ -25,7 +25,7 @@ async function capture(
   view: CapturedView,
   mobile = false,
 ): Promise<void> {
-  const { call, evaluate, waitFor, origin: ORIGIN } = browser;
+  const { call, evaluate, evaluateWith, waitFor, origin: ORIGIN } = browser;
   const width = mobile ? 390 : 1440;
   let height = mobile ? 844 : 1120;
   await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
@@ -101,9 +101,12 @@ async function capture(
   await evaluate("window.scrollTo(0,0)");
   let clip: Record<string, number> | undefined;
   // Applied after the safety checks above, which read the page's visible text.
-  await evaluate(
-    `(()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(`${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}${view.crop?.style ?? ""}`)};document.head.append(style)})()`,
-  );
+  const cssText = `${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}${view.crop?.style ?? ""}`;
+  await evaluateWith((css: string) => {
+    const style = document.createElement("style");
+    style.textContent = css;
+    document.head.append(style);
+  }, cssText);
   await delay(300);
   if (!mobile) {
     // Only the named elements (and what they sit in) stay visible, so a neighbour cannot leak into the margin around the crop.

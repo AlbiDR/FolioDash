@@ -9,6 +9,11 @@ export interface LocalBrowser {
   readonly origin: string;
   readonly call: (method: string, params?: Record<string, unknown>) => Promise<Record<string, unknown>>;
   readonly evaluate: (expression: string) => Promise<unknown>;
+  /** Runs a function in the page. Values are passed as arguments, never spliced into source text. */
+  readonly evaluateWith: <Arguments extends readonly unknown[]>(
+    fn: (...args: Arguments) => unknown,
+    ...args: Arguments
+  ) => Promise<unknown>;
   readonly waitFor: (check: () => Promise<boolean>, description: string) => Promise<void>;
 }
 
@@ -64,6 +69,26 @@ export async function withLocalBrowser(
 
   async function evaluate(expression: string): Promise<unknown> {
     const response = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
+    if (response["exceptionDetails"] !== undefined) throw new Error("Browser evaluation failed.");
+    return object(response["result"])["value"];
+  }
+
+  async function evaluateWith<Arguments extends readonly unknown[]>(
+    fn: (...args: Arguments) => unknown,
+    ...args: Arguments
+  ): Promise<unknown> {
+    const page = object(
+      await call("Runtime.evaluate", { expression: "window", returnByValue: false }).then(
+        (response) => response["result"],
+      ),
+    );
+    const response = await call("Runtime.callFunctionOn", {
+      objectId: String(page["objectId"]),
+      functionDeclaration: fn.toString(),
+      arguments: args.map((value) => ({ value })),
+      awaitPromise: true,
+      returnByValue: true,
+    });
     if (response["exceptionDetails"] !== undefined) throw new Error("Browser evaluation failed.");
     return object(response["result"])["value"];
   }
@@ -243,7 +268,7 @@ export async function withLocalBrowser(
     await call("Network.enable");
     await call("Network.setBypassServiceWorker", { bypass: true });
     await call("Fetch.enable", { patterns: [{ urlPattern: "*", requestStage: "Request" }] });
-    await run({ origin: ORIGIN, call, evaluate, waitFor });
+    await run({ origin: ORIGIN, call, evaluate, evaluateWith, waitFor });
     if (browserErrors.length > 0 || blockedOrigins.size > 0) {
       throw new Error(
         `Browser check failed: ${browserErrors.join(" ") || "no runtime errors"}; ${String(blockedOrigins.size)} nonlocal origin(s) blocked.`,
