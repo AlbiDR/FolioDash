@@ -1,11 +1,17 @@
-import { motionMilliseconds } from "./motion-timing";
 import type { RefObject } from "preact";
 import { flushSync } from "preact/compat";
 import { useEffect, useMemo } from "preact/hooks";
+import { createMotion, type Motion, timingFrom } from "../motion/animate";
+import { prefersReducedMotion, REDUCED_MOTION_QUERY } from "../motion/reduced-motion";
 
-/** Interruptible controller shared by the hook and deterministic lifecycle checks. */
-export function createPageMotion(page: RefObject<HTMLElement | null>) {
+/**
+ * Interruptible controller shared by the hook and deterministic lifecycle checks. The motion of the page goes through
+ * the shared motion instance. The controller keeps the handlers that decide when a page commits, and clears them before
+ * it stops a motion, so a stop never runs a callback that is waiting for a cancel.
+ */
+export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Motion = createMotion()) {
   let animation: Animation | null = null;
+  let animated: HTMLElement | null = null;
   let pending: (() => void) | null = null;
   let timeout: ReturnType<typeof setTimeout> | undefined;
   let generation = 0;
@@ -15,9 +21,10 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
     if (animation !== null) {
       animation.onfinish = null;
       animation.oncancel = null;
-      animation.cancel();
     }
+    if (animated !== null) motion.stop(animated);
     animation = null;
+    animated = null;
     if (page.current !== null) {
       page.current.inert = false;
       page.current.removeAttribute("data-page-exiting");
@@ -36,12 +43,7 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
       return;
     }
     const element = page.current;
-    if (
-      element === null ||
-      typeof element.animate !== "function" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      document.hidden
-    ) {
+    if (element === null || typeof element.animate !== "function" || prefersReducedMotion() || document.hidden) {
       stop();
       flushSync(commit);
       return;
@@ -49,9 +51,8 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
     const current = getComputedStyle(element);
     const opacity = current.opacity;
     const transform = current.transform;
-    const duration = motionMilliseconds(current.getPropertyValue("--duration-short"));
+    const timing = timingFrom(current, "--duration-short");
     const nudge = current.getPropertyValue("--motion-nudge").trim();
-    const easing = current.getPropertyValue("--ease-standard").trim();
     stop();
     pending = commit;
     element.inert = true;
@@ -60,33 +61,45 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
     const arrive = (): void => {
       if (request !== generation) return;
       finish();
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.hidden || page.current === null)
-        return;
+      if (prefersReducedMotion() || document.hidden || page.current === null) return;
       const incoming = page.current;
-      const arrival = incoming.animate(
+      const arrival = motion.play(
+        incoming,
         [
           { opacity: 0, transform: `translateY(${nudge})` },
           { opacity: 1, transform: "none" },
         ],
-        { duration, easing },
+        timing,
       );
+      if (arrival === null) return;
       animation = arrival;
+      animated = incoming;
       arrival.onfinish = () => {
-        if (animation === arrival) animation = null;
+        if (animation === arrival) {
+          animation = null;
+          animated = null;
+        }
       };
     };
     try {
-      animation = element.animate(
+      const exit = motion.play(
+        element,
         [
           { opacity, transform },
           { opacity: 0, transform: `translateY(calc(-1 * ${nudge}))` },
         ],
-        { duration, easing, fill: "forwards" },
+        { ...timing, fill: "forwards" },
       );
-      animation.onfinish = arrive;
+      if (exit === null) {
+        finish();
+        return;
+      }
+      animation = exit;
+      animated = element;
+      exit.onfinish = arrive;
       // Backgrounding or an externally cancelled animation must never strand an inert page.
-      animation.oncancel = arrive;
-      timeout = setTimeout(arrive, duration + 100);
+      exit.oncancel = arrive;
+      timeout = setTimeout(arrive, timing.duration + 100);
     } catch {
       finish();
     }
@@ -105,7 +118,7 @@ export function createPageMotion(page: RefObject<HTMLElement | null>) {
 export function usePageMotion(page: RefObject<HTMLElement | null>) {
   const motion = useMemo(() => createPageMotion(page), [page]);
   useEffect(() => {
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const preference = window.matchMedia(REDUCED_MOTION_QUERY);
     const settle = (): void => {
       if (preference.matches || document.hidden) motion.finish();
     };
