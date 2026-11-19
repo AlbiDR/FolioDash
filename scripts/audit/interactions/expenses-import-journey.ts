@@ -84,13 +84,25 @@ export async function expensesImportJourney({
     "Manual entry: a new row has a draft-removal action",
   );
   await evaluate("document.querySelector('.manual-fund button').click()");
-  await delay(450);
+  await delay(40);
+  // A notice that appears moves the content after it with an additive shift, so the presence shift is running.
+  await check(
+    "document.getAnimations().some(a=>a.effect?.composite==='add'&&a.playState==='running')",
+    "a notice that appears shifts the notices after it",
+  );
+  await delay(410);
   await check(
     "document.querySelector('.manual-entry .notice').textContent.includes('Nothing has been saved.') && !document.querySelector('.manual-entry .notice').textContent.includes('sale')",
     "Manual entry: new-row removal has no sale implication",
   );
   await survey("Import / removal and undo notice");
   await evaluate("document.querySelector('#undo-removed-fund').click()");
+  await delay(40);
+  // A notice that collapses shifts the content after it back, from wherever its shift had reached.
+  await check(
+    "document.getAnimations().some(a=>a.effect?.composite==='add'&&a.playState==='running')",
+    "a notice that collapses shifts the notices after it back",
+  );
   await delay(450);
   await check(
     "!!document.querySelector('.manual-fund') && document.activeElement?.id.endsWith('-name')",

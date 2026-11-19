@@ -50,6 +50,16 @@ describe("createMotion", () => {
     expect(animation).toBe(element.animations[0]);
   });
 
+  it("passes on how a motion holds its end state and combines, only when the caller sets them", () => {
+    const element = makeElement();
+    createMotion(() => false).play(element as unknown as Element, frames, {
+      ...timing,
+      fill: "forwards",
+      composite: "add",
+    });
+    expect(element.animate).toHaveBeenCalledWith(frames, { ...timing, fill: "forwards", composite: "add" });
+  });
+
   it("replaces the motion an element already has, so motions never stack", () => {
     const element = makeElement();
     const motion = createMotion(() => false);
