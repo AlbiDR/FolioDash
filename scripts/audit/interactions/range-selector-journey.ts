@@ -203,9 +203,12 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "(()=>{const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
   )) as { x: number; y: number };
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: hoverCard.x, y: hoverCard.y });
-  await delay(260);
-  await check(
-    "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='0px -2px'&&getComputedStyle(window.auditCard).boxShadow.includes('inset')",
+  // The lift is a 220ms transition that begins at the first style read on a slow renderer, so wait for it to settle rather than sampling a fixed time.
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='0px -2px'&&getComputedStyle(window.auditCard).boxShadow.includes('inset')",
+      )) === true,
     "fine-pointer card hover lifts the card and brightens its edge",
   );
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
