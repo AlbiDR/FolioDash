@@ -15,3 +15,19 @@ export function unpinnedActions(workflow: string): string[] {
   });
   return unpinned;
 }
+
+/**
+ * A workflow's file name is the kebab-case form of its display name, so the Actions page, the file list and the
+ * documents name one thing the same way. The display name starts with a capital and uses single spaces only.
+ */
+export function workflowNameViolations(fileName: string, workflow: string): string[] {
+  const name = /^name:[ \t]*(.+?)[ \t]*$/mu.exec(workflow)?.[1];
+  if (name === undefined) return [`${fileName}: no top-level display name`];
+  const violations: string[] = [];
+  if (!/^[A-Z][A-Za-z]*(?: [A-Za-z]+)*$/u.test(name))
+    violations.push(`${fileName}: display name "${name}" must start with a capital and use single spaces`);
+  const expected = `${name.toLowerCase().replace(/ /gu, "-")}.yml`;
+  if (fileName !== expected)
+    violations.push(`${fileName}: file name must be ${expected} to match display name "${name}"`);
+  return violations;
+}
