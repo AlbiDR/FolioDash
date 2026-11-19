@@ -1,6 +1,6 @@
 # Motion layer
 
-Status: **Revised 2026-11-19 after review. Step 1 done:** the Animate and Settle primitives exist in `shared/motion/`, and the row glide and the bar morph use them. Both changes are behaviour-neutral, so the interaction and reduced-motion audits are unchanged. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
+Status: **Revised 2026-11-19 after review. Steps 1 and 2 done.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, the bar morph and presence use them. The changes are behaviour-neutral: the rendered audits pass, and the import journey also asserts presence shifts. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-12, UXC-13 and ARC-13, the [interaction coverage](interaction-coverage.md) contract and the [rendered interaction audit](../operations/interactions.md). Architecture, not a redesign, so the [Astryx reference](astryx-reference.md) is not the governing reference for the mechanics. Any visual change still follows its own design record.
 
@@ -35,14 +35,15 @@ The feedback CSS keeps its present owners for now. A later step inventories the 
 - Reduced motion removes all transition and movement, and visible state still changes (UXC-13).
 - Privacy hiding, validation and every financial value update immediately (UXC-5). A chart morph animates presentation only. Its settled state must equal the exact projection that the unanimated chart draws.
 - Pure timing and geometry live in `.ts` files with their own tests. React hooks stay thin and only connect a controller to a render.
-- There is no motion state attribute in the production DOM. Browser audits find motion through `element.getAnimations()` and wait for it to empty, rather than waiting a fixed time. The audits already do this for the chart morphs, the holdings glide and the bar morph.
+- The shared primitives add no DOM attributes. Browser audits find motion through `element.getAnimations()` and wait for it to empty, rather than waiting a fixed time. The audits already do this for the chart morphs, the holdings glide and the bar morph.
+- Presence keeps its `data-present` and `data-settled` attributes. `refinement.css` reads them to clip a notice while it collapses, so they are styling state that the page depends on, not test signals. Removing them would change the page, so step 2 does not.
 
 ## Migration order
 
 Each step is behaviour-neutral, so the built output and the audits must not change. A step that changes timing or appearance is a separate commit and is recorded as a design change.
 
 1. **Animate and Settle, then row glide and bar morph.** Add the primitives with their own tests, and move `row-glide.ts` and `bar-morph.ts` onto them. Their existing stub tests and the holdings and range journeys are the proof.
-2. **Presence.** Move `presence.tsx` onto Animate. Check the rendered audits for every screen that opens or closes a panel.
+2. **Presence.** Move `presence.tsx` onto Animate. Check the rendered audits for every screen that opens or closes a panel. Done: the sibling shifts run on Animate, with the same carry-over. The import journey asserts the shift on removal and on undo, because no audit covered it before.
 3. **Chart hooks and page motion.** Move `use-geometry-morph.ts`, `use-update-fade.ts` and `use-page-motion.ts` onto Animate and Settle. Check the chart geometry tests and the reduced-motion audit.
 4. **Reorder, and Tween when a consumer exists.** Generalise the reorder technique only when a second keyed consumer needs it.
 5. **Remove duplicated timing and inventory the CSS.** Delete constants the migrated code no longer uses, regenerate the interaction inventory (UXC-4), and list every motion stylesheet with its owner.
