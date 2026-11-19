@@ -31,7 +31,7 @@ The feedback CSS keeps its present owners for now. A later step inventories the 
 ## Rules for every motion
 
 - Durations and easings come from tokens. A primitive takes a token name, never a number. Colours come from colour tokens.
-- Only properties the style gate allows may animate: transform, opacity and paint-only properties such as colour, shadow and border colour. Layout-forcing properties never animate. UXC-12's wording says "only transform and opacity", which the gate does not enforce. Until the owner decides between the two, new motion follows the gate and any paint-only transition is named in its design record.
+- Only properties that do not force layout may animate, as UXC-12 now states: transform, opacity and paint-only properties such as colour, shadow and border colour. Layout-forcing properties never animate. Any paint-only transition is named in its design record.
 - Reduced motion removes all transition and movement, and visible state still changes (UXC-13).
 - Privacy hiding, validation and every financial value update immediately (UXC-5). A chart morph animates presentation only. Its settled state must equal the exact projection that the unanimated chart draws.
 - Pure timing and geometry live in `.ts` files with their own tests. React hooks stay thin and only connect a controller to a render.
@@ -94,4 +94,4 @@ A check that every motion stylesheet appears in this table is not yet part of `n
 
 - **Decided:** no motion attribute in the production DOM. Audits use `element.getAnimations()`.
 - **Decided:** step 1 is the Animate and Settle primitives with row glide and bar morph. Presence follows as step 2. The scalar tween is not built now.
-- **Open, for the owner:** UXC-12 says only transform and opacity animate, but the style gate also allows paint-only properties and blocks only layout-forcing ones. Should the rule's wording change to match the gate, or should the gate be tightened to match the wording? The card hover built on 2026-11-19 animates shadow, background and border colour, so it depends on the answer.
+- **Decided 2026-11-19 by the owner:** UXC-12 matches the gate. Layout-forcing properties never animate, and transform, opacity and paint-only properties may. The gate is unchanged. The card hover's shadow and colour transitions therefore sit inside the rule. The gate's header comments now describe the same list.
