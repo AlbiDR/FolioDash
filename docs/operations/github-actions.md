@@ -4,51 +4,43 @@ Implemented 2026-11-05 under the owner's Actions architecture request. This docu
 
 ## Purpose
 
-The workflow set does five jobs, and each has one workflow that owns it:
+The workflow set does four jobs, and each has one workflow that owns it:
 
-1. **Prove every change.** A pull request, a push to main and the weekly run pass the same gate: workflow lint, `npm run verify`, dependency audit and the rendered audits. `verify.yml` owns it.
-2. **Release the verified site.** Only a push or a manual run on current main publishes, and it publishes the artifact built in that same run. `verify.yml` decides and calls `publish-verified-site.yml`, which deploys and never rebuilds.
-3. **Re-release without a code change.** The owner can republish current main after changing a repository variable. `deploy-site.yml` is the manual entry point and calls `verify.yml`, so the checks are never duplicated.
-4. **Find drift.** The weekly Verify run catches a dependency, a browser or a runner change between pushes.
-5. **Analyse security.** CodeQL scans the source; dependency review blocks a vulnerable pull-request change. `codeql.yml` and `dependency-review.yml` own these.
-
-The retained Apps Script push (`deploy-apps-script.yml`) is a sixth, manual, owner-only job. It stays until FD-017's live proof is recorded.
+1. **Judge every change.** `check.yml` runs the shared gate for pull requests, the weekly schedule and manual runs, and runs CodeQL on the source. For a pull request it also runs dependency review.
+2. **Release the verified site.** `release-site.yml` runs the same gate on a push to `main` or a manual run on `main`, then publishes the site that the gate audited. Nothing else publishes.
+3. **Find drift.** The weekly run in `check.yml` catches a dependency, browser or runner change between pushes.
+4. **Keep an owner-only Apps Script path.** `deploy-apps-script.yml` is manual, owner-only and kept until a decision is recorded after FD-017's live proof.
 
 ## Structure
 
-- `verify.yml`: `plan` decides whether the run releases; `workflows` lints every workflow; `verify` runs the gate and, on a release, captures the README views and uploads the artifact; `deploy` calls `publish-verified-site.yml` only after both succeed.
-- `publish-verified-site.yml`: the only job with `pages: write`. It checks that the revision is still current main, deploys, and refreshes GitHub's cached README images.
-- `deploy-site.yml`: a manual dispatch on main that calls `verify.yml`.
-- `codeql.yml`, `dependency-review.yml`: independent security analysis.
+- `verify.yml`: the reusable gate, called with `release: true` or `false`. It has five jobs: `workflows` lints every workflow; `build` builds the site once and keeps it as the `web-build` artifact; `verify` runs `npm run verify` and the dependency audit on the source; `audit` runs the rendered audits on the `web-build` artifact; `site` (release only) captures the README views and assembles the Pages site from the same artifact.
+- `check.yml`: pull requests, the weekly schedule and manual runs call the gate; CodeQL runs on pushes and pull requests; dependency review runs on pull requests.
+- `release-site.yml`: the gate with `release: true`, then `publish`, the only job with `pages: write`. `publish` checks that the revision is still current `main`, deploys, and refreshes GitHub's cached README images. It never checks out source, installs packages or rebuilds.
 - `deploy-apps-script.yml`: the retained manual deployment.
-- `.github/actions/setup-project/`: the one shared setup (Node 22 and the locked packages). Every job checks out first, because a local action needs the checkout to exist.
+- `.github/actions/setup-project/`: the one shared setup (Node 22 and the locked packages). A local action needs the checkout to exist first, so each job checks out before it calls the action.
 
-The release decision is made once, in `plan`, and every later step reads that output. No step repeats the branch and event test.
+The site is built once and every consumer reads that build. The audits and the Pages site both come from the `web-build` artifact, so what the audits test is what is published. The gate still runs `npm run verify` on the source as before.
+
+The jobs run in parallel where they can. In a release, `site` runs alongside `verify` and `audit`, and `publish` waits for all of them.
 
 ```mermaid
 flowchart LR
-    trigger[Pull request / push / weekly / manual / Deploy site] --> plan[plan: release?]
-    trigger --> lint[Check GitHub Actions]
-    plan --> verify[Verify: npm run verify, audit:dependencies, audit:rendered]
-    plan -->|release only| build[capture:readme, build:pages, upload artifact]
-    lint --> gate{Lint and verify pass}
-    verify --> gate
-    build --> gate
-    gate -->|release, current main| publish[publish-verified-site: Pages deploy and cache refresh]
-    security[Push / pull request / weekly / manual] --> codeql[CodeQL]
-    pr[Pull request] --> review[Dependency review]
-    owner[Owner manual dispatch on main] --> script[Verify, then guarded Apps Script deploy]
+    pr[Pull request / weekly / manual] --> check[check.yml: gate]
+    push[Push to main] --> codeql[check.yml: CodeQL only]
+    push --> release[release-site.yml: gate with release]
+    manual[Manual on main] --> release
+    check --> gate[verify.yml]
+    release --> gate
+    gate --> build[build: web-build artifact]
+    build --> audit[audit: rendered audits]
+    build --> site[site: README capture and Pages assembly, release only]
+    gate --> verify[verify: npm run verify]
+    release --> publish[publish: Pages deploy, if still current main]
 ```
-
-`verify.yml` is the sole quality orchestrator. The dependency-free workflow validation job runs actionlint concurrently with the Node 22 verification job. Publication requires both to succeed. The verification job runs `npm ci --ignore-scripts`, the complete `npm run verify`, `npm run audit:dependencies` and `npm run audit:rendered`. Complete Git history is available to contributor attribution. Attribution, punctuation and repository policy stay in the canonical verify command.
 
 `npm run audit:rendered` runs the ten rendered audits in order: interactions, backfill recovery, expense recovery and restore, sale closure, account outcomes, overview signals, checkpoints, accessibility and reduced motion. It is a single script so that CI and a developer run the same list. The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default); a missing browser fails the step with that module's message.
 
-Both builds receive the public repository variable `VITE_GOOGLE_CLIENT_ID` before verification. Main push/manual releases fail with a redacted configuration error if it is empty. A PR or weekly run can verify without a release client ID. No Google token, credential or private workbook data enters this path.
-
-For a main push/manual release, the successful verify job captures the README views from the exact `dist/web` directory produced by `npm run verify`, then assembles `dist/pages` from that unchanged application and the separate screenshot output. Upload is limited to those runs and retained for one day. Node 22 is the only version in CI (Node 24 was dropped on 2026-11-17 on the owner's decision, trading early warning of Node-upgrade breakage for half the runner time). Verification, including capture and assembly, must pass before `publish-verified-site.yml` is called. That local reusable workflow comes from the caller's commit and consumes the same run's Pages artifact. It has no checkout, install or build step. No cross-run artifact retrieval or `workflow_run` privilege handoff is needed. GitHub documents these [reusable workflow semantics](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [Pages artifact/deployment requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
-
-Before the 2026-11-05 pipeline consolidation, each main push ran the two-version matrix twice, then a separate Pages install/build. It now runs that matrix once and deploys the checked application with generated README images, eliminating two full verification jobs and the extra release build per push.
+Both builds receive the public repository variable `VITE_GOOGLE_CLIENT_ID`. A release fails with a redacted configuration error if it is empty. A pull request or weekly run can verify without a release client ID. No Google token, credential or private workbook data enters this path.
 
 ## Automatic README screenshots
 
@@ -74,15 +66,13 @@ The README references the stable Pages URLs under `https://albidr.github.io/Foli
 
 | Entry point | Quality checks | Site publication | Apps Script credential |
 |---|---|---|---|
-| Push to `main` | Workflow lint + verify and audit; independent CodeQL | After verify passes, if still current main | Unavailable |
-| Pull request, including forks | Workflow lint + verify and audit; CodeQL; dependency review | Never | Unavailable |
-| Weekly Verify schedule | Workflow lint + verify and audit | Never | Unavailable |
-| Manual Verify on current `main` | Workflow lint + verify and audit | After success; rebuilds public configuration | Unavailable |
-| Manual Deploy site on current `main` | Same Verify workflow: workflow lint + verify and audit and fresh artifact | After success, if still current main | Unavailable |
-| Manual Deploy site on another branch | Release job skipped | Never | Unavailable |
-| Manual Verify on another branch | Workflow lint + verify and audit | Never | Unavailable |
-| Manual Apps Script on current `main`, original actor and rerun actor both owner | Node 22 full-history verify + audit | Never | Environment secret, only in the credential-writing step |
-| Apps Script on another branch or by another actor | Deployment job skipped | Never | Unavailable |
+| Pull request, including forks | `check.yml`: gate (lint, verify, dependency audit, audit) and CodeQL and dependency review | Never | Unavailable |
+| Push to `main` | `check.yml`: CodeQL only; `release-site.yml`: gate, then publish | After the gate passes, if still current `main` | Unavailable |
+| Weekly schedule | `check.yml`: gate and CodeQL | Never | Unavailable |
+| Manual `check` on any branch | `check.yml`: gate and CodeQL | Never | Unavailable |
+| Manual `Release site` on current `main` | `release-site.yml`: gate with release, then publish | After the gate passes, if still current `main` | Unavailable |
+| Manual `Release site` on another branch | Gate and publish skipped | Never | Unavailable |
+| Manual Apps Script on current `main`, original actor and rerun actor both owner | Full-history verify and audit | Never | Environment secret, only in the credential-writing step |
 
 To release a changed public OAuth client ID or manually publish the site, update any needed repository variable, then open **Actions > Deploy site > Run workflow**, select `main`, and confirm **Run workflow**. `deploy-site.yml` now provides that manual entry point and calls the canonical reusable `verify.yml`; it does not duplicate the matrix or bypass checks. **Verify** remains manually runnable too. Both paths call the internal `publish-verified-site.yml` only after successful verification and use the checked artifact from the same run. A rerun of an older revision cannot roll back current main: the deployment checks the live branch SHA first. Rerunning failed jobs within a day can reuse the run's existing artifact; after artifact expiry, start a fresh Verify run on current main.
 
