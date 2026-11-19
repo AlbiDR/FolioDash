@@ -4,7 +4,7 @@ export interface Decimal {
   readonly scale: number;
 }
 
-// Built with BigInt() because Apps Script's file parser rejects BigInt literals such as `10n`.
+// Built with BigInt() rather than literals.
 const ZERO = BigInt(0);
 const TEN = BigInt(10);
 const PLAIN_DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?$/u;

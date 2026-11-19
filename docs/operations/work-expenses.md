@@ -79,7 +79,7 @@ Automated evidence uses invented data only:
 - Canonical numeric/date cases cover zero-only and partial-only records, all categories, cross-year/week/month boundaries, leap years, rounding and overflow.
 - Storage cases cover atomic setup/recovery, lost acknowledgements, command replay, stale revisions, same/different-day concurrency, explicit branch resolution, corruption, marker/name collisions, deleted-log detection and readable values.
 - Device/session cases cover workbook binding, forgotten accounts, in-flight and stale reads, pending-write/recovery reload, rollback detection, full history export, spending-only and combined portfolio/expense restoration.
-- Entry-boundary cases preserve blank versus zero, Italian amount parsing and meaningful draft changes. Repository types, lint, dependency boundaries, builds, PWA and retained Apps Script checks remain required through `npm run verify`.
+- Entry-boundary cases preserve blank versus zero, Italian amount parsing and meaningful draft changes. Repository types, lint, dependency boundaries, builds, PWA checks remain required through `npm run verify`.
 
 Local production Chrome checks exercise the real renderer with the labelled in-memory demo at 320, 390, 760 and 1440 CSS pixels in light/dark, reduced motion and 200% root text. They cover navigation targets, form/amount overflow, zero/partial saves, draft guards, correction review, previous-version recovery, privacy reveal, keyboard interaction and the four main destinations. Browser probes and screenshots live outside the repository; they are session evidence rather than a committed browser CI suite. The production demo writes only to component memory and is visibly separate from private records.
 

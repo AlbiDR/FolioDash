@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --config config/vite.config.ts --host 127.0.0.1",
     "build": "vite build --config config/vite.config.ts",
-    "verify": "npm run verify:repository && npm run verify:structure && npm run verify:docs && npm run verify:style && npm run verify:tests && npm run format:check && npm run verify:interactions && npm run verify:contributors && npm run verify:punctuation && npm run typecheck && npm run lint && npm test && npm run verify:coverage && npm run test:scripts && npm run build && npm run verify:pwa && npm run verify:apps-script && npm run verify:content",
+    "verify": "npm run verify:repository && npm run verify:structure && npm run verify:docs && npm run verify:style && npm run verify:tests && npm run format:check && npm run verify:interactions && npm run verify:contributors && npm run verify:punctuation && npm run typecheck && npm run lint && npm test && npm run verify:coverage && npm run test:scripts && npm run build && npm run verify:pwa && npm run verify:content",
     "verify:contributors": "node scripts/verify/project/contributors.ts",
     "verify:punctuation": "node scripts/verify/code/punctuation.ts",
     "verify:workflows": "node scripts/verify/project/workflows.ts",
@@ -20,9 +20,7 @@
     "test:scripts": "node --test \"scripts/**/*.test.ts\"",
     "verify:coverage": "node scripts/verify/code/coverage.ts",
     "audit:dependencies": "npm audit --omit=dev --audit-level=moderate",
-    "build:apps-script": "node scripts/artifacts/apps-script.ts",
     "verify:pwa": "node scripts/verify/output/pwa.ts",
-    "verify:apps-script": "node scripts/verify/output/apps-script-bundle.ts",
     "preview": "vite preview --config config/vite.config.ts --host localhost --port 4173 --strictPort",
     "verify:content": "node scripts/verify/code/content.ts",
     "verify:tests": "node scripts/verify/code/tests.ts",

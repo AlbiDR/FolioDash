@@ -8,8 +8,7 @@ const ITALIAN_AMOUNT = /^([+-]?)(\d+|[1-9]\d{0,2}(?:\.\d{3})+)(?:,(\d{1,2}))?$/u
 const US_AMOUNT = /^([+-]?)(\d+|\d{1,3}(?:,\d{3})+)(?:\.(\d{1,2}))?$/u;
 const PLAIN_DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?$/u;
 
-// Apps Script's file parser rejects BigInt literals such as `100n`, so these
-// constants are built with BigInt(). Keep literals out of code the server bundles.
+// Built with BigInt() calls rather than literals, so the constants are ordinary values.
 const TWO = BigInt(2);
 const HUNDRED = BigInt(100);
 // Decimal text is scaled to 1e-12 euro, so one cent is 1e10 units.

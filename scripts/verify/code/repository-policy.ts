@@ -45,7 +45,6 @@ export function layer(file: string): string | null {
   if (file.startsWith("src/core/")) return "core";
   if (file.startsWith("src/applications/")) return "applications";
   if (file.startsWith("src/adapters/")) return "adapters";
-  if (file.startsWith("src/interfaces/server/")) return "server";
   for (const name of ["app", "shared", "presentation", "service-worker"]) {
     if (file.startsWith(`src/interfaces/web/${name}/`)) return name;
   }
@@ -62,10 +61,9 @@ export function allowedDependency(from: string, to: string): boolean {
   if (source === "core" || source === "shared" || source === "service-worker") return false;
   if (source === "applications") return target === "core";
   if (source === "adapters") return target === "applications" || target === "core";
-  if (source === "server") return ["core", "applications", "adapters"].includes(target);
   if (source === "presentation") return ["core", "applications", "shared"].includes(target);
   if (source.startsWith("feature:")) return ["core", "applications", "shared", "presentation"].includes(target);
-  return source === "app" && target !== "server" && !to.startsWith("src/adapters/appsscript/");
+  return source === "app";
 }
 
 export interface SourceFile {
@@ -140,35 +138,6 @@ export function architectureProblems(sources: readonly SourceFile[]): string[] {
     };
     visit(ast);
   }
-  // Check environment isolation through intermediate adapters, not just direct imports.
-  const checkEnvironment = (
-    roots: readonly string[],
-    forbidden: (file: string) => boolean,
-    environment: string,
-  ): void => {
-    const seen = new Set<string>();
-    const visit = (file: string, chain: readonly string[]): void => {
-      if (forbidden(file)) {
-        problems.push(`${environment} dependency reaches forbidden environment: ${[...chain, file].join(" -> ")}`);
-        return;
-      }
-      if (seen.has(file)) return;
-      seen.add(file);
-      for (const target of graph.get(file) ?? []) visit(target, [...chain, file]);
-    };
-    for (const root of roots) visit(root, []);
-  };
-  const files = [...graph.keys()];
-  checkEnvironment(
-    files.filter((file) => file.startsWith("src/interfaces/web/") || file.startsWith("src/adapters/browser/")),
-    (file) => file.startsWith("src/interfaces/server/") || file.startsWith("src/adapters/appsscript/"),
-    "Browser",
-  );
-  checkEnvironment(
-    files.filter((file) => file.startsWith("src/interfaces/server/") || file.startsWith("src/adapters/appsscript/")),
-    (file) => file.startsWith("src/interfaces/web/") || file.startsWith("src/adapters/browser/"),
-    "Server",
-  );
   const visited = new Set<string>();
   const active = new Set<string>();
   const walk = (file: string, chain: readonly string[]): void => {

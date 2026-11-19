@@ -11,8 +11,6 @@ flowchart LR
   applications[applications] --> core[core]
   adapters[adapters] --> core[core]
   adapters[adapters] --> applications[applications]
-  server[server] --> applications[applications]
-  server[server] --> adapters[adapters]
   presentation[presentation] --> core[core]
   presentation[presentation] --> shared[shared]
   features[features] --> core[core]
@@ -32,7 +30,6 @@ flowchart LR
 ```text
 src/
 ├── adapters/
-│   ├── appsscript/
 │   ├── browser/
 │   │   ├── connection/
 │   │   └── storage/
@@ -56,7 +53,6 @@ src/
 │   ├── statements/
 │   └── values/
 └── interfaces/
-    ├── server/
     └── web/
         ├── app/
         │   ├── demo/

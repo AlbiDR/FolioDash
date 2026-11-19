@@ -17,7 +17,7 @@ describe("areas", () => {
     expect(areaOf("src/core/values/money.ts")).toBe("src/core");
     expect(areaOf("src/adapters/google/rest.ts")).toBe("src/adapters");
     expect(areaOf("src/interfaces/web/features/overview/view.tsx")).toBe("src/interfaces/web/features");
-    expect(areaOf("src/interfaces/server/main.ts")).toBe("src/interfaces/server");
+    expect(areaOf("src/interfaces/web/features/overview/view.tsx")).toBe("src/interfaces/web/features");
   });
 });
 

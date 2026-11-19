@@ -1,11 +1,11 @@
-# GitHub frontend, Google Sheets records, Apps Script service
+# GitHub frontend and Google Sheets records
 
 Decision IDs: **FD-013** (selected architectural direction), **FD-014** (proposed runtime connection)  
-Status: **Direction selected by the owner; protocol and deployment not implemented or verified**  
+Status: **The Apps Script service was removed from the repository on 2026-11-19 by owner decision. The direct browser route (FD-017) is the current direction; its live proof is still open. Sections 1, 2, 3, 3.1, 3.2 and 7 describe the removed service and are kept as its design record.**  
 Created: 2026-11-01  
 Parent authority: [CleanStack Architecture](cleanstack.md)
 
-Current direction: FD-017 in the owner's private decision register supersedes the Apps Script route for new users with direct browser-to-Google access. The Apps Script service below is retained until the replacement passes live proof. The original protocol remains documented for that retained implementation; its historical status does not describe all current source.
+Current direction: FD-017 in the owner's private decision register: direct browser-to-Google access under `drive.file`, with no script per person. The Apps Script service was removed on 2026-11-19, before the live proof of the direct route was recorded.
 
 ## 1. Decision and scope
 
@@ -163,7 +163,7 @@ Row format version 1, append-only, every field plain text so a sheet cannot rety
 - A command id is recorded with its revision. Repeating a command returns the earlier result without writing; reusing the id with different content is rejected. A review against a revision that is no longer current is reported as stale.
 - A failed write is classified: known not committed (safe to retry with the same id), committed after all (a lost acknowledgement, resolved by reading), or unknown (the store could not be read afterwards; read the command outcome first).
 
-The Apps Script side is in `src/interfaces/server/` (four named operations: check, read, commit, outcome; plain JSON in and out, every request validated, no cell range, sheet name or function name accepted) and `src/adapters/appsscript/sheets-row-sheet.ts` (a hidden tab whose cells are written as plain text before their values, so Sheets cannot retype them). `npm run build:apps-script` bundles it with esbuild into `dist/apps-script/Code.js` plus a manifest that asks only for spreadsheet access. `npm run verify:apps-script` runs that file in a bare context offering only what Apps Script offers, against a fake spreadsheet that retypes unformatted cells, and checks all four operations. The bundle has **not** been pushed to Google or run there, no API executable exists, and the manifest deliberately omits `executionApi` until FD-014 settles who may call it.
+The Apps Script side was removed from the repository on 2026-11-19: its server entry, its row-sheet adapter and its bundle check are gone. The protocol's logic remains in `src/applications/ledger/ledger-service.ts`, which the browser uses.
 
 Proved by tests against the in-memory sheet: interruption before the commit record, a failure before any write, a lost acknowledgement after the commit record, an unreadable store after a failure, a repeated and a conflicting command, a stale review, a rejected statement, and tampering with a snapshot, the header, the commit record and a timeline reference. Gate G5 remains NOT RUN against real Sheets and Apps Script: concurrent executions, the lock's real scope, quotas and the actual publication primitive are still to be proven.
 
