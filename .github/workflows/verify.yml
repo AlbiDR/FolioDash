@@ -1,5 +1,8 @@
 name: Verify
 
+# The single quality gate and the only path to a release. A release is a push or a manual run on main, and it
+# publishes the artifact built in this same run.
+
 on:
   push:
     branches: [main]
@@ -12,11 +15,35 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
+  plan:
+    name: Decide whether this run releases
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    outputs:
+      release: ${{ steps.decide.outputs.release }}
+    steps:
+      - name: Decide
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: |
+          if [[ "$REF" == "refs/heads/main" && ( "$EVENT" == "push" || "$EVENT" == "workflow_dispatch" ) ]]; then
+            echo 'release=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'release=false' >> "$GITHUB_OUTPUT"
+          fi
+
   workflows:
     name: Check GitHub Actions
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    # Supersede checks for this event and ref; a release run is never cancelled by a later event.
     concurrency:
       group: workflows-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
       cancel-in-progress: true
@@ -35,17 +62,15 @@ jobs:
         run: npm run verify:workflows
 
   verify:
-    name: Verify (Node ${{ matrix.node }})
+    name: Verify
+    needs: plan
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    # Supersede checks for this event/ref without cancelling an active deployment.
     concurrency:
-      group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ matrix.node }}
+      group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
       cancel-in-progress: true
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [22]
+    env:
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,19 +78,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
+      - name: Set up the project
+        uses: ./.github/actions/setup-project
 
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Check public release configuration
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        env:
-          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      - name: Require the public client ID for a release
+        if: needs.plan.outputs.release == 'true'
         run: |
           if [[ -z "$VITE_GOOGLE_CLIENT_ID" ]]; then
             echo "::error::Set the public repository variable VITE_GOOGLE_CLIENT_ID before releasing."
@@ -74,49 +91,25 @@ jobs:
 
       - name: Verify project
         run: npm run verify
-        env:
-          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Audit dependencies
         run: npm run audit:dependencies
 
       - name: Audit rendered interactions
-        if: matrix.node == 22
         timeout-minutes: 6
-        run: |
-          if ! CHROME_PATH=$(command -v google-chrome); then
-            echo "::error::Google Chrome is required for the synthetic interaction audit."
-            exit 1
-          fi
-          export CHROME_PATH
-          npm run audit:interactions
-          npm run audit:backfill-recovery
-          npm run audit:expense-recovery
-          npm run audit:expense-restore
-          npm run audit:sale-closure
-          npm run audit:account-outcomes
-          npm run audit:overview-signals
-          npm run audit:checkpoints
-          npm run audit:accessibility
-          npm run audit:reduced-motion
+        run: npm run audit:rendered
 
       - name: Capture current README views
-        if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        if: needs.plan.outputs.release == 'true'
         timeout-minutes: 3
-        run: |
-          if ! CHROME_PATH=$(command -v google-chrome); then
-            echo "::error::Google Chrome is required to capture the signed-out README demo."
-            exit 1
-          fi
-          export CHROME_PATH
-          npm run capture:readme
+        run: npm run capture:readme
 
       - name: Assemble the checked app and README images
-        if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        if: needs.plan.outputs.release == 'true'
         run: npm run build:pages
 
       - name: Upload the verified site
-        if: matrix.node == 22 && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        if: needs.plan.outputs.release == 'true'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist/pages
@@ -124,8 +117,8 @@ jobs:
 
   deploy:
     name: Publish verified site
-    needs: [workflows, verify]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: [plan, workflows, verify]
+    if: needs.plan.outputs.release == 'true'
     permissions:
       contents: read
       pages: write
