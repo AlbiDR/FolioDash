@@ -48,6 +48,28 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "!window.auditChart.querySelector('.chart-svg').getAnimations().some(a=>a.playState==='running') && JSON.stringify([...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d')))===JSON.stringify(window.auditPaths)",
     "active-period reselect does not restart chart or change data",
   );
+  // A real period change morphs the plotted lines between axes and settles to no transform at all.
+  await evaluate(
+    "window.auditLayer=window.auditChart.querySelector('.chart-svg > g:not([class])');[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='6M').click()",
+  );
+  await delay(40);
+  await check(
+    "window.auditLayer.getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().progress<1)&&getComputedStyle(window.auditLayer).transform!=='none'",
+    "period change morphs the plotted lines between axes",
+  );
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "window.auditLayer.getAnimations().length===0&&getComputedStyle(window.auditLayer).transform==='none'",
+      )) === true,
+    "morph settles to the exact new geometry",
+  );
+  await check(
+    "JSON.stringify([...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d')))!==JSON.stringify(window.auditPaths)",
+    "morphed chart keeps the exact new path data",
+  );
+  await evaluate("[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='3M').click()");
+  await delay(40);
   await call("Input.dispatchKeyEvent", { type: "keyDown", key: "ArrowRight", code: "ArrowRight" });
   await call("Input.dispatchKeyEvent", { type: "keyUp", key: "ArrowRight", code: "ArrowRight" });
   await delay(40);
@@ -131,6 +153,23 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "window.auditChart.getAnimations({subtree:true}).every(a=>a.playState!=='running') && document.activeElement===window.auditOption",
     "reduced-motion range update retains focus with no running motion",
   );
+  await evaluate("[...window.auditSelector.querySelectorAll('button')].find(b=>b.textContent==='6M').click()");
+  await delay(40);
+  await check(
+    "window.auditLayer.getAnimations().length===0&&getComputedStyle(window.auditLayer).transform==='none'",
+    "reduced motion draws a period change at once without a morph",
+  );
+  const reducedCard = (await evaluate(
+    "(()=>{window.auditCard=document.querySelector('.period-results');const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
+  )) as { x: number; y: number };
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: reducedCard.x, y: reducedCard.y });
+  await delay(40);
+  await check(
+    "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='none'",
+    "reduced motion keeps card hover edge without lifting it",
+  );
+  await evaluate("window.auditOption.click()");
+  await delay(40);
   const reducedDocument = await call("DOM.getDocument");
   const reducedOption = await call("DOM.querySelector", {
     nodeId: (reducedDocument["root"] as { nodeId: number }).nodeId,
@@ -159,4 +198,16 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "window.auditChart.querySelector('.chart-svg').getAnimations().every(a=>a.playState!=='running')",
     "privacy changes immediately cancel a running plot cue",
   );
+  await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
+  const hoverCard = (await evaluate(
+    "(()=>{const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
+  )) as { x: number; y: number };
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: hoverCard.x, y: hoverCard.y });
+  await delay(260);
+  await check(
+    "window.auditCard.matches(':hover')&&getComputedStyle(window.auditCard).translate==='0px -2px'&&getComputedStyle(window.auditCard).boxShadow.includes('inset')",
+    "fine-pointer card hover lifts the card and brightens its edge",
+  );
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
+  await delay(260);
 }

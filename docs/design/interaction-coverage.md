@@ -30,6 +30,8 @@ Each interaction must be inspected through rest, hover where supported, keyboard
 
 Source discovery classifies 169 templates in 22 files for the portfolio hierarchy revision. It does not mark every conditional state visually verified. The final table column retains specific reviews and leaves unvisited states OPEN. Static discovery cannot infer arbitrary programmatic listeners or spread-only semantics; use native controls or explicit roles and extend the discovery tests before adding a new interaction mechanism.
 
+2026-11-19, dynamic charts and cards: a period change morphs the Portfolio, analysis and Fund chart lines and the Changes trends between axes, and cards lift on fine-pointer hover (see [interactions](../operations/interactions.md#dynamic-charts-and-card-feedback-2026-11-19)). The local Chrome synthetic-demo audit passed 133 journey assertions and 915 control samples across 27 states, including the in-flight morph, its settlement to no transform, reduced-motion stillness and the card lift. The chart-inspection SVG's source identity changed with its markup, so it is STATES OPEN again until revisited. Physical devices, other engines and screen readers remain unverified.
+
 2026-11-16, portfolio hierarchy: trends and both comparison tables are visible without disclosure, with portfolio totals first. In an isolated checkout of this revision, the local Chrome synthetic-demo audit passed 67 journey assertions and 669 control samples across 20 states. It checked visible trends, desktop and phone table access, and that all portfolio row labels stay fixed while statement values move during horizontal scrolling. Physical devices, other engines, screen readers and live Google remain unverified.
 
 2026-11-16: the Astryx-inspired recent fund history disclosure was included in desktop and phone synthetic-demo rendered discovery, including the twelve-fund case. The audit checked three dated rows, the full-comparison link and immediate amount masking. The complete audit passed 58 journey assertions and 631 control samples across 20 states on local Chrome. Individual new control states remain OPEN in the source inventory; physical devices, other engines, screen readers and real Google remain unverified. The expense audit now finds a recorded sample day in the previous week when the current week has none, such as on Monday.
@@ -265,10 +267,10 @@ One row is a source template; a fund-link template can render many controls. All
 | e31f7b55bac2-1 | [months-view.tsx:293](../../src/interfaces/web/features/overview/months-view.tsx#L293) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
 | 4eeac9ba431c-1 | [months-view.tsx:349](../../src/interfaces/web/features/overview/months-view.tsx#L349) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
 | 516fd464ddb2-1 | [overview-analysis.tsx:102](../../src/interfaces/web/features/overview/overview-analysis.tsx#L102) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 7835b073b7a4-1 | [overview-cards.tsx:83](../../src/interfaces/web/features/overview/overview-cards.tsx#L83) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
-| 7629eadcb326-1 | [overview-cards.tsx:149](../../src/interfaces/web/features/overview/overview-cards.tsx#L149) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
-| 259bfaabbc9d-1 | [overview-cards.tsx:208](../../src/interfaces/web/features/overview/overview-cards.tsx#L208) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 79d1b03ed21a-1 | [overview-cards.tsx:242](../../src/interfaces/web/features/overview/overview-cards.tsx#L242) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| 7835b073b7a4-1 | [overview-cards.tsx:86](../../src/interfaces/web/features/overview/overview-cards.tsx#L86) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
+| 7629eadcb326-1 | [overview-cards.tsx:152](../../src/interfaces/web/features/overview/overview-cards.tsx#L152) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
+| 259bfaabbc9d-1 | [overview-cards.tsx:211](../../src/interfaces/web/features/overview/overview-cards.tsx#L211) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 79d1b03ed21a-1 | [overview-cards.tsx:245](../../src/interfaces/web/features/overview/overview-cards.tsx#L245) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | f9deda2cfc0c-1 | [overview-holdings.tsx:82](../../src/interfaces/web/features/overview/overview-holdings.tsx#L82) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
 | df5f93250bb8-1 | [overview-holdings.tsx:136](../../src/interfaces/web/features/overview/overview-holdings.tsx#L136) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
 | 2cc174d3262d-1 | [overview-holdings.tsx:154](../../src/interfaces/web/features/overview/overview-holdings.tsx#L154) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
@@ -283,16 +285,16 @@ One row is a source template; a fund-link template can render many controls. All
 | 4c27cd5734fc-1 | [overview-view.tsx:85](../../src/interfaces/web/features/overview/overview-view.tsx#L85) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
 | 68f008a1b407-1 | [overview-view.tsx:89](../../src/interfaces/web/features/overview/overview-view.tsx#L89) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4e586bf3824f-1 | [overview-view.tsx:131](../../src/interfaces/web/features/overview/overview-view.tsx#L131) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| 3a1966c1235b-1 | [overview-view.tsx:223](../../src/interfaces/web/features/overview/overview-view.tsx#L223) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 666619ba1abe-1 | [overview-view.tsx:241](../../src/interfaces/web/features/overview/overview-view.tsx#L241) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| 4e03b4ce4b63-1 | [overview-view.tsx:245](../../src/interfaces/web/features/overview/overview-view.tsx#L245) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 3a1966c1235b-1 | [overview-view.tsx:224](../../src/interfaces/web/features/overview/overview-view.tsx#L224) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 666619ba1abe-1 | [overview-view.tsx:242](../../src/interfaces/web/features/overview/overview-view.tsx#L242) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 4e03b4ce4b63-1 | [overview-view.tsx:246](../../src/interfaces/web/features/overview/overview-view.tsx#L246) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | d8d6a251e8a5-1 | [donut.tsx:57](../../src/interfaces/web/presentation/charts/donut.tsx#L57) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | f0096a0a1206-1 | [line-chart-parts.tsx:57](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L57) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 7f473b4575d1-1 | [line-chart.tsx:140](../../src/interfaces/web/presentation/charts/line-chart.tsx#L140) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| a110d5b535d9-1 | [line-chart.tsx:203](../../src/interfaces/web/presentation/charts/line-chart.tsx#L203) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| 63b5f07c9cc3-1 | [line-chart.tsx:305](../../src/interfaces/web/presentation/charts/line-chart.tsx#L305) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 458c1b118a98-1 | [line-chart.tsx:327](../../src/interfaces/web/presentation/charts/line-chart.tsx#L327) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| c7758c3b45e9-1 | [line-chart.tsx:331](../../src/interfaces/web/presentation/charts/line-chart.tsx#L331) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 7f473b4575d1-1 | [line-chart.tsx:143](../../src/interfaces/web/presentation/charts/line-chart.tsx#L143) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| d3f4aa1f4ee7-1 | [line-chart.tsx:206](../../src/interfaces/web/presentation/charts/line-chart.tsx#L206) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:310](../../src/interfaces/web/presentation/charts/line-chart.tsx#L310) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 458c1b118a98-1 | [line-chart.tsx:332](../../src/interfaces/web/presentation/charts/line-chart.tsx#L332) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:336](../../src/interfaces/web/presentation/charts/line-chart.tsx#L336) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
 | b8aea119d3dc-1 | [monthly-bars.tsx:115](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L115) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9b0ee110f1fd-1 | [monthly-bars.tsx:192](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L192) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | e12440fad7f8-1 | [monthly-bars.tsx:223](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L223) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |

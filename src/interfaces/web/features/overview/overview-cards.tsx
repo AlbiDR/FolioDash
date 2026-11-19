@@ -18,6 +18,8 @@ export function StatCard(props: {
   /** Why the figure may be missing, said in plain words, so a dash is never a mystery. */
   readonly unavailable: string;
   readonly trend: { readonly times: readonly number[]; readonly values: readonly (number | null)[] };
+  /** The chart period; a change reshapes this card's trend. The figure itself does not depend on the period. */
+  readonly changeKey?: string;
 }): JSX.Element {
   const { kpi } = props;
   return (
@@ -45,6 +47,7 @@ export function StatCard(props: {
         width={220}
         height={52}
         area
+        changeKey={props.changeKey}
       />
     </div>
   );

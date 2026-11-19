@@ -1,5 +1,6 @@
 /* Motion refinement: 5 arrivals, 17 transitions, 15 microtransitions and 5 interactions.
- * Inventory and verification: docs/operations/interactions.md. No delayed actions or data tweening.
+ * Inventory and verification: docs/operations/interactions.md. No delayed actions. Period changes morph chart lines, and
+ * cards lift on fine-pointer hover (2026-11-19).
  */
 
 /* A1-A5: brief, single-pass arrivals. No stagger leaves controls waiting to become usable. */
@@ -84,6 +85,28 @@
   transition:
     background-color var(--duration-medium) var(--ease-standard),
     border-color var(--duration-feedback) var(--ease-standard);
+}
+/* Cards answer a fine pointer with a small lift and a brighter edge. Their content stays where it is inside the card,
+ * and keyboard focus is never delayed. Reduced motion keeps the edge and drops the lift. */
+@media (hover: hover) and (pointer: fine) {
+  .card {
+    transition:
+      translate var(--duration-feedback) var(--ease-standard),
+      box-shadow var(--duration-feedback) var(--ease-standard),
+      background-color var(--duration-medium) var(--ease-standard),
+      border-color var(--duration-feedback) var(--ease-standard);
+  }
+  .card:hover {
+    translate: 0 var(--motion-lift);
+    box-shadow:
+      inset 0 0 0 1px var(--color-card-edge-lift),
+      var(--shadow-card-lift);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover {
+    translate: none;
+  }
 }
 .chart {
   transition:

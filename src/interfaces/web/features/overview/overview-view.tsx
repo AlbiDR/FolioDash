@@ -210,6 +210,7 @@ export function OverviewView(props: {
               kpi={entry}
               caption={stat.caption}
               unavailable={stat.unavailable}
+              changeKey={props.range}
               trend={{ times: d.shownTimes, values: d.metricTrends[stat.metric] }}
             />
           );
