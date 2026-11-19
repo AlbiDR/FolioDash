@@ -1,6 +1,6 @@
 # Motion layer
 
-Status: **Revised 2026-11-19 after review; step 1 started.** Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
+Status: **Revised 2026-11-19 after review. Step 1 done:** the Animate and Settle primitives exist in `shared/motion/`, and the row glide and the bar morph use them. Both changes are behaviour-neutral, so the interaction and reduced-motion audits are unchanged. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-12, UXC-13 and ARC-13, the [interaction coverage](interaction-coverage.md) contract and the [rendered interaction audit](../operations/interactions.md). Architecture, not a redesign, so the [Astryx reference](astryx-reference.md) is not the governing reference for the mechanics. Any visual change still follows its own design record.
 
