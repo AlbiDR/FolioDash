@@ -1,5 +1,6 @@
-/* Cards, charts and stat blocks are containers, not controls: they get no hover, focus or press
- * feedback of their own. The links and buttons inside them carry it.
+/* Cards, charts and stat blocks are containers, not controls: they get no press or focus feedback of their own,
+ * and the links and buttons inside them carry it. On fine pointers a card lifts on hover; that rule lives in
+ * refinement.css (2026-11-19).
  */
 .spark-area {
   transition: opacity var(--duration-feedback) var(--ease-standard);
