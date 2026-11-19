@@ -1,4 +1,4 @@
-import type { ChartGeometry } from "./line-chart-geometry";
+import type { ChartGeometry } from "../line-chart-geometry";
 
 /** A plain affine map between two drawings: x' = scaleX * x + translateX and y' = scaleY * y + translateY. */
 export interface MorphTransform {

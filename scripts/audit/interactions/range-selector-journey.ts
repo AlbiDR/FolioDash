@@ -57,6 +57,14 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "window.auditLayer.getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().progress<1)&&getComputedStyle(window.auditLayer).transform!=='none'",
     "period change morphs the plotted lines between axes",
   );
+  await check(
+    "[...document.querySelectorAll('.desktop-holdings .sparkline > g')].some(g=>g.getAnimations().some(a=>a.playState==='running'))",
+    "holdings trends reshape with the period",
+  );
+  await check(
+    "[...document.querySelectorAll('.bars-item')].some(g=>g.getAnimations().some(a=>a.playState==='running'))",
+    "monthly bars glide to their places for the new period",
+  );
   await waitFor(
     async () =>
       (await evaluate(

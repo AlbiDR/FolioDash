@@ -6,6 +6,27 @@ export interface HoldingsSort {
   readonly direction: "asc" | "desc";
 }
 
+/** Desktop columns in reading order: the fund, what it is worth, its weight, then how it has done. */
+export const HOLDINGS_COLUMNS: readonly HoldingsSortKey[] = [
+  "name",
+  "value",
+  "share",
+  "gainPercent",
+  "gain",
+  "netInvested",
+];
+
+/** The phone's list offers the orders people ask for, one choice instead of six headers. */
+export const PHONE_SORTS: readonly HoldingsSort[] = [
+  { key: "name", direction: "asc" },
+  { key: "value", direction: "desc" },
+  { key: "share", direction: "desc" },
+  { key: "gainPercent", direction: "desc" },
+  { key: "gainPercent", direction: "asc" },
+  { key: "gain", direction: "desc" },
+  { key: "netInvested", direction: "desc" },
+];
+
 /** What each sortable column is called, in the words the headers and announcements use. */
 export const SORT_LABELS: Readonly<Record<HoldingsSortKey, string>> = {
   name: "Fund",

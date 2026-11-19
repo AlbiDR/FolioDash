@@ -7,7 +7,7 @@ import { type ChartSeries, computeLineChart } from "./line-chart-geometry";
 import { LAYOUT, styleClass } from "./line-chart-layout";
 import { ChartReadout, ChartValuesTable } from "./line-chart-parts";
 import { useChartSize } from "./use-chart-size";
-import { useGeometryMorph } from "./use-geometry-morph";
+import { useGeometryMorph } from "./motion/use-geometry-morph";
 import { useUpdateFade } from "./use-update-fade";
 
 export interface LineChartProps {

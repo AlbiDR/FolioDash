@@ -77,6 +77,7 @@ src/
         │       └── styles/
         ├── presentation/
         │   ├── charts/
+        │   │   └── motion/
         │   └── privacy/
         ├── public/
         │   ├── icons/

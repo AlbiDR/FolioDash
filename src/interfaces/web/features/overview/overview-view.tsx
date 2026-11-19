@@ -268,6 +268,7 @@ export function OverviewView(props: {
         gain={gain}
         fundSeries={d.fundSeries}
         shownTimes={d.shownTimes}
+        range={props.range}
       />
 
       <div class="cell-4 portfolio-rail">

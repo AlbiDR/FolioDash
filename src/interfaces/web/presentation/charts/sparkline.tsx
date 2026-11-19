@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useMemo, useRef } from "preact/hooks";
-import { useGeometryMorph } from "./use-geometry-morph";
+import { useGeometryMorph } from "./motion/use-geometry-morph";
 import { computeLineChart } from "./line-chart-geometry";
 
 /**
