@@ -1,21 +1,34 @@
-name: Publish verified site
+name: Release site
 
-# Verify supplies the checked Node 22 artifact in the same run. This workflow
-# never checks out source, installs packages or rebuilds the release.
+# Publishes main to GitHub Pages. A push to main and a manual run on main both pass the full gate, and then publish the
+# site that the gate audited. Any other branch never publishes, and a pull request never reaches this workflow.
+
 on:
-  workflow_call:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# One release at a time. A queued release is never cancelled, because cancelling a deployment can leave it half done.
+concurrency:
+  group: release-site
+  cancel-in-progress: false
+
 jobs:
-  deploy:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+  gate:
+    name: Gate
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/verify.yml
+    with:
+      release: true
+
+  publish:
+    name: Publish verified site
+    needs: gate
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    concurrency:
-      group: pages
-      cancel-in-progress: false
     permissions:
       contents: read
       pages: write
@@ -24,6 +37,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # This job never checks out source, installs packages or rebuilds: it deploys the artifact the gate produced.
       - name: Check this revision is still current
         id: revision
         env:
@@ -41,13 +55,16 @@ jobs:
         if: steps.revision.outputs.current == 'true'
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          # Serialises deployments of the same Pages site, without cancelling one in progress.
+          timeout: 600000
 
       - name: Record the released revision
         if: steps.deployment.outcome == 'success'
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
-          printf 'Published the verified Node 22 artifact for `%s`: %s\n' "$GITHUB_SHA" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Published the verified site for `%s`: %s\n' "$GITHUB_SHA" "$PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
 
       # Best effort. GitHub's image proxy keeps each README image for ten minutes at every location, so without this the
       # README can keep showing the previous screenshots after a release. Only this release's own image URLs are purged.

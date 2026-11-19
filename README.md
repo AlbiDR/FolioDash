@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AlbiDR/FolioDash/actions/workflows/verify.yml"><img src="https://github.com/AlbiDR/FolioDash/actions/workflows/verify.yml/badge.svg?branch=main&amp;event=push" alt="Verify workflow status"></a>
+  <a href="https://github.com/AlbiDR/FolioDash/actions/workflows/release-site.yml"><img src="https://github.com/AlbiDR/FolioDash/actions/workflows/release-site.yml/badge.svg?branch=main&amp;event=push" alt="Release site workflow status"></a>
   <a href="#under-the-hood"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="Built with TypeScript"></a>
   <a href="#under-the-hood"><img src="https://img.shields.io/badge/Preact-673AB8?style=flat-square&amp;logo=preact&amp;logoColor=white" alt="Interface built with Preact"></a>
 </p>

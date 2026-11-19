@@ -17,7 +17,7 @@ The owner wants every value that can change, whether a secret or a variable, to 
 - **Trade-off to decide:** baking the spreadsheet ID into a build that becomes public names the owner's spreadsheet to every visitor. Access is still enforced by Google, but the owner may prefer to keep it as something each person enters, as the Connection page does today.
 - Anything the repository cannot hold (Google console settings) is recorded in [Google setup](google-setup.md) so it can be recreated; it is not a second source of truth for values.
 
-The web build reads the public OAuth client ID from `VITE_GOOGLE_CLIENT_ID`. Changing it requires a new Deploy site or Verify run on current `main`, which checks and publishes the configured artifact. The retained Apps Script workflow is manual and owner-only on current `main`, using the `apps-script-deploy` environment. FD-017 selects direct Google access for new users; retaining that workflow does not reinstate Apps Script as the selected runtime route.
+The web build reads the public OAuth client ID from `VITE_GOOGLE_CLIENT_ID`. Changing it requires a new Release site run on current `main`, which checks and publishes the configured artifact. The retained Apps Script workflow is manual and owner-only on current `main`, using the `apps-script-deploy` environment. FD-017 selects direct Google access for new users; retaining that workflow does not reinstate Apps Script as the selected runtime route.
 
 ## 2. Configuration contract
 
@@ -40,7 +40,7 @@ Public OAuth client IDs are public by design, so they are variables and never se
 |---|---|
 | `.github/allowed-contributors.json` | The only humans whose attribution is accepted; GitHub no-reply addresses only, never a personal address |
 | `scripts/verify/project/contributors.ts` | Fails on any author or co-author that is not approved, or whose metadata names an AI system or automation. Dependency-free, so it needs no tooling decision |
-| `.github/workflows/verify.yml` | Runs contributor attribution through `npm run verify` on each supported Node version with complete history; no separate attribution workflow |
+| `.github/workflows/verify.yml` | Runs contributor attribution through `npm run verify` on Node 22 with complete history; no separate attribution workflow |
 | `scripts/verify/project/workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
 | `scripts/verify/code/punctuation.ts`, `scripts/verify/code/punctuation-policy.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
 | `.github/CODEOWNERS` | Review ownership of `.github/`, `docs/architecture/` (CleanStack and the other architecture documents) and `scripts/` |
@@ -53,11 +53,9 @@ Attribution failure blocks the dependent site deployment. CODEOWNERS and quality
 
 | Workflow or file | What it does |
 |---|---|
-| `verify.yml` | Single orchestrator: actionlint, one Node 22 verification and audit job, then Pages publication for current `main` push/manual runs. PR, scheduled and other-branch manual runs verify only |
-| `deploy-site.yml` | Manual entry point on current `main`; calls `verify.yml` and never duplicates its checks |
-| `publish-verified-site.yml` | Reusable deployment only; consumes the checked Node 22 artifact in the caller's run after verification succeeds; never rebuilds |
-| `codeql.yml` | Independent static analysis of TypeScript on pushes, pull requests, weekly and manual dispatch; uploads results to code scanning |
-| `dependency-review.yml` | PR dependency review with the same moderate-or-greater vulnerability threshold as npm audit |
+| `check.yml` | Judges every change: the shared gate for pull requests, the weekly schedule and manual runs, CodeQL on pushes and pull requests, and dependency review on pull requests |
+| `release-site.yml` | Publishes main to Pages after the same gate passes; manual runs on main publish too; no other branch publishes |
+| `verify.yml` | The reusable gate: workflow lint, build, `npm run verify`, dependency audit, rendered audits, and on a release the Pages assembly |
 | `deploy-apps-script.yml` | Retained manual deployment, current `main` and owner only; verifies complete history and audits before any credential file or remote write |
 
 [GitHub Actions](github-actions.md) owns triggers, the dependency graph, cancellation, artifact ownership, maintenance and verification limits.
