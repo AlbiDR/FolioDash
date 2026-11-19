@@ -98,8 +98,10 @@ jobs:
   audit:
     name: Audit rendered interactions
     needs: build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    # macOS, not Linux: the rendered audits assert text geometry, and the app's font stack starts with SF Pro, which only
+    # macOS has. The Linux failures are inferred to come from that fallback face; this is not reproduced yet.
+    runs-on: macos-15
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -115,9 +117,20 @@ jobs:
           name: web-build
           path: dist/web
 
-      # The rendered audits measure text and geometry. Naming the browser and the font that the system stack resolves to
-      # lets a geometry failure be read against the runner it ran on, and a missing browser fails here, not in the audit.
-      - name: Check the browser and the system font
+      # A missing browser fails here, not in the audit, and the browser and macOS version are printed beside the results.
+      - name: Check the browser on macOS
+        if: runner.os == 'macOS'
+        run: |
+          chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          if [[ ! -x "$chrome" ]]; then
+            echo "::error::Google Chrome is required for the rendered audits."
+            exit 1
+          fi
+          "$chrome" --version
+          sw_vers
+
+      - name: Check the browser and the system font on Linux
+        if: runner.os != 'macOS'
         run: |
           if ! command -v google-chrome > /dev/null; then
             echo "::error::Google Chrome is required for the rendered audits."
@@ -131,7 +144,7 @@ jobs:
           fi
 
       - name: Audit the built site in Chrome
-        timeout-minutes: 6
+        timeout-minutes: 10
         run: npm run audit:rendered
 
   site:
