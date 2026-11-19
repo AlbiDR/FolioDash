@@ -86,9 +86,10 @@ export async function historyJourney({
   );
   await survey("History / money added and received / desktop");
   await evaluate("document.querySelectorAll('.questions .choice input')[1].click()");
-  await delay(450);
-  await check(
-    "!document.querySelector('.cash-movements')",
+  // The amount fields leave once their notice has collapsed. The collapse ends on a transition or a fallback timer, so wait
+  // for the state rather than a fixed time: a slower renderer can finish after any fixed delay.
+  await waitFor(
+    async () => (await evaluate("!document.querySelector('.cash-movements')")) === true,
     "Cash review: no-movement selection collapses the amount fields",
   );
   await check(
