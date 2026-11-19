@@ -3,6 +3,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import type { JourneyContext } from "./browser-steps.ts";
 
 export async function holdingsJourney({
+  call,
   evaluate,
   waitFor,
   check,
@@ -66,6 +67,52 @@ export async function holdingsJourney({
   await check(
     "document.querySelector('.group-toggle').getAttribute('aria-expanded')==='true'&&document.querySelectorAll('#holdings-closed-rows tr:not(.holdings-group)').length>0",
     "opening the closed funds shows them again",
+  );
+  // A re-sort glides every row to its new place together: no row waits, each row keeps the text it shows, and the order is the one the header names.
+  await evaluate(
+    "window.auditRows=[...document.querySelectorAll('.desktop-holdings .holdings-table tbody tr:not(.holdings-group)')];window.auditRowText=window.auditRows.map(r=>r.textContent);window.auditHeader=label=>[...document.querySelectorAll('.holdings-table thead .sort-button')].find(b=>b.textContent.trim()===label);window.auditHeader('Value').click()",
+  );
+  await delay(40);
+  await check(
+    "window.auditRows.some(r=>r.getAnimations().some(a=>a.playState==='running'))",
+    "a holdings re-sort glides rows to their new places",
+  );
+  await check(
+    "window.auditRows.flatMap(r=>r.getAnimations()).every(a=>a.effect.getComputedTiming().delay===0)&&new Set(window.auditRows.flatMap(r=>r.getAnimations()).map(a=>a.effect.getComputedTiming().duration)).size<=1",
+    "gliding rows share one duration and none waits for another",
+  );
+  await check(
+    "window.auditRows.every((r,i)=>r.textContent===window.auditRowText[i])",
+    "gliding rows keep the text and figures they show",
+  );
+  await check(
+    "window.auditHeader('Value').closest('th').getAttribute('aria-sort')==='descending'",
+    "the re-sorted header names the order the rows now follow",
+  );
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "window.auditRows.every(r=>r.getAnimations().length===0&&getComputedStyle(r).transform==='none')",
+      )) === true,
+    "re-sorted rows settle with no transform",
+  );
+  await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+  await evaluate("window.auditHeader('Gain').click()");
+  await delay(40);
+  await check(
+    "window.auditRows.every(r=>r.getAnimations().length===0)",
+    "reduced motion re-sorts holdings at once without a glide",
+  );
+  await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
+  // The phone's list uses the same glide: its order follows the sort choice and its rows move together.
+  await visit("overview", 390, "many");
+  await evaluate(
+    "(()=>{const select=document.getElementById('holdings-sort');select.value='value:desc';select.dispatchEvent(new Event('change',{bubbles:true}))})()",
+  );
+  await delay(40);
+  await check(
+    "[...document.querySelectorAll('.mobile-holdings > li')].some(li=>li.getAnimations().some(a=>a.playState==='running'))",
+    "the phone holdings list glides to its new order",
   );
   // Short histories have no returns grid; three years of demo history show it, with no reminder (the demo's dates are invented), and its figures are the Month by month matrix's own.
   await check(

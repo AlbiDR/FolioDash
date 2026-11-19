@@ -1,6 +1,8 @@
 import type { JSX, RefObject } from "preact";
+import { useRef } from "preact/hooks";
 import { formatDateLong } from "../../../../core/values/iso-date";
 import { Icon } from "../../shared/ui/icons";
+import { useRowGlide } from "../../shared/ui/use-row-glide";
 import { Sparkline } from "../../presentation/charts/sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
 import type { dashboardFor } from "./model/dashboard-data";
@@ -27,6 +29,9 @@ const GROUP_FROM = 6;
 
 /** A search box is only worth its space once a list is long enough to need one. */
 const SEARCH_FROM = 7;
+
+/** The rows a re-sort moves: desktop holdings rows (not the grouped headers, totals or statement tables) and phone list items. */
+const GLIDING_ROWS = ".holdings-table:not(.statement-table) > tbody > tr:not(.holdings-group), .mobile-holdings > li";
 
 export function HoldingsCard(props: {
   readonly funds: readonly OverviewFund[];
@@ -64,6 +69,9 @@ export function HoldingsCard(props: {
     latestTotal,
     gain,
   } = props;
+  const card = useRef<HTMLDivElement>(null);
+  // A re-sort glides the rows to their new places; the search and the closed-fund fold change which rows exist and do not glide.
+  useRowGlide(card, GLIDING_ROWS, holdingsSort === null ? "" : `${holdingsSort.key}:${holdingsSort.direction}`);
   /** Long lists with funds you have sold read as two blocks, each with its count; a short list stays one table. */
   const heldListed = listedFunds.filter((fund) => fund.status !== "closed");
   const closedListed = listedFunds.filter((fund) => fund.status === "closed");
@@ -121,7 +129,7 @@ export function HoldingsCard(props: {
   );
 
   return (
-    <div class="card cell-8 portfolio-holdings">
+    <div class="card cell-8 portfolio-holdings" ref={card}>
       <h3 id="holdings-heading" class="card-title" tabIndex={-1}>
         Holdings
       </h3>
