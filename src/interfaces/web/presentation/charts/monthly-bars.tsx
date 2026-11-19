@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { useAxisLabels } from "./use-axis-labels";
 import { maskNumbers } from "../privacy/privacy-choice";
+import { type BarSnapshot } from "./motion/bar-morph";
+import { useBarMorph } from "./motion/use-bar-morph";
 
 export interface Bar {
   readonly key: string;
@@ -34,6 +36,8 @@ export function MonthlyBars(props: {
   readonly description: string;
   readonly bars: readonly Bar[];
   readonly formatValue: (value: number) => string;
+  /** Identifies the period these bars belong to; a change moves the bars that stay from their old places. */
+  readonly updateKey?: string;
 }): JSX.Element {
   const hidden = usePrivacy();
   const [hovered, setHovered] = useState<string | null>(null);
@@ -41,6 +45,7 @@ export function MonthlyBars(props: {
   const [pinned, setPinned] = useState<string | null>(null);
   const dateControl = useRef<HTMLInputElement>(null);
   const container = useRef<HTMLElement>(null);
+  const plot = useRef<SVGSVGElement>(null);
   useEffect(() => {
     setPinned((current) => (props.bars.some((bar) => bar.key === current) ? current : null));
     setHovered(null);
@@ -61,6 +66,14 @@ export function MonthlyBars(props: {
     WIDTH - PAD.side,
     present.length > 0,
   );
+
+  // The bars as drawn now, so a change of period can move the months that stay and fade in the ones that appear.
+  const snapshot: BarSnapshot = {
+    keys: props.bars.map((bar) => bar.key),
+    xs: props.bars.map((_, index) => PAD.side + band * index + (band - barWidth) / 2),
+    frame: span === 0 ? null : { zeroY, scale: plotHeight / span },
+  };
+  useBarMorph(plot, snapshot, props.updateKey);
 
   if (present.length === 0) {
     return <p class="empty-note">No month has a figure to show yet.</p>;
@@ -100,6 +113,7 @@ export function MonthlyBars(props: {
         </span>
       </p>
       <svg
+        ref={plot}
         viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`}
         role="group"
         aria-label={props.description}

@@ -37,6 +37,7 @@ export function AnalysisSection(props: {
             title="Change in gain"
             description="Bars for the change in gain each month: above the line is a gain, below is a loss."
             bars={bars}
+            updateKey={props.range}
             formatValue={euroLabel}
           />
           <p class="footnote">A month has no bar when there is no statement from the month before it.</p>

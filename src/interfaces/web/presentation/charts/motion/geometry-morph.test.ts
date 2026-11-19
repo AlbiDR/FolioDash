@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type MorphTransform, morphTransform } from "./geometry-morph";
-import { type ChartGeometry, computeLineChart } from "./line-chart-geometry";
+import { type ChartGeometry, computeLineChart } from "../line-chart-geometry";
 
 const DAY = 86_400_000;
 const START = Date.UTC(2025, 0, 1);

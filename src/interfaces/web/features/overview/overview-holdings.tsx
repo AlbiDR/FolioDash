@@ -5,24 +5,19 @@ import { Icon } from "../../shared/ui/icons";
 import { useRowGlide } from "../../shared/ui/use-row-glide";
 import { Sparkline } from "../../presentation/charts/sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
+import type { ChartRange } from "./model/chart-range";
 import type { dashboardFor } from "./model/dashboard-data";
 import type { OverviewFund, OverviewKpi, OverviewModel } from "./model/overview-model";
 import { Percent, Pill, Signed } from "./parts";
-import { type HoldingsSort, type HoldingsSortKey, SORT_LABELS, describeSort, nextSort } from "./model/holdings-sort";
-
-/** Desktop columns in reading order: the fund, what it is worth, its weight, then how it has done. */
-const HOLDINGS_COLUMNS: readonly HoldingsSortKey[] = ["name", "value", "share", "gainPercent", "gain", "netInvested"];
-
-/** The phone's list offers the orders people ask for, one choice instead of six headers. */
-const PHONE_SORTS: readonly HoldingsSort[] = [
-  { key: "name", direction: "asc" },
-  { key: "value", direction: "desc" },
-  { key: "share", direction: "desc" },
-  { key: "gainPercent", direction: "desc" },
-  { key: "gainPercent", direction: "asc" },
-  { key: "gain", direction: "desc" },
-  { key: "netInvested", direction: "desc" },
-];
+import {
+  HOLDINGS_COLUMNS,
+  PHONE_SORTS,
+  type HoldingsSort,
+  type HoldingsSortKey,
+  SORT_LABELS,
+  describeSort,
+  nextSort,
+} from "./model/holdings-sort";
 
 /** Below this many listed funds a table with sold funds stays one block; from here it is grouped. */
 const GROUP_FROM = 6;
@@ -51,6 +46,8 @@ export function HoldingsCard(props: {
   readonly gain: OverviewKpi | undefined;
   readonly fundSeries: ReturnType<typeof dashboardFor>["fundSeries"];
   readonly shownTimes: ReturnType<typeof dashboardFor>["shownTimes"];
+  /** The chart period; a change reshapes each fund's trend beneath its value. */
+  readonly range: ChartRange;
 }): JSX.Element {
   const {
     funds,
@@ -95,7 +92,13 @@ export function HoldingsCard(props: {
       <td>
         <Amount cents={fund.latest?.value ?? null} />
         {trendOf(fund.isin) !== null && (
-          <Sparkline times={props.shownTimes} values={trendOf(fund.isin) ?? []} width={96} height={24} />
+          <Sparkline
+            times={props.shownTimes}
+            values={trendOf(fund.isin) ?? []}
+            width={96}
+            height={24}
+            changeKey={props.range}
+          />
         )}
       </td>
       <td>

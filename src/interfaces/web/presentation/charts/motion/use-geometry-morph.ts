@@ -1,8 +1,8 @@
 import type { RefObject } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
-import { motionMilliseconds } from "../../shared/ui/motion-timing";
+import { motionMilliseconds } from "../../../shared/ui/motion-timing";
 import { morphTransform } from "./geometry-morph";
-import type { ChartGeometry } from "./line-chart-geometry";
+import type { ChartGeometry } from "../line-chart-geometry";
 
 /**
  * Morphs the drawn series from the previous period's axes to the new ones when
