@@ -7,10 +7,16 @@ const assertions = await runSyntheticJourney({
   directory: "dist/acceptance/checkpoints-audit",
   port: Number(process.env["FOLIODASH_CHECKPOINTS_AUDIT_PORT"] ?? 4201),
   readySelector: ".checkpoint-form",
-  run: async ({ evaluate, waitFor, check, click, text }) => {
+  run: async ({ evaluate, evaluateWith, waitFor, check, click, text }) => {
     const set = async (selector: string, value: string): Promise<void> => {
-      await evaluate(
-        `(()=>{const el=document.querySelector(${JSON.stringify(selector)});el.value=${JSON.stringify(value)};el.dispatchEvent(new Event('input',{bubbles:true}))})()`,
+      await evaluateWith(
+        (selector: string, value: string) => {
+          const el = document.querySelector(selector) as HTMLInputElement;
+          el.value = value;
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+        },
+        selector,
+        value,
       );
     };
     const amount = ".checkpoint-form input[inputmode=decimal]";
