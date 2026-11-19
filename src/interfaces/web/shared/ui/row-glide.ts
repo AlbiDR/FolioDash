@@ -1,4 +1,5 @@
-import { motionMilliseconds } from "./motion-timing";
+import { createMotion, type Motion, timingFrom } from "../motion/animate";
+import { createSettle } from "../motion/settle";
 
 /** Movements under half a pixel are not drawn, so rounding never starts a glide. */
 const MIN_DISTANCE = 0.5;
@@ -39,28 +40,24 @@ export interface RowGlide {
  * changes, so an unrelated render cannot make a later re-sort glide a distance
  * the rows never moved.
  */
-export function createRowGlide(root: () => HTMLElement | null, rowSelector: string): RowGlide {
+export function createRowGlide(
+  root: () => HTMLElement | null,
+  rowSelector: string,
+  motion: Motion = createMotion(),
+): RowGlide {
   const restingTops = new WeakMap<Element, number>();
-  const glides = new WeakMap<Element, Animation>();
-  let previousKey: string | null = null;
+  const settle = createSettle<null>();
   return {
     settle(orderKey) {
-      const changed = previousKey !== null && previousKey !== orderKey;
-      previousKey = orderKey;
+      const { changed } = settle(null, orderKey);
       const node = root();
       if (node === null) return;
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const style = getComputedStyle(node);
-      const duration = motionMilliseconds(style.getPropertyValue("--duration-medium"));
-      const easing = style.getPropertyValue("--ease-standard").trim();
+      const timing = timingFrom(getComputedStyle(node));
       for (const row of node.querySelectorAll<HTMLElement>(rowSelector)) {
         // A glide still running is part of what the row shows now: read it first. When the order changed, retire it so the
         // row is measured where it rests; otherwise the running glide is subtracted from the measurement.
         const carried = translationY(getComputedStyle(row).transform);
-        if (changed) {
-          glides.get(row)?.cancel();
-          glides.delete(row);
-        }
+        if (changed) motion.stop(row);
         const box = row.getBoundingClientRect();
         if (box.height === 0) {
           restingTops.delete(row);
@@ -69,15 +66,13 @@ export function createRowGlide(root: () => HTMLElement | null, rowSelector: stri
         const top = box.top + window.scrollY - (changed ? 0 : carried);
         const previous = restingTops.get(row);
         restingTops.set(row, top);
-        if (!changed || reduced || previous === undefined || typeof row.animate !== "function") continue;
+        if (!changed || previous === undefined) continue;
         const distance = glideDistance(previous, carried, top);
         if (distance === 0) continue;
-        glides.set(
+        motion.play(
           row,
-          row.animate([{ transform: `translateY(${distance.toFixed(2)}px)` }, { transform: "translateY(0px)" }], {
-            duration,
-            easing,
-          }),
+          [{ transform: `translateY(${distance.toFixed(2)}px)` }, { transform: "translateY(0px)" }],
+          timing,
         );
       }
     },

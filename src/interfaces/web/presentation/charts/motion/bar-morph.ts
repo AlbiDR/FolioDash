@@ -1,4 +1,5 @@
-import { motionMilliseconds } from "../../../shared/ui/motion-timing";
+import { createMotion, type Motion, timingFrom } from "../../../shared/motion/animate";
+import { createSettle } from "../../../shared/motion/settle";
 
 /** Where a bar chart's zero line sits and how many pixels one unit of value spans: y(value) = zeroY - value * scale. */
 export interface BarFrame {
@@ -49,33 +50,19 @@ export interface BarMorphController {
  * motion, browsers without the Web Animations API and the first render take the
  * new chart at once.
  */
-export function createBarMorph(root: () => SVGSVGElement | null): BarMorphController {
-  let previous: BarSnapshot | null = null;
-  let previousKey: string | undefined;
-  let hasKey = false;
-  const animations = new WeakMap<Element, Animation>();
+export function createBarMorph(root: () => SVGSVGElement | null, motion: Motion = createMotion()): BarMorphController {
+  const settle = createSettle<BarSnapshot>();
   return {
     settle(snapshot, updateKey) {
-      const before = previous;
-      const changed = hasKey && previousKey !== updateKey;
-      previous = snapshot;
-      previousKey = updateKey;
-      hasKey = true;
+      const { before, changed } = settle(snapshot, updateKey);
       const svg = root();
       if (svg === null || !changed) return;
       const items = svg.querySelectorAll<SVGGElement>(".bars-item");
-      for (const item of items) animations.get(item)?.cancel();
+      for (const item of items) motion.stop(item);
       const zero = svg.querySelector<SVGLineElement>(".bars-zero");
-      if (zero !== null) animations.get(zero)?.cancel();
+      if (zero !== null) motion.stop(zero);
       if (before === null) return;
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduced || typeof svg.animate !== "function") return;
-      const style = getComputedStyle(svg);
-      const duration = motionMilliseconds(style.getPropertyValue("--duration-medium"));
-      const easing = style.getPropertyValue("--ease-standard").trim();
-      const play = (element: Element, frames: Keyframe[]): void => {
-        animations.set(element, element.animate(frames, { duration, easing }));
-      };
+      const timing = timingFrom(getComputedStyle(svg));
       const matrix = (scaleY: number, translateX: number, translateY: number): string =>
         `matrix(1, 0, 0, ${scaleY.toFixed(6)}, ${translateX.toFixed(6)}, ${translateY.toFixed(6)})`;
       const identity = matrix(1, 0, 0);
@@ -85,27 +72,31 @@ export function createBarMorph(root: () => SVGSVGElement | null): BarMorphContro
         if (item === undefined) return;
         const oldIndex = before.keys.indexOf(key);
         if (oldIndex < 0) {
-          play(item, [{ opacity: 0 }, { opacity: 1 }]);
+          motion.play(item, [{ opacity: 0 }, { opacity: 1 }], timing);
           return;
         }
         const from = before.xs[oldIndex];
         const next = snapshot.xs[index];
         if (before.frame === null || snapshot.frame === null || from === undefined || next === undefined) return;
         const morph = barMorph(from, before.frame, next, snapshot.frame);
-        if (morph !== null)
-          play(item, [
-            { transform: matrix(morph.scaleY, morph.translateX, morph.translateY) },
-            { transform: identity },
-          ]);
+        if (morph !== null) {
+          motion.play(
+            item,
+            [{ transform: matrix(morph.scaleY, morph.translateX, morph.translateY) }, { transform: identity }],
+            timing,
+          );
+        }
       });
 
       if (zero !== null && before.frame !== null && snapshot.frame !== null) {
         const morph = barMorph(0, before.frame, 0, snapshot.frame);
-        if (morph !== null)
-          play(zero, [
-            { transform: matrix(morph.scaleY, morph.translateX, morph.translateY) },
-            { transform: identity },
-          ]);
+        if (morph !== null) {
+          motion.play(
+            zero,
+            [{ transform: matrix(morph.scaleY, morph.translateX, morph.translateY) }, { transform: identity }],
+            timing,
+          );
+        }
       }
     },
   };
