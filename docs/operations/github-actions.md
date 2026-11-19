@@ -122,3 +122,25 @@ The `7f447b7` run started Chrome and passed project verification but sampled the
 ## Independent verification jobs, 2026-11-15
 
 The Node matrix no longer waits for workflow lint to finish before starting dependency installation and project checks. Workflow lint and the matrix have no data/artifact dependency. Publish verified site retains `needs: [workflows, verify]`, so no failed, cancelled or unfinished check can release the artifact. This removes a serial scheduling dependency without removing checks, changing permissions, adding jobs or changing the one checked artifact. The tradeoff is that Node jobs can consume runner time even if workflow lint fails. Timing savings depend on actual queue and job durations and are not claimed as a measured speedup.
+
+## Failure triage, 2026-11-05 to 2026-11-19
+
+Between 2026-11-05 and 2026-11-19 GitHub recorded 36 failed Verify or Release site runs out of about 120 Verify runs: 34 Verify and 2 Release site. Every failed run stopped before publication, so no failed revision reached the Pages site. Every revision the Release site did publish had passed the same gate. The 36 failures fall into five classes:
+
+| Class | Runs | Cause | Response |
+|---|---|---|---|
+| Rendered assertions and runtime errors | 25 | 19 "Interaction regression" failures, one hover timeout, one "Interaction audit failed", three "Browser evaluation failed" and one blocked nonlocal request. Seventeen of the 19 regressions were on 2026-11-16, while layout was tuned for CI. | Errors name the failing check, a blocked request names its origin, and an evaluation error shows its exception line. Geometry is still open; see below. |
+| Browser start-up and capture timeouts | 6 | Chrome did not expose its debugging port within 30 seconds, or a README capture waited past its budget. | Start-up is retried three times with a fresh profile. Assertion failures are never retried. |
+| Profile cleanup race | 2 | `ENOTEMPTY` while removing Chrome's profile during README capture, on 2026-11-05. | Fixed on 2026-11-05 by closing through CDP and retrying the removal. No later failure of this kind. |
+| Dependency advisory | 2 | `npm audit` reported high-severity advisories in the installed tree (picomatch on 2026-11-17) without a code change. | The audit covers production dependencies on 2026-11-17. Overrides pinned qs and minimatch on 2026-11-19. |
+| Contributor identity | 1 | A commit authored as `ADR` was not in the allowed list when the policy checked it on 2026-11-13. | The allowed list now includes that name. Later runs passed. |
+
+The 2026-11-19 hardening changes three things. `scripts/lib/startup-retry.ts` repeats a browser start-up that fails for a fixed reason, but never a permanent failure such as a missing executable, and `scripts/lib/local-browser.ts` uses it with a fresh profile per attempt. The harness error names the blocked origin, and the evaluation error shows the first line of the page exception. The audit job checks that `google-chrome` exists and prints its version and the font that `system-ui` resolves to, so a missing browser fails before the audit starts.
+
+Open decisions that these changes do not settle:
+
+- **Geometry depends on the runner's fonts.** The app's body font starts with `-apple-system` and SF Pro, which a Linux runner does not have, so text measures wider there. Commit messages from 2026-11-16 ("when text renders wider") fit that, but the cause is inferred, not reproduced, because the development machine has no Linux container. The options are to run the rendered audits on a macOS runner with the owner's fonts, to bundle the body font so every platform renders alike, or to keep fixing assertions as they fail. The first is the cheapest to try, and it changes the workflow, so it needs the owner's approval.
+- **A new advisory can turn main red without a code change.** The audit stays on production dependencies at moderate or greater severity. The response is an override or a dated decision, not a weaker audit.
+- **Required status checks are off by the owner's choice** (see [repository configuration](repository-configuration.md)). A failing commit can therefore land on `main`. The release gate is what keeps it off the Pages site.
+- **The workflows run Node 22 only** since 2026-11-17 (`c567086`). [AGENTS.md](../../AGENTS.md) still says Node 22 and 24. The owner should decide which statement is right. Older sections that describe a Node 22 and 24 matrix are historical.
+- **The hover assertion branches on the runner.** Headless Linux reports no fine pointer, so the CI run asserts that a hovered card does not lift and never checks the lift itself. The claim that no CDP emulation can change the pointer media has not been tested.
