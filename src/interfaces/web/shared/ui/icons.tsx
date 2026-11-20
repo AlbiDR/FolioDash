@@ -1,9 +1,20 @@
 import type { JSX } from "preact";
 
 export type IconName =
-  "overview" | "expenses" | "import" | "history" | "connection" | "chevron" | "back" | "eye" | "eye-off" | "sidebar";
+  | "overview"
+  | "expenses"
+  | "activity"
+  | "import"
+  | "history"
+  | "connection"
+  | "chevron"
+  | "back"
+  | "eye"
+  | "eye-off"
+  | "sidebar";
 
 const PATHS: Readonly<Record<IconName, string>> = {
+  activity: "M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01",
   expenses: "M7 3h10a2 2 0 0 1 2 2v16l-3-2-4 2-4-2-3 2V5a2 2 0 0 1 2-2M8 8h8M8 12h5",
   overview: "M4 5v14h16M7 15l4-4 3 3 5-6",
   import: "M12 4v10m-4-4 4 4 4-4M5 19h14",

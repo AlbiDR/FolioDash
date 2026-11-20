@@ -9,7 +9,16 @@ import process from "node:process";
 import { withLocalBrowser } from "../lib/local-browser.ts";
 import { createSteps } from "./interactions/browser-steps.ts";
 
-const ROUTES = ["overview", "months", "checkpoints", "expenses", "import", "history", "connection"] as const;
+const ROUTES = [
+  "overview",
+  "months",
+  "checkpoints",
+  "expenses",
+  "activity",
+  "import",
+  "history",
+  "connection",
+] as const;
 const WIDTHS = [1440, 390] as const;
 // Under one millisecond counts as none: it is how a motion rule is switched off without removing it.
 const NEGLIGIBLE_MS = 1;

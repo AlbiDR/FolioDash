@@ -67,6 +67,8 @@ src/
         │   └── styles/
         ├── features/
         │   ├── account/
+        │   ├── activity/
+        │   │   └── styles/
         │   ├── checkpoints/
         │   ├── expenses/
         │   │   └── styles/

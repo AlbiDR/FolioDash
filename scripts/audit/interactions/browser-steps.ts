@@ -30,6 +30,7 @@ export function createSteps({ origin, call, evaluate, waitFor }: LocalBrowser) {
       {
         overview: "Portfolio",
         expenses: "Work expenses",
+        activity: "Activity",
         months: "Month by month",
         checkpoints: "Checkpoints",
         import: "Update your portfolio",

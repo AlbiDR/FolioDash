@@ -22,6 +22,13 @@ describe("routeFrom", () => {
   });
 });
 
+describe("activity route", () => {
+  it("reads the activity screen and gives it its own navigation entry", () => {
+    expect(routeFrom("#activity")).toEqual({ name: "activity" });
+    expect(navEntryOf({ name: "activity" })).toBe("activity");
+  });
+});
+
 describe("navEntryOf", () => {
   it("files the detail screens under the portfolio", () => {
     expect(navEntryOf({ name: "expenses" })).toBe("expenses");

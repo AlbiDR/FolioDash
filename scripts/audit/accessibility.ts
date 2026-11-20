@@ -8,7 +8,16 @@ import process from "node:process";
 import { withLocalBrowser } from "../lib/local-browser.ts";
 import { createSteps } from "./interactions/browser-steps.ts";
 
-const ROUTES = ["overview", "months", "checkpoints", "expenses", "import", "history", "connection"] as const;
+const ROUTES = [
+  "overview",
+  "months",
+  "checkpoints",
+  "expenses",
+  "activity",
+  "import",
+  "history",
+  "connection",
+] as const;
 const VIEWPORTS = [
   { name: "desktop", width: 1440 },
   { name: "phone", width: 390 },
