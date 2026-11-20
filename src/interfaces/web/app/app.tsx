@@ -31,6 +31,8 @@ import { CheckpointsRoute } from "./app-checkpoints-route";
 import { ConnectionRoute } from "./app-connection-route";
 import { ExpensesRoute } from "./app-expenses-route";
 import { ImportRoutes } from "./app-import-routes";
+import { ActivityView } from "./app-views";
+import { activityDaysFor } from "../features/activity/activity-model";
 import {
   NO_CHECKPOINTS,
   browserPrivacyStorage,
@@ -314,6 +316,12 @@ export function App(): JSX.Element {
                     shownCheckpoints={shownCheckpoints}
                     today={today}
                     session={session}
+                  />
+                )}
+                {route.name === "activity" && (
+                  <ActivityView
+                    days={activityDaysFor(data.mode === "signed-out", expenseDemo, expenseData.days)}
+                    demo={data.mode === "signed-out"}
                   />
                 )}
                 {route.name === "expenses" && (

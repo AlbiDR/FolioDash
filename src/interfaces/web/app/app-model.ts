@@ -12,6 +12,7 @@ import { type Route, navEntryOf } from "./routes";
 const TITLES = {
   overview: "Portfolio",
   expenses: "Work expenses",
+  activity: "Activity",
   months: "Month by month",
   checkpoints: "Checkpoints",
   import: "Update your portfolio",
@@ -41,6 +42,7 @@ export const NAV: readonly {
 }[] = [
   { id: "overview", href: "#overview", label: "Portfolio", icon: "overview" },
   { id: "expenses", href: "#expenses", label: "Expenses", icon: "expenses" },
+  { id: "activity", href: "#activity", label: "Activity", icon: "activity" },
   { id: "import", href: "#import", label: "Import", icon: "import" },
   { id: "connection", href: "#connection", label: "Your data", icon: "connection" },
 ];

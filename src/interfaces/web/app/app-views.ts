@@ -4,6 +4,9 @@ import type { ImportPreparer } from "../../../applications/import/import-model";
 export const ExpensesView = lazy(async () => ({
   default: (await import("../features/expenses/expenses-view")).ExpensesView,
 }));
+export const ActivityView = lazy(async () => ({
+  default: (await import("../features/activity/activity-view")).ActivityView,
+}));
 export const CheckpointsView = lazy(async () => ({
   default: (await import("../features/checkpoints/checkpoints-view")).CheckpointsView,
 }));

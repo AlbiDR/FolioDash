@@ -105,7 +105,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 92ccc09ab498-1 | [app-chrome.tsx:242](../../src/interfaces/web/app/app-chrome.tsx#L242) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
 | 10f4a7df280f-1 | [app-chrome.tsx:248](../../src/interfaces/web/app/app-chrome.tsx#L248) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aa53db6e3c54-1 | [app-import-routes.tsx:50](../../src/interfaces/web/app/app-import-routes.tsx#L50) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
-| ba191ec28307-1 | [app.tsx:238](../../src/interfaces/web/app/app.tsx#L238) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
+| ba191ec28307-1 | [app.tsx:240](../../src/interfaces/web/app/app.tsx#L240) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
 | 7d011ddea82a-1 | [account-client-id.tsx:12](../../src/interfaces/web/features/account/account-client-id.tsx#L12) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
 | 1bcfbbd10eb1-1 | [account-client-id.tsx:19](../../src/interfaces/web/features/account/account-client-id.tsx#L19) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
 | e98c9f23d6cd-1 | [account-client-id.tsx:39](../../src/interfaces/web/features/account/account-client-id.tsx#L39) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
@@ -131,6 +131,10 @@ One row is a source template; a fund-link template can render many controls. All
 | 34b238e379d3-1 | [get-started.tsx:38](../../src/interfaces/web/features/account/get-started.tsx#L38) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 1b2d6955418b-1 | [get-started.tsx:59](../../src/interfaces/web/features/account/get-started.tsx#L59) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 56991a97d0b5-1 | [get-started.tsx:72](../../src/interfaces/web/features/account/get-started.tsx#L72) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| dd307829b019-1 | [activity-view.tsx:73](../../src/interfaces/web/features/activity/activity-view.tsx#L73) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f38d7908966f-1 | [activity-view.tsx:84](../../src/interfaces/web/features/activity/activity-view.tsx#L84) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 96b48440953a-1 | [activity-view.tsx:100](../../src/interfaces/web/features/activity/activity-view.tsx#L100) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 8fb3a5f38652-1 | [activity-view.tsx:116](../../src/interfaces/web/features/activity/activity-view.tsx#L116) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aacae9081f0e-1 | [checkpoints-preserved.tsx:95](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L95) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
 | d12f8f03fdda-1 | [checkpoints-preserved.tsx:122](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L122) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
 | cf7a6afc5921-1 | [checkpoints-view.tsx:155](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L155) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |

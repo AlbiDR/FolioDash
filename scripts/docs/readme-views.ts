@@ -105,6 +105,9 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
       alt: "The Your data screen explaining where records are kept, shown signed out",
     },
   },
+  activity: {
+    skip: "A read-only list of recorded expense days, not yet in the README gallery; the rendered audits check it.",
+  },
   history: { skip: "Reached from Import and shown by the same signed-out card, so Import already represents it." },
 };
 
