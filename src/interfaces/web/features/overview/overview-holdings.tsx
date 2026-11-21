@@ -3,6 +3,7 @@ import { useRef } from "preact/hooks";
 import { formatDateLong } from "../../../../core/values/iso-date";
 import { Icon } from "../../shared/ui/icons";
 import { useRowGlide } from "../../shared/ui/use-row-glide";
+import { MobileHoldings } from "./mobile-holdings";
 import { Sparkline } from "../../presentation/charts/sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
 import type { ChartRange } from "./model/chart-range";
@@ -204,43 +205,7 @@ export function HoldingsCard(props: {
       {funds.length > 0 && listedFunds.length === 0 && (
         <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>
       )}
-      <ul class="mobile-holdings" data-filtered={query.length > 0}>
-        {listedFunds.map((fund) => (
-          <li key={fund.isin}>
-            <a href={`#fund/${fund.isin}`} class="holding">
-              <span class="holding-id">
-                <span class="holding-name">{fund.name}</span>
-                <span class="holding-meta">{fund.status === "closed" ? `Closed · ${fund.isin}` : fund.isin}</span>
-              </span>
-              <span class="holding-headline">
-                <span class="holding-value">
-                  <span class="visually-hidden">Value </span>
-                  <Amount cents={fund.latest?.value ?? null} />
-                </span>
-                <span>
-                  <span class="visually-hidden">Gain percent </span>
-                  <Pill ratio={fund.latest?.gainPercent ?? null} signed />
-                </span>
-              </span>
-              <Icon name="chevron" size={18} />
-              <span class="holding-detail">
-                <span class="holding-fact">
-                  <span class="holding-label">Gain</span>
-                  <Signed cents={fund.latest?.gain ?? null} />
-                </span>
-                <span class="holding-fact">
-                  <span class="holding-label">Net invested</span>
-                  <Amount cents={fund.latest?.netInvested ?? null} />
-                </span>
-                <span class="holding-fact">
-                  <span class="holding-label">Share of portfolio</span>
-                  {fund.status === "closed" ? "-" : <Percent ratio={fund.latest?.share ?? null} />}
-                </span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      <MobileHoldings funds={listedFunds} filtered={query.length > 0} />
       {funds.length === 0 ? (
         <p class="empty-note">No funds are held.</p>
       ) : (
