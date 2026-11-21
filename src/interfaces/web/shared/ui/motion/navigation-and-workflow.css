@@ -27,10 +27,10 @@
   inset: 0 auto 0 0;
   width: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
   border-radius: var(--nav-radius, var(--shape-sm));
-  background: var(--color-accent-soft);
+  background: var(--color-accent);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 18%, transparent),
-    0 4px 14px color-mix(in srgb, var(--color-accent) 12%, transparent);
+    inset 0 0 0 1px color-mix(in srgb, var(--color-on-accent) 16%, transparent),
+    0 6px 18px color-mix(in srgb, var(--color-accent) 20%, transparent);
   transform: translateX(calc(var(--nav-index) * (100% + var(--nav-gap))));
   transition:
     transform var(--duration-feedback) var(--ease-spring),
@@ -38,7 +38,7 @@
 }
 .nav-list .nav-link[aria-current="page"] {
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .nav-list .nav-link svg {
@@ -59,6 +59,7 @@
   }
 
   .nav-list .nav-link[aria-current="page"] svg {
+    color: var(--color-on-accent);
     transform: scale(1.04);
   }
 }
