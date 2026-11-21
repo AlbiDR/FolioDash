@@ -208,8 +208,8 @@ a.icon-button {
   grid-column: span 12;
 }
 
-/* Cards arrive one after another, 45ms apart and no later than the sixth, so the page assembles in about 0.6
- * seconds and nothing is ever waiting on an animation to be readable or usable. Reduced motion removes it entirely. */
+/* A short stagger gives the surface rhythm. Opacity stays at one even during the delay: financial figures are
+ * readable on the first frame, with no count-up or plot reveal. Reduced motion removes the movement entirely. */
 .dash > * {
   min-width: 0;
   animation: rise var(--duration-medium) var(--ease-standard) backwards;
@@ -233,7 +233,6 @@ a.icon-button {
 
 @keyframes rise {
   from {
-    opacity: var(--motion-rise-opacity);
     transform: translateY(var(--motion-rise));
   }
 }

@@ -17,6 +17,15 @@ export function euroLabel(value: number): string {
   return cents === null ? "" : formatEuro(cents);
 }
 
+/** Axis display only: k denotes thousands, M millions. Readouts and tables always retain euroLabel's exact cents. */
+export function euroAxisLabel(value: number): string {
+  if (!Number.isFinite(value)) return "";
+  const magnitude = Math.abs(value);
+  const scale = magnitude >= 1_000_000 ? 1_000_000 : magnitude >= 1_000 ? 1_000 : 1;
+  const suffix = scale === 1_000_000 ? "M" : scale === 1_000 ? "k" : "";
+  return `${new Intl.NumberFormat("it-IT", { maximumFractionDigits: scale === 1 ? 0 : 1 }).format(value === 0 ? 0 : value / scale)}${suffix}`;
+}
+
 export function euros(cents: EuroCents | null): number | null {
   return cents === null ? null : cents / 100;
 }

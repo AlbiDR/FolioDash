@@ -118,8 +118,8 @@
   width: fit-content;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--shape-full);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
   line-height: 1.5;

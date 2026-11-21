@@ -51,8 +51,11 @@ function makeRow(top: number, height = 40) {
   return row;
 }
 
-function setup(rows: ReturnType<typeof makeRow>[], { reduced = false } = {}) {
-  const node = { querySelectorAll: () => rows };
+function setup(
+  rows: ReturnType<typeof makeRow>[],
+  { reduced = false, rootTop = () => 0 }: { reduced?: boolean; rootTop?: () => number } = {},
+) {
+  const node = { querySelectorAll: () => rows, getBoundingClientRect: () => ({ top: rootTop() }) };
   vi.stubGlobal("window", { scrollY: 0, matchMedia: () => ({ matches: reduced }) });
   vi.stubGlobal("getComputedStyle", (element: { transform?: string }) => ({
     transform: element.transform ?? "none",
@@ -67,6 +70,22 @@ afterEach(() => {
 });
 
 describe("createRowGlide", () => {
+  it("ignores the card's own movement while preserving movement of a row inside it", () => {
+    let top = 100;
+    const row = makeRow(160);
+    const glide = setup([row], { rootTop: () => top });
+    glide.settle("all");
+    top = 200;
+    row.top = 260;
+    glide.settle("filtered");
+    expect(row.animate).not.toHaveBeenCalled();
+    row.top = 240;
+    glide.settle("sorted");
+    expect(row.animate.mock.calls[0]?.[0]).toEqual([
+      { transform: "translateY(20.00px)" },
+      { transform: "translateY(0px)" },
+    ]);
+  });
   it("records resting positions on the first settle without moving anything", () => {
     const row = makeRow(100);
     setup([row]).settle("name:asc");

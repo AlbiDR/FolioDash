@@ -68,12 +68,15 @@ export function HoldingsCard(props: {
     gain,
   } = props;
   const card = useRef<HTMLDivElement>(null);
-  // A re-sort glides the rows to their new places; the search and the closed-fund fold change which rows exist and do not glide.
-  useRowGlide(card, GLIDING_ROWS, holdingsSort === null ? "" : `${holdingsSort.key}:${holdingsSort.direction}`);
+  // Surviving keyed rows also glide when a search or the closed-fund fold changes their positions. New rows draw
+  // immediately; their figures are never tweened. The shared controller carries an interrupted glide forward.
+  useRowGlide(card, GLIDING_ROWS, JSON.stringify([holdingsSort, query, closedOpen]));
   /** Long lists with funds you have sold read as two blocks, each with its count; a short list stays one table. */
   const heldListed = listedFunds.filter((fund) => fund.status !== "closed");
   const closedListed = listedFunds.filter((fund) => fund.status === "closed");
-  const grouped = listedFunds.length >= GROUP_FROM && heldListed.length > 0 && closedListed.length > 0;
+  // Keep the table's groups stable while searching, so a surviving fund keeps its keyed row and keyboard target.
+  // A group with no matches has no heading; the existing empty-result message covers a completely empty search.
+  const grouped = funds.length >= GROUP_FROM && held.length > 0 && funds.some((fund) => fund.status === "closed");
   /** The bars compare each fund with the largest holding, so a long list still reads; the percentage beside each carries the exact share. */
   const largestShare = Math.max(0, ...held.map((fund) => fund.latest?.share ?? 0));
   /** A fund's value across the chart's period, for the small line under its value. It needs two statements to be a line. */
@@ -134,9 +137,12 @@ export function HoldingsCard(props: {
 
   return (
     <div class="card cell-8 portfolio-holdings" ref={card}>
-      <h3 id="holdings-heading" class="card-title" tabIndex={-1}>
-        Holdings
-      </h3>
+      <div class="portfolio-card-heading">
+        <h3 id="holdings-heading" class="card-title" tabIndex={-1}>
+          Holdings
+        </h3>
+        <span class="portfolio-count">{held.length} held</span>
+      </div>
       <p class="card-subtitle">
         Latest statement. Select a fund to see its performance and history. Share bars compare each fund with your
         largest holding.
@@ -241,30 +247,34 @@ export function HoldingsCard(props: {
             {grouped ? (
               <>
                 <tbody id="holdings-held-rows">
-                  <tr class="holdings-group">
-                    <th colSpan={6} scope="colgroup">
-                      Held funds <span class="holdings-group-count">{heldListed.length}</span>
-                    </th>
-                  </tr>
+                  {heldListed.length > 0 && (
+                    <tr class="holdings-group">
+                      <th colSpan={6} scope="colgroup">
+                        Held funds <span class="holdings-group-count">{heldListed.length}</span>
+                      </th>
+                    </tr>
+                  )}
                   {heldListed.map(holdingRow)}
                 </tbody>
                 <tbody id="holdings-closed-rows">
-                  <tr class="holdings-group closed-group">
-                    <th colSpan={6} scope="colgroup">
-                      <button
-                        type="button"
-                        class="group-toggle"
-                        aria-expanded={closedOpen}
-                        aria-controls="holdings-closed-rows"
-                        onClick={() => {
-                          setClosedOpen(!closedOpen);
-                        }}
-                      >
-                        <Icon name="chevron" size={16} />
-                        Closed funds <span class="holdings-group-count">{closedListed.length}</span>
-                      </button>
-                    </th>
-                  </tr>
+                  {closedListed.length > 0 && (
+                    <tr class="holdings-group closed-group">
+                      <th colSpan={6} scope="colgroup">
+                        <button
+                          type="button"
+                          class="group-toggle"
+                          aria-expanded={closedOpen}
+                          aria-controls="holdings-closed-rows"
+                          onClick={() => {
+                            setClosedOpen(!closedOpen);
+                          }}
+                        >
+                          <Icon name="chevron" size={16} />
+                          Closed funds <span class="holdings-group-count">{closedListed.length}</span>
+                        </button>
+                      </th>
+                    </tr>
+                  )}
                   {closedOpen && closedListed.map(holdingRow)}
                 </tbody>
               </>
