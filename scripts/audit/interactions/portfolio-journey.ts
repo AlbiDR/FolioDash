@@ -34,23 +34,28 @@ export async function portfolioJourney({
         const [top, bottom] = edges();
         link.click();
         let expanded = false;
+        let movedDuringExit = false;
         const deadline = performance.now() + 2500;
         while (performance.now() < deadline) {
           await new Promise(requestAnimationFrame);
           const [nextTop, nextBottom] = edges();
           const lead = movingDown ? nextBottom - bottom : top - nextTop;
           const trail = movingDown ? nextTop - top : bottom - nextBottom;
+          movedDuringExit ||= lead > 1 && document.querySelector("[data-page-exiting]") !== null;
           expanded ||= lead - trail > bottom - top;
           const box = link.getBoundingClientRect();
           if (Math.abs(nextTop - box.top) < 0.5 && Math.abs(nextBottom - box.bottom) < 0.5)
-            return expanded && link.getAttribute("aria-current") === "page";
+            return movedDuringExit && expanded && link.getAttribute("aria-current") === "page";
         }
         return false;
       },
       route,
       down,
     );
-    await check(String(stretched), `sidebar stretches and settles moving ${down ? "down" : "up"}`);
+    await check(
+      String(stretched),
+      `sidebar starts during page exit, stretches and settles moving ${down ? "down" : "up"}`,
+    );
   }
   await visit("overview");
   await survey("Portfolio / desktop / initial");

@@ -51,6 +51,7 @@ export function App(): JSX.Element {
   const navigation = useRef<HTMLElement>(null);
   useFocusVisibility(header, navigation);
   const [route, setRoute] = useState<Route>(routeFrom(window.location.hash));
+  const [navigationEntry, setNavigationEntry] = useState(() => navEntryOf(route));
   const [statementLocked, setStatementLocked] = useState(false);
   const [jsonImportLocked, setJsonImportLocked] = useState(false);
   const importLocked = statementLocked || jsonImportLocked;
@@ -178,6 +179,8 @@ export function App(): JSX.Element {
       }
       setImportNavigationMessage("");
       const destination = routeFrom(window.location.hash);
+      // Start moving the selection as soon as navigation is accepted, while the old page exits.
+      setNavigationEntry(navEntryOf(destination));
       if (JSON.stringify(destination) === JSON.stringify(route)) {
         pageMotion.cancel();
         return;
@@ -217,7 +220,7 @@ export function App(): JSX.Element {
   const checkpointMarkers = markersFor(
     data.mode !== "signed-out" && checkpointData.suspect ? NO_CHECKPOINTS : shownCheckpoints,
   );
-  const current = navEntryOf(route);
+  const current = navigationEntry;
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
   // The full sentence is the accessible name everywhere. On phones only the short word, always contained in it, is drawn.
