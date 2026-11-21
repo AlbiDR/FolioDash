@@ -39,7 +39,7 @@
     "docs:interactions": "node scripts/verify/output/interactions.ts --write",
     "verify:interactions": "node scripts/verify/output/interactions.ts",
     "audit:interactions": "node scripts/audit/interactions.ts",
-    "audit:rendered": "npm run audit:interactions && npm run audit:backfill-recovery && npm run audit:expense-recovery && npm run audit:expense-restore && npm run audit:sale-closure && npm run audit:account-outcomes && npm run audit:overview-signals && npm run audit:checkpoints && npm run audit:accessibility && npm run audit:reduced-motion && npm run audit:portfolio-polish && npm run audit:reload-stability",
+    "audit:rendered": "node scripts/audit/rendered.ts",
     "audit:backfill-recovery": "node scripts/audit/backfill-recovery.ts",
     "audit:expense-recovery": "node scripts/audit/expense-recovery.ts",
     "audit:expense-restore": "node scripts/audit/expense-restore.ts",

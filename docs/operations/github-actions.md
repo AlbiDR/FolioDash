@@ -12,14 +12,14 @@ The workflow set does three jobs, and each has one workflow that owns it:
 
 ## Structure
 
-- `verify.yml`: the reusable gate, called with `release: true` or `false`. It has five jobs: `workflows` lints every workflow; `build` builds the site once and keeps it as the `web-build` artifact; `verify` runs `npm run verify` and the dependency audit on the source; `audit` runs the rendered audits on the `web-build` artifact; `site` (release only) captures the README views and assembles the Pages site from the same artifact.
+- `verify.yml`: the reusable gate, called with `release: true` or `false`. It defines five jobs: `workflows` lints every workflow; `build` builds the site once and keeps it as the `web-build` artifact; `verify` runs `npm run verify` and the dependency audit on the source; `audit` expands into parallel macOS jobs that run the rendered suites on the `web-build` artifact; `site` (release only) captures the README views and assembles the Pages site from the same artifact.
 - `check.yml`: pull requests, the weekly schedule and manual runs call the gate; CodeQL runs on pushes and pull requests; dependency review runs on pull requests.
 - `release-site.yml`: the gate with `release: true`, then `publish`, the only job with `pages: write`. `publish` checks that the revision is still current `main`, deploys, and refreshes GitHub's cached README images. It never checks out source, installs packages or rebuilds.
 - `.github/actions/setup-project/`: the one shared setup (Node 22 and the locked packages). A local action needs the checkout to exist first, so each job checks out before it calls the action.
 
 The site is built once and every consumer reads that build. The audits and the Pages site both come from the `web-build` artifact, so what the audits test is what is published. The gate still runs `npm run verify` on the source as before.
 
-The jobs run in parallel where they can. In a release, `site` runs alongside `verify` and `audit`, and `publish` waits for all of them.
+The jobs run in parallel where they can. In a release, `site` runs alongside `verify` and `audit`, and `publish` waits for every suite and the rest of the gate. Each suite gets its own runner, preview server and browser profile. The matrix trades additional runner setup time for a shorter critical path.
 
 ```mermaid
 flowchart LR
@@ -30,13 +30,13 @@ flowchart LR
     check --> gate[verify.yml]
     release --> gate
     gate --> build[build: web-build artifact]
-    build --> audit[audit: rendered audits]
+    build --> audit[audit: parallel macOS suites]
     build --> site[site: README capture and Pages assembly, release only]
     gate --> verify[verify: npm run verify]
     release --> publish[publish: Pages deploy, if still current main]
 ```
 
-`npm run audit:rendered` runs the ten rendered audits in order: interactions, backfill recovery, expense recovery and restore, sale closure, account outcomes, overview signals, checkpoints, accessibility and reduced motion. It is a single script so that CI and a developer run the same list. The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default); a missing browser fails the step with that module's message.
+[The rendered audit runner](../../scripts/audit/rendered.ts) owns suite membership. `npm run audit:rendered` runs all twelve audits locally, and `npm run audit:rendered -- recovery` runs a single suite. CI generates its matrix from the same runner and reports each suite separately. The suites cover interactions, recovery and other synthetic journeys, accessibility, reduced motion and portfolio polish. The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default).
 
 Both builds receive the public repository variable `VITE_GOOGLE_CLIENT_ID`. A release fails with a redacted configuration error if it is empty. A pull request or weekly run can verify without a release client ID. No Google token, credential or private workbook data enters this path.
 
@@ -79,7 +79,7 @@ CodeQL runs independently so an application-check failure does not suppress secu
 
 ## Cancellation and current revisions
 
-Each workflow sets its own concurrency group from its name, event and ref, so a manual Release site run and a manual Check run do not cancel one another. New pushes supersede older push checks; a scheduled/manual run does not cancel push verification. There is no workflow-level cancellation that could interrupt a Pages deployment after checks finish.
+New pushes can supersede in-progress push verification for releases. Manual release verification uses a separate group. The publish job acquires its own concurrency slot after verification, so a newer push can start checking while publication is in progress.
 
 Pages serializes only the deployment job, with `cancel-in-progress: false`. After acquiring that slot, it reads current main through the GitHub API and publishes only if the run SHA still matches. A superseded run records an explicit skip in the summary; an API failure blocks publication. A successful deployment records its SHA and URL in the summary. A branch can still advance after the final check; an already-started deployment completes and the next verified revision follows. This is not an atomic lock on Git pushes.
 

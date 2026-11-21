@@ -11,15 +11,13 @@ on:
 permissions:
   contents: read
 
-# One release at a time. A queued release is never cancelled, because cancelling a deployment can leave it half done.
-concurrency:
-  group: release-site
-  cancel-in-progress: false
-
 jobs:
   gate:
     name: Gate
     if: github.ref == 'refs/heads/main'
+    concurrency:
+      group: release-site-gate-${{ github.event_name }}
+      cancel-in-progress: ${{ github.event_name == 'push' }}
     uses: ./.github/workflows/verify.yml
     with:
       release: true
@@ -27,6 +25,9 @@ jobs:
   publish:
     name: Publish verified site
     needs: gate
+    concurrency:
+      group: release-site
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
