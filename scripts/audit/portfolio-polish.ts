@@ -100,6 +100,7 @@ await withLocalBrowser(async (browser) => {
   const screens = [
     { name: "desktop-dark", width: 1440, scheme: "dark", variant: "many", text: 100 },
     { name: "desktop-light", width: 1440, scheme: "light", variant: "many", text: 100 },
+    { name: "desktop-wide", width: 1920, scheme: "dark", variant: "many", text: 100 },
     { name: "tablet-dark", width: 768, scheme: "dark", variant: "typical", text: 100 },
     { name: "tablet-wide", width: 1000, scheme: "light", variant: "many", text: 100 },
     { name: "tablet-edge", width: 1180, scheme: "dark", variant: "many", text: 100 },
@@ -156,7 +157,13 @@ await withLocalBrowser(async (browser) => {
         if (phone) return near(holdings.left, rail.left) && near(holdings.right, rail.right)
           && near(cards[0].left, cards[1].left) && near(cards[0].right, cards[1].right)
           && near(cards[1].top - cards[0].bottom, gap);
-        return near(holdings.top, rail.top) && near(rail.left - holdings.right, gap);
+        return near(holdings.top, rail.top) && near(holdings.bottom, rail.bottom)
+          && near(rail.left - holdings.right, gap)
+          && near(cards[1].top - cards[0].bottom, gap)
+          && near(analysisCards[0].top, analysisCards[1].top)
+          && near(analysisCards.at(-1).top, analysisCards.at(-2).top)
+          && near(analysisCards[0].width, analysisCards.at(-1).width)
+          && near(analysisCards[1].width, analysisCards.at(-2).width);
       })()`);
       assert.equal(gridAligned, true, `${screen.name}: holdings and supporting cards align to the dashboard grid`);
     }

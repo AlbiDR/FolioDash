@@ -21,6 +21,19 @@
   align-content: start;
   min-width: 0;
 }
+/* On wide screens, the supporting stack shares the holdings card's bottom edge.
+ * The final card takes remaining space as the number of holdings changes. */
+@media (min-width: 73.751rem) {
+  .portfolio-rail {
+    align-self: stretch;
+    align-content: stretch;
+    grid-template-rows: auto 1fr;
+  }
+  .portfolio-rail > :only-child {
+    align-self: stretch;
+    grid-row: 1 / -1;
+  }
+}
 /* On intermediate screens the holdings table spans the dashboard. Keep both
  * supporting cards on that same grid instead of leaving an empty half-row. */
 @media (min-width: 47.501rem) and (max-width: 73.75rem) {
