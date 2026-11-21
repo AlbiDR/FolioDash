@@ -44,9 +44,9 @@ export const STUDY_HTML = String.raw`<!doctype html>
       <main id="portfolio" tabindex="-1">
         <div class="page-heading">
           <div>
-            <p class="eyebrow">YOUR INVESTMENTS, TOGETHER</p>
-            <h1>A clearer view of your portfolio.</h1>
-            <p class="intro">Value, progress and the funds behind it.</p>
+            <p class="eyebrow">PORTFOLIO OVERVIEW</p>
+            <h1>Your portfolio.</h1>
+            <p class="intro">The bigger picture, down to each fund.</p>
           </div>
           <p class="as-of">Latest statement<strong>17 November 2026</strong></p>
         </div>
@@ -82,7 +82,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
                 <h2 id="performance-title">Performance</h2>
                 <p class="caption">Recorded fund value and net invested</p>
               </div>
-              <span class="period">Apr–Nov 2026</span>
+              <span class="period">Apr-Nov 2026</span>
             </div>
             <div class="chart-legend">
               <span><i class="value-key"></i>Fund value</span><span><i class="invested-key"></i>Net invested</span
@@ -90,7 +90,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
             </div>
             <div class="chart-sensitive">
               <div class="plot-frame">
-                <svg class="performance-plot" viewBox="0 0 640 215" role="img" aria-labelledby="plot-title plot-desc">
+                <svg class="performance-plot" viewBox="0 0 640 215" preserveAspectRatio="none" role="img" aria-labelledby="plot-title plot-desc">
                   <title id="plot-title">Illustrative portfolio chart</title>
                   <desc id="plot-desc">
                     Eight invented observations, April to November 2026. Fund value rises from 110,800 to 128,450 euros,
@@ -98,7 +98,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
                   </desc>
                   <defs>
                     <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0" stop-color="currentColor" stop-opacity=".15" />
+                      <stop offset="0" stop-color="currentColor" stop-opacity=".28" />
                       <stop offset="1" stop-color="currentColor" stop-opacity="0" />
                     </linearGradient>
                   </defs>
@@ -113,7 +113,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
                     class="plot-value"
                     d="M12 190.8L105 160.2L201 174.6L294 112.95L387 132.3L477 75.6L570 51.3L621 31.95"
                   />
-                  <circle class="plot-point" cx="621" cy="31.95" r="5" />
+                  <path class="plot-point" d="M621 31.95h0" />
                 </svg>
                 <div class="plot-scale" aria-hidden="true">
                   <span>130k</span><span>125k</span><span>120k</span><span>115k</span><span>110k</span>
@@ -199,12 +199,12 @@ export const STUDY_HTML = String.raw`<!doctype html>
             </div>
             <div>
               <dt>Year to date</dt>
-              <dd>—</dd>
+              <dd>-</dd>
               <dd class="caption">Needs a January statement</dd>
             </div>
             <div>
               <dt>Year on year</dt>
-              <dd>—</dd>
+              <dd>-</dd>
               <dd class="caption">Needs November 2025</dd>
             </div>
           </dl>
@@ -365,7 +365,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
         </section>
         <footer class="study-footer">
           <span
-            ><strong>Portfolio / composition study 01</strong><br />Synthetic design data · illustrative chart · no
+            ><strong>Portfolio / composition study 02</strong><br />Synthetic design data · illustrative chart · no
             Google connection</span
           ><a class="text-link" href="design-notes.html"
             >Read the design notes <span aria-hidden="true">↗</span></a
