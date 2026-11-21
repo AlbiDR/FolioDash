@@ -286,8 +286,7 @@ export function useExpenseEditor(props: ExpensesViewProps) {
     !props.ready ||
     (selectedConflict !== undefined && !editor.resolving);
   const yearConflictNote = yearConflicts.length > 0;
-  const recordsNotice =
-    !demo && (!props.ready || Boolean(props.message)) ? props.message || "Checking your work-expense records…" : "";
+  const recordsNotice = demo ? "" : (props.message ?? "");
   // A weekend or a future day cannot be recorded, so an empty one shows only why, not a form that cannot be used.
   const recordable = isWorkday(editor.date) && editor.date <= props.today;
   const showForm = recordable || filled > 0;

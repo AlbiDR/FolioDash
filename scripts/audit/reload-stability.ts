@@ -124,3 +124,77 @@ const output = resolve("dist/reload-stability");
 mkdirSync(output, { recursive: true });
 writeFileSync(resolve(output, "report.json"), `${JSON.stringify(results, null, 2)}\n`);
 console.log(`Reload stability passed: ${String(results.length)} cold opens and reloads with zero layout shifts.`);
+
+// Remembered sessions use the production app with synthetic responses held long enough to paint.
+await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
+  await call("Emulation.setDeviceMetricsOverride", { width: 390, height: 900, deviceScaleFactor: 1, mobile: true });
+  await call("Page.addScriptToEvaluateOnNewDocument", {
+    source: `(() => {
+      const clientId = ${JSON.stringify(process.env["VITE_GOOGLE_CLIENT_ID"]?.trim() || "123456-syntheticaudit.apps.googleusercontent.com")};
+      const workbook = {id:'synthetic-reload',url:'https://example.invalid/synthetic-reload'};
+      localStorage.setItem('foliodash.client.v1',clientId);
+      localStorage.setItem('foliodash.ledger.v1',JSON.stringify({
+        version:1,workbook,ledger:{revision:'',funds:[],snapshots:[]},syncedAt:Date.now()
+      }));
+      localStorage.setItem('foliodash.google-session.v1',JSON.stringify({
+        accessToken:'synthetic-reload-token',clientId,workbookId:workbook.id,
+        validUntil:Date.now()+600000,scope:'https://www.googleapis.com/auth/drive.file'
+      }));
+      window.google = {accounts:{oauth2:{initTokenClient:()=>({requestAccessToken:()=>{
+        window.signInAttempted = true;
+      }})}}};
+      const fetchLocal = window.fetch;
+      window.fetch = async (url, options) => {
+        if (!String(url).startsWith('https://sheets.googleapis.com/')) return fetchLocal(url,options);
+        if (String(url).includes('/values/_FolioDash%20ledger')) {
+          window.ledgerReads = (window.ledgerReads ?? 0) + 1;
+          await new Promise(resolve => setTimeout(resolve, 800));
+          window.ledgerAnswered = true;
+          if (location.search.includes('offline')) throw new TypeError('Synthetic network failure');
+          return Response.json({values:[['revision','type','payload','checksum']]});
+        }
+        return Response.json({sheets:[]});
+      };
+      window.syncNotices = [];
+      new MutationObserver(() => {
+        for (const node of document.querySelectorAll('.notice, .status-chip')) {
+          if (/Checking Google|Checking your work-expense|Showing your saved device copy|Your saved copy is available/.test(node.textContent)) {
+            window.syncNotices.push(node.textContent);
+          }
+        }
+      }).observe(document,{subtree:true,childList:true,characterData:true});
+    })()`,
+  });
+  for (const route of ["expenses", "import", "history"]) {
+    await call("Page.navigate", { url: `${origin}/?signed-in=${route}#${route}` });
+    for (const type of ["navigate", "reload"]) {
+      if (type === "reload") await call("Page.reload", { ignoreCache: true });
+      await waitFor(
+        async () =>
+          (await evaluate(
+            `performance.getEntriesByType('navigation')[0]?.type === '${type}' &&
+              window.ledgerAnswered === true && !!document.querySelector('.status-chip')`,
+          )) === true,
+        `${route} ${type} with a remembered Google connection`,
+      );
+      assert.deepEqual(await evaluate("window.syncNotices"), [], `${route} ${type} stayed quiet before the check`);
+      assert.equal(
+        await evaluate("document.querySelector('.status-chip').getAttribute('aria-label')"),
+        "Google Sheets",
+      );
+      assert.equal(await evaluate("window.ledgerReads"), 1, `${route} ${type} checked the ledger once`);
+      assert.equal(await evaluate("window.signInAttempted === true"), false, `${route} ${type} never opened sign-in`);
+    }
+  }
+  await call("Page.navigate", { url: `${origin}/?offline#expenses` });
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "document.querySelector('.status-chip')?.getAttribute('aria-label') === 'Google unavailable · device copy'",
+      )) === true,
+    "a failed check reports the device copy",
+  );
+  assert.deepEqual(await evaluate("window.syncNotices"), []);
+  assert.equal(await evaluate("window.signInAttempted === true"), false);
+}, 4297);
+console.log("Remembered Google reloads passed on mobile with synthetic delayed and unavailable responses.");

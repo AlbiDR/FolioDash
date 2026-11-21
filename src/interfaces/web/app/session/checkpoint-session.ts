@@ -18,10 +18,10 @@ import {
 
 /** Feature state for checkpoints. The Google connection comes from the app session. */
 export class CheckpointSession extends CheckpointSessionCore {
-  refresh(): Promise<void> {
+  refresh(purpose: "read" | "background" = "read"): Promise<void> {
     if (this.refreshing !== null) return this.refreshing;
     const epoch = this.epoch;
-    const run = this.load().catch(() => {
+    const run = this.load(purpose).catch(() => {
       if (epoch === this.epoch)
         this.set({
           ...this.current,

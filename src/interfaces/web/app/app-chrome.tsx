@@ -325,13 +325,6 @@ export function AppNotices(props: {
           </div>
         )}
       </Presence>
-      <Presence show={(route.name === "import" || route.name === "history") && data.mode === "device-copy"}>
-        {(route.name === "import" || route.name === "history") && data.mode === "device-copy" && (
-          <p class="notice" role="status">
-            Your saved copy is available. Google access is renewed quietly on your next tap, and checked before saving.
-          </p>
-        )}
-      </Presence>
     </>
   );
 }

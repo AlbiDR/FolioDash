@@ -17,6 +17,7 @@ import {
 import { verifyRebuild } from "../../../../../applications/import/rebuild";
 import type { IsoDate } from "../../../../../core/values/iso-date";
 import type { RawSheet } from "../../../../../core/statements/raw-sheet";
+import { canonicalJson } from "../../../../../core/integrity/canonical-json";
 import { EMPTY_LEDGER } from "../../../../../core/portfolio/ledger";
 import type { RecordResult } from "../../../../../applications/import/import-model";
 import { NEEDS, WRITE_MINIMUM_MILLISECONDS } from "./session-policy";
@@ -98,6 +99,7 @@ export abstract class SessionSync extends SessionTidy {
         });
         return { status: "call-failed", failure: read.failure };
       case "unrecognised":
+        this.set({ ...this.current, connection: "offline" });
         return { status: "call-failed", failure: "unexpected" };
       case "workbook-unavailable":
         return attention("missing");
@@ -110,11 +112,13 @@ export abstract class SessionSync extends SessionTidy {
     }
     if (read.state.snapshots.length === 0 && copy.snapshots.length > 0) return attention("emptied");
     const changed = read.state.revision !== copy.revision;
-    this.keep(workbook, read.state);
+    // Only reuse an identical copy after checking the authoritative rows. A revision alone cannot validate a device copy.
+    const ledger = !changed && canonicalJson(copy) === canonicalJson(read.state) ? copy : read.state;
+    this.keep(workbook, ledger);
     this.set({
       mode: "online",
       connection: "connected",
-      ledger: read.state,
+      ledger,
       workbook,
       syncedAt: this.deps.now(),
       sheet: "ok",
@@ -125,9 +129,19 @@ export abstract class SessionSync extends SessionTidy {
       this.tidied = workbook.id;
       this.later(tidyLedgerTab(this.deps.rest, accessToken, workbook.id));
     }
-    this.later(this.scheduleOrganization(workbook, accessToken, read.state, generation));
-    if (this.pendingView !== null && !this.organizationPending) this.queueViews(workbook, read.state, []);
-    return { status: "connected", created, statements: read.state.snapshots.length, changed };
+    this.later(this.scheduleOrganization(workbook, accessToken, ledger, generation));
+    if (this.pendingView !== null && !this.organizationPending) this.queueViews(workbook, ledger, []);
+    this.refreshFeatures();
+    return {
+      status: "connected",
+      created,
+      statements: read.state.snapshots.length,
+      changed,
+    };
+  }
+
+  protected refreshFeatures(): void {
+    this.later(Promise.all([this.expenses.refresh("background"), this.checkpoints.refresh("background")]));
   }
 
   /** A bounded read using existing access. Background work never opens OAuth or creates a workbook. */
@@ -137,22 +151,18 @@ export abstract class SessionSync extends SessionTidy {
       return Promise.resolve();
     // Google's window is open: the renewal in progress will bring its own check.
     if (this.signingIn !== null) return Promise.resolve();
-    if (this.validToken() === null) {
+    const token = this.validToken();
+    if (token === null) {
       this.dropToken();
-      this.set({ ...this.current, connection: this.unrenewedConnection() });
+      const connection = this.unrenewedConnection();
+      if (this.current.connection !== connection) this.set({ ...this.current, connection });
       return Promise.resolve();
     }
     this.lastAutoCheck = this.deps.now();
     const generation = this.generation;
     const workbook = this.current.workbook;
-    const token = this.validToken();
-    if (token === null) return Promise.resolve();
-    this.set({ ...this.current, connection: "checking" });
     const work = this.load(workbook, token, false, generation)
-      .then(async (outcome) => {
-        if (generation === this.generation && outcome.status === "connected")
-          await Promise.all([this.expenses.refresh(), this.checkpoints.refresh()]);
-      })
+      .then(() => undefined)
       .catch(() => {
         if (generation === this.generation) this.set({ ...this.current, connection: "offline" });
       });
@@ -206,8 +216,15 @@ export abstract class SessionSync extends SessionTidy {
             "An expense operation is still running. Preserve your backup and check its outcome before continuing recovery.",
         };
       this.keep(ensured.workbook, ledger);
-      this.set({ ...this.current, mode: "online", workbook: ensured.workbook, sheet: "ok", syncedAt: this.deps.now() });
+      this.set({
+        ...this.current,
+        mode: "online",
+        workbook: ensured.workbook,
+        sheet: "ok",
+        syncedAt: this.deps.now(),
+      });
       const restored = await this.expenses.restoreBackup(expenseBackup);
+      if (generation === this.generation) this.refreshFeatures();
       return restored.status === "saved"
         ? { status: "restored", workbook: ensured.workbook }
         : {
@@ -260,6 +277,7 @@ export abstract class SessionSync extends SessionTidy {
           message: `Your portfolio figures were restored. Expense recovery is not confirmed: ${restored.message} Keep your expense backup.`,
         };
     }
+    if (generation === this.generation) this.refreshFeatures();
     return { status: "restored", workbook: result.workbook };
   }
 
@@ -333,6 +351,7 @@ export abstract class SessionSync extends SessionTidy {
       trailingRows: read.ignoredTrailingRows,
       recoveryTarget: read.recoveryTarget ?? null,
     });
+    this.refreshFeatures();
     // The readable tab is a convenience; its failure never affects the saved records.
     this.queueViews(workbook, read.state, mirror);
     return { status: "recorded", ledger: read.state };

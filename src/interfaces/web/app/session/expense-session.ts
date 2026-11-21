@@ -15,10 +15,10 @@ type Request = Omit<ExpenseCommand, "id">;
 
 /** Feature-specific state: the shared Google connection is supplied by the app session. */
 export class ExpenseSession extends ExpenseSessionCore {
-  refresh(): Promise<void> {
+  refresh(purpose: "read" | "background" = "read"): Promise<void> {
     if (this.refreshing !== null) return this.refreshing;
     const epoch = this.epoch;
-    const refresh = this.load().catch(() => {
+    const refresh = this.load(purpose).catch(() => {
       if (epoch === this.epoch)
         this.set({
           ...this.current,
@@ -33,11 +33,11 @@ export class ExpenseSession extends ExpenseSessionCore {
     });
     return refresh;
   }
-  private async load(): Promise<void> {
+  private async load(purpose: "read" | "background"): Promise<void> {
     if (this.busy) return;
     const sequence = ++this.sequence;
     const epoch = this.epoch;
-    const access = await this.deps.access("read");
+    const access = await this.deps.access(purpose);
     if (epoch !== this.epoch || sequence !== this.sequence) return;
     if (!access.ok) {
       this.set({ ...this.current, ready: false, message: access.message });

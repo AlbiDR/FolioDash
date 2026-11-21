@@ -93,7 +93,7 @@ export class Session extends SessionRecords {
    * portfolio was checked on this visit, so a read checks the workbook itself; a write still needs a check that has succeeded.
    */
   private async featureAccess(
-    purpose: "read" | "write",
+    purpose: "read" | "write" | "background",
     blocked: (purpose: "read" | "write") => string,
   ): Promise<
     | { readonly ok: true; readonly token: string; readonly workbook: Workbook }
@@ -101,6 +101,12 @@ export class Session extends SessionRecords {
   > {
     if (this.current.workbook === null)
       return { ok: false, message: "Continue with Google first to create or find your private FolioDash workbook." };
+    if (purpose === "background") {
+      const token = this.validToken();
+      return this.current.sheet === "ok" && token !== null
+        ? { ok: true, token, workbook: this.current.workbook }
+        : { ok: false, message: blocked("read") };
+    }
     if (this.current.sheet !== "ok" && purpose === "read") {
       const outcome = await this.refresh();
       if (outcome.status === "sign-in-failed") return { ok: false, message: SIGN_IN_TEXT[outcome.reason] };

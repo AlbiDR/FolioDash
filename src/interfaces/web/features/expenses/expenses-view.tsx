@@ -37,25 +37,17 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
           )}
         </section>
       )}
-      <Presence show={recordsNotice !== "" || props.mode === "device-copy"} class="cell-12">
-        {recordsNotice !== "" || props.mode === "device-copy" ? (
+      <Presence show={recordsNotice !== ""} class="cell-12">
+        {recordsNotice !== "" && (
           <div class="notice" role="status">
-            {recordsNotice !== "" && <p>{recordsNotice}</p>}
-            {props.mode === "device-copy" && (
-              <p>Showing your saved device copy. Connect to Google before saving changes.</p>
-            )}
-            {recordsNotice !== "" && props.onRefresh !== undefined && (
+            <p>{recordsNotice}</p>
+            {props.onRefresh !== undefined && (
               <button type="button" disabled={busy} onClick={() => void props.onRefresh?.()}>
                 Check records
               </button>
             )}
-            {props.mode === "device-copy" && props.onConnect !== undefined && (
-              <button type="button" disabled={locked} onClick={() => void props.onConnect?.()}>
-                Reconnect with Google
-              </button>
-            )}
           </div>
-        ) : null}
+        )}
       </Presence>
       <Presence show={props.pending === true && pending === null} class="cell-12">
         {props.pending === true && pending === null && (

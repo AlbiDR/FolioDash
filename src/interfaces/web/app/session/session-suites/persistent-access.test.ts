@@ -20,6 +20,10 @@ describe("persistent Google access and two-device freshness", () => {
     await reloaded.refreshIfNeeded();
     expect(reloaded.state.ledger.snapshots).toHaveLength(2);
     expect(reloaded.state.connection).toBe("connected");
+    const checked = reloaded.state.ledger;
+    log.clock += 30_000;
+    await reloaded.refreshIfNeeded();
+    expect(reloaded.state.ledger).toBe(checked);
     expect(log.signIns).toBe(1);
   });
 
@@ -35,6 +39,30 @@ describe("persistent Google access and two-device freshness", () => {
     log.clock += 3_600_000;
     await session.refreshIfNeeded();
     expect(session.state.connection).toBe("waiting");
+    expect(log.signIns).toBe(1);
+  });
+
+  it("does not open sign-in if access expires between the ledger and feature reads", async () => {
+    const { make, google, log } = world();
+    const storage = memory();
+    const googleSession = createGoogleSessionStore(() => storage);
+    const session = make({ googleSession });
+    await session.connect();
+    await session.idle();
+
+    const reloaded = make({
+      googleSession,
+      rest: async (request) => {
+        const answer = await google.client(request);
+        if (request.method === "GET" && request.url.includes("/values/_FolioDash%20ledger")) log.clock += 3_600_000;
+        return answer;
+      },
+    });
+    await reloaded.refreshIfNeeded();
+    await reloaded.idle();
+    expect(reloaded.state.sheet).toBe("ok");
+    expect(reloaded.expenses.state.ready).toBe(false);
+    expect(reloaded.checkpoints.state.ready).toBe(false);
     expect(log.signIns).toBe(1);
   });
 

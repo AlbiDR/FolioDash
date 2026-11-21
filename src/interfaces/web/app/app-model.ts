@@ -1,7 +1,6 @@
 import type { SessionState } from "../../../applications/session/session-model";
 import type { OverviewModel } from "../features/overview/model/overview-model";
 import type { IconName } from "../shared/ui/icons";
-import { describeAge } from "../features/account/time-ago";
 import { demoPortfolio } from "./demo/demo-portfolio";
 import { demoCheckpoints } from "./demo/demo-checkpoints";
 import { type Checkpoint, chartMarkers } from "../../../core/portfolio/checkpoints";
@@ -44,7 +43,12 @@ export const NAV: readonly {
   { id: "expenses", href: "#expenses", label: "Expenses", icon: "expenses" },
   { id: "activity", href: "#activity", label: "Activity", icon: "activity" },
   { id: "import", href: "#import", label: "Import", icon: "import" },
-  { id: "connection", href: "#connection", label: "Your data", icon: "connection" },
+  {
+    id: "connection",
+    href: "#connection",
+    label: "Your data",
+    icon: "connection",
+  },
 ];
 
 export interface SourceStatus {
@@ -54,34 +58,19 @@ export interface SourceStatus {
 }
 
 // The full sentence is the accessible name everywhere. On phones only the short word, always contained in it, is drawn.
-export function sourceOf(data: SessionState, needsAttention: boolean, now: number): SourceStatus {
-  return data.mode === "signed-out"
-    ? { label: "Demo data", short: "Demo", tone: "demo" }
-    : needsAttention
-      ? { label: "Sheet needs attention", short: "Needs attention", tone: "local" }
-      : data.connection === "checking"
-        ? { label: "Checking Google…", short: "Checking", tone: "local" }
-        : data.connection === "renewing"
-          ? { label: "Renewing Google access…", short: "Renewing", tone: "local" }
-          : data.connection === "waiting"
-            ? {
-                label: `Saved on this device · tap to sync${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`,
-                short: "Tap to sync",
-                tone: "local",
-              }
-            : data.connection === "reconnect"
-              ? { label: "Reconnect to Google", short: "Reconnect", tone: "local" }
-              : data.connection === "offline"
-                ? { label: "Google unavailable · device copy", short: "Device copy", tone: "local" }
-                : data.mode === "online"
-                  ? {
-                      label: `Checked with Google${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`,
-                      short: "Checked",
-                      tone: "synced",
-                    }
-                  : {
-                      label: `Saved on this device${data.syncedAt === null ? "" : ` · ${describeAge(now, data.syncedAt)}`}`,
-                      short: "Saved",
-                      tone: "local",
-                    };
+export function sourceOf(data: SessionState, needsAttention: boolean): SourceStatus {
+  if (data.mode === "signed-out") return { label: "Demo data", short: "Demo", tone: "demo" };
+  if (needsAttention) return { label: "Sheet needs attention", short: "Needs attention", tone: "local" };
+  switch (data.connection) {
+    case "renewing":
+      return { label: "Renewing Google access…", short: "Renewing", tone: "local" };
+    case "waiting":
+      return { label: "Saved on this device · tap to sync", short: "Tap to sync", tone: "local" };
+    case "reconnect":
+      return { label: "Reconnect to Google", short: "Reconnect", tone: "local" };
+    case "offline":
+      return { label: "Google unavailable · device copy", short: "Device copy", tone: "local" };
+    default:
+      return { label: "Google Sheets", short: "Google", tone: "synced" };
+  }
 }

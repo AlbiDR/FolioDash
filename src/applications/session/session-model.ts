@@ -87,11 +87,11 @@ export type SheetStatus =
 export interface SessionState {
   readonly mode: Mode;
   /**
-   * checking: a read of the spreadsheet is in flight. connected: the last read succeeded.
+   * connected: the last read succeeded. Routine reads preserve the current status.
    * waiting: no usable Google access, and the next click renews it quietly.
    * renewing: Google's window is open. reconnect: quiet renewal gave up, so the person is asked.
    */
-  readonly connection?: "checking" | "connected" | "waiting" | "renewing" | "reconnect" | "offline";
+  readonly connection?: "connected" | "waiting" | "renewing" | "reconnect" | "offline";
   readonly ledger: LedgerState;
   readonly workbook: Workbook | null;
   /** When the ledger was last confirmed against the spreadsheet, in milliseconds since 1970. */

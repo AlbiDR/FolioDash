@@ -35,19 +35,17 @@ export function AccountConnectionCard(p: { readonly shared: AccountShared }): JS
       ) : (
         <>
           <p class="card-subtitle">
-            {state.connection === "checking"
-              ? "Checking Google for changes from your other devices…"
-              : state.connection === "renewing"
-                ? "Renewing Google access with the account FolioDash remembers…"
-                : state.connection === "waiting"
-                  ? "Showing your saved copy. Your next tap renews Google access quietly, then checks for changes."
-                  : state.connection === "reconnect"
-                    ? "Google access could not be renewed quietly. Reconnect to check your latest history."
-                    : state.connection === "offline"
-                      ? "Google could not be reached. Showing your saved copy; automatic checks resume when available."
-                      : state.mode === "online"
-                        ? "Your last Google check completed. Changes are checked automatically while the app is open."
-                        : "Showing the copy saved on this device. Sync to check it against your Google Sheet."}
+            {state.connection === "renewing"
+              ? "Renewing Google access with the account FolioDash remembers…"
+              : state.connection === "waiting"
+                ? "Showing your saved copy. Your next tap renews Google access quietly, then checks for changes."
+                : state.connection === "reconnect"
+                  ? "Google access could not be renewed quietly. Reconnect to check your latest history."
+                  : state.connection === "offline"
+                    ? "Google could not be reached. Showing your saved copy; automatic checks resume when available."
+                    : state.mode === "online"
+                      ? "Your last Google check completed. Changes are checked automatically while the app is open."
+                      : "Showing your saved copy while FolioDash checks Google for changes."}
           </p>
           <dl class="facts stacked">
             <div>

@@ -56,7 +56,6 @@ export function ExpensesRoute(props: {
         const result = await session.connect();
         if (result.status === "connected") {
           setExpenseConnectMessage("");
-          await session.expenses.refresh();
         } else {
           const described = describeConnect(result);
           setExpenseConnectMessage(`${described.title}. ${described.body}`);

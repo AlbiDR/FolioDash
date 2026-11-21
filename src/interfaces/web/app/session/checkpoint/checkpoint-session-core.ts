@@ -86,7 +86,7 @@ export abstract class CheckpointSessionCore {
       readonly store: CheckpointStore;
       readonly lock: CheckpointLock;
       readonly newId: () => string;
-      readonly access: (purpose: "read" | "write") => Promise<Access>;
+      readonly access: (purpose: "read" | "write" | "background") => Promise<Access>;
       readonly workbookId?: string | null;
       readonly today?: () => IsoDate;
     },
@@ -209,11 +209,11 @@ export abstract class CheckpointSessionCore {
       : "This device could not update its local copy of your checkpoints. They are safe in Google.";
   }
 
-  protected async load(): Promise<void> {
+  protected async load(purpose: "read" | "background"): Promise<void> {
     if (this.busy) return;
     const sequence = ++this.sequence;
     const epoch = this.epoch;
-    const access = await this.deps.access("read");
+    const access = await this.deps.access(purpose);
     if (epoch !== this.epoch || sequence !== this.sequence) return;
     if (!access.ok) {
       this.set({ ...this.current, ready: false, message: access.message });

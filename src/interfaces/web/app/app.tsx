@@ -129,12 +129,6 @@ export function App(): JSX.Element {
       }),
     [session, importLocked, expenseLocked],
   );
-  useEffect(() => {
-    if (data.mode === "online" && data.sheet === "ok") {
-      void session.expenses.refresh();
-      void session.checkpoints.refresh();
-    }
-  }, [session, data.mode, data.sheet, data.workbook?.id, data.syncedAt]);
   async function connectForImport(): Promise<void> {
     setImportConnecting(true);
     setImportConnectMessage("");
@@ -224,7 +218,7 @@ export function App(): JSX.Element {
   const portfolioScreen = route.name === "overview" || route.name === "months" || route.name === "fund";
   const needsAttention = data.sheet !== "ok" && data.sheet !== "unchecked";
   // The full sentence is the accessible name everywhere. On phones only the short word, always contained in it, is drawn.
-  const source = sourceOf(data, needsAttention, now);
+  const source = sourceOf(data, needsAttention);
   const clientConfigured = clientId !== "";
   const pageTitle = titleOf(route, model);
   useEffect(() => {

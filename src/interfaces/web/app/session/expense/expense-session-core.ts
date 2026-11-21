@@ -48,7 +48,7 @@ export abstract class ExpenseSessionCore {
       readonly rest: RestClient;
       readonly cache?: ExpenseCache;
       readonly newId: () => string;
-      readonly access: (purpose: "read" | "write") => Promise<Access>;
+      readonly access: (purpose: "read" | "write" | "background") => Promise<Access>;
       readonly workbookId?: string | null;
       readonly today?: () => IsoDate;
       readonly onViewResult?: (updated: boolean) => void;
