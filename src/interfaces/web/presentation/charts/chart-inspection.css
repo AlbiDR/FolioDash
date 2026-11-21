@@ -1,0 +1,67 @@
+.chart-plot {
+  position: relative;
+}
+
+.chart-plot[data-inspecting="true"] .chart-series circle.is-active {
+  opacity: 0;
+}
+
+.chart-inspection-dots,
+.chart-inspection-tooltip {
+  pointer-events: none;
+}
+
+.chart-inspection-dots .dashed {
+  --series-color: var(--color-muted);
+}
+
+.chart-inspection-dots [data-highlighted="false"] {
+  opacity: var(--motion-reveal-opacity);
+}
+
+.chart-inspection-halo,
+.chart-inspection-dot {
+  fill: var(--series-color);
+}
+
+.chart-inspection-halo {
+  fill-opacity: 0.22;
+}
+
+.chart-inspection-dot {
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.chart-inspection-tooltip {
+  --chart-inspection-width: min(14rem, calc(50% - var(--space-2)));
+  position: absolute;
+  inset-block-start: var(--space-1);
+  left: min(calc(var(--chart-inspection-anchor) + var(--space-2)), calc(100% - var(--chart-inspection-width)));
+  box-sizing: border-box;
+  width: var(--chart-inspection-width);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--shape-sm);
+  box-shadow: var(--shadow-card);
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.chart-inspection-tooltip[data-side="left"] {
+  left: max(0px, calc(var(--chart-inspection-anchor) - var(--chart-inspection-width) - var(--space-2)));
+}
+
+.chart-inspection-date {
+  color: var(--color-muted);
+}
+
+.chart-inspection-value {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: var(--space-1);
+}

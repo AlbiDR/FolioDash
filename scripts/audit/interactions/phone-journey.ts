@@ -111,12 +111,22 @@ export async function phoneJourney({
     }
     if (route === "overview") {
       const point = (await evaluate(
-        "(()=>{const n=document.querySelector('.chart-svg');n.scrollIntoView({block:'center'});const r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
-      )) as { x: number; y: number };
-      await call("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [point] });
+        "(()=>{const n=document.querySelector('.chart-svg');n.scrollIntoView({block:'center'});const r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,left:r.left+12}})()",
+      )) as { x: number; y: number; left: number };
+      const { x, y, left } = point;
+      await call("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+      const initialDate = await evaluate("document.querySelector('.chart-inspection-date')?.textContent");
+      await call("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: left, y }] });
+      await check(
+        `document.querySelector('.chart-inspection-date')?.textContent !== ${JSON.stringify(initialDate)} && !!document.querySelector('.chart-inspection-dot')`,
+        "touch scrub updates the Performance observation during the gesture",
+      );
       await call("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
       await delay(60);
-      await check("!!document.querySelector('.chart-guide')", "touch chart inspection produces a visible guide");
+      await check(
+        "(()=>{const plot=document.querySelector('.portfolio-trend .chart-plot');const tip=plot.querySelector('.chart-inspection-tooltip');return !!tip&&!!plot.querySelector('.chart-guide')&&!!plot.querySelector('.chart-inspection-halo')&&tip.getBoundingClientRect().right<=plot.getBoundingClientRect().right+1})()",
+        "touch selection keeps the Performance guide, halo and tooltip visible after release",
+      );
     }
     await check("document.documentElement.scrollWidth<=innerWidth", `${route}: phone reflow`);
   }
