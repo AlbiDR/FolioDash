@@ -4,7 +4,7 @@
 // person's data are never stored here. A new version waits until the app asks for it, so a
 // page is never swapped under someone mid-import.
 
-import { cacheNameFor, isOldCache, isPageLoad, shouldHandle, standalonePageKey } from "./cache-policy";
+import { cacheNameFor, isOldCache, isPageLoad, navigationCacheKey, shouldHandle } from "./cache-policy";
 
 declare const self: ServiceWorkerGlobalScope;
 /** Replaced at build time (config/pwa.ts): every built file, relative to this worker, and a fingerprint of them. */
@@ -36,16 +36,13 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (!shouldHandle(request.method, request.url, scopeUrl())) return;
+  const cacheKey = isPageLoad(request.mode) ? navigationCacheKey(request.url, scopeUrl()) : request;
+  if (cacheKey === null) return;
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);
-      // Every page load gets the saved app, which then reads its data from the device copy or Google,
-      // except a standalone page such as the privacy policy, which gets its own saved file.
       // The saved files are fixed per build, so a Vary header from the host must not stop a match.
-      const cached = await cache.match(
-        isPageLoad(request.mode) ? (standalonePageKey(request.url, scopeUrl()) ?? scopeUrl()) : request,
-        { ignoreVary: true },
-      );
+      const cached = await cache.match(cacheKey, { ignoreVary: true });
       if (cached !== undefined) return cached;
       try {
         const fresh = await fetch(request);
