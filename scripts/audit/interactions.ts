@@ -1,4 +1,4 @@
-// Production-renderer control discovery and state probes. Only the invented, signed-out demo is used.
+// Production-renderer control discovery and state probes. Only the synthetic, signed-out demo is used.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";

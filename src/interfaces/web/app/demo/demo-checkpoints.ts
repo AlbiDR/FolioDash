@@ -11,7 +11,7 @@ function after(date: IsoDate, days: number): IsoDate | null {
 }
 
 /**
- * Two invented checkpoints between the demo's last statements, so the sample chart and screen show what a
+ * Two synthetic checkpoints between the demo's last statements, so the sample chart and screen show what a
  * checkpoint looks like. They hold no real amount and exist only in the signed-out demo.
  */
 export function demoCheckpoints(model: OverviewModel): readonly Checkpoint[] {

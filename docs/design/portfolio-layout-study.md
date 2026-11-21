@@ -4,7 +4,7 @@ Status: **Revision 02, review proposal, 2026-11-21. Isolated design study; not a
 
 Owner request: explore a more coherent and polished desktop and mobile Portfolio in a separate worktree while another agent works independently.
 
-Run `node scripts/artifacts/portfolio-layout-study.ts`, then open the generated dist/portfolio-study-preview/index.html in a browser. The generated study works without a server or account. Resize the window to compare layouts. The figures are invented and the chart is an illustrative SVG, not the production financial renderer. The only actions are section navigation, Hide/Show figures and the illustrative values disclosure. No import, save, connection or investment action is simulated.
+Run `node scripts/artifacts/portfolio-layout-study.ts`, then open the generated dist/portfolio-study-preview/index.html in a browser. The generated study works without a server or account. Resize the window to compare layouts. The figures are synthetic and the chart is an illustrative SVG, not the production financial renderer. The only actions are section navigation, Hide/Show figures and the illustrative values disclosure. No import, save, connection or investment action is simulated.
 
 ## Revision 02: retain the existing character
 

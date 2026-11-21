@@ -69,7 +69,7 @@ async function capture(
       async () => (await evaluate("document.querySelector('.expense-entry') !== null")) === true,
       "the expense editor",
     );
-    // Previous steps one calendar day, so from a weekend or a Monday it takes up to three steps back to the last invented recorded workday.
+    // Previous steps one calendar day, so from a weekend or a Monday it takes up to three steps back to the last synthetic recorded workday.
     for (let step = 0; step < 4; step++) {
       if (
         (await evaluate(
@@ -85,7 +85,7 @@ async function capture(
         (await evaluate(
           "document.querySelectorAll('.expense-fields input').length === 5 && document.querySelector('.expense-entry .expense-state')?.textContent === 'Recorded workday'",
         )) === true,
-      "a complete invented workday",
+      "a complete synthetic workday",
     );
   }
   await waitFor(

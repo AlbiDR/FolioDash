@@ -1,7 +1,7 @@
 import type { RawCell, RawSheet } from "../../src/core/statements/raw-sheet";
 import { crc32 } from "../../src/adapters/xlsx/zip";
 
-/** Builds invented .xlsx files (and deliberately broken ones) for tests. Nothing here is real data. */
+/** Builds synthetic .xlsx files (and deliberately broken ones) for tests. Nothing here is real data. */
 
 const encoder = new TextEncoder();
 

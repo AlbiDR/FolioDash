@@ -292,7 +292,7 @@ export function AppNotices(props: {
       </Presence>
       <Presence show={portfolioScreen && route.name !== "overview" && data.mode === "signed-out"}>
         <p class="notice" role="status">
-          Demonstration with invented data. Nothing here is yours until you continue with Google.
+          This demo uses synthetic data. Continue with Google to use your own records.
         </p>
       </Presence>
       <Presence show={portfolioScreen && needsAttention}>

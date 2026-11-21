@@ -34,7 +34,7 @@ export function GetStarted(props: {
       <h2 id="get-started-title" class="card-title">
         You are exploring a sample
       </h2>
-      <p class="card-subtitle">The figures are invented. Continue with Google to see your own statements here.</p>
+      <p class="card-subtitle">The figures are synthetic. Continue with Google to see your own statements here.</p>
       <button
         type="button"
         class="primary"

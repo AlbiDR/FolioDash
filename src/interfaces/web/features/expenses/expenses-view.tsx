@@ -27,8 +27,8 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
             You are exploring a sample
           </h2>
           <p class="card-subtitle">
-            Record days with invented data. Your own records stay separate. Continue with Google to start your own
-            tracker.
+            Try recording expenses with synthetic data. Your own records stay separate. Continue with Google to start
+            your own tracker.
           </p>
           {props.onConnect !== undefined && (
             <button class="primary" type="button" disabled={locked} onClick={() => void props.onConnect?.()}>

@@ -13,7 +13,7 @@ Use the dedicated local acceptance build when a separate test account is unavail
 - A visible synthetic-acceptance banner identifies the build. The normal build disables this mode at compile time; `verify:pwa` rejects synthetic identity/cache markers in production JavaScript.
 - The existing public OAuth client ID and `drive.file` permission are reused. There is no new OAuth client, secret, scope, deployment or public test-data endpoint. Workbook selection is an application safeguard, not a new OAuth security boundary: the existing client retains the Google permissions previously granted to it.
 
-Tests cover distinct workbook discovery, creation, name fallback, session connection and cache clearing/corruption with an ordinary workbook/cache already present. They use invented data and a stand-in for Google. They do not establish live provider behavior.
+Tests cover distinct workbook discovery, creation, name fallback, session connection and cache clearing/corruption with an ordinary workbook/cache already present. They use synthetic data and a stand-in for Google. They do not establish live provider behavior.
 
 ## Prepare the local run
 
@@ -25,7 +25,7 @@ npm run preview:acceptance
 
 The preview is local at `http://localhost:4173/`. Supply the existing public Google client ID through `VITE_GOOGLE_CLIENT_ID` when building, or through the existing Advanced setup in Your data. The origin must already be authorized for that client. Do not create keys, change consent/scopes or publish the app to make a check pass.
 
-Fixtures are generated under ignored `dist/acceptance/onboarding/`, outside the production `dist/web/` artifact. They contain invented holdings and identifiers from the existing synthetic test fixtures. No real financial file is read. XLSX entries use DEFLATE compression so the device exercises the real decompression path.
+Fixtures are generated under ignored `dist/acceptance/onboarding/`, outside the production `dist/web/` artifact. They contain synthetic holdings and identifiers from the existing synthetic test fixtures. No real financial file is read. XLSX entries use DEFLATE compression so the device exercises the real decompression path.
 
 | Selection | Purpose |
 |---|---|
@@ -34,7 +34,7 @@ Fixtures are generated under ignored `dist/acceptance/onboarding/`, outside the 
 | `validation/synthetic-missing-date.xlsx` | February needs an explicit date; the November container date must not be used |
 | `validation/synthetic-duplicate-month.xlsx` | Two January dates must block review until one is excluded |
 | `validation/synthetic-invalid-formula.xlsx` | A formula-bearing statement must be refused |
-| `expected-results.json` | Invented inputs and independent expected totals |
+| `expected-results.json` | Synthetic inputs and independent expected totals |
 
 For a connected Android emulator, reverse local port 4173 and transfer only this generated directory into a clearly named Downloads folder. Files copied with ADB need indexing by Android's Downloads/media provider before the native picker lists them. Index only these generated files; absence from Recent is not proof that the app rejected a workbook.
 
@@ -86,12 +86,12 @@ Live API evidence retained only sanitized operation/status metadata: discovery u
 
 The owner's priority journey is a person discovering the published site with no FolioDash workbook and no device copy, connecting Google, and entering their first November 2026 statement manually. Excel history is optional. A successful first-month baseline must not require previous monthly statements, an existing workbook, Apps Script setup or manually created ledger tabs.
 
-The automated session regression in `src/interfaces/web/app/session/session-suites/starting-and-device-copy.test.ts` takes the actual manual statement preparer through first connection, workbook creation, direct commit and a fresh-device read. Invented inputs are two funds valued at 1.300,00 and 900,00 EUR on 2026-11-15, with explicitly supplied opening net invested of 1.000,00 EUR each. It asserts one workbook, one saved statement, 2.200,00 EUR total value, preserved opening balances, a hidden ledger, a visible readable view and identical remote history on the second device with an empty cache. A second connection must reuse the workbook. This uses FakeGoogle; it does not prove deployed Google consent, API behavior, real-account isolation or rendered manual-entry usability.
+The automated session regression in `src/interfaces/web/app/session/session-suites/starting-and-device-copy.test.ts` takes the actual manual statement preparer through first connection, workbook creation, direct commit and a fresh-device read. Synthetic inputs are two funds valued at 1.300,00 and 900,00 EUR on 2026-11-15, with explicitly supplied opening net invested of 1.000,00 EUR each. It asserts one workbook, one saved statement, 2.200,00 EUR total value, preserved opening balances, a hidden ledger, a visible readable view and identical remote history on the second device with an empty cache. A second connection must reuse the workbook. This uses FakeGoogle; it does not prove deployed Google consent, API behavior, real-account isolation or rendered manual-entry usability.
 
 Live acceptance for the exact scenario:
 
 1. Use a separate Google test account that has never connected to FolioDash, in a fresh browser profile. Open the public site, choose Continue with Google and complete Google's own consent screen. No credentials are entered into FolioDash. Record whether access is permitted without developer/test-user setup.
-2. Confirm the app opens Update your portfolio with an empty personal history. Choose Enter manually. Use valuation date 2026-11-15 and invented funds/values only; no real account or financial records belong in public evidence.
+2. Confirm the app opens Update your portfolio with an empty personal history. Choose Enter manually. Use valuation date 2026-11-15 and synthetic funds/values only; no real account or financial records belong in public evidence.
 3. Continue to movements and review. For the first statement, supply net invested **as of that valuation date**, separately from market value. This is a starting balance, not a new contribution made on that date. Do not guess it from the valuation. Missing opening amounts must prevent confirmation.
 4. Confirm once. Require an acknowledged save, a matching portfolio baseline and exactly one new FolioDash workbook in that test account. The workbook must contain its hidden technical ledger and readable portfolio view. A manually entered statement has no attached bank-source document; that limitation must not imply the financial record failed to save.
 5. Reload, sync and check the date, both funds, 2.200,00 EUR value and 2.000,00 EUR net invested. Open a second fresh profile and reconnect the same test account; require the same workbook and values with no new workbook or duplicate statement.

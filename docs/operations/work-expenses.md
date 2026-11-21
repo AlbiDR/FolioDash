@@ -74,7 +74,7 @@ Optional-cost and privacy follow-up, 2026-11-05: the exact tracker change passed
 
 Optional-only completion follow-up, 2026-11-05: `work-expenses-v3` passed `npm run verify` with 757 tests across 58 files. Canonical cases cover Dinner-only, Other-Expenses-only, explicit optional zero, mixed incomplete routine/optional entries, blank preservation and independent daily/weekly/monthly/projection expectations. A checked adapter case verifies recorded-day labels, averages and unchanged log/backup bytes. A fresh production Chrome profile with simulated Google responses passed Dinner-only completion, Save day, save/read-back, preserved blank routine fields and a 320px layout without overflow. No real Google write or physical-device acceptance was performed.
 
-Automated evidence uses invented data only:
+Automated evidence uses synthetic data only:
 
 - Canonical numeric/date cases cover zero-only and partial-only records, all categories, cross-year/week/month boundaries, leap years, rounding and overflow.
 - Storage cases cover atomic setup/recovery, lost acknowledgements, command replay, stale revisions, same/different-day concurrency, explicit branch resolution, corruption, marker/name collisions, deleted-log detection and readable values.
@@ -107,7 +107,7 @@ The owner requested direct additions throughout the day and a cleaner, animated 
 
 The editor uses tighter grouping, softly highlighted entered/focused fields and a compact total/save area that stays above mobile navigation while a draft is dirty. Secondary actions sit outside that area; No costs appears only for an empty draft. Correction review shows only changed categories, moves keyboard focus to its heading, restores focus on Keep editing and uses shared Presence entry/exit motion. Conflict resolution retains all categories. Field/state transitions, date/form arrival and status feedback use shared motion tokens. Financial figures update immediately; privacy and reduced motion remain immediate.
 
-Local evidence uses invented data only:
+Local evidence uses synthetic data only:
 
 - Production build, web/scripts TypeScript checks, changed-file ESLint, repository/source-inventory/punctuation checks, Pages/PWA/retained Apps Script checks passed.
 - 52 focused expense tests passed, including additions to saved blanks, explicit zero, replacement/clearing and formatting-only edits.

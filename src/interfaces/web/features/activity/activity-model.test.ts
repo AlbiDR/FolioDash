@@ -126,7 +126,7 @@ describe("activityTotals", () => {
 });
 
 describe("activityDaysFor", () => {
-  it("shows the invented sample only while signed out", () => {
+  it("shows the synthetic sample only while signed out", () => {
     expect(activityDaysFor(true, DAYS, [])).toBe(DAYS);
     expect(activityDaysFor(false, [], DAYS)).toBe(DAYS);
   });

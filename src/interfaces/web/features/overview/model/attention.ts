@@ -23,7 +23,7 @@ export function daysBetween(from: IsoDate, to: IsoDate): number {
 
 /**
  * What the Portfolio asks the person to do next, most urgent first. Demonstration data asks for nothing: its dates
- * are invented, so an old one is not a task. An unconfirmed history change comes first because it must be checked
+ * are synthetic, so an old one is not a task. An unconfirmed history change comes first because it must be checked
  * before another statement is saved.
  */
 export function portfolioAttention(input: {

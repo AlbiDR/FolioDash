@@ -57,7 +57,7 @@ The Google response reader also accepts an omitted default-valued sheet ID of ze
 
 Updated local verification: `npm run verify` passed on macOS / Node 26.13.0 with 841 tests in 65 files, including a local expense save paused against an in-flight full layout batch. If a local portfolio/expense save completes during organization, a fresh rebuild is queued after activity settles. Known expense corrections missing from Google stop maintenance before submission. This is local orchestration evidence, not simultaneous-device provider proof.
 
-A fresh-profile headless Chromium check of the production interface, using only an invented local device copy and blocking external requests, confirmed the automatic-maintenance explanation and organizer control at 1280 pixels and at 320 pixels with 200% root text size; neither page had horizontal overflow. The screenshots stayed in ignored local acceptance output. This did not connect to Google or verify sheet rendering. `git diff --check` passed; CI and deployment remain separate runs.
+A fresh-profile headless Chromium check of the production interface, using only a synthetic local device copy and blocking external requests, confirmed the automatic-maintenance explanation and organizer control at 1280 pixels and at 320 pixels with 200% root text size; neither page had horizontal overflow. The screenshots stayed in ignored local acceptance output. This did not connect to Google or verify sheet rendering. `git diff --check` passed; CI and deployment remain separate runs.
 
 
 ## Summary migration correction, 2026-11-09

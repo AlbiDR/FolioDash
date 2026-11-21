@@ -1,4 +1,4 @@
-// Local browser harness: the Portfolio shown from invented data as if it were a person's own recorded statements.
+// Local browser harness: the Portfolio shown from synthetic data as if it were a person's own recorded statements.
 import { h, render } from "preact";
 import { useState } from "preact/hooks";
 import { parseIsoDate, type IsoDate } from "../../src/core/values/iso-date";

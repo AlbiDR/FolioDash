@@ -46,7 +46,7 @@ export class MemorySheet implements RowSheet {
   }
 }
 
-/** The invented January sheet, and February with the euro fund's price raised so every total moves with it. */
+/** The synthetic January sheet, and February with the euro fund's price raised so every total moves with it. */
 export function januarySheet(): RawSheet {
   return syntheticSheet();
 }

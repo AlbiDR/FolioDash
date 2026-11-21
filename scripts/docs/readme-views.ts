@@ -56,7 +56,7 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
     gallery: {
       title: "Month by month",
       caption: "Every statement laid side by side, so you can see how each month moved.",
-      alt: "The month-by-month tables for the invented portfolio, one column per statement",
+      alt: "The month-by-month tables for the synthetic portfolio, one column per statement",
     },
   },
   checkpoints: {
@@ -68,7 +68,7 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
     gallery: {
       title: "Checkpoints",
       caption: "Record a value between statements and see it on the Performance chart.",
-      alt: "The checkpoints screen listing value-only records between statements, with invented amounts",
+      alt: "The checkpoints screen listing value-only records between statements, with synthetic amounts",
     },
   },
   fund: {
@@ -79,7 +79,7 @@ export const VIEWS: Readonly<Record<RouteName, ViewEntry>> = {
     gallery: {
       title: "One fund in detail",
       caption: "Weight, trend and history for a single holding.",
-      alt: "A fund detail page with its value history and invented holdings",
+      alt: "A fund detail page with its value history and synthetic holdings",
     },
   },
   import: {

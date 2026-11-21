@@ -21,7 +21,7 @@ import "./styles/activity.css";
 
 export interface ActivityViewProps {
   readonly days: readonly ExpenseDay[];
-  /** True while the sample portfolio is shown; the days are then invented and say so. */
+  /** True while the sample portfolio is shown; the days are then synthetic and say so. */
   readonly demo: boolean;
 }
 
@@ -63,7 +63,7 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
     <section class="dash activity-dashboard" aria-label="Recorded activity">
       {demo && (
         <section class="card cell-12 activity-sample" aria-label="Sample">
-          <p class="card-subtitle">Sample days with invented amounts. Your own records stay separate.</p>
+          <p class="card-subtitle">Sample days with synthetic amounts. Your own records stay separate.</p>
         </section>
       )}
 

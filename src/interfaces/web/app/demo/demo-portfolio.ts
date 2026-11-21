@@ -12,7 +12,7 @@ import type { OverviewModel } from "../../features/overview/model/overview-model
 import { overviewFromLedger } from "../session/overview-from-ledger";
 
 /**
- * Invented portfolios for developing the screens. Each one is recorded through
+ * Synthetic portfolios for developing the screens. Each one is recorded through
  * the real ledger rules and shown through the real metrics, so the demo uses the
  * same path as a user's data. It holds no real names, amounts or identifiers.
  */
@@ -299,7 +299,7 @@ const MANY: readonly DemoFundSpec[] = Array.from({ length: 12 }, (_, index) => (
   invested: 3000 + index * 1400,
 }));
 
-/** The invented ledger behind a demo variant, built by the real ledger rules. */
+/** The synthetic ledger behind a demo variant, built by the real ledger rules. */
 export function demoLedger(variant: DemoVariant): LedgerState {
   switch (variant) {
     case "typical":

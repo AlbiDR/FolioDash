@@ -1,6 +1,6 @@
 import type { RawCell, RawSheet } from "../../src/core/statements/raw-sheet";
 
-/** Every value here is invented. Nothing comes from a real statement. */
+/** Every value here is synthetic. Nothing comes from a real statement. */
 
 const QUANTITY_FORMAT = "#,###,##0.000 ";
 const RISK_FORMAT = "0.00% ";

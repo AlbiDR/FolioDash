@@ -15,7 +15,7 @@ function valuedSheet(price: string, fundValue: string, subtotal: string, total: 
   return sheet;
 }
 
-/** Invented bank exports for manual acceptance. Never reads a financial file or calls Google. */
+/** Synthetic bank exports for manual acceptance. Never reads a financial file or calls Google. */
 export async function createOnboardingFixtures(): Promise<ReadonlyMap<string, Uint8Array>> {
   const months = [
     { date: "2026-01-31", sheet: syntheticSheet() },
@@ -76,7 +76,7 @@ export async function createOnboardingFixtures(): Promise<ReadonlyMap<string, Ui
 }
 
 export const ONBOARDING_EXPECTED = {
-  data: "Invented acceptance data only. Use the isolated acceptance build and test workbook; never import into a real portfolio workbook.",
+  data: "Synthetic acceptance data only. Use the isolated acceptance build and test workbook; never import into a real portfolio workbook.",
   steps:
     "Use EITHER the individual files OR the combined workbook for a fresh-account save. They represent the same history. Set opening net invested to 1.000,00 for each fund, then answer No to cash movements for February and March.",
   dates: ["2026-01-31", "2026-02-28", "2026-03-31"],

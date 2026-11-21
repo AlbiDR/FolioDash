@@ -46,7 +46,7 @@ The phone layout uses a bottom navigation bar with reserved content space and sa
 - Forms use full-width inputs, 16px input text, larger action/choice targets and scroll clearance above navigation. Wide review tables scroll within their own boundaries.
 - Route changes update the page title, return to the top and move focus to the main landmark. A skip link is available for keyboard navigation. Reduced motion follows the existing global preference.
 
-Local verification uses invented demo portfolios in headless desktop Chrome with touch emulation and several viewport sizes. This verifies layout and browser interactions; it does not establish physical Android/WebAPK, iOS, Google OAuth, or live-save behaviour. Before accepting an Android release, check an installed copy with the on-screen keyboard open, gesture navigation, larger system text, file selection and Google sign-in.
+Local verification uses synthetic demo portfolios in headless desktop Chrome with touch emulation and several viewport sizes. This verifies layout and browser interactions; it does not establish physical Android/WebAPK, iOS, Google OAuth, or live-save behaviour. Before accepting an Android release, check an installed copy with the on-screen keyboard open, gesture navigation, larger system text, file selection and Google sign-in.
 
 Local mobile pass, 2026-11-03:
 

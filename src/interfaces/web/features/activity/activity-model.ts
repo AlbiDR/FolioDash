@@ -129,7 +129,7 @@ export function activityWeeks(rows: readonly ActivityRow[]): readonly ActivityWe
   return [...groups].map(([start, weekRows]) => ({ start, rows: weekRows }));
 }
 
-/** The days the screen reads: the invented sample while signed out, otherwise the person's own recorded days. */
+/** The days the screen reads: the synthetic sample while signed out, otherwise the person's own recorded days. */
 export function activityDaysFor(
   signedOut: boolean,
   sample: readonly ExpenseDay[],

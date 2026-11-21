@@ -1,4 +1,4 @@
-// Runs the real Portfolio view over invented, long recorded data, never a live account.
+// Runs the real Portfolio view over synthetic, long recorded data, never a live account.
 import { runSyntheticJourney } from "../lib/synthetic-harness.ts";
 
 const assertions = await runSyntheticJourney({

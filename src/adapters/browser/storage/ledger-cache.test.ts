@@ -17,7 +17,7 @@ const blocked = (): KeyValueStore => {
 };
 
 async function realLedger() {
-  // A valid ledger built by the real rules, from the invented demo portfolio.
+  // A valid ledger built by the real rules, from the synthetic demo portfolio.
   const { demoLedger } = await import("../../../interfaces/web/app/demo/demo-portfolio");
   return demoLedger("typical");
 }

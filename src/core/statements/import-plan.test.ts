@@ -17,7 +17,7 @@ function date(text: string): IsoDate {
   return result;
 }
 
-/** A valid invented ISIN built from a short code. */
+/** A valid synthetic ISIN built from a short code. */
 function isin(code: string): string {
   for (let digit = 0; digit < 10; digit++) {
     const candidate = parseIsin(`XS${code.padEnd(9, "0")}${String(digit)}`);

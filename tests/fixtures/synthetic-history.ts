@@ -18,7 +18,7 @@ function syntheticIsin(index: number): string {
   throw new Error("Could not construct a synthetic ISIN.");
 }
 
-/** Invented monthly history; direct construction avoids timing repeated import setup. */
+/** Synthetic monthly history; direct construction avoids timing repeated import setup. */
 export function syntheticHistory(months: number, fundCount: number): LedgerState {
   if (
     !Number.isInteger(months) ||

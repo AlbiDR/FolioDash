@@ -5,7 +5,7 @@ Date: 2026-11-08
 Amended 2026-11-08 by the [UI system](ui-system.md) pass, which keeps this document's screen order and container policy and changes the details marked "amended" below.
 Owner request: "The UI is still pretty much a mess, especially on mobile. The hierarchy and organisation are not thought out. There are a lot of containers that hinder navigation and reaching the main section."
 
-This is a presentation and structure change. Financial calculations, parsers, persistence, Google access, save and recovery semantics, consent flows, routes and destinations are untouched. All figures still come from the existing canonical models. Every screenshot and measurement uses invented data.
+This is a presentation and structure change. Financial calculations, parsers, persistence, Google access, save and recovery semantics, consent flows, routes and destinations are untouched. All figures still come from the existing canonical models. Every screenshot and measurement uses synthetic data.
 
 ## What this supersedes
 
@@ -22,7 +22,7 @@ The earlier design passes recorded overflow, type size, touch-target and card-hi
 Re-measured on the production build (`npm run build`, served by `vite preview`), before any change. The measuring harness is scratch tooling kept outside the repository (headless Google Chrome 157.0.8103.39 on macOS over the DevTools Protocol, fresh profile, network limited to the preview origin, service worker bypassed, reduced motion emulated for steady measurements). It is not a project dependency or a CI suite.
 
 - Viewport: 375 x 812 CSS pixels unless stated; mobile emulation with touch for widths of 768 and below. Also 320, 390, 430, 768 and 1440 wide, light and dark, and a browser default font size of 32px (200% text) at 320, 375 and 768.
-- Data: the built-in synthetic demo (`?demo=typical`, 2 funds), the twelve-fund demo, an empty demo, and a synthetic device copy seeded into browser storage (4 invented funds over 24 months, and an empty ledger). The device copy stands in for a connected account. It is simulated; no Google access is involved.
+- Data: the built-in synthetic demo (`?demo=typical`, 2 funds), the twelve-fund demo, an empty demo, and a synthetic device copy seeded into browser storage (4 synthetic funds over 24 months, and an empty ledger). The device copy stands in for a connected account. It is simulated; no Google access is involved.
 - State: privacy default (amounts hidden) and amounts shown; all disclosures closed; the real clock on 2026-11-08, which is a Sunday, and a fixed clock on Wednesday 2026-11-04 for Expenses.
 - Containers: counted from computed style, not class names. A container is a rendered element with element children and a visible surface (non-matching background, a box of three or more bordered sides, or a shadow). Buttons, links, inputs, table cells, labels, chips, and groups made only of buttons or links are excluded. `.card` counts are given separately because that is how the owner measured. A card-in-card is a `.card` inside a `.card`.
 - Primary position: the top of the headline figure on Portfolio and Fund (`.hero-value`), the first entry input on Expenses (`#expense-0`), the file picker on Import and Import history, the connection summary on Your data.

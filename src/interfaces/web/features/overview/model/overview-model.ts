@@ -58,7 +58,7 @@ export interface OverviewMonth {
 }
 
 export interface OverviewModel {
-  /** Whether the figures come from invented demo data or from statements the user recorded. */
+  /** Whether the figures come from synthetic demo data or from statements the user recorded. */
   readonly source: "demo" | "recorded";
   readonly dates: readonly IsoDate[];
   /** How each statement is named on screen, aligned with `dates`. Display only. */

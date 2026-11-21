@@ -36,7 +36,7 @@ Source reviewed at preparation revision `ebef320`: `app.tsx`, `routes.ts`, `over
 | Finding | Resolution in this plan |
 |---|---|
 | Current shell has Portfolio, Import and Your data; month/fund details belong to Portfolio. | Add one feature destination and keep its detail views under the same selected destination. |
-| The reviewed baseline equates recorded data with portfolio snapshots and otherwise supplies demo portfolio data. Concurrent consolidation corrects the connected-empty display fallback. | Still require feature-aware session, cache, recovery and empty-state coverage before enabling expenses; a spending-only account must not be treated as an empty account or silently shown invented portfolio figures as its own. |
+| The reviewed baseline equates recorded data with portfolio snapshots and otherwise supplies demo portfolio data. Concurrent consolidation corrects the connected-empty display fallback. | Still require feature-aware session, cache, recovery and empty-state coverage before enabling expenses; a spending-only account must not be treated as an empty account or silently shown synthetic portfolio figures as its own. |
 | Current onboarding directs a connected empty workbook to bank import. | Offer the Expenses path without requiring an investment statement. Portfolio may still show its own explicit empty state. |
 | The existing grid, solid content surfaces, glass navigation and blue accent already form a coherent system. | Extend those materials and hierarchy; introduce no competing card, icon or motion library. |
 | A global source chip could be mistaken for confirmation of a new entry. | Keep per-entry persistence feedback beside the Save action. |

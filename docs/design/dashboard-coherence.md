@@ -36,7 +36,7 @@ Existing keyboard focus, privacy controls, chart inspection, accessible tables a
 
 `npm run verify` passes, including 637 tests, type checking, lint, repository rules, production build, PWA integrity and the Apps Script bundle check.
 
-The local production renderer was checked in headless Chrome with invented demo data:
+The local production renderer was checked in headless Chrome with synthetic demo data:
 
 - Five routes at 320, 360, 390, 430, 760, 844 and 1440 CSS pixels: no document overflow, mobile control targets, chart sizing, fund navigation, month selection, keyboard date slider and a short input viewport.
 - Five demo portfolio variants at 320, 390, 760 and 1440 pixels: visible amounts, no clipped headline values, full-width phone metrics, stable headline values when chart period changes, disclosures and 200% root text size.
@@ -44,7 +44,7 @@ The local production renderer was checked in headless Chrome with invented demo 
 - A synthetic empty device copy: the connected empty state renders with no demo label or charts.
 - Light/dark production screenshots inspected between passes; the review removed the setup-first stack, repeated summary figures and clipped duplicate holdings columns.
 
-The session's browser probes are `/tmp/foliodash-consolidation-check.mjs` and `/tmp/foliodash-consolidation-details.mjs`; they are local evidence, not a committed CI browser suite. The screenshots contain only invented data. Physical Android/iOS, screen readers, Firefox/WebKit, installed WebAPK and live Google behavior after these presentation changes are not claimed by this visual pass. Prior Google acceptance evidence retains its original tested scope.
+The session's browser probes are `/tmp/foliodash-consolidation-check.mjs` and `/tmp/foliodash-consolidation-details.mjs`; they are local evidence, not a committed CI browser suite. The screenshots contain only synthetic data. Physical Android/iOS, screen readers, Firefox/WebKit, installed WebAPK and live Google behavior after these presentation changes are not claimed by this visual pass. Prior Google acceptance evidence retains its original tested scope.
 
 ## Bento redesign, 2026-11-05
 
@@ -62,7 +62,7 @@ References applied: [responsive CSS Grid composition](https://github.com/microso
 
 - Revision/build: commit containing this entry; production artifact from `npm run verify`, 2026-11-05.
 - Capability: responsive dashboard composition and shared shell, with existing financial/chart interactions preserved.
-- Environment: local production preview, headless desktop Google Chrome, fresh temporary profile, service-worker bypass; invented demo portfolios only. Viewports 320, 390, 760, 1024 and 1440 CSS pixels; typical, single, many, different and empty portfolios.
+- Environment: local production preview, headless desktop Google Chrome, fresh temporary profile, service-worker bypass; synthetic demo portfolios only. Viewports 320, 390, 760, 1024 and 1440 CSS pixels; typical, single, many, different and empty portfolios.
 - Method: `npm run verify`; `npm run capture:readme`; browser checks navigating Portfolio, Expenses, Month by month, Import, history and Your data, inspecting page overflow, landmarks and 48px control heights. Repeat portfolio cases with 200% root text. Exercise slider selection, legend highlighting, Escape/reset, range keyboard selection, fund search/clear, analysis disclosure, privacy, sidebar resize and focus clearance. Compare chart paths and ticks before/after inspection. Emulate reduced motion and forced colours.
 - Result: PASS. All 757 tests in 58 files, source/build/PWA/Apps Script gates, and 124 local browser assertions passed. Captured and visually reviewed the actual portfolio renderer in light/dark desktop and dark mobile, plus the shared expense shell. No unhandled browser exceptions in the browser assertion run.
 - Evidence: generated synthetic screenshots in `dist/readme/` (ignored build output); local verification logs `/tmp/foliodash-bento-redesign-verify.log` and `/tmp/foliodash-redesign-browser-results.txt`. These temporary files are local evidence, not durable CI artifacts.
@@ -103,7 +103,7 @@ This follows the [container-query model](https://developer.mozilla.org/en-US/doc
 - Revision/build: commit containing this amendment, local production build, 2026-11-06.
 - Capability: complete holdings metrics, bounded/wrapping names, narrow-container period and fact reflow.
 - Environment/dataset: fresh headless desktop Chrome profile, service-worker bypass, built-in synthetic portfolios only. Metric checks cover 320/390/760/1024/1180/1440/1920px at 100% and 200% root text; a 1280px desktop additionally demonstrates the compact card inside the bento grid.
-- Method: `npm run verify`; production browser assertions for exactly one holdings representation, all four metric labels/cells, metric bounds within the card, no holdings horizontal scrolling and an identity column below 30% in wide mode. Stress only the rendered presentation with a deliberately long invented name and very large formatted signed amounts; reload the actual demo before final screenshots. Repeat the established six-screen layout, privacy, keyboard, chart/search, focus, forced-colour and reduced-motion checks.
+- Method: `npm run verify`; production browser assertions for exactly one holdings representation, all four metric labels/cells, metric bounds within the card, no holdings horizontal scrolling and an identity column below 30% in wide mode. Stress only the rendered presentation with a deliberately long synthetic name and very large formatted signed amounts; reload the actual demo before final screenshots. Repeat the established six-screen layout, privacy, keyboard, chart/search, focus, forced-colour and reduced-motion checks.
 - Result: PASS. All 762 tests in 58 files and all 168 browser assertions passed. The first broad matrix found the enlarged-text period overflow described above; its corrective container/grid changes passed the same regression check. Visually reviewed the actual wide and compact holdings renderings. No financial formulas or source data were changed.
 - Evidence: local `/tmp/foliodash-metrics-verify.log`, `/tmp/foliodash-metrics-browser.mjs`, `/tmp/foliodash-metrics-browser-results.json`, `/tmp/foliodash-holdings-wide.png` and `/tmp/foliodash-holdings-compact.png`. These temporary files are local evidence, not durable CI artifacts.
 - Remaining gates: physical Android/Apple touch, screen-reader and Firefox/WebKit checks NOT RUN for this change. No hosted revision or live Google claim follows from the local synthetic checks.

@@ -29,7 +29,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
       </nav>
       <div class="sidebar-note">
         <span class="study-dot"></span> Layout study<small
-          >Invented figures. No account connection or financial actions.</small
+          >Synthetic figures. No account connection or financial actions.</small
         >
       </div>
     </aside>
@@ -93,7 +93,7 @@ export const STUDY_HTML = String.raw`<!doctype html>
                 <svg class="performance-plot" viewBox="0 0 640 215" preserveAspectRatio="none" role="img" aria-labelledby="plot-title plot-desc">
                   <title id="plot-title">Illustrative portfolio chart</title>
                   <desc id="plot-desc">
-                    Eight invented observations, April to November 2026. Fund value rises from 110,800 to 128,450 euros,
+                    Eight synthetic observations, April to November 2026. Fund value rises from 110,800 to 128,450 euros,
                     with intervening falls. Net invested stays at 110,000 euros. Exact figures follow in the table.
                   </desc>
                   <defs>

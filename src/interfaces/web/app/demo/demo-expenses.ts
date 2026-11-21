@@ -6,7 +6,7 @@ import {
   type ExpenseDay,
 } from "../../../../core/expenses/work-expenses";
 
-/** Invented examples relative to Today, used only in the explicitly labelled in-memory demo. */
+/** Synthetic examples relative to Today, used only in the explicitly labelled in-memory demo. */
 export function demoExpenses(today: IsoDate): readonly ExpenseDay[] {
   const days: ExpenseDay[] = [];
   let date = today;

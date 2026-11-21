@@ -10,7 +10,7 @@ import { interpretStatement } from "../interpret-statement";
 import { cents, date, january, world, saved } from "../../../../../../tests/fixtures/session/session-test-support";
 
 describe("the sheet keeps the bank statements, and can prove it", () => {
-  /** The invented bank statement, read the way the import screen reads it, with the decisions made about it. */
+  /** The synthetic bank statement, read the way the import screen reads it, with the decisions made about it. */
   function withStatement(): RecordRequest {
     const sheet = syntheticSheet();
     const read = interpretStatement(sheet);

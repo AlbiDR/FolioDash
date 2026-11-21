@@ -114,7 +114,7 @@ export async function holdingsJourney({
     "[...document.querySelectorAll('.mobile-holdings > li')].some(li=>li.getAnimations().some(a=>a.playState==='running'))",
     "the phone holdings list glides to its new order",
   );
-  // Short histories have no returns grid; three years of demo history show it, with no reminder (the demo's dates are invented), and its figures are the Month by month matrix's own.
+  // Short histories have no returns grid; three years of demo history show it, with no reminder (the demo's dates are synthetic), and its figures are the Month by month matrix's own.
   await check(
     "!document.querySelector('.returns-card') && !document.querySelector('.attention')",
     "a history within one calendar year has no returns grid and demo data asks for nothing",

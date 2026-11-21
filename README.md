@@ -67,7 +67,7 @@ One visual language across the portfolio, the working week and the phone in your
     <td width="72%" align="center" valign="top">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://albidr.github.io/FolioDash/readme/expenses-dark.png">
-        <img src="https://albidr.github.io/FolioDash/readme/expenses-light.png" width="720" alt="Work expenses showing the five daily categories, week review and spending summaries with invented data">
+        <img src="https://albidr.github.io/FolioDash/readme/expenses-light.png" width="720" alt="Work expenses showing the five daily categories, week review and spending summaries with synthetic data">
       </picture>
       <br>
       <sub><b>The working week</b><br>Five categories. Daily detail. A wider view of what work costs.</sub>
@@ -80,7 +80,7 @@ One visual language across the portfolio, the working week and the phone in your
   </tr>
 </table>
 
-<p align="center"><sub>Desktop and phone-sized browser views, with invented demo data.</sub></p>
+<p align="center"><sub>Desktop and phone-sized browser views, with synthetic demo data.</sub></p>
 
 <br>
 
@@ -94,7 +94,7 @@ These views are captured automatically from the published demo, so they always m
     <td width="50%" align="center" valign="top">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://albidr.github.io/FolioDash/readme/months-dark.png">
-        <img src="https://albidr.github.io/FolioDash/readme/months-light.png" width="520" alt="The month-by-month tables for the invented portfolio, one column per statement">
+        <img src="https://albidr.github.io/FolioDash/readme/months-light.png" width="520" alt="The month-by-month tables for the synthetic portfolio, one column per statement">
       </picture>
       <br>
       <sub><b>Month by month</b><br>Every statement laid side by side, so you can see how each month moved.</sub>
@@ -102,7 +102,7 @@ These views are captured automatically from the published demo, so they always m
     <td width="50%" align="center" valign="top">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://albidr.github.io/FolioDash/readme/checkpoints-dark.png">
-        <img src="https://albidr.github.io/FolioDash/readme/checkpoints-light.png" width="520" alt="The checkpoints screen listing value-only records between statements, with invented amounts">
+        <img src="https://albidr.github.io/FolioDash/readme/checkpoints-light.png" width="520" alt="The checkpoints screen listing value-only records between statements, with synthetic amounts">
       </picture>
       <br>
       <sub><b>Checkpoints</b><br>Record a value between statements and see it on the Performance chart.</sub>
@@ -112,7 +112,7 @@ These views are captured automatically from the published demo, so they always m
     <td width="50%" align="center" valign="top">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://albidr.github.io/FolioDash/readme/fund-dark.png">
-        <img src="https://albidr.github.io/FolioDash/readme/fund-light.png" width="520" alt="A fund detail page with its value history and invented holdings">
+        <img src="https://albidr.github.io/FolioDash/readme/fund-light.png" width="520" alt="A fund detail page with its value history and synthetic holdings">
       </picture>
       <br>
       <sub><b>One fund in detail</b><br>Weight, trend and history for a single holding.</sub>
@@ -143,7 +143,7 @@ These views are captured automatically from the published demo, so they always m
 
 ## How it works
 
-1. **Get a feel for it.** Open the demo and explore an invented portfolio and expense history. No account is needed; demo expense edits reset on reload.
+1. **Get a feel for it.** Open the demo and explore a synthetic portfolio and expense history. No account is needed; demo expense edits reset on reload.
 2. **Bring your history.** For your own records, connect Google and choose supported bank Excel exports, separately or in a workbook with a statement per sheet. Check dates, holdings and cash movements before confirming.
 3. **Make it a routine.** Return to your portfolio, look into a fund, or record a workday. You can track expenses without importing a portfolio.
 
