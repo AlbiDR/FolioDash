@@ -1,4 +1,5 @@
-import { VALUE_LABEL_GAP, useValueAxis } from "./use-value-axis";
+import "./chart-inspection.css";
+import { useValueAxis } from "./use-value-axis";
 import { useAxisLabels } from "./use-axis-labels";
 import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
@@ -6,7 +7,14 @@ import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacy-choice";
 import { type ChartSeries, arrivalBaseline, computeLineChart } from "./line-chart-geometry";
 import { LAYOUT, styleClass } from "./line-chart-layout";
-import { ChartReadout, ChartValuesTable } from "./line-chart-parts";
+import {
+  ChartReadout,
+  ChartValuesTable,
+  ChartValueAxis,
+  ChartTimeAxis,
+  ChartInspectionDots,
+  ChartInspectionTooltip,
+} from "./line-chart-parts";
 import { useChartSize } from "./use-chart-size";
 import { useGeometryMorph } from "./motion/use-geometry-morph";
 import { useUpdateFade } from "./use-update-fade";
@@ -41,6 +49,7 @@ export interface LineChartProps {
   readonly fillHeight?: boolean;
   /** Text shown when there is nothing to plot. */
   readonly emptyMessage: string;
+  readonly inspectionTooltip?: boolean;
 }
 
 /**
@@ -132,6 +141,8 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const hoveredTime = hovered !== null && times.includes(hovered) ? hovered : null;
   const activeTime = hoveredTime ?? selectedTime ?? lastTime;
   const activeX = activeTime === undefined ? undefined : xByTime.get(activeTime);
+  const inspection = activeX !== undefined && (selectedTime !== null || hoveredTime !== null);
+  const showTooltip = props.inspectionTooltip === true && inspection;
   const baseline = geometry.plot.top + geometry.plot.height;
   const show = (value: number): string => (hidden ? maskNumbers(props.formatValue(value)) : props.formatValue(value));
   const observation = props.formatObservation ?? props.formatTime;
@@ -225,119 +236,108 @@ export function LineChart(props: LineChartProps): JSX.Element {
         show={show}
         hidden={hidden}
         formatValue={props.formatValue}
+        immediate={showTooltip}
       />
-      <svg
-        ref={plot}
-        class="chart-svg"
-        viewBox={`0 0 ${String(layout.width)} ${String(layout.height)}`}
-        role="img"
-        aria-labelledby={`${titleId} ${descriptionId}`}
-        onPointerMove={scrubTo}
-        onPointerDown={(event) => {
-          if (event.button !== 0) return;
-          if (event.pointerType === "touch" || event.pointerType === "pen")
-            touchStart.current = { previous: selectedTime };
-          scrubTo(event);
-        }}
-        onPointerUp={() => {
-          touchStart.current = null;
-        }}
-        onPointerCancel={() => {
-          if (touchStart.current !== null) setScrubbed(touchStart.current.previous);
-          touchStart.current = null;
-          setHovered(null);
-        }}
-        onPointerLeave={() => {
-          setHovered(null);
-        }}
-      >
-        <desc id={descriptionId}>{props.description}</desc>
-        <g class="chart-grid">
-          <g ref={valueAxis.group} class="chart-value-axis">
-            {geometry.yTicks.map((tick) => (
-              <g key={tick.value}>
-                <line x1={geometry.plot.left} x2={geometry.plot.left + geometry.plot.width} y1={tick.y} y2={tick.y} />
-                <text
-                  class="chart-tick"
-                  x={geometry.plot.left + geometry.plot.width + VALUE_LABEL_GAP}
-                  y={tick.y}
-                  text-anchor="start"
-                  dominant-baseline="middle"
+      <div class="chart-plot" data-inspecting={showTooltip}>
+        <svg
+          ref={plot}
+          class="chart-svg"
+          viewBox={`0 0 ${String(layout.width)} ${String(layout.height)}`}
+          role="img"
+          aria-labelledby={`${titleId} ${descriptionId}`}
+          onPointerMove={scrubTo}
+          onPointerDown={(event) => {
+            if (event.button !== 0) return;
+            if (event.pointerType === "touch" || event.pointerType === "pen")
+              touchStart.current = { previous: selectedTime };
+            scrubTo(event);
+          }}
+          onPointerUp={() => {
+            touchStart.current = null;
+          }}
+          onPointerCancel={() => {
+            if (touchStart.current !== null) setScrubbed(touchStart.current.previous);
+            touchStart.current = null;
+            setHovered(null);
+          }}
+          onPointerLeave={() => {
+            setHovered(null);
+          }}
+        >
+          <desc id={descriptionId}>{props.description}</desc>
+          <g class="chart-grid">
+            <ChartValueAxis
+              group={valueAxis.group}
+              geometry={geometry}
+              show={show}
+              format={(value) => {
+                const label = formatAxisValue(value);
+                return hidden ? maskNumbers(label) : label;
+              }}
+            />
+            <ChartTimeAxis group={axis.group} labels={axis.labels} y={baseline + 20} />
+          </g>
+          {inspection && <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />}
+          <g ref={seriesLayer}>
+            <g
+              class="plot-arrive"
+              style={{
+                "--plot-arrival-origin": `${String(arrivalBaseline(geometry))}px`,
+              }}
+            >
+              {geometry.series.map((entry, index) => (
+                <g
+                  key={entry.id}
+                  class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
+                  data-series={entry.id}
                 >
-                  <title>{show(tick.value)}</title>
-                  {hidden ? maskNumbers(formatAxisValue(tick.value)) : formatAxisValue(tick.value)}
-                </text>
-              </g>
-            ))}
-          </g>
-          <g ref={axis.group} class="chart-time-axis" aria-hidden="true">
-            {axis.labels.map((label) => (
-              <text
-                key={label.key}
-                data-axis-key={label.key}
-                class="chart-tick"
-                x={label.x}
-                y={baseline + 20}
-                text-anchor="middle"
-                visibility={label.visible ? "visible" : "hidden"}
-              >
-                {label.text}
-              </text>
-            ))}
-          </g>
-        </g>
-        {activeX !== undefined && (selectedTime !== null || hoveredTime !== null) && (
-          <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />
-        )}
-        <g ref={seriesLayer}>
-          <g
-            class="plot-arrive"
-            style={{
-              "--plot-arrival-origin": `${String(arrivalBaseline(geometry))}px`,
-            }}
-          >
-            {geometry.series.map((entry, index) => (
-              <g
-                key={entry.id}
-                class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
-                data-series={entry.id}
-              >
-                {props.fillFirst === true &&
-                  index === 0 &&
-                  entry.areas.map((area) => <path key={area} class="area" d={area} />)}
-                {entry.paths.map((path) => (
-                  <path key={path} class="line" d={path} fill="none" />
-                ))}
-                {entry.markers &&
-                  entry.points.map((point) => (
-                    <rect
+                  {props.fillFirst === true &&
+                    index === 0 &&
+                    entry.areas.map((area) => <path key={area} class="area" d={area} />)}
+                  {entry.paths.map((path) => (
+                    <path key={path} class="line" d={path} fill="none" />
+                  ))}
+                  {entry.markers &&
+                    entry.points.map((point) => (
+                      <rect
+                        key={point.time}
+                        class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
+                        x={point.x - 5}
+                        y={point.y - 5}
+                        width={10}
+                        height={10}
+                        transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                        data-time={point.time}
+                        {...(hidden ? {} : { "data-value": point.value })}
+                      />
+                    ))}
+                  {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
+                    <circle
                       key={point.time}
-                      class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
-                      x={point.x - 5}
-                      y={point.y - 5}
-                      width={10}
-                      height={10}
-                      transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                      class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
+                      cx={point.x}
+                      cy={point.y}
+                      r={4.5}
                       data-time={point.time}
                       {...(hidden ? {} : { "data-value": point.value })}
                     />
                   ))}
-                {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
-                  <circle
-                    key={point.time}
-                    class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
-                    cx={point.x}
-                    cy={point.y}
-                    r={4.5}
-                    data-time={point.time}
-                    {...(hidden ? {} : { "data-value": point.value })}
-                  />
-                ))}
-              </g>
-            ))}
+                </g>
+              ))}
+            </g>
           </g>
-        </g>
-      </svg>
+          {showTooltip && <ChartInspectionDots series={geometry.series} time={activeTime} highlight={highlight} />}
+        </svg>
+        {showTooltip && activeTime !== undefined && (
+          <ChartInspectionTooltip
+            series={geometry.series}
+            time={activeTime}
+            anchor={activeX / layout.width}
+            date={observation(activeTime)}
+            show={show}
+          />
+        )}
+      </div>
       <label class="chart-date-control">
         <span>Explore dates</span>
         <input

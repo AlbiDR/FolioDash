@@ -66,3 +66,7 @@ Environment: local macOS Chrome, synthetic demo portfolios, Node 26.13.1. Node 2
 The audit's pointer probe now scrolls Changes into view before measuring its hover point, because the richer summary can place its centre below the initial viewport. The same fine-pointer lift and inset-edge assertions remain in force. No assertion was removed or relaxed. The new Portfolio regression runs through the standard rendered gate as `npm run audit:portfolio-polish`; its native animation clock is frozen before mounting to measure the first frame without a timing race on CI.
 
 A passing screenshot or synthetic renderer audit is never live-product verification (STD-11, BAN-15). Physical-device smoothness, screen readers, other engines, deployed integration and real Google remain unverified.
+
+## Performance hover and scrub
+
+The [Verdin Insights spending chart](https://demo.codeandchill.store/verdin/insights/) informed the guide, dot and tooltip that snap to a single observation. The existing Astryx portfolio hierarchy still provides the chart's context. Performance uses its existing hover, touch and keyboard selection to position the tooltip beside the guide, with exact masked or visible values from the same formatter as the readout. The halo and active dot use the settled coordinates, including while a series transition is running. Tooltip placement and dot emphasis use FolioDash tokens and update immediately. Other line charts retain their existing inspection presentation.

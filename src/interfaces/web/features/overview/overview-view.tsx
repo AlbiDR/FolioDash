@@ -173,6 +173,7 @@ export function OverviewView(props: {
       <div class="cell-8 portfolio-trend">
         <LineChart
           id="total-chart"
+          inspectionTooltip
           fillHeight
           updateKey={props.range}
           title="Performance"

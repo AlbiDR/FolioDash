@@ -3,6 +3,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import type { JourneyContext } from "./browser-steps.ts";
 
 export async function portfolioJourney({
+  call,
   evaluate,
   evaluateWith,
   waitFor,
@@ -86,6 +87,61 @@ export async function portfolioJourney({
     "(()=>{const svg=document.querySelector('.portfolio-trend .chart-svg');const box=svg.getBoundingClientRect();return box.height<=box.width*0.8+1&&box.height<=561})()",
     "filled Performance plot stays a wide, bounded shape",
   );
+  // Inspect both ends of the plot and then move the same selection with the keyboard.
+  for (const endpoint of ["first-of-type", "last-of-type"]) {
+    const point = (await evaluateWith((end) => {
+      const svg = document.querySelector<SVGSVGElement>(".portfolio-trend .chart-plot svg");
+      if (!svg) throw new Error("Performance plot missing");
+      svg.scrollIntoView({ block: "center", behavior: "instant" });
+      const bounds = svg.getBoundingClientRect();
+      const mark = svg.querySelector<SVGCircleElement>(`.chart-series:first-child circle:${end}`);
+      if (!mark) throw new Error("Performance observation missing");
+      return {
+        x: bounds.left + (mark.cx.baseVal.value * bounds.width) / svg.viewBox.baseVal.width,
+        y: bounds.top + bounds.height / 2,
+      };
+    }, endpoint)) as { x: number; y: number };
+    await call("Input.dispatchMouseEvent", { type: "mouseMoved", ...point });
+    await check(
+      `(() => {
+      const plot=document.querySelector('.portfolio-trend .chart-plot');
+      const tooltip=plot.querySelector('.chart-inspection-tooltip');
+      if (!tooltip) return false;
+      const guide=plot.querySelector('.chart-guide').x1.baseVal.value;
+      const marks=[...plot.querySelectorAll('.chart-series circle.is-active')];
+      const dots=[...plot.querySelectorAll('.chart-inspection-dot')];
+      const bounds=plot.getBoundingClientRect(), tip=tooltip.getBoundingClientRect();
+      const exact=marks.map(mark=>Number(mark.dataset.value).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €');
+      const readout=plot.previousElementSibling;
+      return dots.length===2 && marks.length===2 &&
+        dots.every((dot,i)=>dot.cx.baseVal.value===guide && dot.cy.baseVal.value===marks[i].cy.baseVal.value) &&
+        plot.querySelectorAll('.chart-inspection-halo').length===2 &&
+        exact.every(value=>tooltip.textContent.includes(value)&&readout.textContent.includes(value)) &&
+        !readout.querySelector('[data-counting]') &&
+        tooltip.querySelector('.chart-inspection-date').textContent===readout.querySelector('.chart-readout-date').textContent &&
+        tip.left>=bounds.left-1 && tip.right<=bounds.right+1;
+    })()`,
+      `Performance hover aligns the exact values, guide and halos at the ${endpoint} endpoint`,
+    );
+  }
+  await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
+  await check("!document.querySelector('.chart-inspection-tooltip')", "leaving Performance clears hover inspection");
+  await evaluate("document.querySelector('.portfolio-trend input[type=range]').focus({preventScroll:true})");
+  await call("Input.dispatchKeyEvent", { type: "keyDown", key: "Home", code: "Home" });
+  await call("Input.dispatchKeyEvent", { type: "keyUp", key: "Home", code: "Home" });
+  await check(
+    "(()=>{const tip=document.querySelector('.chart-inspection-tooltip');const slider=document.activeElement;return !!tip&&slider.value==='0'&&[...tip.querySelectorAll('strong')].every(value=>slider.getAttribute('aria-valuetext').includes(value.textContent))})()",
+    "keyboard scrubbing shares exact Performance values with the tooltip",
+  );
+  await evaluate("document.querySelector('.privacy-toggle').click()");
+  await check(
+    "(()=>{const tip=document.querySelector('.chart-inspection-tooltip');return !!tip&&[...tip.querySelectorAll('strong')].every(value=>!/[0-9]/.test(value.textContent))})()",
+    "privacy immediately masks tooltip amounts",
+  );
+  await evaluate("document.querySelector('.privacy-toggle').click()");
+  await call("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
+  await call("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
+  await check("!document.querySelector('.chart-inspection-tooltip')", "Escape dismisses Performance inspection");
   // The headline carries the change since last month beside the total.
   await check(
     "!!document.querySelector('.hero .hero-delta .pill') && document.querySelector('.hero .hero-delta').getBoundingClientRect().top>document.querySelector('.hero .hero-value').getBoundingClientRect().top",
