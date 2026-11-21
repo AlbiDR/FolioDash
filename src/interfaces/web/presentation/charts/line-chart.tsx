@@ -29,6 +29,9 @@ export interface LineChartProps {
   /** Names an actual observation in the readout, the spoken value and the table. Defaults to `formatTime`. */
   readonly formatObservation?: (time: number) => string;
   readonly formatValue: (value: number) => string;
+  /** Short axis labels may use k/M; the exact formatter still owns the readout, accessible name and values table. */
+  readonly formatAxisValue?: (value: number) => string;
+  readonly axisUnit?: string;
   /** Extend the value axis to zero. Off by default: the axis fits the data. */
   readonly includeZero?: boolean;
   /** Fill the area under the first series, as Apple's Stocks does. */
@@ -193,6 +196,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
     >
       <figcaption class="chart-title" id={titleId}>
         {props.title}
+        {props.axisUnit !== undefined && <span class="chart-axis-unit"> {props.axisUnit}</span>}
       </figcaption>
       {props.controls !== undefined && <div class="chart-controls">{props.controls}</div>}
       {props.subtitle !== undefined && <p class="chart-subtitle">{props.subtitle}</p>}
@@ -240,7 +244,12 @@ export function LineChart(props: LineChartProps): JSX.Element {
                 text-anchor="start"
                 dominant-baseline="middle"
               >
-                {show(tick.value)}
+                <title>{show(tick.value)}</title>
+                {props.formatAxisValue === undefined
+                  ? show(tick.value)
+                  : hidden
+                    ? maskNumbers(props.formatAxisValue(tick.value))
+                    : props.formatAxisValue(tick.value)}
               </text>
             </g>
           ))}

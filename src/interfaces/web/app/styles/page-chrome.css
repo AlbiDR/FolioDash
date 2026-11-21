@@ -208,15 +208,32 @@ a.icon-button {
   grid-column: span 12;
 }
 
+/* A short stagger gives the surface rhythm. Opacity stays at one even during the delay: financial figures are
+ * readable on the first frame, with no count-up or plot reveal. Reduced motion removes the movement entirely. */
 .dash > * {
   min-width: 0;
-  animation: rise var(--duration-feedback) var(--ease-standard);
+  animation: rise var(--duration-medium) var(--ease-standard) backwards;
+  animation-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
+}
+.dash > :nth-child(2) {
+  --arrival-index: 1;
+}
+.dash > :nth-child(3) {
+  --arrival-index: 2;
+}
+.dash > :nth-child(4) {
+  --arrival-index: 3;
+}
+.dash > :nth-child(5) {
+  --arrival-index: 4;
+}
+.dash > :nth-child(n + 6) {
+  --arrival-index: 5;
 }
 
 @keyframes rise {
   from {
-    opacity: var(--motion-reveal-opacity);
-    transform: translateY(var(--motion-nudge));
+    transform: translateY(var(--motion-rise));
   }
 }
 

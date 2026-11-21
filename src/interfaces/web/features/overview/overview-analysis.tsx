@@ -6,7 +6,7 @@ import { LineChart } from "../../presentation/charts/line-chart";
 import { MonthlyBars } from "../../presentation/charts/monthly-bars";
 import { PerformanceBars } from "../../presentation/charts/performance-bars";
 import { Icon } from "../../shared/ui/icons";
-import { euroLabel, monthLabel, observationLabel } from "./model/chart-data";
+import { euroLabel, euroAxisLabel, monthLabel, observationLabel } from "./model/chart-data";
 import type { dashboardFor } from "./model/dashboard-data";
 import type { OverviewModel } from "./model/overview-model";
 import type { ReturnsGrid } from "./model/returns-grid";
@@ -54,6 +54,8 @@ export function AnalysisSection(props: {
             formatTime={monthLabel}
             formatObservation={observationLabel(props.model.dates, props.model.labels)}
             formatValue={euroLabel}
+            formatAxisValue={euroAxisLabel}
+            axisUnit="EUR"
             emptyMessage="No fund has a value to plot yet."
           />
         </div>

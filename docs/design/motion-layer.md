@@ -50,10 +50,12 @@ Each step is behaviour-neutral, so the built output and the audits must not chan
 
 ## Motion stylesheets and their owners (step 5, 2026-11-19)
 
-Seventeen stylesheets carry transitions, animations or keyframes. Each has one owner: the design record that governs its area. The owners are proposed here and can change when a record changes hands. Step 5 moved no value and changed no motion. It recorded the list and corrected a comment that had gone stale. No constant was dead: every motion token is read somewhere, and each exported helper is used by its own module or by its tests, so there was nothing to delete.
+The original seventeen stylesheets carry transitions, animations or keyframes. Two additional owners are recorded below for the selected surfaces prototype and the actual Portfolio refinement of 2026-11-21. Each stylesheet has one owner: the design record that governs its area. Step 5 itself moved no value and changed no motion; subsequent visual changes are recorded in their own design documents.
 
 | Stylesheet | Motion it holds | Owner |
 |---|---|---|
+| `features/overview/styles/portfolio-polish.css` | readout inspection surface, paint-only background and shadow feedback | [Portfolio refinement](portfolio-refinement.md) |
+| `presentation/charts/bars.css` | bar emphasis and readout styling inherited from the selected baseline | [Depth and hierarchy](depth-and-hierarchy.md) |
 | `shared/ui/control-feedback.css` | press, hover and focus feedback for every semantic control | [Interaction coverage](interaction-coverage.md) |
 | `shared/ui/interactions/controls.css` | control feedback for the numbered additions | [Interaction coverage](interaction-coverage.md) |
 | `shared/ui/interactions/content.css` | disclosure opening and closing, guide and confirmation cues | [Interaction coverage](interaction-coverage.md) |

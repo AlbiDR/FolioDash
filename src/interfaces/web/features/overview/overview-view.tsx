@@ -9,7 +9,7 @@ import type { CheckpointMarker } from "../../../../core/portfolio/checkpoints";
 import { LineChart } from "../../presentation/charts/line-chart";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import { euroLabel, monthLabel, observationLabel } from "./model/chart-data";
+import { euroLabel, euroAxisLabel, monthLabel, observationLabel } from "./model/chart-data";
 import type { OverviewKpi, OverviewModel } from "./model/overview-model";
 import { Pill, Signed } from "./parts";
 import { portfolioAttention } from "./model/attention";
@@ -19,6 +19,7 @@ import { AnalysisSection } from "./overview-analysis";
 import { Glossary, MoversCard, StatCard, AllocationCard } from "./overview-cards";
 import { HoldingsCard } from "./overview-holdings";
 import "./portfolio-feedback.css";
+import "./styles/portfolio-polish.css";
 
 const STATS: readonly {
   readonly label: string;
@@ -194,6 +195,8 @@ export function OverviewView(props: {
             markers.map((marker) => marker.date),
           )}
           formatValue={euroLabel}
+          formatAxisValue={euroAxisLabel}
+          axisUnit="EUR"
           emptyMessage="There is nothing to plot yet."
         />
       </div>

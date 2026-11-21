@@ -1,20 +1,23 @@
 /* ---------- Type roles ----------
  * Every piece of text is one of these roles; a component picks a role and does not invent a size. */
-.card-title {
+.card-title,
+.chart-title {
   margin: 0 0 var(--space-2);
   font-size: var(--text-lead);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
 }
 
-.card-subtitle {
+.card-subtitle,
+.chart-subtitle {
   margin: 0 0 var(--space-3);
   color: var(--color-muted);
   font-size: var(--text-small);
   line-height: var(--leading-body);
 }
 
-.card-title:has(+ .card-subtitle) {
+.card-title:has(+ .card-subtitle),
+.chart-title:has(+ .chart-subtitle) {
   margin-bottom: var(--space-1);
 }
 

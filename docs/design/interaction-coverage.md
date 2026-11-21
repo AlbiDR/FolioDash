@@ -260,8 +260,9 @@ One row is a source template; a fund-link template can render many controls. All
 | 1b068865a785-1 | [manual-entry.tsx:307](../../src/interfaces/web/features/import/manual-entry.tsx#L307) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
 | 359e0963cf8b-1 | [fund-view.tsx:27](../../src/interfaces/web/features/overview/fund-view.tsx#L27) | div / scroll-region | {props.label} | SOURCE CLASSIFIED; STATES OPEN |
 | 4e4374fc2eb6-1 | [fund-view.tsx:126](../../src/interfaces/web/features/overview/fund-view.tsx#L126) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
-| 162f2f7b39ad-1 | [fund-view.tsx:218](../../src/interfaces/web/features/overview/fund-view.tsx#L218) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
-| 399094bfaa4d-1 | [fund-view.tsx:230](../../src/interfaces/web/features/overview/fund-view.tsx#L230) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 162f2f7b39ad-1 | [fund-view.tsx:220](../../src/interfaces/web/features/overview/fund-view.tsx#L220) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
+| 399094bfaa4d-1 | [fund-view.tsx:232](../../src/interfaces/web/features/overview/fund-view.tsx#L232) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 8f1341d0a82f-1 | [mobile-holdings.tsx:16](../../src/interfaces/web/features/overview/mobile-holdings.tsx#L16) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
 | 64d4cd976df9-1 | [months-view.tsx:100](../../src/interfaces/web/features/overview/months-view.tsx#L100) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 63093a33b00c-1 | [months-view.tsx:110](../../src/interfaces/web/features/overview/months-view.tsx#L110) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
 | e0abd83f2dac-1 | [months-view.tsx:195](../../src/interfaces/web/features/overview/months-view.tsx#L195) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
@@ -270,35 +271,34 @@ One row is a source template; a fund-link template can render many controls. All
 | 36aa1201392b-1 | [months-view.tsx:282](../../src/interfaces/web/features/overview/months-view.tsx#L282) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
 | e31f7b55bac2-1 | [months-view.tsx:293](../../src/interfaces/web/features/overview/months-view.tsx#L293) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
 | 4eeac9ba431c-1 | [months-view.tsx:349](../../src/interfaces/web/features/overview/months-view.tsx#L349) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
-| 516fd464ddb2-1 | [overview-analysis.tsx:103](../../src/interfaces/web/features/overview/overview-analysis.tsx#L103) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 516fd464ddb2-1 | [overview-analysis.tsx:105](../../src/interfaces/web/features/overview/overview-analysis.tsx#L105) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 7835b073b7a4-1 | [overview-cards.tsx:86](../../src/interfaces/web/features/overview/overview-cards.tsx#L86) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
 | 7629eadcb326-1 | [overview-cards.tsx:152](../../src/interfaces/web/features/overview/overview-cards.tsx#L152) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
 | 259bfaabbc9d-1 | [overview-cards.tsx:211](../../src/interfaces/web/features/overview/overview-cards.tsx#L211) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 79d1b03ed21a-1 | [overview-cards.tsx:245](../../src/interfaces/web/features/overview/overview-cards.tsx#L245) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
-| f9deda2cfc0c-1 | [overview-holdings.tsx:87](../../src/interfaces/web/features/overview/overview-holdings.tsx#L87) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| df5f93250bb8-1 | [overview-holdings.tsx:147](../../src/interfaces/web/features/overview/overview-holdings.tsx#L147) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| 2cc174d3262d-1 | [overview-holdings.tsx:165](../../src/interfaces/web/features/overview/overview-holdings.tsx#L165) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| da704f763dd4-1 | [overview-holdings.tsx:180](../../src/interfaces/web/features/overview/overview-holdings.tsx#L180) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
-| cd8ea70b7cd6-1 | [overview-holdings.tsx:210](../../src/interfaces/web/features/overview/overview-holdings.tsx#L210) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
-| aeb84997ee13-1 | [overview-holdings.tsx:247](../../src/interfaces/web/features/overview/overview-holdings.tsx#L247) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 5c6a45aa4640-1 | [overview-holdings.tsx:263](../../src/interfaces/web/features/overview/overview-holdings.tsx#L263) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
-| 8f79016434cd-1 | [overview-holdings.tsx:289](../../src/interfaces/web/features/overview/overview-holdings.tsx#L289) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
-| db7bc1d27aff-1 | [overview-holdings.tsx:344](../../src/interfaces/web/features/overview/overview-holdings.tsx#L344) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f918f1311e07-1 | [overview-holdings.tsx:353](../../src/interfaces/web/features/overview/overview-holdings.tsx#L353) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| 5b681e5e2d09-1 | [overview-holdings.tsx:387](../../src/interfaces/web/features/overview/overview-holdings.tsx#L387) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 4c27cd5734fc-1 | [overview-view.tsx:85](../../src/interfaces/web/features/overview/overview-view.tsx#L85) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
-| 68f008a1b407-1 | [overview-view.tsx:89](../../src/interfaces/web/features/overview/overview-view.tsx#L89) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 4e586bf3824f-1 | [overview-view.tsx:131](../../src/interfaces/web/features/overview/overview-view.tsx#L131) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| 3a1966c1235b-1 | [overview-view.tsx:224](../../src/interfaces/web/features/overview/overview-view.tsx#L224) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 666619ba1abe-1 | [overview-view.tsx:242](../../src/interfaces/web/features/overview/overview-view.tsx#L242) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| 4e03b4ce4b63-1 | [overview-view.tsx:246](../../src/interfaces/web/features/overview/overview-view.tsx#L246) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| f9deda2cfc0c-1 | [overview-holdings.tsx:91](../../src/interfaces/web/features/overview/overview-holdings.tsx#L91) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| df5f93250bb8-1 | [overview-holdings.tsx:154](../../src/interfaces/web/features/overview/overview-holdings.tsx#L154) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 2cc174d3262d-1 | [overview-holdings.tsx:172](../../src/interfaces/web/features/overview/overview-holdings.tsx#L172) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| da704f763dd4-1 | [overview-holdings.tsx:187](../../src/interfaces/web/features/overview/overview-holdings.tsx#L187) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
+| efbd00eca9af-1 | [overview-holdings.tsx:218](../../src/interfaces/web/features/overview/overview-holdings.tsx#L218) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 5c6a45aa4640-1 | [overview-holdings.tsx:234](../../src/interfaces/web/features/overview/overview-holdings.tsx#L234) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
+| 8f79016434cd-1 | [overview-holdings.tsx:263](../../src/interfaces/web/features/overview/overview-holdings.tsx#L263) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
+| db7bc1d27aff-1 | [overview-holdings.tsx:319](../../src/interfaces/web/features/overview/overview-holdings.tsx#L319) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f918f1311e07-1 | [overview-holdings.tsx:328](../../src/interfaces/web/features/overview/overview-holdings.tsx#L328) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 5b681e5e2d09-1 | [overview-holdings.tsx:362](../../src/interfaces/web/features/overview/overview-holdings.tsx#L362) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 4c27cd5734fc-1 | [overview-view.tsx:86](../../src/interfaces/web/features/overview/overview-view.tsx#L86) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
+| 68f008a1b407-1 | [overview-view.tsx:90](../../src/interfaces/web/features/overview/overview-view.tsx#L90) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 4e586bf3824f-1 | [overview-view.tsx:132](../../src/interfaces/web/features/overview/overview-view.tsx#L132) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
+| 3a1966c1235b-1 | [overview-view.tsx:227](../../src/interfaces/web/features/overview/overview-view.tsx#L227) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 666619ba1abe-1 | [overview-view.tsx:245](../../src/interfaces/web/features/overview/overview-view.tsx#L245) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 4e03b4ce4b63-1 | [overview-view.tsx:249](../../src/interfaces/web/features/overview/overview-view.tsx#L249) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | d8d6a251e8a5-1 | [donut.tsx:57](../../src/interfaces/web/presentation/charts/donut.tsx#L57) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | f0096a0a1206-1 | [line-chart-parts.tsx:57](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L57) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 7f473b4575d1-1 | [line-chart.tsx:143](../../src/interfaces/web/presentation/charts/line-chart.tsx#L143) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| d3f4aa1f4ee7-1 | [line-chart.tsx:206](../../src/interfaces/web/presentation/charts/line-chart.tsx#L206) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| 63b5f07c9cc3-1 | [line-chart.tsx:310](../../src/interfaces/web/presentation/charts/line-chart.tsx#L310) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 458c1b118a98-1 | [line-chart.tsx:332](../../src/interfaces/web/presentation/charts/line-chart.tsx#L332) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| c7758c3b45e9-1 | [line-chart.tsx:336](../../src/interfaces/web/presentation/charts/line-chart.tsx#L336) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 7f473b4575d1-1 | [line-chart.tsx:146](../../src/interfaces/web/presentation/charts/line-chart.tsx#L146) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 5165a49fe31d-1 | [line-chart.tsx:210](../../src/interfaces/web/presentation/charts/line-chart.tsx#L210) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:319](../../src/interfaces/web/presentation/charts/line-chart.tsx#L319) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 458c1b118a98-1 | [line-chart.tsx:341](../../src/interfaces/web/presentation/charts/line-chart.tsx#L341) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:345](../../src/interfaces/web/presentation/charts/line-chart.tsx#L345) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
 | b8aea119d3dc-1 | [monthly-bars.tsx:129](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L129) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9b0ee110f1fd-1 | [monthly-bars.tsx:206](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L206) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | e12440fad7f8-1 | [monthly-bars.tsx:237](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L237) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
@@ -331,3 +331,9 @@ After the CI amendment, both the default and `--focus-only` local browser runs P
 ## Earlier-history interaction evidence, 2026-11-16
 
 The local production-renderer audit uses a synthetic device copy and a generated bank workbook. It exercises manual entry followed by an Excel month, movement review, the before-and-after preview, fund disclosure, returning to the boundary review without losing its answer, and phone reflow at 200% text. It surveys the visible manual form, Excel selection and preview on desktop and the preview on a phone-sized viewport; 75 journey assertions and 740 control samples passed across the full run; the preview also showed no running animation under reduced motion. The independent local Google acceptance run saved and restored synthetic histories, including a retained bank source, but is not evidence of every interaction state. Recovery confirmation, uncertain-outcome controls, errors, other reduced-motion states, physical devices and screen readers remain OPEN until individually demonstrated. Existing global reduced-motion and control feedback rules still apply.
+
+## Actual Portfolio refinement, 2026-11-21
+
+The owner's selected surfaces prototype is retained, with the actual [Portfolio refinement](portfolio-refinement.md) applied to its Preact dashboard. The inventory was regenerated and reviewed after extracting the phone holdings list: 224 source templates across 51 files. The same 145 production journey assertions and 931 control samples in 27 states pass; all recovery journeys pass, automated accessibility passes on 32 route/viewport/theme cases, and reduced motion passes on 16 screens / 48 checks.
+
+The new rendered Portfolio audit proves first-frame opacity for the native stagger, a surviving search row's DOM identity and running/settled glide, unchanged financial text and chart paths during filtering, reduced-motion search recovery, and nine layout/privacy cases with measured axis text bounds. The readout's reversible inspection surface and the selected Allocation legend consume the existing feedback contract. The pointer probe brings Changes into the viewport before testing its existing hover contract; no hover or press requirement was weakened. Real devices, other engines, screen readers and unexercised error/provider states remain OPEN. Source classification and counts are not complete state coverage.
