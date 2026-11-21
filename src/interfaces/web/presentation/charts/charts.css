@@ -15,6 +15,13 @@
   line-height: var(--leading-body);
 }
 
+.chart-axis-unit {
+  margin-inline-start: var(--space-2);
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
+}
+
 /* A control that governs only this chart sits beside its title, and drops under it when space is short. */
 .chart-with-controls {
   display: flex;

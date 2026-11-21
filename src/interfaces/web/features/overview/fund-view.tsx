@@ -5,7 +5,7 @@ import { RangeSelector } from "../../shared/ui/range-selector";
 import { LineChart } from "../../presentation/charts/line-chart";
 import type { ChartSeries } from "../../presentation/charts/line-chart-geometry";
 import { Amount } from "../../presentation/privacy/privacy";
-import { euroLabel, euros, monthLabel, observationLabel, utcTime } from "./model/chart-data";
+import { euroLabel, euroAxisLabel, euros, monthLabel, observationLabel, utcTime } from "./model/chart-data";
 import type { OverviewModel } from "./model/overview-model";
 import { Percent, Pill, Signed } from "./parts";
 import { Icon } from "../../shared/ui/icons";
@@ -199,6 +199,8 @@ export function FundView(props: {
           formatTime={monthLabel}
           formatObservation={observationLabel(props.model.dates, props.model.labels)}
           formatValue={euroLabel}
+          formatAxisValue={euroAxisLabel}
+          axisUnit="EUR"
           emptyMessage="This fund has no value to plot yet."
         />
       </div>
