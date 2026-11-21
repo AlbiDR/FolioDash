@@ -98,9 +98,11 @@ export function AppNav(props: {
     const movingDown = previous !== null && target.top + target.bottom > previous.top + previous.bottom;
     const vertical = previous !== null && Math.abs(target.top - previous.top) > Math.abs(target.left - previous.left);
     const movingRight = previous !== null && target.left + target.right > previous.left + previous.right;
+    // The horizontal dock gives the same stretch a quicker release on touch.
+    const durationScale = vertical ? 1 : 0.75;
     const frame = (now: number): void => {
       if (previous === null) return;
-      const elapsed = now - startedAt;
+      const elapsed = (now - startedAt) / durationScale;
       const lead = powerThreeOut(elapsed / NAV_FAST_MS);
       const trail = powerThreeInOut(elapsed / NAV_SLOW_MS);
       const cross = powerThreeInOut(elapsed / NAV_SIDE_MS);

@@ -22,7 +22,7 @@
 }
 .nav-pill {
   position: absolute;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   inset: 0;
   border-radius: var(--nav-radius, var(--shape-sm));
