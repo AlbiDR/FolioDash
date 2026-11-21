@@ -1,0 +1,9 @@
+# FolioDash
+
+> FolioDash tracks investment portfolios and work expenses. The public demo uses synthetic data. Connected users save their records in their own Google spreadsheet.
+
+## Public resources
+
+- [FolioDash](https://albidr.github.io/FolioDash/): Open the app and explore the synthetic demo.
+- [Privacy policy](https://albidr.github.io/FolioDash/privacy/): Learn how the app uses Google access and handles data.
+- [Project repository](https://github.com/AlbiDR/FolioDash): Read the project overview, screenshots, and documentation.
