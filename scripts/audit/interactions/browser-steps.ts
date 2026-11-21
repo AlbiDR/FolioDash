@@ -42,7 +42,7 @@ export function createSteps({ origin, call, evaluate, waitFor }: LocalBrowser) {
     await waitFor(
       async () =>
         (await evaluate(
-          `location.href===${JSON.stringify(url)} && document.readyState==='complete' && !!document.querySelector('.privacy-toggle') && !!document.querySelector('#main-content')?.children.length && !document.querySelector('#main-content .notice[data-busy=true]') && ${title === undefined ? "!!document.querySelector('#fund-chart-title')" : `document.querySelector('h1')?.textContent===${JSON.stringify(title)}`}`,
+          `location.href===${JSON.stringify(url)} && document.readyState==='complete' && !!document.querySelector('.privacy-toggle') && !!document.querySelector('#main-content :is(.dash,.screen,.account,.import,.get-started)') && !document.querySelector('#main-content .notice[data-busy=true]') && ${title === undefined ? "!!document.querySelector('#fund-chart-title')" : `document.querySelector('h1')?.textContent===${JSON.stringify(title)}`}`,
         )) === true,
       route,
     );
