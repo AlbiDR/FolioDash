@@ -56,7 +56,7 @@ it("keeps the outgoing page inert until exit ends, then commits only the latest 
   expect(first).not.toHaveBeenCalled();
   expect(last).toHaveBeenCalledOnce();
   expect(node.inert).toBe(false);
-  expect(animations).toHaveLength(2);
+  expect(animations).toHaveLength(1);
   vi.runAllTimers();
   expect(last).toHaveBeenCalledOnce();
 });
@@ -113,19 +113,19 @@ it("recovers if animation events never arrive or the browser rejects animation",
   expect(node.inert).toBe(false);
 });
 
-it("settles an externally cancelled exit and safely interrupts an arrival with a new exit", () => {
+it("settles an externally cancelled exit and ignores its stale callback during a new exit", () => {
   const { motion, node, animations } = fixture();
   const first = vi.fn();
   motion.change(first);
-  animations[0]?.oncancel?.();
+  const cancelledExit = animations[0]?.oncancel;
+  cancelledExit?.();
   expect(first).toHaveBeenCalledOnce();
-  const staleArrival = animations[1]?.onfinish;
   const next = vi.fn();
   motion.change(next);
-  staleArrival?.();
+  cancelledExit?.();
   expect(node.inert).toBe(true);
-  expect(animations[1]?.cancel).toHaveBeenCalledOnce();
-  animations[2]?.onfinish?.();
+  expect(next).not.toHaveBeenCalled();
+  animations[1]?.onfinish?.();
   expect(next).toHaveBeenCalledOnce();
   expect(node.inert).toBe(false);
   motion.cancel();

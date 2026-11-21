@@ -208,26 +208,29 @@ a.icon-button {
   grid-column: span 12;
 }
 
-/* A short stagger gives the surface rhythm. Opacity stays at one even during the delay: financial figures are
- * readable on the first frame, with no count-up or plot reveal. Reduced motion removes the movement entirely. */
 .dash > * {
   min-width: 0;
-  animation: rise var(--duration-medium) var(--ease-standard) backwards;
+}
+
+/* Route sections mount in reading order. Keep their figures fully readable during the delay and movement. */
+#main-content > .get-started,
+#main-content > :is(.dash, .screen, .account, .import) > * {
+  animation: rise var(--duration-navigation) var(--ease-standard) backwards;
   animation-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
 }
-.dash > :nth-child(2) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(2) {
   --arrival-index: 1;
 }
-.dash > :nth-child(3) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(3) {
   --arrival-index: 2;
 }
-.dash > :nth-child(4) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(4) {
   --arrival-index: 3;
 }
-.dash > :nth-child(5) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(5) {
   --arrival-index: 4;
 }
-.dash > :nth-child(n + 6) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(n + 6) {
   --arrival-index: 5;
 }
 

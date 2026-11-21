@@ -25,23 +25,44 @@ await withLocalBrowser(async (browser) => {
     async () => (await evaluate("!!document.querySelector('.portfolio-dashboard > .hero')")) === true,
     "Portfolio arrival",
   );
-  const arrival = (await evaluate(`(() => {
-    const cards=[...document.querySelectorAll('.portfolio-dashboard > *')];
-    const animations=cards.flatMap(e=>e.getAnimations()).filter(a=>a.animationName==='rise');
-    animations.forEach(a=>{a.pause();a.currentTime=0});
-    const opacities=cards.map(e=>Number(getComputedStyle(e).opacity));
-    const text=document.querySelector('.hero-value').textContent.trim();
-    animations.forEach(a=>a.cancel());
-    return {count:animations.length,opacities,text};
-  })()`)) as { count: number; opacities: number[]; text: string };
-  assert.ok(arrival.count >= 3, "real staggered card arrivals exist");
-  assert.ok(
-    arrival.opacities.every((opacity) => opacity === 1),
-    "every arrival starts fully readable",
-  );
-  assert.ok(arrival.text.length > 0, "headline exists at the first frame");
+  const inspectArrival = async (selector: string, label: string) => {
+    const arrival = (await evaluate(`(() => {
+      const cards=[...document.querySelectorAll(${JSON.stringify(selector)})];
+      const animations=cards.flatMap(e=>e.getAnimations()).filter(a=>a.animationName==='rise');
+      animations.forEach(a=>{a.pause();a.currentTime=0});
+      const delays=animations.map(a=>a.effect.getTiming().delay);
+      const firstFrame=cards.map(e=>({opacity:getComputedStyle(e).opacity,transform:getComputedStyle(e).transform}));
+      const readable=cards.every(e=>e.textContent.trim().length>0);
+      animations.forEach(a=>a.cancel());
+      return {delays,firstFrame,readable};
+    })()`)) as { delays: number[]; firstFrame: { opacity: string; transform: string }[]; readable: boolean };
+    assert.ok(arrival.delays.length >= 3, `${label}: real section arrivals exist`);
+    assert.ok(
+      arrival.delays[0] === 0 && (arrival.delays[1] ?? 0) > 0 && (arrival.delays[2] ?? 0) > (arrival.delays[1] ?? 0),
+      `${label}: first three sections arrive in order`,
+    );
+    assert.ok(
+      arrival.firstFrame.every(({ opacity, transform }) => opacity === "1" && transform !== "none"),
+      `${label}: sections rise and stay fully visible`,
+    );
+    assert.ok(arrival.readable, `${label}: section text exists on the first frame`);
+    results.push({ name: label, result: arrival });
+  };
+  await inspectArrival(".portfolio-dashboard > *", "Portfolio cold open");
+  for (const [route, surface] of [
+    ["activity", ".activity-dashboard"],
+    ["overview", ".portfolio-dashboard"],
+  ] as const) {
+    await evaluate(`document.querySelector('.nav-link[href="#${route}"]').click()`);
+    await waitFor(
+      async () =>
+        (await evaluate(`!!document.querySelector('${surface}') && !document.getElementById('main-content').inert`)) ===
+        true,
+      route,
+    );
+    await inspectArrival(`${surface} > *`, `${route} after navigation`);
+  }
   await call("Animation.setPlaybackRate", { playbackRate: 1 });
-  results.push({ name: "first-frame visibility", result: arrival });
 
   await visit("overview", 1440, "many");
   await waitFor(
