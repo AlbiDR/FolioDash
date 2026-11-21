@@ -8,13 +8,6 @@
     var(--shadow-card);
 }
 
-.chart-title {
-  margin-bottom: var(--space-2);
-  font-size: var(--text-lead);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
-}
-
 .chart-note {
   margin: 0 0 var(--space-2);
   color: var(--color-muted);
@@ -83,12 +76,6 @@
   font-weight: var(--weight-bold);
 }
 
-.chart-subtitle {
-  margin-bottom: var(--space-2);
-  color: var(--color-muted);
-  font-size: var(--text-small);
-}
-
 .chart-svg {
   display: block;
   width: 100%;
@@ -101,7 +88,7 @@
 .chart-grid line {
   stroke: var(--color-grid);
   stroke-width: 1;
-  stroke-dasharray: 2 4;
+  stroke-opacity: 0.55;
 }
 
 .chart-tick {
@@ -113,7 +100,7 @@
 .chart-series path.line,
 .chart-swatch line {
   stroke: var(--series-color);
-  stroke-width: 2;
+  stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -139,10 +126,13 @@
   }
 }
 
+/* The area under a line fades toward the baseline, so the line carries the eye and the fill only grounds it. */
 .chart-series path.area {
   fill: var(--series-color);
-  opacity: 0.12;
+  opacity: 0.3;
   stroke: none;
+  -webkit-mask-image: linear-gradient(to bottom, var(--color-text), transparent 92%);
+  mask-image: linear-gradient(to bottom, var(--color-text), transparent 92%);
 }
 
 .chart-series circle {
@@ -299,41 +289,6 @@
 .chart-table th[scope="row"],
 .chart-table thead th:first-child {
   text-align: left;
-}
-
-.bars-readout {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 var(--space-3);
-  min-height: 2.6rem;
-  margin: 0 0 var(--space-2);
-  font-variant-numeric: tabular-nums;
-}
-
-.bars-readout-month {
-  flex-basis: 100%;
-  color: var(--color-muted);
-  font-size: var(--text-small);
-  font-weight: var(--weight-semibold);
-}
-
-.bars-readout-value {
-  font-size: var(--text-lead);
-  font-weight: var(--weight-bold);
-}
-
-.bars-hit {
-  fill: transparent;
-}
-
-.bars-item .bar {
-  opacity: 0.55;
-  transition: opacity var(--duration-short) var(--ease-standard);
-}
-
-.bars-item.is-active .bar {
-  opacity: 1;
 }
 
 .chart-date-control {

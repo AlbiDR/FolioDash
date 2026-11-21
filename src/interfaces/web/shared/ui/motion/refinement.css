@@ -3,7 +3,8 @@
  * cards lift on fine-pointer hover (2026-11-19).
  */
 
-/* A1-A5: brief, single-pass arrivals. No stagger leaves controls waiting to become usable. */
+/* A1-A5: brief, single-pass arrivals. Dashboard cards arrive in a short stagger (page-chrome.css); the cap keeps every
+ * control usable and readable throughout. */
 @keyframes surface-arrive {
   from {
     opacity: var(--motion-reveal-opacity);
