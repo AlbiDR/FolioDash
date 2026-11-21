@@ -208,15 +208,33 @@ a.icon-button {
   grid-column: span 12;
 }
 
+/* Cards arrive one after another, 45ms apart and no later than the sixth, so the page assembles in about 0.6
+ * seconds and nothing is ever waiting on an animation to be readable or usable. Reduced motion removes it entirely. */
 .dash > * {
   min-width: 0;
-  animation: rise var(--duration-feedback) var(--ease-standard);
+  animation: rise var(--duration-medium) var(--ease-standard) backwards;
+  animation-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
+}
+.dash > :nth-child(2) {
+  --arrival-index: 1;
+}
+.dash > :nth-child(3) {
+  --arrival-index: 2;
+}
+.dash > :nth-child(4) {
+  --arrival-index: 3;
+}
+.dash > :nth-child(5) {
+  --arrival-index: 4;
+}
+.dash > :nth-child(n + 6) {
+  --arrival-index: 5;
 }
 
 @keyframes rise {
   from {
-    opacity: var(--motion-reveal-opacity);
-    transform: translateY(var(--motion-nudge));
+    opacity: var(--motion-rise-opacity);
+    transform: translateY(var(--motion-rise));
   }
 }
 
