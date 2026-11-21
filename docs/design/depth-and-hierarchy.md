@@ -57,6 +57,18 @@ Out of scope: layout changes, new components, the timeline or scheduling ideas f
 - **Visual review.** Before and after screenshots of Portfolio, light and dark, on desktop and phone. Markup changes also re-run the README capture (UI system rule 6), because the main verification does not cover it.
 - **Audits.** The range journey asserts that a hovered card lifts (`0px -2px`) where a fine pointer exists, and that it stays unlifted where none does. Both stay as they are, because D2 keeps the lift. Reduced motion is unaffected, because this record adds no motion.
 
+## Prototype, 2026-11-21 (branch `worktree-depth-surfaces-prototype`, not merged)
+
+Second reference: a commercial banking dashboard template the owner supplied as a local capture (`dashboard x FolioDash`). Nothing was copied: no code, assets, fonts, names or palette. Its surfaces were measured: a near-black page and a tinted card differ by 1.40:1, and the raised panel sits another 1.31:1 above the card, so four tones read as depth without borders.
+
+What the prototype changes, tokens and one component only:
+
+- **Dark surfaces (D1, D5).** Card `#1c2437` (page `#07080d`) is about 1.3:1 against the page, up from 1.11:1. The inset tier (`--surface-low`), the raised tier (`--color-surface-2`) and the highest tier (`--surface-high`) are retuned around it with one blue tint. The Portfolio hero takes a lighter navy, `#234684`, so it is the raised block (D3).
+- **Sample banner.** The saturated blue first-run notice is now an inset strip with a hairline and an accent edge, so the headline figure is the first thing a person sees.
+- **Light.** The page is `#e9edf4` and `--shadow-card` has a hairline layer, so a white card separates by edge and shadow without a heavier border.
+
+Measured, not judged: dark page against card was computed from the token values. Light page against card was not recomputed, and no hero text contrast is re-measured. The range journey, the README capture and a physical device are not run. The rest of D1 to D7 and both questions below stay open.
+
 ## Questions for the owner
 
 1. **Edge contrast.** The edge is currently 1.24 to 1.32:1. WCAG 1.4.11 asks for 3:1 only where a boundary is needed to identify an interactive component, and cards are not controls. Should the card edge be raised to a measured middle, such as at least 1.5:1, and reviewed for accessibility? The draft recommends that, and not 3:1, which would look heavy on every card.
