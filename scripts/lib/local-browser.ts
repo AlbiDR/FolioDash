@@ -9,6 +9,9 @@ import { PermanentStartupError, startWithRetries } from "./startup-retry.ts";
 /** Chrome occasionally starts without exposing its debugging port on a shared runner. A fresh profile usually fixes
  * that, so start-up gets a bounded number of attempts. Assertion failures are never retried. */
 const CHROME_START_ATTEMPTS = 3;
+// macOS hosted runners can briefly pause a production preview while the preceding rendered journey is still being
+// collected. This is a readiness budget, not an assertion retry: a page must still satisfy the exact predicate.
+const READINESS_TIMEOUT_MILLISECONDS = 30_000;
 
 export interface LocalBrowser {
   readonly origin: string;
@@ -163,7 +166,7 @@ export async function withLocalBrowser(
   async function waitFor(
     check: () => Promise<boolean>,
     description: string,
-    timeoutMilliseconds = 10_000,
+    timeoutMilliseconds = READINESS_TIMEOUT_MILLISECONDS,
   ): Promise<void> {
     const deadline = Date.now() + timeoutMilliseconds;
     while (Date.now() < deadline) {
