@@ -59,7 +59,7 @@ Out of scope: layout changes, new components, the timeline or scheduling ideas f
 
 ## Prototype, 2026-11-21 (branch `worktree-depth-surfaces-prototype`, not merged)
 
-Second reference: a commercial banking dashboard template the owner supplied as a local capture (`dashboard x FolioDash`). Nothing was copied: no code, assets, fonts, names or palette. Its surfaces were measured: a near-black page and a tinted card differ by 1.40:1, and the raised panel sits another 1.31:1 above the card, so four tones read as depth without borders.
+Surface contrast informed the depth system: a near-black page and a tinted card differ by 1.40:1, and the raised panel sits another 1.31:1 above the card, so four tones read as depth without borders. The implementation uses original code, assets, fonts and palette.
 
 What the prototype changes, tokens and one component only:
 
