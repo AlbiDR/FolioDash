@@ -7,7 +7,8 @@
 
 /* 43: Main navigation selection glides between destinations. */
 .nav-list {
-  --nav-gap: 2px;
+  --nav-gap: 4px;
+  --nav-row-height: var(--touch-target);
   position: relative;
   isolation: isolate;
   gap: var(--nav-gap);
@@ -21,19 +22,22 @@
 }
 .nav-pill {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
-  inset: 0 auto 0 0;
-  width: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
+  inset: 0;
   border-radius: var(--nav-radius, var(--shape-sm));
   background: var(--color-accent);
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--color-on-accent) 16%, transparent),
     0 6px 18px color-mix(in srgb, var(--color-accent) 20%, transparent);
-  transform: translateX(calc(var(--nav-index) * (100% + var(--nav-gap))));
   transition:
-    transform var(--duration-feedback) var(--ease-spring),
+    clip-path var(--duration-navigation) var(--ease-standard),
     box-shadow var(--duration-short) var(--ease-standard);
+  clip-path: inset(
+    calc(var(--nav-index) * (var(--nav-row-height) + var(--nav-gap))) 0
+      calc(100% - (var(--nav-index) * (var(--nav-row-height) + var(--nav-gap)) + var(--nav-row-height))) 0 round
+      var(--nav-radius, var(--shape-sm))
+  );
 }
 .nav-pill[aria-hidden="true"] {
   display: block;
@@ -74,10 +78,11 @@
     --nav-gap: 4px;
   }
   .nav-pill {
-    inset: 0 0 auto;
-    width: 100%;
-    height: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
-    transform: translateY(calc(var(--nav-index) * (100% + var(--nav-gap))));
+    clip-path: inset(
+      calc(var(--nav-index) * (var(--nav-row-height) + var(--nav-gap))) 0
+        calc(100% - (var(--nav-index) * (var(--nav-row-height) + var(--nav-gap)) + var(--nav-row-height))) 0 round
+        var(--nav-radius, var(--shape-sm))
+    );
   }
 }
 

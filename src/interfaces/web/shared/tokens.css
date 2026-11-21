@@ -99,6 +99,7 @@
   --motion-stagger: 45ms;
   --motion-update-opacity: 0.65;
   --duration-medium: 380ms;
+  --duration-navigation: 450ms;
 
   --font-body:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto,
