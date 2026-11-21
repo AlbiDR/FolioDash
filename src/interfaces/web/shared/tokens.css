@@ -139,10 +139,11 @@
     --color-background: #07080d;
     --shadow-card: 0 6px 26px rgba(0, 0, 0, 0.12);
     --shadow-card-lift: 0 14px 36px rgba(0, 0, 0, 0.34);
-    --color-surface: #14161f;
-    --surface-low: #0f1119;
-    --color-surface-2: #1b1e29;
-    --surface-high: #232736;
+    --color-surface: #1c2437;
+    --surface-low: #131a2a;
+    --color-surface-2: #263050;
+    --surface-high: #303c5e;
+    --color-hero: #234684;
     --color-text: #f2f4fa;
     --color-muted: #9aa1b5;
     --color-border: rgba(255, 255, 255, 0.1);
