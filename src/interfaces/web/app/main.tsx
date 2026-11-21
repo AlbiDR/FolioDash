@@ -1,6 +1,7 @@
 import { render } from "preact";
 import "../shared/tokens.css";
 import "../presentation/charts/charts.css";
+import "../presentation/charts/bars.css";
 import "./styles/shell.css";
 import "./styles/page-chrome.css";
 import "./styles/typography-and-structure.css";
