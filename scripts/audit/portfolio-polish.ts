@@ -157,7 +157,7 @@ await withLocalBrowser(async (browser) => {
         if (phone) return near(holdings.left, rail.left) && near(holdings.right, rail.right)
           && near(cards[0].left, cards[1].left) && near(cards[0].right, cards[1].right)
           && near(cards[1].top - cards[0].bottom, gap);
-        return near(holdings.top, rail.top) && near(holdings.bottom, rail.bottom)
+        return near(holdings.top, rail.top) && near(rail.bottom, cards.at(-1).bottom)
           && near(rail.left - holdings.right, gap)
           && near(cards[1].top - cards[0].bottom, gap)
           && near(analysisCards[0].top, analysisCards[1].top)
