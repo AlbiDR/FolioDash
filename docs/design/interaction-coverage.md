@@ -296,11 +296,11 @@ One row is a source template; a fund-link template can render many controls. All
 | 4e03b4ce4b63-1 | [overview-view.tsx:249](../../src/interfaces/web/features/overview/overview-view.tsx#L249) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | d8d6a251e8a5-1 | [donut.tsx:58](../../src/interfaces/web/presentation/charts/donut.tsx#L58) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | f0096a0a1206-1 | [line-chart-parts.tsx:64](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L64) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 7f473b4575d1-1 | [line-chart.tsx:146](../../src/interfaces/web/presentation/charts/line-chart.tsx#L146) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 2a697eb800b4-1 | [line-chart.tsx:212](../../src/interfaces/web/presentation/charts/line-chart.tsx#L212) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| 63b5f07c9cc3-1 | [line-chart.tsx:323](../../src/interfaces/web/presentation/charts/line-chart.tsx#L323) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 458c1b118a98-1 | [line-chart.tsx:345](../../src/interfaces/web/presentation/charts/line-chart.tsx#L345) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| c7758c3b45e9-1 | [line-chart.tsx:349](../../src/interfaces/web/presentation/charts/line-chart.tsx#L349) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 7f473b4575d1-1 | [line-chart.tsx:163](../../src/interfaces/web/presentation/charts/line-chart.tsx#L163) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| e7f2ce4a8bd0-1 | [line-chart.tsx:229](../../src/interfaces/web/presentation/charts/line-chart.tsx#L229) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:343](../../src/interfaces/web/presentation/charts/line-chart.tsx#L343) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 458c1b118a98-1 | [line-chart.tsx:365](../../src/interfaces/web/presentation/charts/line-chart.tsx#L365) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:369](../../src/interfaces/web/presentation/charts/line-chart.tsx#L369) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
 | f2165f5f8ebb-1 | [monthly-bars.tsx:134](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L134) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9b0ee110f1fd-1 | [monthly-bars.tsx:212](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L212) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | e12440fad7f8-1 | [monthly-bars.tsx:243](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L243) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |

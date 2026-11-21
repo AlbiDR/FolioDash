@@ -266,13 +266,19 @@ await withLocalBrowser(async (browser) => {
     assert.equal(
       await evaluate(`(() => {
       const svg=document.querySelector('.portfolio-trend .chart-svg');if(!svg)return true;
-      const edge=svg.getBoundingClientRect();
-      return [...svg.querySelectorAll('.chart-grid text')].filter(e=>e.querySelector('title')).every(e=>{
-        const r=e.getBoundingClientRect();return r.left>=edge.left-1 && r.right<=edge.right+1;
+      const edge=svg.viewBox.baseVal.width;
+      const ticks=[...svg.querySelectorAll('.chart-value-axis > g')].map(group=>{
+        const label=group.querySelector('text');
+        const grid=group.querySelector('line');
+        return {gap:label.getBBox().x-grid.x2.baseVal.value,
+          end:label.getBBox().x+label.getBBox().width};
       });
+      const outerGap=edge-Math.max(...ticks.map(tick=>tick.end));
+      return ticks.length>0 && outerGap>=3 && outerGap<=6 &&
+        ticks.every(tick=>tick.gap>=7 && tick.gap<=9);
     })()`),
       true,
-      `${screen.name}: value-axis labels fit the actual renderer`,
+      `${screen.name}: value-axis labels fit with a compact gutter and clear the grid`,
     );
 
     // Privacy must mask exact amounts immediately while keeping the existing chart shape policy.
