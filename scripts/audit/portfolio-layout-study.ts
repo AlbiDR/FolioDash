@@ -52,7 +52,9 @@ await withLocalBrowser(
           )) === true,
         "study",
       );
-      await evaluate(`document.documentElement.style.fontSize = '${String(screen.zoom * 100)}%'; true`);
+      await evaluate(
+        `document.documentElement.style.fontSize = '${String(screen.zoom * 100)}%'; new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done)))`,
+      );
       const measurements = (await evaluate(`(() => {
         const visible = e => e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden';
         const controls = [...document.querySelectorAll('a,button,summary,[tabindex="0"]')].filter(visible);
@@ -123,9 +125,9 @@ await withLocalBrowser(
         clip: { x: 0, y: 0, width: screen.width, height: size.height, scale: 1 },
       });
       writeFileSync(resolve(output, `${screen.name}.png`), Buffer.from(String(capture["data"]), "base64"));
-      if (screen.name === "mobile") {
+      if (screen.name === "mobile" || screen.name === "mobile-dark") {
         const viewport = await call("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
-        writeFileSync(resolve(output, "mobile-viewport.png"), Buffer.from(String(viewport["data"]), "base64"));
+        writeFileSync(resolve(output, `${screen.name}-viewport.png`), Buffer.from(String(viewport["data"]), "base64"));
       }
       results.push({ name: screen.name, measurements });
     }
@@ -179,7 +181,7 @@ await withLocalBrowser(
     assert.equal(await evaluate("document.querySelector('#privacy').getAttribute('aria-pressed')"), "true");
     results.push({ name: "interaction", measurements: "Keyboard focus/Space, hover, press, release, privacy PASS" });
     // A compact review board; the full-height originals remain beside it for detailed inspection.
-    for (const name of ["desktop", "mobile-viewport"]) {
+    for (const name of ["desktop-dark", "mobile-dark-viewport"]) {
       copyFileSync(resolve(output, `${name}.png`), resolve(preview, `${name}.png`));
     }
     writeFileSync(
@@ -189,9 +191,9 @@ await withLocalBrowser(
       header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;height:40px}h1{font-size:var(--text-lead);margin:0}p{color:var(--color-muted);margin:0}
       .board{display:grid;grid-template-columns:1100px 268px;gap:24px}.frame{height:990px;overflow:hidden;border:1px solid var(--color-border);border-radius:var(--shape-xl);background:var(--color-surface)}
       img{display:block;width:100%;height:auto}.label{font-size:var(--text-caption);margin-bottom:8px;color:var(--color-muted)}.phone{height:auto}.phone-note{margin-top:16px;font-size:var(--text-small)}</style>
-      <header><h1>FolioDash / Portfolio composition study 01</h1><p>Synthetic data · opening layouts</p></header>
-      <div class="board"><section><div class="label">DESKTOP · 1440 CSS PX</div><div class="frame"><img src="desktop.png" alt="Desktop Portfolio study"></div></section>
-      <section><div class="label">PHONE · 390 × 844 CSS PX</div><div class="frame phone"><img src="mobile-viewport.png" alt="Phone Portfolio study, first viewport"></div><p class="phone-note">A single reading order: summary, performance, changes, holdings and allocation.</p><p class="phone-note">Full mobile and dark layouts accompany the responsive preview.</p></section></div></html>`,
+      <header><h1>FolioDash / Portfolio composition study 02</h1><p>Synthetic data · opening layouts</p></header>
+      <div class="board"><section><div class="label">DESKTOP · 1440 CSS PX</div><div class="frame"><img src="desktop-dark.png" alt="Desktop Portfolio study"></div></section>
+      <section><div class="label">PHONE · 390 × 844 CSS PX</div><div class="frame phone"><img src="mobile-dark-viewport.png" alt="Phone Portfolio study, first viewport"></div><p class="phone-note">A single reading order: summary, performance, changes, holdings and allocation.</p><p class="phone-note">Full mobile and dark layouts accompany the responsive preview.</p></section></div></html>`,
     );
     await call("Emulation.setDeviceMetricsOverride", {
       width: 1440,
@@ -199,6 +201,7 @@ await withLocalBrowser(
       deviceScaleFactor: 1,
       mobile: false,
     });
+    await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
     await call("Page.navigate", { url: `${origin}/board.html` });
     await waitFor(
       async () =>
