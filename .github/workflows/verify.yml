@@ -40,6 +40,8 @@ jobs:
 
   build:
     name: Build the site
+    outputs:
+      audit-suites: ${{ steps.suites.outputs.matrix }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
@@ -60,6 +62,12 @@ jobs:
 
       - name: Set up the project
         uses: ./.github/actions/setup-project
+
+      - name: List rendered audit suites
+        id: suites
+        run: |
+          matrix=$(node scripts/audit/rendered.ts --matrix)
+          printf 'matrix=%s\n' "$matrix" >> "$GITHUB_OUTPUT"
 
       - name: Build the production site
         run: npm run build
@@ -96,8 +104,11 @@ jobs:
         run: npm run audit:dependencies
 
   audit:
-    name: Audit rendered interactions
+    name: Audit rendered site (${{ matrix.suite }})
     needs: build
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.build.outputs.audit-suites) }}
     # macOS, not Linux: the rendered audits assert text geometry, and the app's font stack starts with SF Pro, which only
     # macOS has. The Linux failures are inferred to come from that fallback face; this is not reproduced yet.
     runs-on: macos-15
@@ -117,9 +128,7 @@ jobs:
           name: web-build
           path: dist/web
 
-      # A missing browser fails here, not in the audit, and the browser and macOS version are printed beside the results.
-      - name: Check the browser on macOS
-        if: runner.os == 'macOS'
+      - name: Check Chrome and macOS versions
         run: |
           chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
           if [[ ! -x "$chrome" ]]; then
@@ -129,23 +138,13 @@ jobs:
           "$chrome" --version
           sw_vers
 
-      - name: Check the browser and the system font on Linux
-        if: runner.os != 'macOS'
-        run: |
-          if ! command -v google-chrome > /dev/null; then
-            echo "::error::Google Chrome is required for the rendered audits."
-            exit 1
-          fi
-          google-chrome --version
-          if command -v fc-match > /dev/null; then
-            echo "system-ui resolves to: $(fc-match system-ui)"
-          else
-            echo "fc-match is not installed, so the system font is unknown."
-          fi
-
       - name: Audit the built site in Chrome
         timeout-minutes: 10
-        run: npm run audit:rendered
+        env:
+          AUDIT_SUITE: ${{ matrix.suite }}
+          # The remembered-session fixture must match the public client ID baked into the build.
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+        run: npm run audit:rendered -- "$AUDIT_SUITE"
 
   site:
     name: Validate README screenshots
