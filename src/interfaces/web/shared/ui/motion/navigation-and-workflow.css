@@ -121,10 +121,7 @@
   }
 }
 
-/* 48: New page title arrival; only the heading is remounted. */
-.page-title-arrival {
-  animation: motion-label var(--duration-cue) var(--ease-standard);
-}
+/* Shared label cue for changes within the current page. */
 @keyframes motion-label {
   from {
     opacity: var(--motion-reveal-opacity);

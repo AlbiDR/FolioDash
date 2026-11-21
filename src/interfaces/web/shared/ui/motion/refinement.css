@@ -1,19 +1,9 @@
-/* Motion refinement: 5 arrivals, 17 transitions, 15 microtransitions and 5 interactions.
+/* Motion refinement: 4 arrivals, 17 transitions, 15 microtransitions and 5 interactions.
  * Inventory and verification: docs/operations/interactions.md. No delayed actions. Period changes morph chart lines, and
  * cards lift on fine-pointer hover (2026-11-19).
  */
 
 /* Single-pass feedback for the shell and workflow states. Page sections arrive in page-chrome.css. */
-@keyframes toolbar-arrive {
-  from {
-    opacity: var(--motion-reveal-opacity);
-    translate: 0 var(--motion-lift);
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
-}
 @keyframes workflow-arrive {
   from {
     opacity: var(--motion-reveal-opacity);
@@ -39,9 +29,6 @@
     opacity: 1;
     translate: 0 0;
   }
-}
-.topbar {
-  animation: toolbar-arrive var(--duration-medium) var(--ease-standard);
 }
 .expense-review,
 .expense-conflict {

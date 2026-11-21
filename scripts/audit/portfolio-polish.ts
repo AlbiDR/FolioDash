@@ -12,7 +12,7 @@ const results: { name: string; result: unknown }[] = [];
 await withLocalBrowser(async (browser) => {
   const { call, evaluate, waitFor, origin } = browser;
   const { visit } = createSteps(browser);
-  // Inspect real arrival keyframes at their first frame, including delayed cards. Figures must already be visible.
+  // Inspect real arrival keyframes, including delayed cards. Exact text must already be present.
   await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
   await call("Emulation.setEmulatedMedia", {
     features: [{ name: "prefers-reduced-motion", value: "no-preference" }],
@@ -42,19 +42,42 @@ await withLocalBrowser(async (browser) => {
       const animations=cards.flatMap(e=>e.getAnimations()).filter(a=>a.animationName==='rise');
       animations.forEach(a=>{a.pause();a.currentTime=0});
       const delays=animations.map(a=>a.effect.getTiming().delay);
-      const firstFrame=cards.map(e=>({opacity:getComputedStyle(e).opacity,transform:getComputedStyle(e).transform}));
+      const samples = [0, 0.25, 0.78, 1].map(progress => {
+        for (const animation of animations) {
+          const {delay, duration} = animation.effect.getTiming();
+          animation.currentTime = progress === 0 ? 0 : delay + progress * duration;
+        }
+        return cards.map(card => {
+          const style = getComputedStyle(card);
+          const shift = style.transform === 'none' ? 0 : new DOMMatrixReadOnly(style.transform).m42;
+          return {opacity: Number(style.opacity), shift};
+        });
+      });
       const readable=cards.every(e=>e.textContent.trim().length>0);
       animations.forEach(a=>a.cancel());
-      return {delays,firstFrame,readable};
-    })()`)) as { delays: number[]; firstFrame: { opacity: string; transform: string }[]; readable: boolean };
+      return {delays,samples,readable};
+    })()`)) as { delays: number[]; samples: { opacity: number; shift: number }[][]; readable: boolean };
     assert.ok(arrival.delays.length >= 3, `${label}: real section arrivals exist`);
     assert.ok(
       arrival.delays[0] === 0 && (arrival.delays[1] ?? 0) > 0 && (arrival.delays[2] ?? 0) > (arrival.delays[1] ?? 0),
       `${label}: first three sections arrive in order`,
     );
+    const [first, middle, rebound, settled] = arrival.samples;
     assert.ok(
-      arrival.firstFrame.every(({ opacity, transform }) => opacity === "1" && transform !== "none"),
-      `${label}: sections rise and stay fully visible`,
+      first?.every(({ opacity, shift }) => opacity === 0 && shift > 0),
+      `${label}: transparent start`,
+    );
+    assert.ok(
+      middle?.every(({ opacity, shift }) => opacity > 0 && opacity < 1 && shift > 0),
+      `${label}: rising fade`,
+    );
+    assert.ok(
+      rebound?.every(({ opacity, shift }) => opacity === 1 && shift < 0 && shift >= -2),
+      `${label}: soft rebound`,
+    );
+    assert.ok(
+      settled?.every(({ opacity, shift }) => opacity === 1 && shift === 0),
+      `${label}: fully settled`,
     );
     assert.ok(arrival.readable, `${label}: section text exists on the first frame`);
     results.push({ name: label, result: arrival });

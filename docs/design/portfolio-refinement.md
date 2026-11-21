@@ -39,7 +39,7 @@ The source inventory is regenerated and reviewed after the changes. Existing nat
 
 | Changed behaviour | Required evidence |
 |---|---|
-| Card stagger | Real CSS arrival animations inspected at their first frame; financial contents fully opaque, including delayed cards; reduced motion checked separately |
+| Card stagger | Real CSS arrival animations inspected from the transparent first frame through the staggered fade and subtle rebound to full opacity; reduced motion checked separately |
 | Search continuity | Same connected DOM row, unchanged figures, real running glide, exact settled position, unchanged headline and chart paths, no glide under reduced motion |
 | Chart readout inspection | Existing production chart/keyboard journeys and pointer feedback survey; paint-only styling, with exact financial content retained |
 | Allocation legend | Existing linked legend/donut inspection journey, geometry and state survey |
@@ -59,7 +59,7 @@ Environment: local macOS Chrome, synthetic demo portfolios, Node 26.13.1. Node 2
 | Recovery and recorded-data journeys | PASS | Backfill 6, expenses recovery 22, expenses restore 9, sale/reopening 17, account outcomes 20, Portfolio signals 7 and checkpoints 18 assertions |
 | Automated accessibility | PASS | 32 route/viewport/theme cases, including the prototype's formerly failing contrast combinations |
 | Reduced motion | PASS | 16 screens and 48 assertions; no motion and immediate privacy hiding |
-| Portfolio polish regression | PASS | Initial native animation frames fully opaque; keyed filtering moves and settles without changing financial content; nine layouts and measured axis labels, including 320px at 200% text; zero/one/many-fund cases |
+| Portfolio polish regression | PASS | Staggered native entrance frames fade and settle; keyed filtering moves and settles without changing financial content; nine layouts and measured axis labels, including 320px at 200% text; zero/one/many-fund cases |
 | README captures | PASS | All 15 synthetic production captures regenerated |
 | Source inventory review | PASS | 224 templates across 51 files after the mobile-list extraction; no new semantic control family |
 
@@ -70,3 +70,9 @@ A passing screenshot or synthetic renderer audit is never live-product verificat
 ## Performance hover and scrub
 
 The [Verdin Insights spending chart](https://demo.codeandchill.store/verdin/insights/) informed the guide, dot and tooltip that snap to a single observation. The existing Astryx portfolio hierarchy still provides the chart's context. Performance uses its existing hover, touch and keyboard selection to position the tooltip beside the guide, with exact masked or visible values from the same formatter as the readout. The halo and active dot use the settled coordinates, including while a series transition is running. Tooltip placement and dot emphasis use FolioDash tokens and update immediately. Other line charts retain their existing inspection presentation.
+
+### Reload and route entrances
+
+A Chrome frame trace of the public Verdin Insights reference showed panels starting transparent, translated by 18 pixels and slightly scaled down. Their opacity increased in reading order while the top bar stayed steady. FolioDash adapts the stagger, opacity and rise to its own panels, and uses a one-pixel rebound for a soft landing. Panel dimensions and plot geometry stay in place. Chart marks still grow from their baseline, while amount text counts inside its reserved slot. The loading notice appears only for a slower view load so quick chunk loads keep the shell steady. FolioDash uses its existing motion tokens and component patterns, with the Astryx overview and alert rail references continuing to guide the panel composition.
+
+The rendered reload audit samples actual browser frames for an initial transparent hero, an intermediate fade, a fully visible finish, loading-notice flashes during quick view loads, and stable flow geometry. The Portfolio audit inspects the offset, fade and rebound on direct entry and route navigation. The style gate covers UXC-12, and the reduced-motion audit covers UXC-13. This evidence is synthetic under STD-11.
