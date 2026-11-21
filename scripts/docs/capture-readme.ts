@@ -118,6 +118,7 @@ async function capture(
       const walk=el=>{if(roots.some(root=>root.contains(el)))return;if(!keep.has(el)){el.style.visibility='hidden';return}for(const child of el.children)walk(child)};walk(document.body)})(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})`);
     // The crop follows what is painted (text, backgrounds, borders, inputs, graphics) inside the named elements, not their boxes, so a
     // wide empty wrapper cannot stretch the picture. Anything clipped by a scrolling ancestor is cut to what is visible.
+    // A closed disclosure can expose descendant layout boxes to the DOM without painting them.
     const box = await evaluate(`((include)=>{const rects=[];const seen=new Set();
       const visible=(rect,node)=>{let r={left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom};for(let el=node instanceof Element?node:node.parentElement;el&&el!==document.documentElement;el=el.parentElement){const cs=getComputedStyle(el);if(cs.overflowX!=='visible'||cs.overflowY!=='visible'){const b=el.getBoundingClientRect();if(cs.overflowX!=='visible'){r.left=Math.max(r.left,b.left);r.right=Math.min(r.right,b.right)}if(cs.overflowY!=='visible'){r.top=Math.max(r.top,b.top);r.bottom=Math.min(r.bottom,b.bottom)}}}return r.right>r.left&&r.bottom>r.top?r:null};
       const add=(rect,node)=>{const r=visible(rect,node);if(r)rects.push(r)};
@@ -125,6 +126,7 @@ async function capture(
       const visit=el=>{if(seen.has(el))return;seen.add(el);const cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden')return;
         if(paints(cs)||/^(img|svg|canvas|input|select|textarea)$/i.test(el.tagName)){const r=el.getBoundingClientRect();if(r.width>0&&r.height>0)add(r,el)}
         if(/^svg$/i.test(el.tagName))return;
+        if(el instanceof HTMLDetailsElement&&!el.open){const summary=el.querySelector(':scope > summary');if(summary)visit(summary);return}
         for(const child of el.childNodes){if(child.nodeType===3&&child.textContent.trim()!==''){const range=document.createRange();range.selectNodeContents(child);for(const q of range.getClientRects())if(q.width>0&&q.height>0)add(q,child)}else if(child.nodeType===1)visit(child)}};
       document.querySelectorAll(include).forEach(visit);
       return rects.length===0?null:{left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))}})(${JSON.stringify(view.crop?.include ?? DEFAULT_INCLUDE)})`);
@@ -134,7 +136,11 @@ async function capture(
       throw new Error("Unexpected screenshot framing.");
     // Room for the cards' shadows, so they are not cut off at the edge of the picture.
     const margin = 36;
-    height = Math.min(Math.ceil((bottom ?? 0) - (top ?? 0)) + 2 * margin, 2000);
+    height = Math.ceil((bottom ?? 0) - (top ?? 0)) + 2 * margin;
+    if (height > 2000)
+      throw new Error(
+        `${file} needs ${String(height)}px of height (maximum 2000px). Adjust its crop in scripts/docs/readme-views.ts.`,
+      );
     await call("Emulation.setDeviceMetricsOverride", {
       width,
       height: Math.ceil((bottom ?? 0) + margin + 20),
