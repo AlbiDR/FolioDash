@@ -103,6 +103,7 @@ select:focus-visible {
   box-shadow:
     var(--glass-shadow),
     inset 0 0 0 1px var(--glass-edge);
+  isolation: isolate;
 }
 
 .main-nav .brand {
@@ -199,6 +200,10 @@ select:focus-visible {
     margin: var(--space-3) 0 var(--space-3) var(--space-3);
     padding: var(--space-4) var(--space-3);
     border-radius: var(--shape-xl);
+    box-shadow:
+      var(--glass-shadow),
+      inset 0 0 0 1px var(--glass-edge),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 6%, transparent);
   }
 
   .main-nav .brand {
@@ -209,6 +214,16 @@ select:focus-visible {
     font-size: var(--text-title);
     font-weight: var(--weight-bold);
     letter-spacing: -0.02em;
+    transition:
+      color var(--duration-short) var(--ease-standard),
+      transform var(--duration-feedback) var(--ease-spring);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .main-nav .brand:hover {
+      color: var(--color-accent);
+      transform: translateX(2px);
+    }
   }
 
   .nav-list {
@@ -222,6 +237,8 @@ select:focus-visible {
     gap: 0.75rem;
     padding: 0.65rem 0.85rem;
     font-size: var(--text-body);
+    position: relative;
+    z-index: 0;
   }
 
   .content {
