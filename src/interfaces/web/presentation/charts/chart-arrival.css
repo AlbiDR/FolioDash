@@ -2,8 +2,8 @@
 .donut-arrive,
 .perf-bar,
 .share-bar > span {
-  animation-duration: var(--duration-navigation);
-  animation-timing-function: var(--ease-standard);
+  animation-duration: var(--duration-arrival);
+  animation-timing-function: var(--ease-arrival);
   animation-delay: var(--section-arrival-delay, 0ms);
   animation-fill-mode: backwards;
 }

@@ -346,7 +346,7 @@
   animation: none;
 }
 @starting-style {
-  .presence[data-present="true"] {
+  .presence[data-present="true"][data-initial="false"] {
     grid-template-rows: 0fr;
     opacity: var(--motion-reveal-opacity);
     margin-block-end: calc(-1 * var(--presence-gap, 0px));

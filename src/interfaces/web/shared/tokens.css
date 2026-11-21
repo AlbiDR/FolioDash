@@ -80,6 +80,7 @@
 
   /* Motion: standard for movement, spring for emphasis. Both are removed for reduced motion. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-arrival: cubic-bezier(0.22, 0.34, 0.26, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-short: 180ms;
   --duration-press: 100ms;
@@ -98,7 +99,8 @@
   --motion-rise: 18px;
   --motion-text-rise: 8px;
   --motion-text-opacity: 0.35;
-  --motion-stagger: 45ms;
+  --motion-stagger: 55ms;
+  --duration-arrival: 560ms;
   --motion-update-opacity: 0.65;
   --duration-medium: 380ms;
   --duration-navigation: 450ms;

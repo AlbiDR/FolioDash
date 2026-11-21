@@ -15,14 +15,17 @@ interface AnimatedFigureProps {
 /** Keep the exact text in the layout and accessibility tree. Only the visual overlay is interpolated. */
 export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
   const element = useRef<HTMLSpanElement>(null);
+  const overlay = useRef<HTMLSpanElement>(null);
   const mounted = useRef(false);
   const { value, text, format } = props;
   useLayoutEffect(() => {
     if (mounted.current) return;
     mounted.current = true;
     const node = element.current;
+    const counter = overlay.current;
     if (
       node === null ||
+      counter === null ||
       value === null ||
       !Number.isFinite(value) ||
       value === 0 ||
@@ -36,7 +39,7 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
     const bounds = node.getBoundingClientRect();
     if (bounds.height === 0 || bounds.top >= window.innerHeight || bounds.bottom <= 0) return;
     const style = getComputedStyle(node);
-    const timing = timingFrom(style, "--duration-navigation");
+    const timing = timingFrom(style, "--duration-arrival", "--ease-arrival");
     if (timing.duration === 0) return;
     const effect = new KeyframeEffect(null, [], {
       ...timing,
@@ -49,7 +52,7 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
       cancelAnimationFrame(frame);
       clock.cancel();
       node.removeAttribute("data-counting");
-      node.lastElementChild?.removeAttribute("data-figure-count");
+      counter.removeAttribute("data-figure-count");
     };
     const draw = (): void => {
       const progress = effect.getComputedTiming().progress ?? 0;
@@ -57,7 +60,7 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
         finish();
         return;
       }
-      node.lastElementChild?.setAttribute("data-figure-count", format(value * progress));
+      counter.setAttribute("data-figure-count", format(value * progress));
       frame = requestAnimationFrame(draw);
     };
     node.setAttribute("data-counting", "");
@@ -72,8 +75,10 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
       role={props.masked === true ? "img" : undefined}
       aria-label={props.masked === true ? "Amount hidden" : undefined}
     >
-      <span class="figure-exact">{text}</span>
-      <span class="figure-count" aria-hidden="true" />
+      <span class="figure-slot">
+        <span class="figure-exact">{text}</span>
+        <span ref={overlay} class="figure-count" aria-hidden="true" />
+      </span>
     </span>
   );
 }
