@@ -19,8 +19,7 @@
   height: 100%;
   overflow-wrap: anywhere;
 }
-.nav-list::before {
-  content: "";
+.nav-pill {
   position: absolute;
   z-index: -1;
   pointer-events: none;
@@ -35,6 +34,9 @@
   transition:
     transform var(--duration-feedback) var(--ease-spring),
     box-shadow var(--duration-short) var(--ease-standard);
+}
+.nav-pill[aria-hidden="true"] {
+  display: block;
 }
 .nav-list .nav-link[aria-current="page"] {
   background: transparent;
@@ -71,7 +73,7 @@
   .nav-list {
     --nav-gap: 4px;
   }
-  .nav-list::before {
+  .nav-pill {
     inset: 0 0 auto;
     width: 100%;
     height: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));

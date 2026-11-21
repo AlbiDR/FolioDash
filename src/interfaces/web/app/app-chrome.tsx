@@ -31,6 +31,7 @@ export function AppNav(props: {
           ),
         }}
       >
+        <span class="nav-pill" aria-hidden="true" />
         {NAV.map((entry) => (
           <li key={entry.id}>
             <a class="nav-link" href={entry.href} aria-current={current === entry.id ? "page" : undefined}>
