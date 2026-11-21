@@ -67,6 +67,9 @@ What the prototype changes, tokens and one component only:
 - **Sample banner.** The saturated blue first-run notice is now an inset strip with only a hairline, so the headline figure is the first thing a person sees.
 - **Light.** The page is `#e9edf4` and `--shadow-card` has a hairline layer, so a white card separates by edge and shadow without a heavier border.
 
+- **Charts.** A line's area fades toward the baseline, the grid is a faint solid hairline, lines are 2.5px and monthly bars rest at 80% opacity. Presentation only: geometry, privacy masking and figures are untouched.
+- **Arrival motion (a design change to the motion layer).** Dashboard cards used to arrive with a 2px, 220ms nudge that no one could see. They now rise 16px from transparent over 380ms, 45ms apart and capped at the sixth card (about 0.6 seconds in all). The new values are tokens (`--motion-rise`, `--motion-rise-opacity`, `--motion-stagger`). This replaces the earlier "no stagger" note in `refinement.css`; reduced motion still removes all of it, through the existing global rule. Not built: bar growth on first paint, because the bar morph owns the bars' transforms.
+
 Measured, not judged: dark page against card was computed from the token values. Light page against card was not recomputed, and no hero text contrast is re-measured. The range journey, the README capture and a physical device are not run. The rest of D1 to D7 and both questions below stay open.
 
 ## Questions for the owner
