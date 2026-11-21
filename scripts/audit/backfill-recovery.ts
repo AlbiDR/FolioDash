@@ -50,7 +50,7 @@ try {
       await waitFor(
         async () =>
           (await evaluate(
-            "!!document.querySelector('#backfill-date') || document.body.innerText.includes('Synthetic setup error:')",
+            "!!document.querySelector('#backfill-date') || document.body?.innerText.includes('Synthetic setup error:')",
           )) === true,
         "synthetic earlier-history form",
       );

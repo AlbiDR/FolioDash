@@ -59,7 +59,7 @@ try {
       await waitFor(
         async () =>
           (await evaluate(
-            "!!document.querySelector('.expense-save-button') || document.body.innerText.includes('Synthetic setup error:')",
+            "!!document.querySelector('.expense-save-button') || document.body?.innerText.includes('Synthetic setup error:')",
           )) === true,
         "synthetic expense form",
       );
