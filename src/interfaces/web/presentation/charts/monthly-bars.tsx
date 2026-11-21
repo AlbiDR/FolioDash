@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { AnimatedFigure } from "../animated-figure";
 import { usePrivacy } from "../privacy/privacy";
 import { useAxisLabels } from "./use-axis-labels";
 import { maskNumbers } from "../privacy/privacy-choice";
@@ -60,6 +61,8 @@ export function MonthlyBars(props: {
   const band = (WIDTH - PAD.side * 2) / Math.max(1, props.bars.length);
   const barWidth = Math.min(22, band * 0.62);
   const show = (value: number): string => (hidden ? maskNumbers(props.formatValue(value)) : props.formatValue(value));
+  const formatValue = props.formatValue;
+  const formatCount = useCallback((value: number) => `${value > 0 ? "+" : ""}${formatValue(value)}`, [formatValue]);
   const axis = useAxisLabels(
     props.bars.map((bar, index) => ({ key: bar.key, text: bar.label, x: PAD.side + band * (index + 0.5) })),
     PAD.side,
@@ -107,9 +110,11 @@ export function MonthlyBars(props: {
         <span
           class={`bars-readout-value ${shown?.value === undefined || shown.value === null ? "" : shown.value >= 0 ? "gain" : "loss"}`}
         >
-          {shown?.value === undefined || shown.value === null
-            ? "-"
-            : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
+          <AnimatedFigure
+            value={hidden ? null : (shown?.value ?? null)}
+            text={shown?.value == null ? "-" : `${shown.value > 0 ? "+" : ""}${show(shown.value)}`}
+            format={formatCount}
+          />
         </span>
       </p>
       <svg
@@ -172,7 +177,8 @@ export function MonthlyBars(props: {
               <rect class="bars-hit" x={PAD.side + band * index} y={0} width={band} height={HEIGHT} />
               {value !== null && (
                 <rect
-                  class={value >= 0 ? "bar gain" : "bar loss"}
+                  class={value >= 0 ? "bar gain plot-arrive" : "bar loss plot-arrive"}
+                  style={{ "--plot-arrival-origin": `${String(zeroY)}px` }}
                   x={x}
                   y={y}
                   width={barWidth}

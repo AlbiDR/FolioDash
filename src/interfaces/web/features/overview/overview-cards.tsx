@@ -1,3 +1,4 @@
+import { AnimatedFigure, formatFigureCount } from "../../presentation/animated-figure";
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { formatDateLong } from "../../../../core/values/iso-date";
@@ -197,7 +198,11 @@ export function AllocationCard(props: { readonly slices: readonly AllocationSlic
             centre={
               <>
                 <span class="donut-number">
-                  {active === undefined ? props.slices.length : formatPercent(active.share)}
+                  <AnimatedFigure
+                    value={active === undefined ? props.slices.length : null}
+                    text={active === undefined ? formatFigureCount(props.slices.length) : formatPercent(active.share)}
+                    format={formatFigureCount}
+                  />
                 </span>
                 <span class="donut-caption">
                   {active === undefined ? (props.slices.length === 1 ? "fund" : "funds") : "of portfolio"}
@@ -226,7 +231,12 @@ export function AllocationCard(props: { readonly slices: readonly AllocationSlic
                 >
                   <span class={`dot series-${String(index % 8)}`} aria-hidden="true" />
                   <span class="legend-name">{slice.name}</span>
-                  <span class="legend-value">{formatPercent(slice.share)}</span>
+                  <AnimatedFigure
+                    class="legend-value"
+                    value={slice.share}
+                    text={formatPercent(slice.share)}
+                    format={formatPercent}
+                  />
                 </a>
               </li>
             ))}

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import type { EuroCents } from "../../../../core/values/money";
 import { formatPercent } from "../../../../core/values/percent";
+import { AnimatedFigure } from "../../presentation/animated-figure";
 import { Amount } from "../../presentation/privacy/privacy";
 
 /** A gain or loss reads as one in text too (the sign), so colour is never the only cue. */
@@ -20,7 +21,11 @@ export function Signed(props: { readonly cents: EuroCents | null }): JSX.Element
 export function Pill(props: { readonly ratio: number | null; readonly signed?: boolean }): JSX.Element {
   return (
     <span class={`pill ${props.signed === true ? tone(props.ratio) : ""}`}>
-      {formatPercent(props.ratio, props.signed === true ? { signed: true } : {})}
+      <AnimatedFigure
+        value={props.ratio}
+        text={formatPercent(props.ratio, { signed: props.signed === true })}
+        format={props.signed === true ? formatSignedPercent : formatPercent}
+      />
     </span>
   );
 }
@@ -32,7 +37,15 @@ export function Percent(props: { readonly ratio: number | null; readonly signed?
         .filter((name) => name !== "")
         .join(" ")}
     >
-      {formatPercent(props.ratio, props.signed === true ? { signed: true } : {})}
+      <AnimatedFigure
+        value={props.ratio}
+        text={formatPercent(props.ratio, { signed: props.signed === true })}
+        format={props.signed === true ? formatSignedPercent : formatPercent}
+      />
     </span>
   );
+}
+
+function formatSignedPercent(value: number): string {
+  return formatPercent(value, { signed: true });
 }

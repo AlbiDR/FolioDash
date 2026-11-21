@@ -1,3 +1,9 @@
+@property --section-arrival-delay {
+  syntax: "<time>";
+  inherits: true;
+  initial-value: 0ms;
+}
+
 /* ---------- Page identity and global controls ---------- */
 
 .topbar {
@@ -216,7 +222,8 @@ a.icon-button {
 #main-content > .get-started,
 #main-content > :is(.dash, .screen, .account, .import) > * {
   animation: rise var(--duration-navigation) var(--ease-standard) backwards;
-  animation-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
+  --section-arrival-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
+  animation-delay: var(--section-arrival-delay);
 }
 #main-content > :is(.dash, .screen, .account, .import) > :nth-child(2) {
   --arrival-index: 1;
@@ -237,6 +244,30 @@ a.icon-button {
 @keyframes rise {
   from {
     transform: translateY(var(--motion-rise));
+  }
+}
+
+#main-content
+  :is(
+    .card-title,
+    .card-subtitle,
+    .hero-value,
+    .hero-gain,
+    .chart-title,
+    .chart-subtitle,
+    .account-lead,
+    .import-heading
+  ) {
+  animation: text-arrive var(--duration-navigation) var(--ease-standard) backwards;
+  animation-delay: calc(var(--section-arrival-delay) + var(--motion-stagger));
+}
+#main-content :is(.card-subtitle, .chart-subtitle, .hero-gain) {
+  animation-delay: calc(var(--section-arrival-delay) + 2 * var(--motion-stagger));
+}
+@keyframes text-arrive {
+  from {
+    opacity: var(--motion-text-opacity);
+    transform: translateY(var(--motion-text-rise));
   }
 }
 
@@ -283,4 +314,31 @@ a.icon-button {
   box-shadow:
     inset 0 0 0 1px var(--color-border),
     var(--shadow-card);
+}
+
+.animated-figure[data-counting] {
+  position: relative;
+}
+.animated-figure[data-counting] > .figure-exact {
+  opacity: 0;
+}
+.figure-count {
+  display: none;
+}
+.animated-figure[data-counting] > .figure-count {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.figure-count::before {
+  content: attr(data-figure-count);
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .animated-figure[data-counting] > .figure-exact {
+    opacity: 1;
+  }
+  .animated-figure[data-counting] > .figure-count {
+    display: none;
+  }
 }

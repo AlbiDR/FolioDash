@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { AnimatedFigure } from "../animated-figure";
 import type { ChartSeries, PlottedSeries } from "./line-chart-geometry";
 import { styleClass } from "./line-chart-layout";
 
@@ -8,6 +9,8 @@ export function ChartReadout(props: {
   readonly highlight: string | null;
   readonly observation: (time: number) => string;
   readonly show: (value: number) => string;
+  readonly hidden: boolean;
+  readonly formatValue: (value: number) => string;
 }): JSX.Element {
   const { activeTime, highlight, observation, show } = props;
   return (
@@ -35,7 +38,11 @@ export function ChartReadout(props: {
               {entry.label}
             </span>
             <span class="chart-readout-value">
-              {point === undefined ? "-" : show(point.value)}
+              <AnimatedFigure
+                value={props.hidden ? null : (point?.value ?? null)}
+                text={point === undefined ? "-" : show(point.value)}
+                format={props.formatValue}
+              />
               {point?.detail == null ? "" : ` (${point.detail})`}
             </span>
           </span>

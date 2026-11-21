@@ -96,6 +96,8 @@
   --motion-mark-press-opacity: 0.65;
   --motion-reveal-opacity: 0.85;
   --motion-rise: 18px;
+  --motion-text-rise: 8px;
+  --motion-text-opacity: 0.35;
   --motion-stagger: 45ms;
   --motion-update-opacity: 0.65;
   --duration-medium: 380ms;

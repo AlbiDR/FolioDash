@@ -133,10 +133,10 @@ One row is a source template; a fund-link template can render many controls. All
 | 34b238e379d3-1 | [get-started.tsx:38](../../src/interfaces/web/features/account/get-started.tsx#L38) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 1b2d6955418b-1 | [get-started.tsx:59](../../src/interfaces/web/features/account/get-started.tsx#L59) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 56991a97d0b5-1 | [get-started.tsx:72](../../src/interfaces/web/features/account/get-started.tsx#L72) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| dd307829b019-1 | [activity-view.tsx:73](../../src/interfaces/web/features/activity/activity-view.tsx#L73) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f38d7908966f-1 | [activity-view.tsx:84](../../src/interfaces/web/features/activity/activity-view.tsx#L84) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 96b48440953a-1 | [activity-view.tsx:100](../../src/interfaces/web/features/activity/activity-view.tsx#L100) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 8fb3a5f38652-1 | [activity-view.tsx:116](../../src/interfaces/web/features/activity/activity-view.tsx#L116) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| dd307829b019-1 | [activity-view.tsx:74](../../src/interfaces/web/features/activity/activity-view.tsx#L74) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f38d7908966f-1 | [activity-view.tsx:85](../../src/interfaces/web/features/activity/activity-view.tsx#L85) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 96b48440953a-1 | [activity-view.tsx:101](../../src/interfaces/web/features/activity/activity-view.tsx#L101) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 8fb3a5f38652-1 | [activity-view.tsx:117](../../src/interfaces/web/features/activity/activity-view.tsx#L117) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aacae9081f0e-1 | [checkpoints-preserved.tsx:95](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L95) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
 | d12f8f03fdda-1 | [checkpoints-preserved.tsx:122](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L122) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
 | cf7a6afc5921-1 | [checkpoints-view.tsx:155](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L155) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
@@ -274,10 +274,10 @@ One row is a source template; a fund-link template can render many controls. All
 | e31f7b55bac2-1 | [months-view.tsx:293](../../src/interfaces/web/features/overview/months-view.tsx#L293) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
 | 4eeac9ba431c-1 | [months-view.tsx:349](../../src/interfaces/web/features/overview/months-view.tsx#L349) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
 | 516fd464ddb2-1 | [overview-analysis.tsx:100](../../src/interfaces/web/features/overview/overview-analysis.tsx#L100) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 7835b073b7a4-1 | [overview-cards.tsx:86](../../src/interfaces/web/features/overview/overview-cards.tsx#L86) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
-| 7629eadcb326-1 | [overview-cards.tsx:152](../../src/interfaces/web/features/overview/overview-cards.tsx#L152) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
-| 259bfaabbc9d-1 | [overview-cards.tsx:211](../../src/interfaces/web/features/overview/overview-cards.tsx#L211) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 79d1b03ed21a-1 | [overview-cards.tsx:245](../../src/interfaces/web/features/overview/overview-cards.tsx#L245) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| 7835b073b7a4-1 | [overview-cards.tsx:87](../../src/interfaces/web/features/overview/overview-cards.tsx#L87) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
+| 7629eadcb326-1 | [overview-cards.tsx:153](../../src/interfaces/web/features/overview/overview-cards.tsx#L153) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
+| b203d838d099-1 | [overview-cards.tsx:216](../../src/interfaces/web/features/overview/overview-cards.tsx#L216) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 79d1b03ed21a-1 | [overview-cards.tsx:255](../../src/interfaces/web/features/overview/overview-cards.tsx#L255) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | f9deda2cfc0c-1 | [overview-holdings.tsx:91](../../src/interfaces/web/features/overview/overview-holdings.tsx#L91) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
 | df5f93250bb8-1 | [overview-holdings.tsx:154](../../src/interfaces/web/features/overview/overview-holdings.tsx#L154) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
 | 2cc174d3262d-1 | [overview-holdings.tsx:172](../../src/interfaces/web/features/overview/overview-holdings.tsx#L172) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
@@ -294,20 +294,20 @@ One row is a source template; a fund-link template can render many controls. All
 | 3a1966c1235b-1 | [overview-view.tsx:227](../../src/interfaces/web/features/overview/overview-view.tsx#L227) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 666619ba1abe-1 | [overview-view.tsx:245](../../src/interfaces/web/features/overview/overview-view.tsx#L245) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | 4e03b4ce4b63-1 | [overview-view.tsx:249](../../src/interfaces/web/features/overview/overview-view.tsx#L249) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| d8d6a251e8a5-1 | [donut.tsx:57](../../src/interfaces/web/presentation/charts/donut.tsx#L57) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
-| f0096a0a1206-1 | [line-chart-parts.tsx:57](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L57) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| d8d6a251e8a5-1 | [donut.tsx:58](../../src/interfaces/web/presentation/charts/donut.tsx#L58) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
+| f0096a0a1206-1 | [line-chart-parts.tsx:64](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L64) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
 | 7f473b4575d1-1 | [line-chart.tsx:146](../../src/interfaces/web/presentation/charts/line-chart.tsx#L146) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 5165a49fe31d-1 | [line-chart.tsx:210](../../src/interfaces/web/presentation/charts/line-chart.tsx#L210) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| 63b5f07c9cc3-1 | [line-chart.tsx:319](../../src/interfaces/web/presentation/charts/line-chart.tsx#L319) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 458c1b118a98-1 | [line-chart.tsx:341](../../src/interfaces/web/presentation/charts/line-chart.tsx#L341) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| c7758c3b45e9-1 | [line-chart.tsx:345](../../src/interfaces/web/presentation/charts/line-chart.tsx#L345) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
-| b8aea119d3dc-1 | [monthly-bars.tsx:129](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L129) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 9b0ee110f1fd-1 | [monthly-bars.tsx:206](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L206) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
-| e12440fad7f8-1 | [monthly-bars.tsx:237](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L237) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
-| 754edc475ea5-1 | [monthly-bars.tsx:250](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L250) | summary / action | Show the values as a table | SOURCE CLASSIFIED; STATES OPEN |
-| 580ca891139d-1 | [monthly-bars.tsx:251](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L251) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 222973826ac1-1 | [performance-bars.tsx:26](../../src/interfaces/web/presentation/charts/performance-bars.tsx#L26) | a / action | {'perf-row${row.dim === true ? " dim" : ""}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 87821db5ad79-1 | [privacy.tsx:49](../../src/interfaces/web/presentation/privacy/privacy.tsx#L49) | button / action | privacy-toggle | SOURCE CLASSIFIED; STATES OPEN |
+| 2a697eb800b4-1 | [line-chart.tsx:212](../../src/interfaces/web/presentation/charts/line-chart.tsx#L212) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:323](../../src/interfaces/web/presentation/charts/line-chart.tsx#L323) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 458c1b118a98-1 | [line-chart.tsx:345](../../src/interfaces/web/presentation/charts/line-chart.tsx#L345) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:349](../../src/interfaces/web/presentation/charts/line-chart.tsx#L349) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| f2165f5f8ebb-1 | [monthly-bars.tsx:134](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L134) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 9b0ee110f1fd-1 | [monthly-bars.tsx:212](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L212) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
+| e12440fad7f8-1 | [monthly-bars.tsx:243](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L243) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
+| 754edc475ea5-1 | [monthly-bars.tsx:256](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L256) | summary / action | Show the values as a table | SOURCE CLASSIFIED; STATES OPEN |
+| 580ca891139d-1 | [monthly-bars.tsx:257](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L257) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| 4c73552a3aa7-1 | [performance-bars.tsx:31](../../src/interfaces/web/presentation/charts/performance-bars.tsx#L31) | a / action | {'perf-row${row.dim === true ? " dim" : ""}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 87821db5ad79-1 | [privacy.tsx:60](../../src/interfaces/web/presentation/privacy/privacy.tsx#L60) | button / action | privacy-toggle | SOURCE CLASSIFIED; STATES OPEN |
 | f217f265fce6-1 | [index.html:71](../../src/interfaces/web/public/privacy/index.html#L71) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
 | 0c4e99920444-1 | [index.html:107](../../src/interfaces/web/public/privacy/index.html#L107) | a / action | Google's privacy policy | SOURCE CLASSIFIED; STATES OPEN |
 | 75fe79f6b648-1 | [index.html:111](../../src/interfaces/web/public/privacy/index.html#L111) | a / action | GitHub's privacy statement | SOURCE CLASSIFIED; STATES OPEN |

@@ -1,6 +1,7 @@
 import { type ComponentChildren, type JSX, createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
-import type { EuroCents } from "../../../../core/values/money";
+import { type EuroCents, toEuroCents, ZERO_CENTS } from "../../../../core/values/money";
+import { AnimatedFigure } from "../animated-figure";
 import { Icon } from "../../shared/ui/icons";
 import { type PrivacyStorage, amountText, readPrivacyChoice, writePrivacyChoice } from "./privacy-choice";
 
@@ -30,15 +31,25 @@ export function Amount(props: {
 }): JSX.Element {
   const hidden = usePrivacy();
   const kind = props.signed === true ? "amount signed" : "amount";
-  if (props.cents === null) return <span class={`${kind} empty`}>{props.empty ?? "-"}</span>;
-  if (hidden) {
-    return (
-      <span class={`${kind} masked`} role="img" aria-label="Amount hidden">
-        {amountText(props.cents, true, props.signed === true)}
-      </span>
-    );
-  }
-  return <span class={kind}>{amountText(props.cents, false, props.signed === true)}</span>;
+  const signed = props.signed === true;
+  const masked = hidden && props.cents !== null;
+  return (
+    <AnimatedFigure
+      class={`${kind}${props.cents === null ? " empty" : masked ? " masked" : ""}`}
+      value={hidden ? null : props.cents}
+      text={props.cents === null ? (props.empty ?? "-") : amountText(props.cents, hidden, signed)}
+      format={signed ? formatSignedFrame : formatFrame}
+      masked={masked}
+    />
+  );
+}
+
+function formatFrame(value: number): string {
+  return amountText(toEuroCents(Math.round(value)) ?? ZERO_CENTS, false);
+}
+
+function formatSignedFrame(value: number): string {
+  return amountText(toEuroCents(Math.round(value)) ?? ZERO_CENTS, false, true);
 }
 
 export function PrivacyToggle(props: {

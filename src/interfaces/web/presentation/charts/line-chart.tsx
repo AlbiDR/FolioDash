@@ -3,7 +3,7 @@ import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacy-choice";
-import { type ChartSeries, computeLineChart } from "./line-chart-geometry";
+import { type ChartSeries, arrivalBaseline, computeLineChart } from "./line-chart-geometry";
 import { LAYOUT, styleClass } from "./line-chart-layout";
 import { ChartReadout, ChartValuesTable } from "./line-chart-parts";
 import { useChartSize } from "./use-chart-size";
@@ -206,6 +206,8 @@ export function LineChart(props: LineChartProps): JSX.Element {
         highlight={highlight}
         observation={observation}
         show={show}
+        hidden={hidden}
+        formatValue={props.formatValue}
       />
       <svg
         ref={plot}
@@ -273,45 +275,47 @@ export function LineChart(props: LineChartProps): JSX.Element {
           <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />
         )}
         <g ref={seriesLayer}>
-          {geometry.series.map((entry, index) => (
-            <g
-              key={entry.id}
-              class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
-              data-series={entry.id}
-            >
-              {props.fillFirst === true &&
-                index === 0 &&
-                entry.areas.map((area) => <path key={area} class="area" d={area} />)}
-              {entry.paths.map((path) => (
-                <path key={path} class="line" d={path} fill="none" />
-              ))}
-              {entry.markers &&
-                entry.points.map((point) => (
-                  <rect
+          <g class="plot-arrive" style={{ "--plot-arrival-origin": `${String(arrivalBaseline(geometry))}px` }}>
+            {geometry.series.map((entry, index) => (
+              <g
+                key={entry.id}
+                class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
+                data-series={entry.id}
+              >
+                {props.fillFirst === true &&
+                  index === 0 &&
+                  entry.areas.map((area) => <path key={area} class="area" d={area} />)}
+                {entry.paths.map((path) => (
+                  <path key={path} class="line" d={path} fill="none" />
+                ))}
+                {entry.markers &&
+                  entry.points.map((point) => (
+                    <rect
+                      key={point.time}
+                      class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
+                      x={point.x - 5}
+                      y={point.y - 5}
+                      width={10}
+                      height={10}
+                      transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                      data-time={point.time}
+                      {...(hidden ? {} : { "data-value": point.value })}
+                    />
+                  ))}
+                {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
+                  <circle
                     key={point.time}
-                    class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
-                    x={point.x - 5}
-                    y={point.y - 5}
-                    width={10}
-                    height={10}
-                    transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                    class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
+                    cx={point.x}
+                    cy={point.y}
+                    r={4.5}
                     data-time={point.time}
                     {...(hidden ? {} : { "data-value": point.value })}
                   />
                 ))}
-              {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
-                <circle
-                  key={point.time}
-                  class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
-                  cx={point.x}
-                  cy={point.y}
-                  r={4.5}
-                  data-time={point.time}
-                  {...(hidden ? {} : { "data-value": point.value })}
-                />
-              ))}
-            </g>
-          ))}
+              </g>
+            ))}
+          </g>
         </g>
       </svg>
       <label class="chart-date-control">

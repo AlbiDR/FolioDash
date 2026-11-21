@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { EXPENSE_LABELS, type ExpenseDay } from "../../../../core/expenses/work-expenses";
+import { AnimatedFigure, formatFigureCount } from "../../presentation/animated-figure";
 import { Amount } from "../../presentation/privacy/privacy";
 import {
   ACTIVITY_SORTS,
@@ -173,11 +174,23 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
           </div>
           <div>
             <dt>Complete days</dt>
-            <dd>{String(totals.completeDays)}</dd>
+            <dd>
+              <AnimatedFigure
+                value={totals.completeDays}
+                text={formatFigureCount(totals.completeDays)}
+                format={formatFigureCount}
+              />
+            </dd>
           </div>
           <div>
             <dt>Partial days</dt>
-            <dd>{String(totals.partialDays)}</dd>
+            <dd>
+              <AnimatedFigure
+                value={totals.partialDays}
+                text={formatFigureCount(totals.partialDays)}
+                format={formatFigureCount}
+              />
+            </dd>
           </div>
         </dl>
         <p class="card-subtitle">Partial days add only the amounts they have. Nothing is filled in.</p>

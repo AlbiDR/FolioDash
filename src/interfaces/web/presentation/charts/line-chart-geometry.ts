@@ -67,6 +67,13 @@ export interface ChartGeometry {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TICK_TARGET = 5;
+/** Use the zero value when it is on the displayed axis, otherwise the nearest plot edge. */
+export function arrivalBaseline(geometry: ChartGeometry): number {
+  const [low, high] = geometry.domain?.value ?? [0, 1];
+  const zero = Math.min(1, Math.max(0, high / (high - low)));
+  return geometry.plot.top + geometry.plot.height * zero;
+}
+
 /** Headroom above the highest and below the lowest value, as a share of the range. Deliberately small. */
 const VALUE_BUFFER = 0.03;
 /** An intermediate tick closer than this share of the range to an end tick is dropped, so labels do not collide. */
