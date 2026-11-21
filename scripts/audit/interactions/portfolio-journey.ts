@@ -110,8 +110,8 @@ export async function portfolioJourney({
     "the holdings total row matches the headline and the sum of its rows",
   );
   await check(
-    "document.querySelectorAll('.desktop-holdings .holdings-group').length===0",
-    "a short list stays one table without group headers",
+    "document.querySelector('#holdings-held-rows .holdings-group-count')?.textContent.trim()==='7' && document.querySelector('#holdings-closed-rows .holdings-group-count')?.textContent.trim()==='1'",
+    "the default showcase groups seven held funds and one closed fund",
   );
   // The holdings table fits its card: every column keeps its full figure and nothing is clipped at the card edge.
   await check(
@@ -177,5 +177,10 @@ export async function portfolioJourney({
   await check(
     "(()=>{const sections=[...document.querySelector('.months').children];return sections.findIndex(n=>n.classList.contains('month-matrices'))<sections.findIndex(n=>n.classList.contains('mobile-months')) && !!document.querySelector('.month-matrices .totals') && !document.querySelector('.month-matrices')?.closest('details:not([open])')})()",
     "month comparison is visible before the statement inspector",
+  );
+  await visit("overview", 1440, "different");
+  await check(
+    "document.querySelectorAll('.desktop-holdings .holdings-group').length===0 && document.querySelectorAll('.desktop-holdings tbody th a').length===4",
+    "a short list stays one table without group headers",
   );
 }

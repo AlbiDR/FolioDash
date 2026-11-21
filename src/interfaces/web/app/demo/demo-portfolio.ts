@@ -38,6 +38,7 @@ interface DemoFundSpec {
   readonly invested: number;
   /** A repeating rise and fall around the steady growth, so a long history has months of different sizes and signs. */
   readonly swing?: number;
+  readonly marketExposure?: number;
 }
 
 function cents(value: number): EuroCents {
@@ -56,25 +57,34 @@ function demoIsin(code: string): string {
   throw new Error("no valid check digit");
 }
 
-function statementDates(count: number): IsoDate[] {
+function statementDates(count: number, firstYear: number): IsoDate[] {
   return Array.from({ length: count }, (_, index) => {
-    const date = toIsoDate(2025 + Math.floor(index / 12), (index % 12) + 1, 15);
+    const date = toIsoDate(firstYear + Math.floor(index / 12), (index % 12) + 1, 15);
     if (date === null) throw new Error("demo date out of range");
     return date;
   });
 }
 
+/** Shared synthetic market with a correction, a recovery and a smaller later setback. */
+function marketAt(index: number): number {
+  const correction = 0.19 * Math.exp(-(((index - 12) / 4) ** 2));
+  const setback = 0.12 * Math.exp(-(((index - 29) / 3) ** 2));
+  return 1 + 0.035 * Math.sin(index / 3) - correction - setback;
+}
+
 function valueAt(spec: DemoFundSpec, index: number): number {
+  const marketChange = marketAt(index) / marketAt(spec.startIndex) - 1;
   return (
     spec.startValue *
     (1 + spec.monthlyGrowth) ** (index - spec.startIndex) *
-    (1 + (spec.swing ?? 0) * Math.sin(index * 1.7))
+    (1 + (spec.swing ?? 0) * Math.sin(index * 1.7)) *
+    (1 + (spec.marketExposure ?? 0) * marketChange)
   );
 }
 
-function ledgerFor(specs: readonly DemoFundSpec[], count: number): LedgerState {
+function ledgerFor(specs: readonly DemoFundSpec[], count: number, firstYear = 2025): LedgerState {
   let ledger = EMPTY_LEDGER;
-  statementDates(count).forEach((date, index) => {
+  statementDates(count, firstYear).forEach((date, index) => {
     const listed = specs.filter(
       (spec) => index >= spec.startIndex && (spec.endIndex === null || index <= spec.endIndex),
     );
@@ -116,24 +126,28 @@ function ledgerFor(specs: readonly DemoFundSpec[], count: number): LedgerState {
   return ledger;
 }
 
+const GLOBAL_EQUITY: DemoFundSpec = {
+  name: "Demo Global Equity",
+  code: "DEMOEQ",
+  startIndex: 0,
+  endIndex: null,
+  startValue: 12000,
+  monthlyGrowth: 0.008,
+  invested: 11000,
+};
+
 const TYPICAL: readonly DemoFundSpec[] = [
-  {
-    name: "Demo Global Equity",
-    code: "DEMOEQ",
-    startIndex: 0,
-    endIndex: null,
-    startValue: 12000,
-    monthlyGrowth: 0.008,
-    invested: 11000,
-  },
+  { ...GLOBAL_EQUITY, monthlyGrowth: 0.0065, swing: 0.018, marketExposure: 1 },
   {
     name: "Demo Euro Bonds",
     code: "DEMOBD",
     startIndex: 2,
     endIndex: null,
     startValue: 8000,
-    monthlyGrowth: 0.003,
+    monthlyGrowth: 0.002,
     invested: 8000,
+    swing: 0.006,
+    marketExposure: 0.25,
   },
   {
     name: "Demo Tech Growth",
@@ -143,6 +157,63 @@ const TYPICAL: readonly DemoFundSpec[] = [
     startValue: 5000,
     monthlyGrowth: 0.015,
     invested: 4500,
+    swing: 0.025,
+    marketExposure: 1.25,
+  },
+  {
+    name: "Demo Emerging Markets",
+    code: "DEMOEM",
+    startIndex: 0,
+    endIndex: null,
+    startValue: 6600,
+    monthlyGrowth: -0.003,
+    invested: 6800,
+    swing: 0.045,
+    marketExposure: 1.2,
+  },
+  {
+    name: "Demo Global Small Caps",
+    code: "DEMOSC",
+    startIndex: 9,
+    endIndex: null,
+    startValue: 4200,
+    monthlyGrowth: 0.004,
+    invested: 4200,
+    swing: 0.035,
+    marketExposure: 1.15,
+  },
+  {
+    name: "Demo Short-Term Bonds",
+    code: "DEMOST",
+    startIndex: 15,
+    endIndex: null,
+    startValue: 5900,
+    monthlyGrowth: 0.0024,
+    invested: 5900,
+    swing: 0.004,
+    marketExposure: 0.08,
+  },
+  {
+    name: "Demo Listed Infrastructure",
+    code: "DEMOIN",
+    startIndex: 21,
+    endIndex: null,
+    startValue: 3600,
+    monthlyGrowth: 0.0045,
+    invested: 3600,
+    swing: 0.021,
+    marketExposure: 0.65,
+  },
+  {
+    name: "Demo Quality Dividend",
+    code: "DEMODV",
+    startIndex: 33,
+    endIndex: null,
+    startValue: 4700,
+    monthlyGrowth: 0.004,
+    invested: 4700,
+    swing: 0.013,
+    marketExposure: 0.7,
   },
 ];
 
@@ -232,9 +303,9 @@ const MANY: readonly DemoFundSpec[] = Array.from({ length: 12 }, (_, index) => (
 export function demoLedger(variant: DemoVariant): LedgerState {
   switch (variant) {
     case "typical":
-      return ledgerFor(TYPICAL, 8);
+      return ledgerFor(TYPICAL, 46, 2023);
     case "single":
-      return ledgerFor(TYPICAL.slice(0, 1), 6);
+      return ledgerFor([GLOBAL_EQUITY], 6);
     case "many":
       return ledgerFor(MANY, 10);
     case "different":
