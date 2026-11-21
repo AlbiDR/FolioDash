@@ -2,7 +2,7 @@
 
 Status: **Revision 02, review proposal, 2026-11-21. Isolated design study; not applied to the application.**
 
-Owner request: explore a more coherent and polished desktop and mobile Portfolio, informed by the supplied Verdin reference, in a separate worktree while another agent works independently.
+Owner request: explore a more coherent and polished desktop and mobile Portfolio in a separate worktree while another agent works independently.
 
 Run `node scripts/artifacts/portfolio-layout-study.ts`, then open the generated dist/portfolio-study-preview/index.html in a browser. The generated study works without a server or account. Resize the window to compare layouts. The figures are invented and the chart is an illustrative SVG, not the production financial renderer. The only actions are section navigation, Hide/Show figures and the illustrative values disclosure. No import, save, connection or investment action is simulated.
 
@@ -34,7 +34,7 @@ The Comparisons block is a boundary marker for this opening-screen study. It doe
 
 ## References and adaptation
 
-- **Verdin**, owner-supplied local captures and implementation inspected 2026-11-21, including desktop, tablet and phone captures. Considered: a dominant chart, a distinct supporting panel, repeated row anatomy, close alignment, compact section rhythm, mobile recomposition and coordinated finite motion. Adapted these relationships in original markup and styling. No template code, fonts, copy, assets or dependencies were imported. FolioDash retains its navy/blue system and financial terminology. Verdin's banking-card metaphor and simulated success toasts are not appropriate to this portfolio study.
+- Composition goals: a dominant chart, a distinct supporting panel, repeated row anatomy, close alignment, compact section rhythm, mobile recomposition and coordinated finite motion. These relationships use original markup and styling. No template code, fonts, copy, assets or dependencies were imported. FolioDash retains its navy/blue system and financial terminology.
 - **Astryx Portfolio Dashboard**, template description reviewed at revision `dc58f19792b2ad26091d2f1914b8a4c54f6a9445`: [source](https://github.com/meta/astryx/blob/dc58f19792b2ad26091d2f1914b8a4c54f6a9445/packages/cli/assets/templates/pages/dashboard-composition/template.doc.mjs). Considered the balance/change, chart and ranked-holdings progression. Kept FolioDash's fund-value/net-invested history rather than adopting a composition-through-time chart. No upstream code or dependencies were used. See the [reference register](astryx-reference.md).
 
 Existing [UI system](ui-system.md), [interaction coverage](interaction-coverage.md), [structural redesign](structural-ui-redesign.md) and [web quality](../operations/web-quality.md) remain authoritative. This is a proposal under UXC-11; it changes no financial definition, ledger, privacy policy, persistence or open decision. Financial rules remain canonical under PRN-2 and ARC-4. The standalone drawing establishes design intent only under UXC-8 and BAN-15.

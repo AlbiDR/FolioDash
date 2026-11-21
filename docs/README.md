@@ -31,7 +31,7 @@ How the interface looks, moves and is organised.
 | [Interaction coverage](design/interaction-coverage.md) | Complete source control inventory, shared feedback contract, rendered discovery and state-by-state coverage gaps | Source audit and shared control implementation; browser evidence tracked in the document |
 | [Motion layer](design/motion-layer.md) | Shared motion primitives, behaviour-neutral migration order, stylesheet owners and the proof each step needs | Steps 1 to 5 done 2026-11-19; step 4 closed without code |
 | [Depth and hierarchy](design/depth-and-hierarchy.md) | Depth levels for cards, hero emphasis, card hover policy and edge contrast, from a comparison with a public dashboard | Draft 2026-11-19; not implemented, owner decisions open |
-| [Portfolio composition study](design/portfolio-layout-study.md) | Isolated responsive desktop and mobile Portfolio proposal informed by Verdin and Astryx, with synthetic visual and interaction evidence | Review proposal 2026-11-21; application unchanged |
+| [Portfolio composition study](design/portfolio-layout-study.md) | Isolated responsive desktop and mobile Portfolio proposal, with synthetic visual and interaction evidence | Review proposal 2026-11-21; application unchanged |
 | [Portfolio refinement](design/portfolio-refinement.md) | Actual dashboard refinements retaining the selected visual baseline: surface detail, readable chart inspection, search continuity and motion evidence | Implemented and verified locally 2026-11-21; CI and manual-device proof separate |
 
 ## Operations

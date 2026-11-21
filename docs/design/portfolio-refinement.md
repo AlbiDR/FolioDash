@@ -2,13 +2,13 @@
 
 Status: **Implemented and verified locally in the isolated worktree, 2026-11-21. CI and manual-device categories remain separate.**
 
-The owner requested changes to the actual FolioDash dashboard, retaining the visual style of the running many-fund demo at port 5174 and adding Verdin's level of polish and purposeful animation. The earlier [composition study](portfolio-layout-study.md) remains a historical proposal. This work changes the production Preact interface and its existing motion primitives, not the study generator.
+The owner requested changes to the actual FolioDash dashboard, retaining the visual style of the running many-fund demo at port 5174 and improving its polish and purposeful animation. The earlier [composition study](portfolio-layout-study.md) remains a historical proposal. This work changes the production Preact interface and its existing motion primitives, not the study generator.
 
 ## Selected baseline and references
 
 The preferred preview was served from the committed depth/surfaces prototype at `122f442`. That exact baseline was merged into this branch without altering its worktree: tiered dark surfaces, blue hero, floating glass navigation, lighter chart grids, gradient area fills, stronger bars and shared chart/card typography. The owner explicitly asked to keep that appearance. No part of the separate prototype checkout was changed.
 
-Verdin's supplied local captures and source informed surface grouping, the relationship between a strong headline and supporting figures, an intentional inspection state and coordinated finite motion. No Verdin code, font, artwork, dependency or financial logic was copied. FolioDash keeps every existing chart, comparison, sparkline and financial figure; no placeholder chart or simplified data model enters the application.
+The refinement improves surface grouping, the relationship between a strong headline and supporting figures, an intentional inspection state and coordinated finite motion. It uses original code and styling, with no imported font, artwork, dependency or financial logic. FolioDash keeps every existing chart, comparison, sparkline and financial figure; no placeholder chart or simplified data model enters the application.
 
 The [Astryx Portfolio Dashboard](https://github.com/meta/astryx/blob/dc58f19792b2ad26091d2f1914b8a4c54f6a9445/packages/cli/assets/templates/pages/dashboard-composition/template.doc.mjs), revision `dc58f19792b2ad26091d2f1914b8a4c54f6a9445`, was reconsidered through its previously reviewed template description: balance/change, history and holdings. FolioDash retains the selected summary/Changes column beside the tall Performance chart and all visible analysis below Holdings. This adapts the hierarchy, with its existing data and larger chart, rather than adopting a stacked-composition chart. No upstream code or dependency was imported (UXC-11).
 
