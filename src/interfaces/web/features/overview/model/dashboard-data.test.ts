@@ -5,7 +5,8 @@ import { allocation, fundRanking, metricSeries } from "./dashboard-data";
 describe("allocation", () => {
   it("lists only funds still held, largest first, and the shares add up to one", () => {
     const slices = allocation(demoPortfolio("typical"));
-    expect(slices.map((slice) => slice.name)).toEqual(["Demo Global Equity", "Demo Euro Bonds"]);
+    expect(slices).toHaveLength(7);
+    expect(slices.map((slice) => slice.name)).not.toContain("Demo Tech Growth");
     expect(slices.reduce((sum, slice) => sum + slice.share, 0)).toBeCloseTo(1, 10);
     expect(slices[0]?.value).toBeGreaterThan(slices[1]?.value ?? Infinity);
   });

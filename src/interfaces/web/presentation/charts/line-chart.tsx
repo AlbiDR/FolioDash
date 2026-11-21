@@ -1,9 +1,10 @@
+import { VALUE_LABEL_GAP, useValueAxis } from "./use-value-axis";
 import { useAxisLabels } from "./use-axis-labels";
 import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
 import { maskNumbers } from "../privacy/privacy-choice";
-import { type ChartSeries, computeLineChart } from "./line-chart-geometry";
+import { type ChartSeries, arrivalBaseline, computeLineChart } from "./line-chart-geometry";
 import { LAYOUT, styleClass } from "./line-chart-layout";
 import { ChartReadout, ChartValuesTable } from "./line-chart-parts";
 import { useChartSize } from "./use-chart-size";
@@ -66,17 +67,33 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const layout = { ...LAYOUT, width, height: width < 480 ? 200 : plotHeight };
   // Drawing geometry depends only on the series and the axis choice, so reading values by hovering does not redo it.
   const includeZero = props.includeZero ?? false;
+  const formatAxisValue = props.formatAxisValue ?? props.formatValue;
+  const valueAxisKey = useMemo(
+    () => ({ series: props.series, includeZero, formatAxisValue, hidden }),
+    [props.series, includeZero, formatAxisValue, hidden],
+  );
+  const valueAxis = useValueAxis(valueAxisKey);
   const geometry = useMemo(
-    () => computeLineChart(props.series, { ...LAYOUT, width, height: width < 480 ? 200 : plotHeight, includeZero }),
-    [props.series, includeZero, width, plotHeight],
+    () =>
+      computeLineChart(props.series, {
+        width,
+        height: width < 480 ? 200 : plotHeight,
+        includeZero,
+        margin: { ...LAYOUT.margin, right: valueAxis.margin },
+      }),
+    [props.series, width, plotHeight, includeZero, valueAxis.margin],
   );
   const axis = useAxisLabels(
-    geometry.xTicks.map((tick) => ({ key: String(tick.time), text: props.formatTime(tick.time), x: tick.x })),
+    geometry.xTicks.map((tick) => ({
+      key: String(tick.time),
+      text: props.formatTime(tick.time),
+      x: tick.x,
+    })),
     geometry.plot.left,
     geometry.plot.left + geometry.plot.width,
     !geometry.empty,
   );
-  useGeometryMorph(seriesLayer, geometry, props.updateKey);
+  useGeometryMorph(seriesLayer, geometry, props.updateKey, geometry.empty || valueAxis.ready);
   const times = useMemo(
     () =>
       [...new Set(props.series.flatMap((entry) => entry.points.map((point) => point.time)))].sort(
@@ -206,6 +223,8 @@ export function LineChart(props: LineChartProps): JSX.Element {
         highlight={highlight}
         observation={observation}
         show={show}
+        hidden={hidden}
+        formatValue={props.formatValue}
       />
       <svg
         ref={plot}
@@ -234,25 +253,23 @@ export function LineChart(props: LineChartProps): JSX.Element {
       >
         <desc id={descriptionId}>{props.description}</desc>
         <g class="chart-grid">
-          {geometry.yTicks.map((tick) => (
-            <g key={`y-${String(tick.value)}`}>
-              <line x1={geometry.plot.left} x2={geometry.plot.left + geometry.plot.width} y1={tick.y} y2={tick.y} />
-              <text
-                class="chart-tick"
-                x={geometry.plot.left + geometry.plot.width + 8}
-                y={tick.y}
-                text-anchor="start"
-                dominant-baseline="middle"
-              >
-                <title>{show(tick.value)}</title>
-                {props.formatAxisValue === undefined
-                  ? show(tick.value)
-                  : hidden
-                    ? maskNumbers(props.formatAxisValue(tick.value))
-                    : props.formatAxisValue(tick.value)}
-              </text>
-            </g>
-          ))}
+          <g ref={valueAxis.group} class="chart-value-axis">
+            {geometry.yTicks.map((tick) => (
+              <g key={tick.value}>
+                <line x1={geometry.plot.left} x2={geometry.plot.left + geometry.plot.width} y1={tick.y} y2={tick.y} />
+                <text
+                  class="chart-tick"
+                  x={geometry.plot.left + geometry.plot.width + VALUE_LABEL_GAP}
+                  y={tick.y}
+                  text-anchor="start"
+                  dominant-baseline="middle"
+                >
+                  <title>{show(tick.value)}</title>
+                  {hidden ? maskNumbers(formatAxisValue(tick.value)) : formatAxisValue(tick.value)}
+                </text>
+              </g>
+            ))}
+          </g>
           <g ref={axis.group} class="chart-time-axis" aria-hidden="true">
             {axis.labels.map((label) => (
               <text
@@ -273,45 +290,52 @@ export function LineChart(props: LineChartProps): JSX.Element {
           <line class="chart-guide" x1={activeX} x2={activeX} y1={geometry.plot.top} y2={baseline} />
         )}
         <g ref={seriesLayer}>
-          {geometry.series.map((entry, index) => (
-            <g
-              key={entry.id}
-              class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
-              data-series={entry.id}
-            >
-              {props.fillFirst === true &&
-                index === 0 &&
-                entry.areas.map((area) => <path key={area} class="area" d={area} />)}
-              {entry.paths.map((path) => (
-                <path key={path} class="line" d={path} fill="none" />
-              ))}
-              {entry.markers &&
-                entry.points.map((point) => (
-                  <rect
+          <g
+            class="plot-arrive"
+            style={{
+              "--plot-arrival-origin": `${String(arrivalBaseline(geometry))}px`,
+            }}
+          >
+            {geometry.series.map((entry, index) => (
+              <g
+                key={entry.id}
+                class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
+                data-series={entry.id}
+              >
+                {props.fillFirst === true &&
+                  index === 0 &&
+                  entry.areas.map((area) => <path key={area} class="area" d={area} />)}
+                {entry.paths.map((path) => (
+                  <path key={path} class="line" d={path} fill="none" />
+                ))}
+                {entry.markers &&
+                  entry.points.map((point) => (
+                    <rect
+                      key={point.time}
+                      class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
+                      x={point.x - 5}
+                      y={point.y - 5}
+                      width={10}
+                      height={10}
+                      transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                      data-time={point.time}
+                      {...(hidden ? {} : { "data-value": point.value })}
+                    />
+                  ))}
+                {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
+                  <circle
                     key={point.time}
-                    class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
-                    x={point.x - 5}
-                    y={point.y - 5}
-                    width={10}
-                    height={10}
-                    transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                    class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
+                    cx={point.x}
+                    cy={point.y}
+                    r={4.5}
                     data-time={point.time}
                     {...(hidden ? {} : { "data-value": point.value })}
                   />
                 ))}
-              {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
-                <circle
-                  key={point.time}
-                  class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
-                  cx={point.x}
-                  cy={point.y}
-                  r={4.5}
-                  data-time={point.time}
-                  {...(hidden ? {} : { "data-value": point.value })}
-                />
-              ))}
-            </g>
-          ))}
+              </g>
+            ))}
+          </g>
         </g>
       </svg>
       <label class="chart-date-control">

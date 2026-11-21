@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import { useMemo, useRef } from "preact/hooks";
 import { useGeometryMorph } from "./motion/use-geometry-morph";
-import { computeLineChart } from "./line-chart-geometry";
+import { arrivalBaseline, computeLineChart } from "./line-chart-geometry";
 
 /**
  * A tiny trend line with no axes. It is decorative: the text beside it carries
@@ -46,10 +46,12 @@ export function Sparkline(props: {
       aria-hidden="true"
     >
       <g ref={layer}>
-        {props.area === true && series?.areas.map((area) => <path key={area} class="spark-area" d={area} />)}
-        {series?.paths.map((path) => (
-          <path key={path} class="spark-line" d={path} />
-        ))}
+        <g class="plot-arrive" style={{ "--plot-arrival-origin": `${String(arrivalBaseline(geometry))}px` }}>
+          {props.area === true && series?.areas.map((area) => <path key={area} class="spark-area" d={area} />)}
+          {series?.paths.map((path) => (
+            <path key={path} class="spark-line" d={path} />
+          ))}
+        </g>
       </g>
     </svg>
   );

@@ -1,5 +1,4 @@
 import type { JSX } from "preact";
-import { REPORTING_POLICY } from "../../../../core/portfolio/metrics";
 import { formatDateLong } from "../../../../core/values/iso-date";
 import type { ChartRange } from "./model/chart-range";
 import { LineChart } from "../../presentation/charts/line-chart";
@@ -96,10 +95,6 @@ export function AnalysisSection(props: {
             <div>
               <dt>Funds ever held</dt>
               <dd>{funds.length}</dd>
-            </div>
-            <div>
-              <dt>Calculation method</dt>
-              <dd>{REPORTING_POLICY}</dd>
             </div>
           </dl>
           <a class="row-link plain" href="#months">

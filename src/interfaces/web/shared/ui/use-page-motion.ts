@@ -58,28 +58,8 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
     element.inert = true;
     element.setAttribute("data-page-exiting", "true");
     const request = generation;
-    const arrive = (): void => {
-      if (request !== generation) return;
-      finish();
-      if (prefersReducedMotion() || document.hidden || page.current === null) return;
-      const incoming = page.current;
-      const arrival = motion.play(
-        incoming,
-        [
-          { opacity: 0, transform: `translateY(${nudge})` },
-          { opacity: 1, transform: "none" },
-        ],
-        timing,
-      );
-      if (arrival === null) return;
-      animation = arrival;
-      animated = incoming;
-      arrival.onfinish = () => {
-        if (animation === arrival) {
-          animation = null;
-          animated = null;
-        }
-      };
+    const settle = (): void => {
+      if (request === generation) finish();
     };
     try {
       const exit = motion.play(
@@ -96,10 +76,10 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
       }
       animation = exit;
       animated = element;
-      exit.onfinish = arrive;
+      exit.onfinish = settle;
       // Backgrounding or an externally cancelled animation must never strand an inert page.
-      exit.oncancel = arrive;
-      timeout = setTimeout(arrive, timing.duration + 100);
+      exit.oncancel = settle;
+      timeout = setTimeout(settle, timing.duration + 100);
     } catch {
       finish();
     }

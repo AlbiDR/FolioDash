@@ -1,6 +1,12 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
+      "react/jsx-runtime": "preact/jsx-runtime",
+    },
+  },
   test: {
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
     setupFiles: ["tests/setup/fast-check.ts"],

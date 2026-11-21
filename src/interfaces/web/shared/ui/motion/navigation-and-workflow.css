@@ -7,7 +7,8 @@
 
 /* 43: Main navigation selection glides between destinations. */
 .nav-list {
-  --nav-gap: 2px;
+  --nav-gap: 4px;
+  --nav-row-height: var(--touch-target);
   position: relative;
   isolation: isolate;
   gap: var(--nav-gap);
@@ -19,30 +20,58 @@
   height: 100%;
   overflow-wrap: anywhere;
 }
-.nav-list::before {
-  content: "";
+.nav-pill {
   position: absolute;
   z-index: -1;
   pointer-events: none;
-  inset: 0 auto 0 0;
-  width: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
+  inset: 0;
   border-radius: var(--nav-radius, var(--shape-sm));
-  background: var(--color-accent-soft);
-  transform: translateX(calc(var(--nav-index) * (100% + var(--nav-gap))));
-  transition: transform var(--duration-feedback) var(--ease-standard);
+  background: var(--primary-container);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-on-accent) 16%, transparent),
+    0 6px 18px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.nav-pill[aria-hidden="true"] {
+  display: block;
 }
 .nav-list .nav-link[aria-current="page"] {
   background: transparent;
+  color: var(--color-text);
+}
+
+.nav-list .nav-link svg {
+  flex: 0 0 auto;
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    transform var(--duration-feedback) var(--ease-spring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-list .nav-link:not([aria-current="page"]):hover {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-accent-soft) 45%, transparent);
+  }
+
+  .nav-list .nav-link:not([aria-current="page"]):hover svg {
+    transform: translateX(2px);
+  }
+
+  .nav-list .nav-link[aria-current="page"] svg {
+    color: var(--color-text);
+    transform: scale(1.04);
+  }
+}
+
+.nav-list .nav-link:active {
+  transform: scale(var(--motion-control-press));
 }
 @media (min-width: 64rem) {
   .nav-list {
     --nav-gap: 4px;
   }
-  .nav-list::before {
-    inset: 0 0 auto;
-    width: 100%;
-    height: calc((100% - (var(--nav-count) - 1) * var(--nav-gap)) / var(--nav-count));
-    transform: translateY(calc(var(--nav-index) * (100% + var(--nav-gap))));
+  .nav-pill {
+    min-height: var(--nav-row-height);
   }
 }
 

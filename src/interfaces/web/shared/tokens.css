@@ -95,10 +95,13 @@
   --motion-mark-brightness: 1.18;
   --motion-mark-press-opacity: 0.65;
   --motion-reveal-opacity: 0.85;
-  --motion-rise: 16px;
+  --motion-rise: 18px;
+  --motion-text-rise: 8px;
+  --motion-text-opacity: 0.35;
   --motion-stagger: 45ms;
   --motion-update-opacity: 0.65;
   --duration-medium: 380ms;
+  --duration-navigation: 450ms;
 
   --font-body:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto,

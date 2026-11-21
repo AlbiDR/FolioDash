@@ -20,28 +20,159 @@ await withLocalBrowser(async (browser) => {
   // Freeze the animation clock before mounting: even a busy CI runner observes the actual first frame.
   await call("Animation.enable");
   await call("Animation.setPlaybackRate", { playbackRate: 0 });
+  const initialCount = await call("Page.addScriptToEvaluateOnNewDocument", {
+    source: `localStorage.setItem('foliodash.privacy.v1', 'shown');
+      const observer = new MutationObserver(() => {
+        const frame = document.querySelector('.hero-value [data-figure-count]')?.getAttribute('data-figure-count');
+        if (frame == null) return;
+        window.firstPortfolioCount = frame;
+        observer.disconnect();
+      });
+      observer.observe(document, { attributes: true, childList: true, subtree: true });`,
+  });
   await call("Page.navigate", { url: `${origin}/?demo=many&polish=arrival#overview` });
+  await call("Page.removeScriptToEvaluateOnNewDocument", { identifier: initialCount["identifier"] });
   await waitFor(
     async () => (await evaluate("!!document.querySelector('.portfolio-dashboard > .hero')")) === true,
     "Portfolio arrival",
   );
-  const arrival = (await evaluate(`(() => {
-    const cards=[...document.querySelectorAll('.portfolio-dashboard > *')];
-    const animations=cards.flatMap(e=>e.getAnimations()).filter(a=>a.animationName==='rise');
-    animations.forEach(a=>{a.pause();a.currentTime=0});
-    const opacities=cards.map(e=>Number(getComputedStyle(e).opacity));
-    const text=document.querySelector('.hero-value').textContent.trim();
-    animations.forEach(a=>a.cancel());
-    return {count:animations.length,opacities,text};
-  })()`)) as { count: number; opacities: number[]; text: string };
-  assert.ok(arrival.count >= 3, "real staggered card arrivals exist");
-  assert.ok(
-    arrival.opacities.every((opacity) => opacity === 1),
-    "every arrival starts fully readable",
-  );
-  assert.ok(arrival.text.length > 0, "headline exists at the first frame");
+  const inspectArrival = async (selector: string, label: string) => {
+    const arrival = (await evaluate(`(() => {
+      const cards=[...document.querySelectorAll(${JSON.stringify(selector)})];
+      const animations=cards.flatMap(e=>e.getAnimations()).filter(a=>a.animationName==='rise');
+      animations.forEach(a=>{a.pause();a.currentTime=0});
+      const delays=animations.map(a=>a.effect.getTiming().delay);
+      const firstFrame=cards.map(e=>({opacity:getComputedStyle(e).opacity,transform:getComputedStyle(e).transform}));
+      const readable=cards.every(e=>e.textContent.trim().length>0);
+      animations.forEach(a=>a.cancel());
+      return {delays,firstFrame,readable};
+    })()`)) as { delays: number[]; firstFrame: { opacity: string; transform: string }[]; readable: boolean };
+    assert.ok(arrival.delays.length >= 3, `${label}: real section arrivals exist`);
+    assert.ok(
+      arrival.delays[0] === 0 && (arrival.delays[1] ?? 0) > 0 && (arrival.delays[2] ?? 0) > (arrival.delays[1] ?? 0),
+      `${label}: first three sections arrive in order`,
+    );
+    assert.ok(
+      arrival.firstFrame.every(({ opacity, transform }) => opacity === "1" && transform !== "none"),
+      `${label}: sections rise and stay fully visible`,
+    );
+    assert.ok(arrival.readable, `${label}: section text exists on the first frame`);
+    results.push({ name: label, result: arrival });
+  };
+  await inspectArrival(".portfolio-dashboard > *", "Portfolio cold open");
+  assert.match(String(await evaluate("window.firstPortfolioCount")), /^0,00/, "the opening headline starts at zero");
+  const details = (await evaluate(`(() => {
+    const animationFor = (element, name) => element?.getAnimations().find(a=>a.animationName===name);
+    const read = (selector, name) => {
+      const element = document.querySelector(selector);
+      const animation = animationFor(element, name);
+      if (!animation) return null;
+      animation.pause();
+      const { delay, duration } = animation.effect.getTiming();
+      animation.currentTime = delay;
+      const from = getComputedStyle(element).scale;
+      animation.currentTime = delay + duration / 2;
+      const middle = getComputedStyle(element).scale;
+      animation.currentTime = delay + duration;
+      const end = getComputedStyle(element).scale;
+      animation.cancel();
+      return { from, middle, end };
+    };
+    const title = animationFor(document.querySelector('.hero-value'), 'text-arrive');
+    const supporting = animationFor(document.querySelector('.hero-gain'), 'text-arrive');
+    return {
+      staggeredText: !!title && !!supporting && title.effect.getTiming().delay < supporting.effect.getTiming().delay,
+      line: read('.portfolio-trend .plot-arrive', 'plot-rise'),
+      sparkline: read('.sparkline .plot-arrive', 'plot-rise'),
+      bars: read('.bars .bar.plot-arrive', 'plot-rise'),
+      allocation: read('.donut-arrive', 'ring-grow'),
+      weight: read('.share-bar > span', 'bar-grow'),
+    };
+  })()`)) as { staggeredText: boolean } & Record<
+    "line" | "sparkline" | "bars" | "allocation" | "weight",
+    { from: string; middle: string; end: string } | null
+  >;
+  assert.ok(details.staggeredText, "headline and supporting text arrive at different times");
+  for (const [name, from] of [
+    ["line", "1 0"],
+    ["sparkline", "1 0"],
+    ["bars", "1 0"],
+    ["allocation", "0"],
+    ["weight", "0 1"],
+  ] as const) {
+    const mark = details[name];
+    assert.equal(mark?.from, from, `${name} starts collapsed`);
+    assert.notEqual(mark.middle, from, `${name} grows through an intermediate frame`);
+    assert.equal(mark.end, "none", `${name} settles to canonical geometry`);
+  }
+  results.push({ name: "staggered text and growing chart marks", result: details });
+  for (const [route, surface] of [
+    ["activity", ".activity-dashboard"],
+    ["overview", ".portfolio-dashboard"],
+  ] as const) {
+    await evaluate(`document.querySelector('.nav-link[href="#${route}"]').click()`);
+    await waitFor(
+      async () =>
+        (await evaluate(`!!document.querySelector('${surface}') && !document.getElementById('main-content').inert`)) ===
+        true,
+      route,
+    );
+    await inspectArrival(`${surface} > *`, `${route} after navigation`);
+  }
   await call("Animation.setPlaybackRate", { playbackRate: 1 });
-  results.push({ name: "first-frame visibility", result: arrival });
+
+  for (const hideDuringCount of [false, true]) {
+    await visit("activity", 1440, "many");
+    const count = (await evaluate(`new Promise(resolve => {
+      let first, middle, exact;
+      const deadline = performance.now() + 3000;
+      document.querySelector('.nav-link[href="#overview"]').click();
+      function sample() {
+        const figure = document.querySelector('.hero-value .amount');
+        const frame = figure?.querySelector('.figure-count')?.getAttribute('data-figure-count');
+        if (first === undefined && frame != null) {
+          first = frame;
+          exact = figure.textContent;
+          if (${String(hideDuringCount)}) {
+            document.querySelector('.privacy-toggle').click();
+            requestAnimationFrame(() => resolve({
+              first, exact, hidden: figure.classList.contains('masked'),
+              transient: figure.querySelector('.figure-count').getAttribute('data-figure-count'),
+            }));
+            return;
+          }
+        }
+        if (frame != null && frame !== first && frame !== exact) middle = frame;
+        if ((first !== undefined && frame == null) || performance.now() > deadline) {
+          resolve({first, middle, exact, final: figure?.textContent, counting: figure?.hasAttribute('data-counting')});
+          return;
+        }
+        requestAnimationFrame(sample);
+      }
+      requestAnimationFrame(sample);
+    })`)) as {
+      first?: string;
+      middle?: string;
+      exact?: string;
+      final?: string;
+      counting?: boolean;
+      hidden?: boolean;
+      transient?: string | null;
+    };
+    assert.match(count.first ?? "", /^0,00/);
+    if (hideDuringCount) {
+      assert.equal(count.hidden, true, "privacy masks the count while it is running");
+      assert.equal(count.transient, null, "privacy removes the transient digits");
+    } else {
+      assert.ok(count.middle, "the headline passes through an intermediate amount");
+      assert.equal(count.final, count.exact, "the headline lands on its exact amount");
+      assert.equal(count.counting, false, "the transient layer is removed");
+    }
+    results.push({
+      name: hideDuringCount ? "privacy interrupts an active count" : "headline count on Activity to Portfolio",
+      result: count,
+    });
+  }
 
   await visit("overview", 1440, "many");
   await waitFor(
@@ -170,13 +301,19 @@ await withLocalBrowser(async (browser) => {
     assert.equal(
       await evaluate(`(() => {
       const svg=document.querySelector('.portfolio-trend .chart-svg');if(!svg)return true;
-      const edge=svg.getBoundingClientRect();
-      return [...svg.querySelectorAll('.chart-grid text')].filter(e=>e.querySelector('title')).every(e=>{
-        const r=e.getBoundingClientRect();return r.left>=edge.left-1 && r.right<=edge.right+1;
+      const edge=svg.viewBox.baseVal.width;
+      const ticks=[...svg.querySelectorAll('.chart-value-axis > g')].map(group=>{
+        const label=group.querySelector('text');
+        const grid=group.querySelector('line');
+        return {gap:label.getBBox().x-grid.x2.baseVal.value,
+          end:label.getBBox().x+label.getBBox().width};
       });
+      const outerGap=edge-Math.max(...ticks.map(tick=>tick.end));
+      return ticks.length>0 && outerGap>=3 && outerGap<=6 &&
+        ticks.every(tick=>tick.gap>=7 && tick.gap<=9);
     })()`),
       true,
-      `${screen.name}: value-axis labels fit the actual renderer`,
+      `${screen.name}: value-axis labels fit with a compact gutter and clear the grid`,
     );
 
     // Privacy must mask exact amounts immediately while keeping the existing chart shape policy.
@@ -213,6 +350,4 @@ writeFileSync(
   resolve(output, "report.json"),
   `${JSON.stringify({ results, limits: "Actual production renderer, local synthetic Chrome; no Google or physical-device proof" }, null, 2)}\n`,
 );
-console.log(
-  `Portfolio polish PASS: first-frame visibility, search motion and ${String(results.length - 2)} layouts. Evidence: ${output}`,
-);
+console.log(`Portfolio polish PASS: page arrivals, search motion and layout checks. Evidence: ${output}`);

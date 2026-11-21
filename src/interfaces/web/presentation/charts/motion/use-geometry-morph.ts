@@ -16,11 +16,13 @@ export function useGeometryMorph(
   layer: RefObject<SVGGElement | null>,
   geometry: ChartGeometry,
   updateKey: string | undefined,
+  layoutReady = true,
 ): void {
   const [motion] = useState(() => createMotion());
   const [settle] = useState(() => createSettle<ChartGeometry>());
   const morphing = useRef<SVGGElement | null>(null);
   useLayoutEffect(() => {
+    if (!layoutReady) return;
     const { before, changed } = settle(geometry, updateKey);
     const node = layer.current;
     if (node === null) return;
@@ -35,7 +37,9 @@ export function useGeometryMorph(
     motion.play(
       node,
       [
-        { transform: matrix(transform.scaleX, transform.scaleY, transform.translateX, transform.translateY) },
+        {
+          transform: matrix(transform.scaleX, transform.scaleY, transform.translateX, transform.translateY),
+        },
         { transform: matrix(1, 1, 0, 0) },
       ],
       timingFrom(getComputedStyle(node)),

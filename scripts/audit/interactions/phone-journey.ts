@@ -15,6 +15,11 @@ export async function phoneJourney({
 }: JourneyContext): Promise<void> {
   for (const route of ["overview", "expenses", "months", "checkpoints", "import", "connection"]) {
     await visit(route, 390);
+    if (route === "expenses")
+      await waitFor(
+        async () => (await evaluate("!!document.querySelector('.expense-record-list')")) === true,
+        "the deferred phone expense record",
+      );
     if (route === "months") {
       // Opening state: both tables open on the newest statement, which is tinted, and they line up column for column.
       // The tables keep following the end while layout settles (fonts, scrollbars), so wait for that rather than asserting at the first paint.

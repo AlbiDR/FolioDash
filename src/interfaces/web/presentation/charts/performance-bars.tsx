@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { AnimatedFigure } from "../animated-figure";
 import { formatPercent } from "../../../../core/values/percent";
 
 export interface PerformanceRow {
@@ -15,6 +16,10 @@ export interface PerformanceRow {
  * shows percentages only, so it needs no privacy handling. Each row links to the
  * fund.
  */
+function formatPerformance(value: number): string {
+  return formatPercent(value, { signed: true });
+}
+
 export function PerformanceBars(props: { readonly rows: readonly PerformanceRow[] }): JSX.Element {
   const largest = Math.max(0.0001, ...props.rows.map((row) => Math.abs(row.ratio)));
   return (
@@ -35,7 +40,7 @@ export function PerformanceBars(props: { readonly rows: readonly PerformanceRow[
                 />
               </span>
               <span class={`perf-value ${row.ratio >= 0 ? "gain" : "loss"}`}>
-                {formatPercent(row.ratio, { signed: true })}
+                <AnimatedFigure value={row.ratio} text={formatPerformance(row.ratio)} format={formatPerformance} />
               </span>
             </a>
           </li>

@@ -1,0 +1,40 @@
+.plot-arrive,
+.donut-arrive,
+.perf-bar,
+.share-bar > span {
+  animation-duration: var(--duration-navigation);
+  animation-timing-function: var(--ease-standard);
+  animation-delay: var(--section-arrival-delay, 0ms);
+  animation-fill-mode: backwards;
+}
+.plot-arrive {
+  animation-name: plot-rise;
+  transform-origin: 0 var(--plot-arrival-origin);
+}
+.donut-arrive {
+  animation-name: ring-grow;
+  transform-origin: 0 0;
+}
+.perf-bar,
+.share-bar > span {
+  animation-name: bar-grow;
+  transform-origin: left center;
+}
+.perf-bar.loss {
+  transform-origin: right center;
+}
+@keyframes plot-rise {
+  from {
+    scale: 1 0;
+  }
+}
+@keyframes ring-grow {
+  from {
+    scale: 0;
+  }
+}
+@keyframes bar-grow {
+  from {
+    scale: 0 1;
+  }
+}

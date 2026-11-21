@@ -13,18 +13,9 @@ describe("overviewFromLedger", () => {
     const model = demoPortfolio("typical");
     const closed = model.funds.find((fund) => fund.name === "Demo Tech Growth");
     const bonds = model.funds.find((fund) => fund.name === "Demo Euro Bonds");
-    expect(model.funds).toHaveLength(3);
     // Held for statements 0 to 4, closed on statement 5 (value zero), absent afterwards.
-    expect(closed?.values.map((value) => value === null)).toEqual([
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-      true,
-    ]);
+    expect(closed?.values.slice(0, 5).every((value) => value !== null && value > 0)).toBe(true);
+    expect(closed?.values.slice(6).every((value) => value === null)).toBe(true);
     expect(closed?.values[5]).toBe(0);
     expect(closed?.status).toBe("closed");
     // Added on statement 2.
@@ -59,6 +50,18 @@ describe("overviewFromLedger", () => {
       expect(fund.netInvested.map((value) => value === null)).toEqual(fund.values.map((value) => value === null));
     }
     expect(model.months[model.months.length - 1]?.value).toBe(model.totals[model.totals.length - 1]?.value);
+  });
+
+  it("shows several years of gains and losses in the default showcase", () => {
+    const model = demoPortfolio("typical");
+    expect(model.dates).toHaveLength(46);
+    expect(model.dates.at(0)).toBe("2023-01-15");
+    expect(model.dates.at(-1)).toBe("2026-10-15");
+    expect(model.funds).toHaveLength(8);
+    expect(model.months.some((month) => (month.monthlyGain ?? 0) < 0)).toBe(true);
+    expect(model.months.some((month) => (month.monthlyGain ?? 0) > 0)).toBe(true);
+    expect(model.months.at(-1)?.yearOverYearPercent).not.toBeNull();
+    expect(model.funds.some((fund) => fund.status === "active" && (fund.latest?.gain ?? 0) < 0)).toBe(true);
   });
 
   it("builds every demo variant from the real ledger rules, for any number of funds", () => {

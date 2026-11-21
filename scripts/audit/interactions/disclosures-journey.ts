@@ -21,7 +21,9 @@ export async function disclosuresJourney({
     "recent fund history hides amounts immediately",
   );
   await evaluate("document.querySelector('.privacy-toggle').click()");
-  const fund = (await evaluate("document.querySelector('.holdings-table a')?.getAttribute('href')")) as string;
+  const fund = (await evaluate(
+    "[...document.querySelectorAll('.holdings-table a')].find(link=>link.textContent.trim()==='Demo Global Equity')?.getAttribute('href')",
+  )) as string;
   await visit(fund.slice(1));
   await openDetails();
   // Fund journey: figures first, then the chart, then the statement history, newest first, in reading order.
@@ -30,8 +32,8 @@ export async function disclosuresJourney({
     "fund page leads with its figures, then the chart, then its history",
   );
   await check(
-    "(()=>{const rows=[...document.querySelectorAll('.fund-history tbody tr')];return rows.length>1&&rows.length<=12&&Date.parse(rows[0].querySelector('th').textContent)>Date.parse(rows[1].querySelector('th').textContent)})()",
-    "fund statement history is newest first",
+    "(()=>{const tables=[...document.querySelectorAll('.fund-history table')];const dates=tables.flatMap(table=>[...table.querySelectorAll('tbody th')].map(cell=>Date.parse(cell.textContent)));return tables.length===2&&tables[0].tBodies[0].rows.length===12&&dates.length===46&&dates.every((date,index)=>index===0||dates[index-1]>date)&&document.querySelector('.fund-history details').open})()",
+    "fund history shows the 12 newest statements first and the rest in Earlier statements",
   );
   await check(
     "document.querySelector('.fund-hero').getBoundingClientRect().height<320",
