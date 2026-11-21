@@ -125,14 +125,13 @@ export function OverviewView(props: {
     <section aria-labelledby="overview-heading" class="dash portfolio-dashboard">
       <div class="card hero cell-4">
         <div class="hero-header">
-          <h2 id="overview-heading" class="hero-context">
-            As of {formatDateLong(lastDate)}
+          <h2 id="overview-heading" class="hero-label">
+            Total fund value
           </h2>
           <a class="hero-action" href="#import">
             <Icon name="import" size={18} /> Add statement
           </a>
         </div>
-        <p class="hero-label">Total fund value</p>
         <p class="hero-value">
           <Amount cents={latestTotal.value} />
         </p>
@@ -143,7 +142,7 @@ export function OverviewView(props: {
             <span class="hero-delta-label">since the previous month</span>
           </p>
         )}
-        <p class="hero-caption">Your funds, excluding account cash.</p>
+        <p class="hero-caption">As of {formatDateLong(lastDate)}. Your funds, excluding account cash.</p>
         <div class="hero-gain">
           <p class="hero-label">Total gain</p>
           <p class="hero-sub">

@@ -289,9 +289,9 @@ One row is a source template; a fund-link template can render many controls. All
 | 4c27cd5734fc-1 | [overview-view.tsx:85](../../src/interfaces/web/features/overview/overview-view.tsx#L85) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
 | 68f008a1b407-1 | [overview-view.tsx:89](../../src/interfaces/web/features/overview/overview-view.tsx#L89) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4e586bf3824f-1 | [overview-view.tsx:131](../../src/interfaces/web/features/overview/overview-view.tsx#L131) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
-| 3a1966c1235b-1 | [overview-view.tsx:224](../../src/interfaces/web/features/overview/overview-view.tsx#L224) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 666619ba1abe-1 | [overview-view.tsx:242](../../src/interfaces/web/features/overview/overview-view.tsx#L242) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
-| 4e03b4ce4b63-1 | [overview-view.tsx:246](../../src/interfaces/web/features/overview/overview-view.tsx#L246) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 3a1966c1235b-1 | [overview-view.tsx:223](../../src/interfaces/web/features/overview/overview-view.tsx#L223) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 666619ba1abe-1 | [overview-view.tsx:241](../../src/interfaces/web/features/overview/overview-view.tsx#L241) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
+| 4e03b4ce4b63-1 | [overview-view.tsx:245](../../src/interfaces/web/features/overview/overview-view.tsx#L245) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | d8d6a251e8a5-1 | [donut.tsx:57](../../src/interfaces/web/presentation/charts/donut.tsx#L57) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | f0096a0a1206-1 | [line-chart-parts.tsx:57](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L57) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
 | 7f473b4575d1-1 | [line-chart.tsx:143](../../src/interfaces/web/presentation/charts/line-chart.tsx#L143) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
