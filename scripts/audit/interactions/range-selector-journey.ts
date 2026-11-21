@@ -168,7 +168,7 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "reduced motion draws a period change at once without a morph",
   );
   const reducedCard = (await evaluate(
-    "(()=>{window.auditCard=document.querySelector('.period-results');const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
+    "(()=>{window.auditCard=document.querySelector('.period-results');window.auditCard.scrollIntoView({block:'center',behavior:'instant'});const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
   )) as { x: number; y: number };
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: reducedCard.x, y: reducedCard.y });
   await delay(40);
@@ -208,7 +208,8 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
   );
   await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
   const hoverCard = (await evaluate(
-    "(()=>{const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
+    // The richer summary can put this card below the first viewport. Inspect it where a real pointer can reach it.
+    "(()=>{window.auditCard.scrollIntoView({block:'center',behavior:'instant'});const r=window.auditCard.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()",
   )) as { x: number; y: number };
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: hoverCard.x, y: hoverCard.y });
   // Hover feedback is restricted to fine pointers. Some renderers, including the Linux headless Chrome in CI, report no fine

@@ -53,6 +53,8 @@ export function createRowGlide(
       const node = root();
       if (node === null) return;
       const timing = timingFrom(getComputedStyle(node));
+      // Measure within the card: its arrival motion, page scroll or a notice above it must not become a row glide.
+      const rootTop = node.getBoundingClientRect().top;
       for (const row of node.querySelectorAll<HTMLElement>(rowSelector)) {
         // A glide still running is part of what the row shows now: read it first. When the order changed, retire it so the
         // row is measured where it rests; otherwise the running glide is subtracted from the measurement.
@@ -63,7 +65,7 @@ export function createRowGlide(
           restingTops.delete(row);
           continue;
         }
-        const top = box.top + window.scrollY - (changed ? 0 : carried);
+        const top = box.top - rootTop - (changed ? 0 : carried);
         const previous = restingTops.get(row);
         restingTops.set(row, top);
         if (!changed || previous === undefined) continue;

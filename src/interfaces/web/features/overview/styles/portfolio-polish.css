@@ -1,0 +1,137 @@
+/* Portfolio composition: retain the selected blue/glass baseline, its density and every financial projection.
+ * Surface light and inspection feedback are paint only. Chart paths, allocation angles and values stay exact. */
+.portfolio-dashboard > .hero {
+  padding: var(--card-padding);
+  background: radial-gradient(ellipse at top right, var(--color-hero-sheen), transparent 70%), var(--color-hero);
+  box-shadow:
+    inset 0 0 0 1px var(--color-hero-edge),
+    var(--shadow-hero);
+}
+.portfolio-dashboard .hero-header {
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.portfolio-dashboard .hero-value {
+  letter-spacing: -0.045em;
+}
+.portfolio-dashboard .hero-action {
+  background: var(--color-hero-sheen);
+}
+.portfolio-dashboard .hero-delta {
+  align-items: baseline;
+}
+.portfolio-dashboard .hero-delta-label {
+  flex-basis: 100%;
+}
+.portfolio-dashboard .hero-gain,
+.portfolio-dashboard .hero .facts {
+  padding-top: var(--space-3);
+  margin-top: var(--space-4);
+}
+.portfolio-dashboard .period-results {
+  background: var(--color-surface);
+}
+.portfolio-dashboard .period-results > .card-title {
+  margin-bottom: var(--space-2);
+}
+.portfolio-dashboard .stat > .sparkline {
+  padding: var(--space-1);
+  border-radius: var(--shape-sm);
+  background: var(--surface-low);
+}
+.portfolio-dashboard .portfolio-trend > .chart {
+  background: linear-gradient(var(--color-surface), var(--color-surface-2));
+}
+.portfolio-trend .chart-readout {
+  padding: var(--space-3);
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-3);
+  border-radius: var(--shape-md);
+  background: var(--surface-low);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  transition:
+    background-color var(--duration-feedback) var(--ease-standard),
+    box-shadow var(--duration-feedback) var(--ease-standard);
+}
+.portfolio-trend .chart:focus-within .chart-readout {
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--color-inspect-edge);
+}
+@media (hover: hover) and (pointer: fine) {
+  .portfolio-dashboard > .hero:hover {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--color-hero-edge) 65%, var(--color-on-hero)),
+      var(--shadow-hero);
+  }
+  .portfolio-trend .chart:has(.chart-svg:hover) .chart-readout {
+    background: var(--color-accent-soft);
+    box-shadow: inset 0 0 0 1px var(--color-inspect-edge);
+  }
+}
+.portfolio-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.portfolio-card-heading > .card-title {
+  margin: 0;
+}
+.portfolio-count {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--shape-full);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.portfolio-holdings .holdings-table thead {
+  background: var(--surface-low);
+}
+.portfolio-dashboard .allocation-card {
+  background: color-mix(in srgb, var(--primary-container) 18%, var(--color-surface));
+}
+.portfolio-dashboard .donut-centre {
+  isolation: isolate;
+  pointer-events: none;
+}
+.portfolio-dashboard .donut-centre::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 20%;
+  border-radius: var(--shape-full);
+  background: var(--surface-low);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+.portfolio-dashboard .allocation-card .legend a {
+  padding-inline: var(--space-1);
+  border-radius: var(--shape-sm);
+}
+.portfolio-dashboard .allocation-card .legend a[data-active="true"] {
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--color-inspect-edge);
+}
+.portfolio-dashboard .allocation-card .legend a[data-active="true"] .legend-value {
+  color: var(--color-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-trend .chart-readout {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .portfolio-dashboard > .hero,
+  .portfolio-dashboard .allocation-card,
+  .portfolio-trend .chart-readout {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  .portfolio-dashboard .donut-centre::before {
+    background: Canvas;
+  }
+}

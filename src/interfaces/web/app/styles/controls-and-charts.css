@@ -6,7 +6,7 @@
   grid-auto-columns: 1fr;
   gap: 2px;
   padding: 3px;
-  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  background: var(--color-surface-2);
   border-radius: var(--shape-full);
 }
 

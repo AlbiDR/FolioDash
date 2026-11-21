@@ -108,6 +108,7 @@ tests/
 ```text
 scripts/
 ├── artifacts/
+│   └── portfolio-study/
 ├── audit/
 │   └── interactions/
 ├── docs/
