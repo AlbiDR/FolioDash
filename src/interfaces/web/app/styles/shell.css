@@ -4,6 +4,8 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Keep the header in place when a deferred view makes the document scrollable. */
+  scrollbar-gutter: stable;
   /* The browser's tap highlight is a rectangle that ignores a control's shape. Pressed states are drawn by
    * shared/ui/interactions/, inside each control's own shape. The property is inherited, so this covers every element. */
   -webkit-tap-highlight-color: transparent;
