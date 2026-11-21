@@ -21,6 +21,17 @@
   align-content: start;
   min-width: 0;
 }
+/* On intermediate screens the holdings table spans the dashboard. Keep both
+ * supporting cards on that same grid instead of leaving an empty half-row. */
+@media (min-width: 47.501rem) and (max-width: 73.75rem) {
+  .portfolio-dashboard > .portfolio-rail {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .analysis-grid > .cell-4 {
+    grid-column: 1 / -1;
+  }
+}
 .movers {
   list-style: none;
   margin: 0;

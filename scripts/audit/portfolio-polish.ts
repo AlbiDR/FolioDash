@@ -101,6 +101,9 @@ await withLocalBrowser(async (browser) => {
     { name: "desktop-dark", width: 1440, scheme: "dark", variant: "many", text: 100 },
     { name: "desktop-light", width: 1440, scheme: "light", variant: "many", text: 100 },
     { name: "tablet-dark", width: 768, scheme: "dark", variant: "typical", text: 100 },
+    { name: "tablet-wide", width: 1000, scheme: "light", variant: "many", text: 100 },
+    { name: "tablet-edge", width: 1180, scheme: "dark", variant: "many", text: 100 },
+    { name: "desktop-edge", width: 1181, scheme: "dark", variant: "many", text: 100 },
     { name: "phone-dark", width: 390, scheme: "dark", variant: "many", text: 100 },
     { name: "phone-light", width: 390, scheme: "light", variant: "typical", text: 100 },
     { name: "narrow", width: 320, scheme: "light", variant: "many", text: 100 },
@@ -132,6 +135,31 @@ await withLocalBrowser(async (browser) => {
     assert.ok(layout.scrollWidth <= layout.width, `${screen.name}: no page overflow`);
     assert.equal(layout.mains, 1);
     assert.equal(layout.running, 0);
+    if (screen.variant === "many" && screen.text === 100) {
+      const gridAligned = await evaluate(`(() => {
+        const dashboard = document.querySelector('.portfolio-dashboard');
+        const holdings = dashboard.querySelector('.portfolio-holdings').getBoundingClientRect();
+        const rail = dashboard.querySelector('.portfolio-rail').getBoundingClientRect();
+        const cards = [...dashboard.querySelector('.portfolio-rail').children].map(e => e.getBoundingClientRect());
+        const analysis = dashboard.querySelector('.analysis-grid');
+        const analysisCards = [...analysis.children].map(e => e.getBoundingClientRect());
+        const gap = parseFloat(getComputedStyle(dashboard).gap);
+        const near = (a, b) => Math.abs(a - b) < 1;
+        const tablet = matchMedia('(min-width: 47.501rem) and (max-width: 73.75rem)').matches;
+        const phone = matchMedia('(max-width: 47.5rem)').matches;
+        if (cards.length !== 2) return false;
+        if (tablet) return near(holdings.left, rail.left) && near(holdings.right, rail.right)
+          && near(cards[0].left, rail.left) && near(cards[1].right, rail.right)
+          && near(cards[1].left - cards[0].right, gap) && near(cards[0].top, cards[1].top)
+          && near(analysisCards.at(-1).left, analysisCards.at(-2).left)
+          && near(analysisCards.at(-1).right, analysisCards.at(-2).right);
+        if (phone) return near(holdings.left, rail.left) && near(holdings.right, rail.right)
+          && near(cards[0].left, cards[1].left) && near(cards[0].right, cards[1].right)
+          && near(cards[1].top - cards[0].bottom, gap);
+        return near(holdings.top, rail.top) && near(rail.left - holdings.right, gap);
+      })()`);
+      assert.equal(gridAligned, true, `${screen.name}: holdings and supporting cards align to the dashboard grid`);
+    }
     assert.equal(
       await evaluate(`(() => {
       const svg=document.querySelector('.portfolio-trend .chart-svg');if(!svg)return true;
