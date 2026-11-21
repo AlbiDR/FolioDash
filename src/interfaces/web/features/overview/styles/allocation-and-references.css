@@ -56,6 +56,16 @@
 .analysis-grid {
   align-items: start;
 }
+/* The analysis charts use the dashboard's one-third and two-thirds tracks.
+ * A wider multi-fund chart gives its legend room without inflating its neighbor. */
+@media (min-width: 73.751rem) {
+  .analysis-grid > .cell-6:first-child {
+    grid-column: span 4;
+  }
+  .analysis-grid > .cell-6:nth-child(2) {
+    grid-column: span 8;
+  }
+}
 .glossary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
