@@ -92,7 +92,7 @@
   transform: scale(0.9);
 }
 
-/* 79: Hovered ranking bar brightens without changing its length. */
+/* 79: Inspected ranking bar brightens without changing its length. */
 .perf-bar {
   transition: filter var(--duration-short) var(--ease-standard);
 }
@@ -100,6 +100,10 @@
   .perf-row:hover .perf-bar {
     filter: brightness(1.15);
   }
+}
+
+.perf-row:focus-visible .perf-bar {
+  filter: brightness(1.15);
 }
 
 /* 80: Keyboard-focused ranking track boundary. */
