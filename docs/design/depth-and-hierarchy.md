@@ -64,7 +64,7 @@ Second reference: a commercial banking dashboard template the owner supplied as 
 What the prototype changes, tokens and one component only:
 
 - **Dark surfaces (D1, D5).** Card `#1c2437` (page `#07080d`) is about 1.3:1 against the page, up from 1.11:1. The inset tier (`--surface-low`), the raised tier (`--color-surface-2`) and the highest tier (`--surface-high`) are retuned around it with one blue tint. The Portfolio hero takes a lighter navy, `#234684`, so it is the raised block (D3).
-- **Sample banner.** The saturated blue first-run notice is now an inset strip with a hairline and an accent edge, so the headline figure is the first thing a person sees.
+- **Sample banner.** The saturated blue first-run notice is now an inset strip with only a hairline, so the headline figure is the first thing a person sees.
 - **Light.** The page is `#e9edf4` and `--shadow-card` has a hairline layer, so a white card separates by edge and shadow without a heavier border.
 
 Measured, not judged: dark page against card was computed from the token values. Light page against card was not recomputed, and no hero text contrast is re-measured. The range journey, the README capture and a physical device are not run. The rest of D1 to D7 and both questions below stay open.
