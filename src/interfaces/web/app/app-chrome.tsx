@@ -1,4 +1,6 @@
 import type { JSX, RefObject } from "preact";
+import { useLayoutEffect, useRef } from "preact/hooks";
+import { REDUCED_MOTION_QUERY } from "../shared/motion/reduced-motion";
 import type { SessionState } from "../../../applications/session/session-model";
 import { PrivacyToggle } from "../presentation/privacy/privacy";
 import { Presence } from "../shared/ui/presence";
@@ -9,29 +11,126 @@ import { type Route, type navEntryOf, routeFrom } from "./routes";
 import { NAV, type SourceStatus } from "./app-model";
 import type { Session } from "./session/session";
 
+interface NavBounds {
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+  readonly left: number;
+}
+
+const NAV_FAST_MS = 360;
+const NAV_SLOW_MS = 550;
+const NAV_SIDE_MS = 450;
+
+const clampProgress = (value: number): number => Math.min(1, Math.max(0, value));
+const powerThreeOut = (value: number): number => 1 - (1 - clampProgress(value)) ** 4;
+const powerThreeInOut = (value: number): number => {
+  const progress = clampProgress(value);
+  return progress < 0.5 ? 8 * progress ** 4 : 1 - (-2 * progress + 2) ** 4 / 2;
+};
+const blend = (from: number, to: number, progress: number): number => from + (to - from) * progress;
+
+function navClipPath(bounds: NavBounds, width: number, height: number): string {
+  const insets = [bounds.top, width - bounds.right, height - bounds.bottom, bounds.left];
+  return `inset(${insets.map((edge) => edge.toFixed(3) + "px").join(" ")} round var(--nav-radius))`;
+}
+
+function boundsFor(nav: HTMLElement, item: HTMLElement): NavBounds {
+  const navBox = nav.getBoundingClientRect();
+  const itemBox = item.getBoundingClientRect();
+  return {
+    top: itemBox.top - navBox.top,
+    right: itemBox.right - navBox.left,
+    bottom: itemBox.bottom - navBox.top,
+    left: itemBox.left - navBox.left,
+  };
+}
+
 export function AppNav(props: {
   navigation: RefObject<HTMLElement | null>;
   sidebarHidden: boolean;
   current: ReturnType<typeof navEntryOf>;
 }): JSX.Element {
   const { navigation, sidebarHidden, current } = props;
+  const activeBounds = useRef<NavBounds | null>(null);
+  const animationFrame = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    const nav = navigation.current;
+    if (nav === null) return;
+    const pill = nav.querySelector<HTMLElement>(".nav-pill");
+    const active = nav.querySelector<HTMLElement>('.nav-link[aria-current="page"]');
+    const list = pill?.parentElement;
+    if (pill === null || active === null || !list) return;
+
+    const target = boundsFor(list, active);
+    const previous = activeBounds.current;
+    let width = pill.clientWidth;
+    let height = pill.clientHeight;
+    const setClip = (bounds: NavBounds): void => {
+      pill.style.clipPath = navClipPath(bounds, width, height);
+      activeBounds.current = bounds;
+    };
+
+    const preference = matchMedia(REDUCED_MOTION_QUERY);
+    const stop = (): void => {
+      if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current);
+      animationFrame.current = null;
+    };
+    const settle = (): void => {
+      stop();
+      width = pill.clientWidth;
+      height = pill.clientHeight;
+      setClip(boundsFor(list, active));
+    };
+    const layout = (): string => [pill.clientWidth, pill.clientHeight, active.offsetWidth, active.offsetHeight].join();
+    let size = layout();
+    const observer = new ResizeObserver(() => {
+      const next = layout();
+      if (next !== size) settle();
+      size = next;
+    });
+    observer.observe(list);
+    observer.observe(active);
+    preference.addEventListener("change", settle);
+
+    const startedAt = performance.now();
+    const movingDown = previous !== null && target.top + target.bottom > previous.top + previous.bottom;
+    const vertical = previous !== null && Math.abs(target.top - previous.top) > Math.abs(target.left - previous.left);
+    const movingRight = previous !== null && target.left + target.right > previous.left + previous.right;
+    const frame = (now: number): void => {
+      if (previous === null) return;
+      const elapsed = now - startedAt;
+      const lead = powerThreeOut(elapsed / NAV_FAST_MS);
+      const trail = powerThreeInOut(elapsed / NAV_SLOW_MS);
+      const cross = powerThreeInOut(elapsed / NAV_SIDE_MS);
+      const next: NavBounds = {
+        top: blend(previous.top, target.top, vertical ? (movingDown ? trail : lead) : cross),
+        right: blend(previous.right, target.right, vertical ? cross : movingRight ? lead : trail),
+        bottom: blend(previous.bottom, target.bottom, vertical ? (movingDown ? lead : trail) : cross),
+        left: blend(previous.left, target.left, vertical ? cross : movingRight ? trail : lead),
+      };
+      setClip(next);
+      if (elapsed < NAV_SLOW_MS) animationFrame.current = requestAnimationFrame(frame);
+      else animationFrame.current = null;
+    };
+    if (previous === null || preference.matches || sidebarHidden) settle();
+    else animationFrame.current = requestAnimationFrame(frame);
+    return () => {
+      stop();
+      observer.disconnect();
+      preference.removeEventListener("change", settle);
+    };
+  }, [current, navigation, sidebarHidden]);
+
   return (
     <nav ref={navigation} class="main-nav" id="main-nav" aria-label="Main" inert={sidebarHidden}>
       <p class="brand">
         <img src={`${import.meta.env.BASE_URL}icons/icon.svg`} width="32" height="32" alt="" />
         FolioDash
       </p>
-      <ul
-        class="nav-list"
-        style={{
-          "--nav-count": NAV.length,
-          "--nav-index": Math.max(
-            0,
-            NAV.findIndex((entry) => entry.id === current),
-          ),
-        }}
-      >
-        <span class="nav-pill" aria-hidden="true" />
+      <ul class="nav-list">
+        <li class="nav-pill" aria-hidden="true" />
         {NAV.map((entry) => (
           <li key={entry.id}>
             <a class="nav-link" href={entry.href} aria-current={current === entry.id ? "page" : undefined}>

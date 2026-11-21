@@ -85,6 +85,8 @@ Incremental expense follow-up, 2026-11-15: the local production Chrome audit pas
 
 2026-11-16, Month matrix marks: the local Chrome synthetic-demo audit passed 127 journey assertions and 915 control samples across 27 states. New assertions check that marks are off by default, that with them on each portfolio row marks exactly the largest and smallest figures recomputed from the displayed text (and nothing where a row has fewer than three figures or all the same), that every mark is also written in text and the fund table has none, that turning marks on moves no column, and that turning them off restores the matrix exactly. The checkbox is a new control classified STATES OPEN. Physical devices, other engines and screen readers remain unverified.\n\n2026-11-16, Import running summary: the local Chrome synthetic-demo audit passed 128 journey assertions and 915 control samples across 27 states, and the sale and reopening audit passed 17 assertions. New assertions check that a wide review keeps the summary beside the questions, sticky, with its progress; that progress climbs from none to four as each fund is answered and then reads that every fund is answered; that before the answers the after figure is shown as not yet known; and that once recorded, the summary's net invested after equals the total the recorded statement holds, summed independently. The panel has no controls of its own. Physical devices, other engines and screen readers remain unverified.\n\nMoney-movement review follow-up, 2026-11-15: source inventory includes the explicit per-fund No money moved action. The synthetic three-month preview exercises opening balances, money-added/received fields, blank-answer refusal, explicit zeroes, canonical preview totals, retained drafts and global No/Yes transitions. Shared control sampling covers the revealed group on desktop and phone; separate assertions cover 200% text and reduced motion. Full sale, zero-value closure and reopening conditional branches remain OPEN for their own rendered evidence. Financial submission, provider failure/recovery, physical-device and screen-reader acceptance are not closed by this preview-only check.
 
+2026-11-21, navigation selection: the Verdin recording informed the independent leading and trailing edges. FolioDash uses its own palette and measured link bounds. The local Chromium interaction audit checks a multi-row jump in each direction, requiring the highlight to grow beyond two row heights and finish aligned with the selected link. The phone expense audit waits for the deferred record before checking the existing single-column layout. Physical-device and screen-reader evidence remains open.
+
 ## Source inventory
 
 One row is a source template; a fund-link template can render many controls. All rows must receive the relevant shared contract. Each row's pending, selected, error and dismissal states remain part of its owner journey even when not present in the initial DOM.
@@ -93,17 +95,17 @@ One row is a source template; a fund-link template can render many controls. All
 
 | ID | Source | Element / family | Control or context | State review |
 |---|---|---|---|---|
-| db59d45a3f21-1 | [app-chrome.tsx:37](../../src/interfaces/web/app/app-chrome.tsx#L37) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
-| 6470a469f752-1 | [app-chrome.tsx:79](../../src/interfaces/web/app/app-chrome.tsx#L79) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
-| 180ab658684e-1 | [app-chrome.tsx:93](../../src/interfaces/web/app/app-chrome.tsx#L93) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
-| 91d93062a006-1 | [app-chrome.tsx:104](../../src/interfaces/web/app/app-chrome.tsx#L104) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 7c143373cb64-1 | [app-chrome.tsx:122](../../src/interfaces/web/app/app-chrome.tsx#L122) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 4ab67b5be0f4-1 | [app-chrome.tsx:186](../../src/interfaces/web/app/app-chrome.tsx#L186) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
-| d9dee6c8cf89-1 | [app-chrome.tsx:199](../../src/interfaces/web/app/app-chrome.tsx#L199) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
-| 5c3a3d62fafb-1 | [app-chrome.tsx:210](../../src/interfaces/web/app/app-chrome.tsx#L210) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
-| 5e84be431460-1 | [app-chrome.tsx:215](../../src/interfaces/web/app/app-chrome.tsx#L215) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 92ccc09ab498-1 | [app-chrome.tsx:243](../../src/interfaces/web/app/app-chrome.tsx#L243) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
-| 10f4a7df280f-1 | [app-chrome.tsx:249](../../src/interfaces/web/app/app-chrome.tsx#L249) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| db59d45a3f21-1 | [app-chrome.tsx:136](../../src/interfaces/web/app/app-chrome.tsx#L136) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
+| 6470a469f752-1 | [app-chrome.tsx:178](../../src/interfaces/web/app/app-chrome.tsx#L178) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
+| 180ab658684e-1 | [app-chrome.tsx:192](../../src/interfaces/web/app/app-chrome.tsx#L192) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
+| 91d93062a006-1 | [app-chrome.tsx:203](../../src/interfaces/web/app/app-chrome.tsx#L203) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 7c143373cb64-1 | [app-chrome.tsx:221](../../src/interfaces/web/app/app-chrome.tsx#L221) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 4ab67b5be0f4-1 | [app-chrome.tsx:285](../../src/interfaces/web/app/app-chrome.tsx#L285) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
+| d9dee6c8cf89-1 | [app-chrome.tsx:298](../../src/interfaces/web/app/app-chrome.tsx#L298) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
+| 5c3a3d62fafb-1 | [app-chrome.tsx:309](../../src/interfaces/web/app/app-chrome.tsx#L309) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
+| 5e84be431460-1 | [app-chrome.tsx:314](../../src/interfaces/web/app/app-chrome.tsx#L314) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 92ccc09ab498-1 | [app-chrome.tsx:342](../../src/interfaces/web/app/app-chrome.tsx#L342) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
+| 10f4a7df280f-1 | [app-chrome.tsx:348](../../src/interfaces/web/app/app-chrome.tsx#L348) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aa53db6e3c54-1 | [app-import-routes.tsx:50](../../src/interfaces/web/app/app-import-routes.tsx#L50) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
 | ba191ec28307-1 | [app.tsx:240](../../src/interfaces/web/app/app.tsx#L240) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
 | 7d011ddea82a-1 | [account-client-id.tsx:12](../../src/interfaces/web/features/account/account-client-id.tsx#L12) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |

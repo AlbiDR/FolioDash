@@ -2,8 +2,56 @@
 import { setTimeout as delay } from "node:timers/promises";
 import type { JourneyContext } from "./browser-steps.ts";
 
-export async function portfolioJourney({ evaluate, waitFor, check, visit, survey }: JourneyContext): Promise<void> {
+export async function portfolioJourney({
+  evaluate,
+  evaluateWith,
+  waitFor,
+  check,
+  visit,
+  survey,
+}: JourneyContext): Promise<void> {
   // Portfolio: inspect the complete range-to-chart journey, not only selector declarations.
+  await visit("overview");
+  for (const [route, down] of [
+    ["#connection", true],
+    ["#overview", false],
+  ] as const) {
+    const stretched = await evaluateWith(
+      async (destination, movingDown) => {
+        const pill = document.querySelector<HTMLElement>(".nav-pill");
+        const link = document.querySelector<HTMLAnchorElement>(`.nav-link[href="${destination}"]`);
+        if (!pill || !link) return false;
+        const edges = () => {
+          const insets = (
+            getComputedStyle(pill)
+              .clipPath.split(" round ")[0]
+              ?.match(/-?[\d.]+px/g) ?? []
+          ).map(parseFloat);
+          const box = pill.getBoundingClientRect();
+          const top = insets[0] ?? NaN;
+          return [box.top + top, box.bottom - (insets[2] ?? top)] as const;
+        };
+        const [top, bottom] = edges();
+        link.click();
+        let expanded = false;
+        const deadline = performance.now() + 2500;
+        while (performance.now() < deadline) {
+          await new Promise(requestAnimationFrame);
+          const [nextTop, nextBottom] = edges();
+          const lead = movingDown ? nextBottom - bottom : top - nextTop;
+          const trail = movingDown ? nextTop - top : bottom - nextBottom;
+          expanded ||= lead - trail > bottom - top;
+          const box = link.getBoundingClientRect();
+          if (Math.abs(nextTop - box.top) < 0.5 && Math.abs(nextBottom - box.bottom) < 0.5)
+            return expanded && link.getAttribute("aria-current") === "page";
+        }
+        return false;
+      },
+      route,
+      down,
+    );
+    await check(String(stretched), `sidebar stretches and settles moving ${down ? "down" : "up"}`);
+  }
   await visit("overview");
   await survey("Portfolio / desktop / initial");
   // The wide Performance card spans the hero and Changes rows: its plot uses the spare height instead of leaving a void.
