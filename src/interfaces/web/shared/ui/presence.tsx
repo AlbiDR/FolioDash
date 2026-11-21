@@ -11,6 +11,7 @@ export function Presence(props: {
 }): JSX.Element | null {
   const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
   const [present, setPresent] = useState(props.show);
+  const initiallyVisible = useRef(props.show);
   const [motion] = useState(() => createMotion());
   const retained = useRef(props.children);
   const element = useRef<HTMLDivElement>(null);
@@ -22,6 +23,7 @@ export function Presence(props: {
     [motion],
   );
   if (props.show) retained.current = props.children;
+  else initiallyVisible.current = false;
   useLayoutEffect(() => {
     if (!props.show && (reduced || !present)) {
       retained.current = null;
@@ -36,7 +38,7 @@ export function Presence(props: {
     // Cancel the parent's remaining row gap as the notice collapses, avoiding a final layout snap.
     const gap = parent === null ? "0px" : getComputedStyle(parent).rowGap;
     node.style.setProperty("--presence-gap", gap === "normal" ? "0px" : gap);
-    node.setAttribute("data-settled", reduced ? "true" : "false");
+    node.setAttribute("data-settled", String(reduced || initiallyVisible.current));
     if (props.show) setPresent(true);
 
     const timing = timingFrom(getComputedStyle(node));
@@ -81,6 +83,7 @@ export function Presence(props: {
       ref={element}
       class={`presence${props.class === undefined ? "" : ` ${props.class}`}`}
       data-present={props.show}
+      data-initial={initiallyVisible.current}
       inert={!props.show}
       aria-hidden={props.show ? undefined : true}
       onTransitionEnd={(event) => {

@@ -221,7 +221,7 @@ a.icon-button {
 /* Route sections mount in reading order. Keep their figures fully readable during the delay and movement. */
 #main-content > .get-started,
 #main-content > :is(.dash, .screen, .account, .import) > * {
-  animation: rise var(--duration-navigation) var(--ease-standard) backwards;
+  animation: rise var(--duration-arrival) var(--ease-arrival) backwards;
   --section-arrival-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
   animation-delay: var(--section-arrival-delay);
 }
@@ -258,7 +258,7 @@ a.icon-button {
     .account-lead,
     .import-heading
   ) {
-  animation: text-arrive var(--duration-navigation) var(--ease-standard) backwards;
+  animation: text-arrive var(--duration-arrival) var(--ease-arrival) backwards;
   animation-delay: calc(var(--section-arrival-delay) + var(--motion-stagger));
 }
 #main-content :is(.card-subtitle, .chart-subtitle, .hero-gain) {
@@ -316,29 +316,35 @@ a.icon-button {
     var(--shadow-card);
 }
 
-.animated-figure[data-counting] {
-  position: relative;
+.animated-figure {
+  font-variant-numeric: tabular-nums;
 }
-.animated-figure[data-counting] > .figure-exact {
+.figure-slot {
+  display: inline-block;
+  position: relative;
+  max-inline-size: 100%;
+}
+.animated-figure[data-counting] .figure-exact {
   opacity: 0;
 }
 .figure-count {
   display: none;
 }
-.animated-figure[data-counting] > .figure-count {
+.animated-figure[data-counting] .figure-count {
   display: block;
   position: absolute;
   inset: 0;
   pointer-events: none;
+  text-align: end;
 }
 .figure-count::before {
   content: attr(data-figure-count);
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active) {
-  .animated-figure[data-counting] > .figure-exact {
+  .animated-figure[data-counting] .figure-exact {
     opacity: 1;
   }
-  .animated-figure[data-counting] > .figure-count {
+  .animated-figure[data-counting] .figure-count {
     display: none;
   }
 }

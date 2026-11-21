@@ -1,5 +1,5 @@
 import type { RefObject } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useLayoutEffect, useState } from "preact/hooks";
 import { FILL_MAX_HEIGHT, FILL_MAX_RATIO, LAYOUT } from "./line-chart-layout";
 
 /** The plot's measured width, and the height it may fill when its card is stretched beside taller neighbours. */
@@ -10,11 +10,18 @@ export function useChartSize(
 ): { readonly width: number; readonly filledHeight: number | null } {
   const [width, setWidth] = useState<number>(LAYOUT.width);
   const [filledHeight, setFilledHeight] = useState<number | null>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const node = container.current;
     if (node === null) return;
     let frame: number | null = null;
-    let measuredWidth: number = LAYOUT.width;
+    const initialStyle = getComputedStyle(node);
+    const contentWidth =
+      node.getBoundingClientRect().width -
+      parseFloat(initialStyle.borderLeftWidth) -
+      parseFloat(initialStyle.borderRightWidth) -
+      parseFloat(initialStyle.paddingLeft) -
+      parseFloat(initialStyle.paddingRight);
+    let measuredWidth: number = contentWidth > 0 ? Math.max(200, Math.round(contentWidth)) : LAYOUT.width;
     let fillFrame: number | null = null;
     /** Spare height the stretched card has beyond the other content, which the plot may take. */
     const spare = (): number | null => {
@@ -77,11 +84,9 @@ export function useChartSize(
       });
     });
     observer.observe(node);
-    if (fillHeight)
-      fillFrame = requestAnimationFrame(() => {
-        fillFrame = null;
-        fill();
-      });
+    // Resolve the chart's initial width and fill together before the browser paints.
+    setWidth(measuredWidth);
+    fill();
     return () => {
       observer.disconnect();
       if (frame !== null) cancelAnimationFrame(frame);
