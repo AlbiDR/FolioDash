@@ -61,12 +61,12 @@ Settings applied by the owner's request: secret scanning and push protection, De
 
 **No scheduled Dependabot updates, by design:** the attribution policy rejects any commit authored by automation, and Dependabot's commits are bot-authored, so its pull requests fail it. Version updates are off (no `dependabot.yml`), alerts stay on, the weekly Verify run audits dependencies, and updates are made by hand (a pinned action is updated by editing its SHA). Dependabot security-update pull requests are turned off in the repository settings (owner, 2026-11-02) for the same reason.
 
-**Main merge policy (2026-11-21):** Changes to `main` must go through a pull request with the GitHub Actions `Gate / Validate README screenshots` check passing against the current base. This supersedes the earlier decision to allow direct pushes. The check uses the release capture and assembly commands. The release workflow still verifies and publishes the checked main revision.
+**Main merge policy (2026-11-22):** The owner requested automatic merging to reduce pull-request interruptions. The `Protect main` ruleset still requires a pull request and the `Gate / Validate README screenshots` check against the current base. Repository auto-merge is enabled. The `Auto merge` workflow requests a merge for non-draft pull requests opened or updated by the repository owner from a branch in this repository; it never checks out pull-request code. Forks and other authors do not receive this automation. GitHub waits for the required check; other CI jobs are not currently required by the ruleset and may still be running when a merge occurs. The release workflow independently verifies and publishes the checked main revision.
 
 ## 3. Environment and workflow rules (proposed)
 
 - Apps Script environment: removed on 2026-11-19 with the service, so no environment protection applies to it.
-- Deploy workflows run only on `workflow_dispatch` or after merge to `main`. They never run on pull requests, and never use `pull_request_target` with code from a pull request.
+- Deploy workflows run only on `workflow_dispatch` or after merge to `main`. They never run on pull requests. The owner-only Auto merge workflow uses `pull_request_target` solely to request a merge and never checks out or executes pull-request code.
 - Default workflow token is read-only (already the case). A job raises permissions only for what it needs.
 - Third-party actions are pinned to a full commit SHA. Dependencies are updated by reviewed pull requests.
 - Logs never print secrets or tokens, and debug logging stays off.
