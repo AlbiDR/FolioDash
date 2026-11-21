@@ -1,5 +1,6 @@
 // Synthetic production renderer, capture visual layout shifts and sampled flow geometry from the first frame.
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { withLocalBrowser } from "../lib/local-browser.ts";
@@ -125,6 +126,42 @@ mkdirSync(output, { recursive: true });
 writeFileSync(resolve(output, "report.json"), `${JSON.stringify(results, null, 2)}\n`);
 console.log(`Reload stability passed: ${String(results.length)} cold opens and reloads with zero layout shifts.`);
 
+// The mocked Google rows and device backup carry checksums over sorted JSON keys.
+const expense = {
+  amounts: [150, 500, 150, null, null],
+  date: "2026-11-04",
+  expectedRevision: null,
+  id: "synthetic-reload-expense",
+};
+const checksum = (text: string): string => createHash("sha256").update(text).digest("hex");
+const expenseCopy = {
+  version: 1,
+  workbookId: "synthetic-reload",
+  backup: {
+    format: "foliodash-work-expenses",
+    version: 1,
+    commands: [expense],
+    checksum: checksum(JSON.stringify([expense])),
+  },
+  initialized: true,
+};
+const payload = JSON.stringify(expense);
+const expenseRows = [
+  ["schema", "payload", "checksum"],
+  ["1", payload, checksum(payload)],
+];
+const expenseTab = "_FolioDash expenses";
+const workbookTabs = ["_FolioDash ledger", expenseTab].map((title, sheetId) => ({
+  properties: { sheetId, title },
+  developerMetadata: [
+    {
+      metadataKey: "foliodash.expenses",
+      metadataValue: sheetId === 0 ? "enabled-v1" : "records-v1",
+      location: { sheetId },
+    },
+  ],
+}));
+
 // Remembered sessions use the production app with synthetic responses held long enough to paint.
 await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
   await call("Emulation.setDeviceMetricsOverride", { width: 390, height: 900, deviceScaleFactor: 1, mobile: true });
@@ -133,6 +170,7 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
       const clientId = ${JSON.stringify(process.env["VITE_GOOGLE_CLIENT_ID"]?.trim() || "123456-syntheticaudit.apps.googleusercontent.com")};
       const workbook = {id:'synthetic-reload',url:'https://example.invalid/synthetic-reload'};
       localStorage.setItem('foliodash.client.v1',clientId);
+      localStorage.setItem('foliodash.expenses.v1', JSON.stringify(${JSON.stringify(expenseCopy)}));
       localStorage.setItem('foliodash.ledger.v1',JSON.stringify({
         version:1,workbook,ledger:{revision:'',funds:[],snapshots:[]},syncedAt:Date.now()
       }));
@@ -153,12 +191,17 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
           if (location.search.includes('offline')) throw new TypeError('Synthetic network failure');
           return Response.json({values:[['revision','type','payload','checksum']]});
         }
-        return Response.json({sheets:[]});
+        if (String(url).includes('/values/' + encodeURIComponent("'${expenseTab}'!A:C"))) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+          window.expenseAnswered = true;
+          return Response.json({values:${JSON.stringify(expenseRows)}});
+        }
+        return Response.json({sheets:${JSON.stringify(workbookTabs)}});
       };
       window.syncNotices = [];
       new MutationObserver(() => {
         for (const node of document.querySelectorAll('.notice, .status-chip')) {
-          if (/Checking Google|Checking your work-expense|Showing your saved device copy|Your saved copy is available/.test(node.textContent)) {
+          if (/Checking Google|Checking your work-expense|Showing your saved device copy|Showing this device.s saved expense copy|Your saved copy is available/.test(node.textContent)) {
             window.syncNotices.push(node.textContent);
           }
         }
@@ -173,7 +216,7 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
         async () =>
           (await evaluate(
             `performance.getEntriesByType('navigation')[0]?.type === '${type}' &&
-              window.ledgerAnswered === true && !!document.querySelector('.status-chip')`,
+              window.ledgerAnswered === true && window.expenseAnswered === true && !!document.querySelector('.status-chip')`,
           )) === true,
         `${route} ${type} with a remembered Google connection`,
       );

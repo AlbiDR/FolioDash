@@ -180,6 +180,7 @@ async function reopenedAfterLapse(rest?: RestClient) {
   const reopened = make(rest);
   expect(reopened.state.sheet).toBe("unchecked");
   expect(reopened.expenses.state.cached).toBe(true);
+  expect(reopened.expenses.state.message).toBe("");
   return { reopened, zeroDay, google };
 }
 

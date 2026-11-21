@@ -68,9 +68,9 @@ export abstract class ExpenseSessionCore {
           ready: true,
           cached: true,
           pending,
-          message: !pending
-            ? "Showing this device's saved expense copy. Connect to check Google."
-            : "A previous save needs checking. Its outcome will be reconciled before another write.",
+          message: pending
+            ? "A previous save needs checking. Its outcome will be reconciled before another write."
+            : "",
         };
       }
     }
