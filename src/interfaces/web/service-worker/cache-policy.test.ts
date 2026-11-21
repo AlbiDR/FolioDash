@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cacheNameFor, isOldCache, isPageLoad, shouldHandle, standalonePageKey } from "./cache-policy";
+import { cacheNameFor, isOldCache, isPageLoad, navigationCacheKey, shouldHandle } from "./cache-policy";
 
 const SCOPE = "https://example.test/FolioDash/";
 
@@ -25,18 +25,25 @@ describe("shouldHandle", () => {
   });
 });
 
-describe("standalone pages", () => {
+describe("document navigation", () => {
   it("serves the privacy policy as itself, never as the app", () => {
-    expect(standalonePageKey(`${SCOPE}privacy/`, SCOPE)).toBe(`${SCOPE}privacy/index.html`);
-    expect(standalonePageKey(`${SCOPE}privacy/index.html`, SCOPE)).toBe(`${SCOPE}privacy/index.html`);
+    expect(navigationCacheKey(`${SCOPE}privacy/`, SCOPE)).toBe(`${SCOPE}privacy/index.html`);
+    expect(navigationCacheKey(`${SCOPE}privacy/index.html`, SCOPE)).toBe(`${SCOPE}privacy/index.html`);
   });
 
-  it("leaves the app, its files and other sites alone", () => {
-    expect(standalonePageKey(SCOPE, SCOPE)).toBeNull();
-    expect(standalonePageKey(`${SCOPE}index.html`, SCOPE)).toBeNull();
-    expect(standalonePageKey(`${SCOPE}assets/index-abc.js`, SCOPE)).toBeNull();
-    expect(standalonePageKey("https://other.test/FolioDash/privacy/", SCOPE)).toBeNull();
-    expect(standalonePageKey("https://example.test/elsewhere/privacy/", SCOPE)).toBeNull();
+  it("opens the cached app for its entry points, including hash routes", () => {
+    expect(navigationCacheKey(SCOPE, SCOPE)).toBe(SCOPE);
+    expect(navigationCacheKey(`${SCOPE}index.html`, SCOPE)).toBe(SCOPE);
+    expect(navigationCacheKey(`${SCOPE}?demo#expenses`, SCOPE)).toBe(SCOPE);
+  });
+
+  it("leaves discovery files, other assets, unknown paths and other sites to the browser", () => {
+    expect(navigationCacheKey(`${SCOPE}sitemap.xml`, SCOPE)).toBeNull();
+    expect(navigationCacheKey(`${SCOPE}llms.txt`, SCOPE)).toBeNull();
+    expect(navigationCacheKey(`${SCOPE}missing/`, SCOPE)).toBeNull();
+    expect(navigationCacheKey(`${SCOPE}assets/index-abc.js`, SCOPE)).toBeNull();
+    expect(navigationCacheKey("https://other.test/FolioDash/privacy/", SCOPE)).toBeNull();
+    expect(navigationCacheKey("https://example.test/elsewhere/privacy/", SCOPE)).toBeNull();
   });
 
   it("lets the browser follow the host's redirect to the trailing slash, so relative links keep working", () => {

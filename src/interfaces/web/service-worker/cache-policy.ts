@@ -27,12 +27,13 @@ export function shouldHandle(method: string, requestUrl: string, scopeUrl: strin
 /** Pages that are not the app, such as the privacy policy. A page load for one gets that page, not the app. */
 const STANDALONE_PAGES = ["privacy/"] as const;
 
-/** The saved file a page load should get when it is for a standalone page; null for the app itself. */
-export function standalonePageKey(requestUrl: string, scopeUrl: string): string | null {
+/** The cached HTML document for a known page, or null to let the browser fetch the URL directly. */
+export function navigationCacheKey(requestUrl: string, scopeUrl: string): string | null {
   const request = new URL(requestUrl);
   const scope = new URL(scopeUrl);
   if (request.origin !== scope.origin || !request.pathname.startsWith(scope.pathname)) return null;
   const relative = request.pathname.slice(scope.pathname.length);
+  if (relative === "" || relative === "index.html") return scope.href;
   for (const page of STANDALONE_PAGES) {
     if (relative === page || relative === `${page}index.html`) return new URL(`${page}index.html`, scope).href;
   }
