@@ -13,6 +13,9 @@ const CLEAR_CSS =
   "html,body{background:transparent!important}body::before{display:none!important}:root{--glass:var(--color-surface)!important;--glass-edge:transparent!important;--glass-blur:none!important}.topbar,.main-nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}.more{display:none!important}";
 // A desktop picture shows the cards only. The bars only hide: removing them would reflow the page.
 const DESKTOP_CSS = ".topbar,.main-nav{visibility:hidden!important}";
+// The full-screen phone crop has no extra shadow margin. Keep the hero's inset edge, but omit its wide outer glow:
+// on Linux that glow paints the entire narrow gutter and removes the transparent canvas the README requires.
+const MOBILE_CSS = ".portfolio-dashboard > .hero{--shadow-hero:0 0 transparent!important}";
 const DEFAULT_INCLUDE = ".get-started,.notice,#main-content > *";
 const APP = resolve("dist/web");
 const OUTPUT = resolve("dist/readme");
@@ -101,7 +104,7 @@ async function capture(
   await evaluate("window.scrollTo(0,0)");
   let clip: Record<string, number> | undefined;
   // Applied after the safety checks above, which read the page's visible text.
-  const cssText = `${CLEAR_CSS}${mobile ? "" : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}${view.crop?.style ?? ""}`;
+  const cssText = `${CLEAR_CSS}${mobile ? MOBILE_CSS : DESKTOP_CSS}${view.crop?.hide === undefined ? "" : `${view.crop.hide}{display:none!important}`}${view.crop?.style ?? ""}`;
   await evaluateWith((css: string) => {
     const style = document.createElement("style");
     style.textContent = css;
