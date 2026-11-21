@@ -218,7 +218,7 @@ a.icon-button {
   min-width: 0;
 }
 
-/* Route sections mount in reading order. Keep their figures fully readable during the delay and movement. */
+/* Keep section slots in flow while each surface reveals in reading order. */
 #main-content > .get-started,
 #main-content > :is(.dash, .screen, .account, .import) > * {
   animation: rise var(--duration-arrival) var(--ease-arrival) backwards;
@@ -243,7 +243,16 @@ a.icon-button {
 
 @keyframes rise {
   from {
+    opacity: 0;
     transform: translateY(var(--motion-rise));
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(var(--motion-arrival-rebound));
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -264,9 +273,20 @@ a.icon-button {
 #main-content :is(.card-subtitle, .chart-subtitle, .hero-gain) {
   animation-delay: calc(var(--section-arrival-delay) + 2 * var(--motion-stagger));
 }
+
+/* Keyboard focus bypasses an entrance delay without moving the layout. */
+#main-content > .get-started:focus-within,
+#main-content > :is(.dash, .screen, .account, .import) > :focus-within {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.page-title-arrival {
+  animation: text-arrive var(--duration-medium) var(--ease-arrival) backwards;
+}
 @keyframes text-arrive {
   from {
-    opacity: var(--motion-text-opacity);
+    opacity: 0;
     transform: translateY(var(--motion-text-rise));
   }
 }

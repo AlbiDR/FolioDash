@@ -6,10 +6,19 @@ import { resolve } from "node:path";
 import { withLocalBrowser } from "../lib/local-browser.ts";
 
 const CASES = [
-  { route: "overview", selector: ".hero, .portfolio-trend, .chart-svg, .portfolio-explore" },
+  {
+    route: "overview",
+    selector: ".hero, .portfolio-trend, .chart-svg, .portfolio-explore",
+  },
   { route: "activity", selector: ".activity-list, .activity-totals" },
-  { route: "expenses", selector: ".expense-entry, .expense-week, .expense-record" },
-  { route: "months", selector: ".month-matrices, .month-matrices .table-scroll" },
+  {
+    route: "expenses",
+    selector: ".expense-entry, .expense-week, .expense-record",
+  },
+  {
+    route: "months",
+    selector: ".month-matrices, .month-matrices .table-scroll",
+  },
 ] as const;
 const WIDTHS = [390, 1024, 1440] as const;
 const results: unknown[] = [];
@@ -41,8 +50,11 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
         observer.observe({type:'layout-shift', buffered:true});
         const started = performance.now();
         let firstFrame;
+        let shellFrame;
         let initial;
         let sawCounter = false;
+        const reveal = {first: undefined, intermediate: false, final: undefined};
+        let paintedFallback = false;
         function layoutBox(element) {
           const box = element.getBoundingClientRect();
           let top = box.top + window.scrollY;
@@ -54,8 +66,18 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
           return [top, element.clientWidth, element.clientHeight];
         }
         function sample(time) {
+          paintedFallback ||= [...document.querySelectorAll('#main-content [data-busy]')]
+            .some(node => node.textContent.includes('Loading view'));
+          const hero = document.querySelector('.portfolio-dashboard > .hero');
+          if (hero) {
+            const opacity = Number(getComputedStyle(hero).opacity);
+            reveal.first ??= opacity;
+            reveal.intermediate ||= opacity > 0.1 && opacity < 0.9;
+            reveal.final = opacity;
+          }
+          if (document.querySelector('.topbar')) shellFrame ??= time;
           const panels = [...document.querySelectorAll(${JSON.stringify(selector)})];
-          if (panels.length && document.querySelector('.topbar')) {
+          if (panels.length && shellFrame !== undefined) {
             firstFrame ??= time;
             sawCounter ||= !!document.querySelector('.hero-value [data-counting]');
             const geometry = panels.map(layoutBox);
@@ -71,7 +93,7 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
             addShifts(observer.takeRecords());
             observer.disconnect();
             window.reloadEvidence = {
-              firstFrame, shifts, changes, sawCounter,
+              firstFrame, shellFrame, shifts, changes, sawCounter, reveal, paintedFallback,
               type: performance.getEntriesByType('navigation')[0]?.type,
               plot: document.querySelector('.chart-svg')?.getAttribute('viewBox'),
             };
@@ -91,7 +113,9 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
       });
       for (const type of ["navigate", "reload"] as const) {
         if (type === "navigate") {
-          await call("Page.navigate", { url: `${origin}/?reload-audit=${String(width)}#${route}` });
+          await call("Page.navigate", {
+            url: `${origin}/?reload-audit=${String(width)}#${route}`,
+          });
         } else {
           await call("Page.reload", { ignoreCache: true });
         }
@@ -101,23 +125,37 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
         );
         const evidence = (await evaluate("window.reloadEvidence")) as {
           firstFrame?: number;
+          shellFrame?: number;
           shifts: unknown[];
           changes: unknown[];
           sawCounter: boolean;
+          reveal: { first?: number; intermediate: boolean; final?: number };
+          paintedFallback: boolean;
           plot?: string;
         };
         const label = `${route} ${type} at ${String(width)}px`;
         assert.ok(evidence.firstFrame !== undefined, `${label}: route content rendered`);
+        assert.ok(evidence.shellFrame !== undefined, `${label}: shell rendered`);
+        if (evidence.firstFrame - evidence.shellFrame < 250) {
+          assert.equal(evidence.paintedFallback, false, `${label}: quick route load never flashes a loading card`);
+        }
         assert.deepEqual(evidence.shifts, [], `${label}: zero layout shifts`);
         assert.deepEqual(evidence.changes, [], `${label}: stable flow geometry from the first frame`);
-        if (route === "overview") assert.ok(evidence.sawCounter, `${label}: headline counted during sampling`);
+        if (route === "overview") {
+          assert.ok(evidence.sawCounter, `${label}: headline counted during sampling`);
+          assert.ok((evidence.reveal.first ?? 1) <= 0.1, `${label}: no opaque first-frame flash`);
+          assert.ok(evidence.reveal.intermediate, `${label}: entrance samples include a mid-fade frame`);
+          assert.equal(evidence.reveal.final, 1, `${label}: entrance finishes fully visible`);
+        }
         if (route === "overview" && width === 390) {
           assert.ok(evidence.plot?.endsWith(" 200"), `${label}: compact plot at first render`);
         }
         results.push({ route, type, width, ...evidence });
       }
     }
-    await call("Page.removeScriptToEvaluateOnNewDocument", { identifier: setup["identifier"] });
+    await call("Page.removeScriptToEvaluateOnNewDocument", {
+      identifier: setup["identifier"],
+    });
   }
 }, 4297);
 
