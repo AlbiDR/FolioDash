@@ -119,6 +119,26 @@ await withLocalBrowser(async (browser) => {
     );
     await inspectArrival(`${surface} > *`, `${route} after navigation`);
   }
+  // Return as soon as Activity commits, before passive effects can refresh the route listener.
+  await evaluate(`(() => {
+    const observer = new MutationObserver(() => {
+      if (!document.querySelector('.activity-dashboard')) return;
+      observer.disconnect();
+      window.returnedFromActivity = true;
+      history.replaceState(null, '', '#overview');
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    observer.observe(document.getElementById('main-content'), { childList: true, subtree: true });
+    document.querySelector('.nav-link[href="#activity"]').click();
+  })()`);
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "window.returnedFromActivity===true && location.hash==='#overview' && !!document.querySelector('.portfolio-dashboard') && !document.getElementById('main-content').inert",
+      )) === true,
+    "Portfolio after returning immediately from Activity",
+  );
+  results.push({ name: "immediate return from Activity", result: true });
   await call("Animation.setPlaybackRate", { playbackRate: 1 });
 
   for (const hideDuringCount of [false, true]) {

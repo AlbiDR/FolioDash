@@ -8,7 +8,7 @@ on:
   workflow_call:
     inputs:
       release:
-        description: Whether this run prepares a release. A release needs the public client ID and assembles the Pages site.
+        description: Whether this run prepares a release. A release needs the public client ID and uploads the verified Pages artifact.
         required: true
         type: boolean
 
@@ -147,8 +147,8 @@ jobs:
         run: npm run audit:rendered -- "$AUDIT_SUITE"
 
   site:
-    name: Assemble the Pages site
-    if: inputs.release
+    name: Validate README screenshots
+    if: inputs.release || github.event_name == 'pull_request'
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -175,6 +175,7 @@ jobs:
         run: npm run build:pages
 
       - name: Upload the Pages site
+        if: inputs.release
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist/pages

@@ -109,7 +109,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 92ccc09ab498-1 | [app-chrome.tsx:337](../../src/interfaces/web/app/app-chrome.tsx#L337) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
 | 10f4a7df280f-1 | [app-chrome.tsx:343](../../src/interfaces/web/app/app-chrome.tsx#L343) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aa53db6e3c54-1 | [app-import-routes.tsx:50](../../src/interfaces/web/app/app-import-routes.tsx#L50) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
-| ba191ec28307-1 | [app.tsx:237](../../src/interfaces/web/app/app.tsx#L237) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
+| ba191ec28307-1 | [app.tsx:238](../../src/interfaces/web/app/app.tsx#L238) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
 | 7d011ddea82a-1 | [account-client-id.tsx:12](../../src/interfaces/web/features/account/account-client-id.tsx#L12) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
 | 1bcfbbd10eb1-1 | [account-client-id.tsx:19](../../src/interfaces/web/features/account/account-client-id.tsx#L19) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
 | e98c9f23d6cd-1 | [account-client-id.tsx:39](../../src/interfaces/web/features/account/account-client-id.tsx#L39) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |

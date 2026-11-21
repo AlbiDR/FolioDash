@@ -43,7 +43,7 @@ Public OAuth client IDs are public by design, so they are variables and never se
 | `.github/pull_request_template.md` | Includes the conformance check against CleanStack |
 | `.github/SECURITY.md`, `.github/CONTRIBUTING.md` | Short, and they point to the docs rather than repeat them |
 
-Attribution failure blocks the dependent site deployment. CODEOWNERS and quality checks do not block direct pushes without required reviews/status checks (section 2b). Adapted from the Playlist Tidy project; its licence headers, typography check and deployment workflows were deliberately not copied.
+Attribution failure blocks the dependent site deployment. The main merge policy is in section 2b. Adapted from the Playlist Tidy project; its licence headers, typography check and deployment workflows were deliberately not copied.
 
 ## 2b. Workflow architecture (2026-11-05)
 
@@ -51,7 +51,7 @@ Attribution failure blocks the dependent site deployment. CODEOWNERS and quality
 |---|---|
 | `check.yml` | Judges every change: the shared gate for pull requests, the weekly schedule and manual runs, CodeQL on pushes and pull requests, and dependency review on pull requests |
 | `release-site.yml` | Publishes main to Pages after the same gate passes; manual runs on main publish too; no other branch publishes |
-| `verify.yml` | The reusable gate: workflow lint, build, `npm run verify`, dependency audit, rendered audits, and on a release the Pages assembly |
+| `verify.yml` | The reusable gate: workflow lint, build, `npm run verify`, dependency audit, rendered audits, and Pages assembly on pull requests and releases |
 
 [GitHub Actions](github-actions.md) owns triggers, the dependency graph, cancellation, artifact ownership, maintenance and verification limits.
 
@@ -61,7 +61,7 @@ Settings applied by the owner's request: secret scanning and push protection, De
 
 **No scheduled Dependabot updates, by design:** the attribution policy rejects any commit authored by automation, and Dependabot's commits are bot-authored, so its pull requests fail it. Version updates are off (no `dependabot.yml`), alerts stay on, the weekly Verify run audits dependencies, and updates are made by hand (a pinned action is updated by editing its SHA). Dependabot security-update pull requests are turned off in the repository settings (owner, 2026-11-02) for the same reason.
 
-**Not enforced, by choice:** required status checks and required pull requests. GitHub rejects a direct push to a branch that requires checks, so requiring them means every change goes through a pull request. The owner chose to keep direct pushes to `main` for now; the checks still run on every push and a failure is visible, but it does not block the push. Revisit when more than one person contributes.
+**Main merge policy (2026-11-21):** Changes to `main` must go through a pull request with the GitHub Actions `Gate / Validate README screenshots` check passing against the current base. This supersedes the earlier decision to allow direct pushes. The check uses the release capture and assembly commands. The release workflow still verifies and publishes the checked main revision.
 
 ## 3. Environment and workflow rules (proposed)
 

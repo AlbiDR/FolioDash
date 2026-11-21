@@ -1,5 +1,5 @@
 import type { JSX } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { GetStarted } from "../features/account/get-started";
 import { FundView } from "../features/overview/fund-view";
 import { MonthsView } from "../features/overview/months-view";
@@ -160,7 +160,8 @@ export function App(): JSX.Element {
     })),
   );
   const [expenseConnectMessage, setExpenseConnectMessage] = useState("");
-  useEffect(() => {
+  // Refresh the listener during commit so immediate navigation sees the route that just mounted.
+  useLayoutEffect(() => {
     const update = (): void => {
       if ((importLocked || expenseLocked) && routeFrom(window.location.hash).name !== route.name) {
         window.history.replaceState(null, "", `#${route.name}`);
