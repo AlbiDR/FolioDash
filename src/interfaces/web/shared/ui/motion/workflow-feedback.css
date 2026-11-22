@@ -1,0 +1,103 @@
+@media (hover: hover) and (pointer: fine) {
+  .main-nav .brand:hover img {
+    rotate: 6deg;
+  }
+  .privacy-toggle:hover .privacy-icon {
+    scale: 1.08;
+  }
+  .chart-legend-button:hover .chart-swatch {
+    scale: 1.08;
+  }
+}
+.privacy-toggle .privacy-icon {
+  transition: scale var(--duration-short) var(--ease-spring);
+}
+.privacy-toggle[aria-pressed="true"] .privacy-icon {
+  rotate: 180deg;
+  transition: rotate var(--duration-feedback) var(--ease-spring);
+}
+.status-chip:focus-visible .status-dot {
+  scale: 1.25;
+  transition: scale var(--duration-short) var(--ease-spring);
+}
+.chart-legend-button:active .chart-swatch {
+  scale: 0.9;
+  transition: scale var(--duration-press) var(--ease-standard);
+}
+.nav-link:focus-visible > svg {
+  rotate: -4deg;
+}
+.sidebar-toggle:active > svg {
+  scale: 0.88;
+}
+.back-button:active > svg {
+  translate: -2px 0;
+}
+.status-chip:active {
+  scale: var(--motion-control-press);
+}
+.privacy-toggle:focus-visible .privacy-icon {
+  rotate: -8deg;
+}
+.chart-legend-button:focus-visible .chart-swatch {
+  rotate: 5deg;
+}
+.row-link:active > svg,
+.mobile-holdings a:active > svg {
+  scale: 0.88;
+}
+.month-step:active > svg {
+  scale: 0.9;
+}
+.quiet-action:active > svg {
+  scale: 0.88;
+}
+.primary:active,
+.secondary:active {
+  translate: 0 1px;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  translate: 0 -1px;
+}
+.file-dropzone:focus-within {
+  scale: 1.005;
+}
+.notice a:active {
+  translate: 2px 0;
+}
+.review-problem:focus-within,
+.app-update:focus-within {
+  translate: 0 -1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .privacy-toggle .privacy-icon,
+  .status-chip .status-dot,
+  .chart-legend-button .chart-swatch {
+    scale: 1;
+    rotate: none;
+    transition: none;
+  }
+  .nav-link > svg,
+  .sidebar-toggle > svg,
+  .back-button > svg,
+  .row-link > svg,
+  .mobile-holdings a > svg,
+  .month-step > svg,
+  .quiet-action > svg,
+  .primary,
+  .secondary,
+  .field input,
+  .field select,
+  .field textarea,
+  .file-dropzone,
+  .notice a,
+  .review-problem,
+  .app-update {
+    scale: 1;
+    translate: none;
+    rotate: none;
+    transition: none;
+  }
+}
