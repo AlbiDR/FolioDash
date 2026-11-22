@@ -13,6 +13,7 @@ export async function holdingsJourney({
 }: JourneyContext): Promise<void> {
   // Checkpoints: the sample chart draws value-only markers (never joined), and the screen lists them with the form switched off while signed out.
   await visit("overview");
+  await evaluate("[...document.querySelectorAll('.range-selector button')].find(b=>b.textContent==='All').click()");
   await waitFor(
     async () => (await evaluate("document.querySelectorAll('.portfolio-trend .checkpoint-marker').length>=1")) === true,
     "sample checkpoint markers on the Performance chart",
