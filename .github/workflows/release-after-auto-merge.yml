@@ -45,4 +45,4 @@ jobs:
           merged_sha=$(jq -r '.merge_commit_sha' <<< "$pr")
           current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
           [[ "$merged_sha" == "$current_sha" ]] || exit 0
-          gh workflow run release-site.yml --ref main
+          gh workflow run release-site.yml --repo "$GITHUB_REPOSITORY" --ref main
