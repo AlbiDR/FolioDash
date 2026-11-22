@@ -296,9 +296,9 @@ One row is a source template; a fund-link template can render many controls. All
 | 666619ba1abe-1 | [overview-view.tsx:251](../../src/interfaces/web/features/overview/overview-view.tsx#L251) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | 4e03b4ce4b63-1 | [overview-view.tsx:255](../../src/interfaces/web/features/overview/overview-view.tsx#L255) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | d8d6a251e8a5-1 | [donut.tsx:60](../../src/interfaces/web/presentation/charts/donut.tsx#L60) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 0b2e3693a3bb-1 | [line-chart-parts.tsx:134](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L134) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 6c60df19ada7-1 | [line-chart-parts.tsx:225](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L225) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| 2137e4ae4621-1 | [line-chart-parts.tsx:233](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L233) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 0b2e3693a3bb-1 | [line-chart-parts.tsx:130](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L130) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| 6c60df19ada7-1 | [line-chart-parts.tsx:221](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L221) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| 2137e4ae4621-1 | [line-chart-parts.tsx:229](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L229) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
 | 7f473b4575d1-1 | [line-chart.tsx:176](../../src/interfaces/web/presentation/charts/line-chart.tsx#L176) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
 | c6193f965996-1 | [line-chart.tsx:243](../../src/interfaces/web/presentation/charts/line-chart.tsx#L243) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
 | 63b5f07c9cc3-1 | [line-chart.tsx:313](../../src/interfaces/web/presentation/charts/line-chart.tsx#L313) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |

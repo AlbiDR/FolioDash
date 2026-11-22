@@ -79,14 +79,10 @@ export function ChartSeriesLayer(props: {
           ))}
           {entry.markers &&
             entry.points.map((point) => (
-              <rect
+              <path
                 key={point.time}
                 class={`checkpoint-marker ${chartArrivalClass("marker")}${point.time === props.activeTime ? " is-active" : ""}`}
-                x={point.x - 5}
-                y={point.y - 5}
-                width={10}
-                height={10}
-                transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                d={`M ${String(point.x)} ${String(point.y - 7)} L ${String(point.x + 7)} ${String(point.y)} L ${String(point.x)} ${String(point.y + 7)} L ${String(point.x - 7)} ${String(point.y)} Z`}
                 data-time={point.time}
                 style={chartArrivalOrder(entry.points.indexOf(point))}
                 {...(props.hidden ? {} : { "data-value": point.value })}
