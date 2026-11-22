@@ -102,6 +102,20 @@
   height: 3rem;
   margin: 0;
 }
+/* A card that is wider than a phone row but not wide enough for three metrics
+ * can give each trend its own readable panel. The chart consumes only space
+ * the figure does not need, then the three-column layout below takes over. */
+@container periods (min-width: 28rem) and (max-width: 37.999rem) {
+  .stat {
+    grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.8fr);
+    grid-template-areas: "label spark" "value spark" "caption spark";
+  }
+  .stat > .sparkline {
+    width: 100%;
+    height: 3.25rem;
+    justify-self: stretch;
+  }
+}
 @container periods (min-width: 38rem) {
   .period-results {
     grid-template-columns: repeat(3, minmax(0, 1fr));

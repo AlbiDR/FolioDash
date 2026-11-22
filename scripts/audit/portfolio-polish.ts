@@ -277,6 +277,7 @@ await withLocalBrowser(async (browser) => {
     { name: "desktop-light", width: 1440, scheme: "light", variant: "many", text: 100 },
     { name: "desktop-wide", width: 1920, scheme: "dark", variant: "many", text: 100 },
     { name: "tablet-dark", width: 768, scheme: "dark", variant: "typical", text: 100 },
+    { name: "changes-expanded", width: 600, scheme: "dark", variant: "many", text: 100 },
     { name: "tablet-wide", width: 1000, scheme: "light", variant: "many", text: 100 },
     { name: "sidebar-constrained", width: 1181, scheme: "dark", variant: "many", text: 100 },
     { name: "desktop-edge", width: 1400, scheme: "dark", variant: "many", text: 100 },

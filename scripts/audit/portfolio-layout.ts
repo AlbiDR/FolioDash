@@ -39,6 +39,23 @@ export async function assertPortfolioLayout(
       && near(analysisCards[1].width, analysisCards.at(-2).width) ? "ok" : "wide-geometry";
   })()`);
   assert.equal(gridAligned, "ok", `${screen.name}: holdings and supporting cards align to the dashboard grid`);
+  if (screen.name === "changes-expanded") {
+    const trends = (await evaluate(`(() => {
+      const card = document.querySelector('.period-results');
+      const charts = [...card.querySelectorAll('.stat > .sparkline')];
+      const width = card.getBoundingClientRect().width;
+      return { width, chartWidths: charts.map(chart => chart.getBoundingClientRect().width) };
+    })()`)) as { width: number; chartWidths: number[] };
+    assert.ok(
+      trends.width >= 28 * 16 && trends.width < 38 * 16,
+      "changes-expanded: card is in the expanded-trend range",
+    );
+    assert.ok(
+      trends.chartWidths.length === 3 && trends.chartWidths.every((width) => width >= 9 * 16),
+      "changes-expanded: every trend claims its available inline panel",
+    );
+    return { name: "changes-expanded trends", result: trends };
+  }
   if (screen.name !== "sidebar-constrained") return undefined;
   const hierarchy = (await evaluate(`(() => {
     const dashboard = document.querySelector('.portfolio-dashboard');
