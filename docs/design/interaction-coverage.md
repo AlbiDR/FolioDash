@@ -300,8 +300,8 @@ One row is a source template; a fund-link template can render many controls. All
 | 7f473b4575d1-1 | [line-chart.tsx:173](../../src/interfaces/web/presentation/charts/line-chart.tsx#L173) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 82021d15f438-1 | [line-chart.tsx:240](../../src/interfaces/web/presentation/charts/line-chart.tsx#L240) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
 | 63b5f07c9cc3-1 | [line-chart.tsx:341](../../src/interfaces/web/presentation/charts/line-chart.tsx#L341) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 88ed842a2b4d-1 | [line-chart.tsx:363](../../src/interfaces/web/presentation/charts/line-chart.tsx#L363) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| c7758c3b45e9-1 | [line-chart.tsx:367](../../src/interfaces/web/presentation/charts/line-chart.tsx#L367) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 458c1b118a98-1 | [line-chart.tsx:364](../../src/interfaces/web/presentation/charts/line-chart.tsx#L364) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:368](../../src/interfaces/web/presentation/charts/line-chart.tsx#L368) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
 | f2165f5f8ebb-1 | [monthly-bars.tsx:134](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L134) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9b0ee110f1fd-1 | [monthly-bars.tsx:212](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L212) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | e12440fad7f8-1 | [monthly-bars.tsx:243](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L243) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |

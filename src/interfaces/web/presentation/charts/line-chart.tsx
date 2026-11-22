@@ -47,8 +47,8 @@ export interface LineChartProps {
   readonly fillFirst?: boolean;
   /** Grow the plot to use height the card is given beside taller neighbours, never shrinking below the standard height. */
   readonly fillHeight?: boolean;
-  /** Offer the complete date-by-series table when the chart has a small enough data shape to be useful. */
-  readonly showValuesTable?: boolean;
+  /** Offer chart tools and the complete date-by-series table when the chart has a small enough data shape to be useful. */
+  readonly showInspectionDetails?: boolean;
   /** Text shown when there is nothing to plot. */
   readonly emptyMessage: string;
   readonly inspectionTooltip?: boolean;
@@ -73,7 +73,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const dateControl = useRef<HTMLInputElement>(null);
   const container = useRef<HTMLElement>(null);
   const fillHeight = props.fillHeight === true;
-  const showValuesTable = props.showValuesTable ?? true;
+  const showInspectionDetails = props.showInspectionDetails ?? true;
   const { width, filledHeight } = useChartSize(container, plot, fillHeight);
   const plotHeight = fillHeight && filledHeight !== null ? filledHeight : LAYOUT.height;
   const layout = { ...LAYOUT, width, height: width < 480 ? 200 : plotHeight };
@@ -359,33 +359,33 @@ export function LineChart(props: LineChartProps): JSX.Element {
         />
       </label>
       {legendInline && legend}
-      <details class="chart-table">
-        <summary>{showValuesTable ? "Chart tools and values" : "Chart tools"}</summary>
-        {props.note !== undefined && <p class="chart-note">{props.note}</p>}
-        {!legendInline && legend}
-        <div class="chart-inspection-actions">
-          <button
-            class="quiet-action chart-reset"
-            type="button"
-            disabled={selectedTime === null && hoveredTime === null && highlight === null}
-            onClick={() => {
-              resetInspection();
-              if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
-              else container.current?.focus({ preventScroll: true });
-            }}
-          >
-            Reset chart inspection
-          </button>
-          <span class="hint" id={`${props.id}-inspection-help`}>
-            Explore dates with the slider. Escape resets inspection.
-          </span>
-        </div>
+      {showInspectionDetails && (
+        <details class="chart-table">
+          <summary>Chart tools and values</summary>
+          {props.note !== undefined && <p class="chart-note">{props.note}</p>}
+          {!legendInline && legend}
+          <div class="chart-inspection-actions">
+            <button
+              class="quiet-action chart-reset"
+              type="button"
+              disabled={selectedTime === null && hoveredTime === null && highlight === null}
+              onClick={() => {
+                resetInspection();
+                if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
+                else container.current?.focus({ preventScroll: true });
+              }}
+            >
+              Reset chart inspection
+            </button>
+            <span class="hint" id={`${props.id}-inspection-help`}>
+              Explore dates with the slider. Escape resets inspection.
+            </span>
+          </div>
 
-        <p class="footnote">
-          Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.
-        </p>
+          <p class="footnote">
+            Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.
+          </p>
 
-        {showValuesTable && (
           <ChartValuesTable
             title={props.title}
             series={props.series}
@@ -393,8 +393,8 @@ export function LineChart(props: LineChartProps): JSX.Element {
             observation={observation}
             show={show}
           />
-        )}
-      </details>
+        </details>
+      )}
     </figure>
   );
 }
