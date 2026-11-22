@@ -25,8 +25,8 @@ export async function holdingsJourney({
   await visit("checkpoints");
   await survey("Checkpoints / desktop / signed out");
   await check(
-    "document.querySelectorAll('.checkpoint-list > li').length===2 && !!document.querySelector('.checkpoint-form button[type=submit]').disabled",
-    "the sample checkpoints are listed and saving is switched off while signed out",
+    "document.querySelectorAll('.checkpoint-list > li').length===4 && !!document.querySelector('.checkpoint-form button[type=submit]').disabled",
+    "the sample checkpoints for each demo year are listed and saving is switched off while signed out",
   );
   await visit("overview", 1440, "many");
   await openDetails();
