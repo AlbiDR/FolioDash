@@ -40,6 +40,15 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
     "JSON.stringify(window.auditGeometry)===JSON.stringify([...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d')))",
     "chart cue never interpolates financial paths",
   );
+  // Slow CI renderers can still be settling the preceding real range change.
+  // Wait for it to finish before proving that a reselect starts no new cue.
+  await waitFor(
+    async () =>
+      (await evaluate(
+        "window.auditChart.querySelector('.chart-svg').getAnimations().every(a=>a.playState!=='running')",
+      )) === true,
+    "initial range update settles before its active-period reselect",
+  );
   await evaluate(
     "window.auditPaths=[...window.auditChart.querySelectorAll('path.line')].map(p=>p.getAttribute('d'));window.auditOption.click()",
   );
