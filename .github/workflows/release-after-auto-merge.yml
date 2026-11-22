@@ -1,0 +1,48 @@
+name: Release after auto merge
+
+# GITHUB_TOKEN merges do not trigger push workflows. Dispatch the normal release only after the complete PR Check passes.
+on:
+  workflow_run:
+    workflows: [Check]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Dispatch checked release for the current auto-merged revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          # The workflow-run pull_requests list can be empty; resolve the exact head commit through GitHub.
+          prs=$(gh api --paginate "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/pulls" --jq '[.[] | select(.head.sha == "'$HEAD_SHA'")] | .[].number')
+          if [[ $(printf '%s\n' "$prs" | grep -c '^[0-9][0-9]*$' || true) != 1 ]]; then
+            echo 'No single associated pull request; no release dispatched.'
+            exit 0
+          fi
+          # Auto-merge can finish shortly after the final check. Wait without retrying any write.
+          for attempt in {1..30}; do
+            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$prs")
+            [[ $(jq -r '.merged' <<< "$pr") == true ]] && break
+            sleep 2
+          done
+          [[ $(jq -r '.user.login' <<< "$pr") == "$GITHUB_REPOSITORY_OWNER" ]] || exit 0
+          [[ $(jq -r '.head.repo.full_name' <<< "$pr") == "$GITHUB_REPOSITORY" ]] || exit 0
+          [[ $(jq -r '.head.sha' <<< "$pr") == "$HEAD_SHA" ]] || exit 0
+          [[ $(jq -r '.merged_by.login' <<< "$pr") == 'github-actions[bot]' ]] || exit 0
+          merged_sha=$(jq -r '.merge_commit_sha' <<< "$pr")
+          current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          [[ "$merged_sha" == "$current_sha" ]] || exit 0
+          gh workflow run release-site.yml --ref main

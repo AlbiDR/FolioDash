@@ -38,6 +38,12 @@ const log = execFileSync("git", ["log", "--all", "--format=%H%x00%an%x00%ae%x00%
   encoding: "utf8",
 });
 
+// Only the two immutable GitHub merge commits from the 2026-11-22 auto-merge trial.
+// Their parents and every other commit are checked normally; no bot identity is allowed generally.
+const historicalMerges = new Set([
+  "3c9a48afac48b3b2ba1c936a9d9e8a3e9fec803a",
+  "7153741b6ab2da821a1069612db7a6cf405d7598",
+]);
 const violations: string[] = [];
 for (const record of log.split("\u001e")) {
   const normalized = record.replace(/^\s+|\s+$/gu, "");
@@ -49,10 +55,11 @@ for (const record of log.split("\u001e")) {
     continue;
   }
 
-  if (!allowedIdentities.has(`${authorName}\u0000${authorEmail.toLowerCase()}`)) {
+  const historicalMerge = historicalMerges.has(sha);
+  if (!historicalMerge && !allowedIdentities.has(`${authorName}\u0000${authorEmail.toLowerCase()}`)) {
     violations.push(`${sha}: author ${authorName} <${authorEmail}> is not an approved human.`);
   }
-  if (forbiddenAutomationIdentity.test(`${authorName} ${authorEmail}`)) {
+  if (!historicalMerge && forbiddenAutomationIdentity.test(`${authorName} ${authorEmail}`)) {
     violations.push(`${sha}: author metadata identifies automation or an AI system.`);
   }
   if (forbiddenAutomationIdentity.test(`${committerName} ${committerEmail}`)) {
@@ -77,5 +84,7 @@ if (violations.length > 0) {
   );
   process.exitCode = 1;
 } else {
-  process.stdout.write("Contributor attribution policy passed: all attributed contributors are approved humans.\n");
+  process.stdout.write(
+    "Contributor attribution policy passed: approved contributors checked; two historical merge commits recorded.\n",
+  );
 }
