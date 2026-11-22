@@ -55,6 +55,7 @@ export function AnalysisSection(props: {
             formatValue={euroLabel}
             formatAxisValue={euroAxisLabel}
             axisUnit="EUR"
+            showValuesTable={false}
             emptyMessage="No fund has a value to plot yet."
           />
         </div>

@@ -47,6 +47,8 @@ export interface LineChartProps {
   readonly fillFirst?: boolean;
   /** Grow the plot to use height the card is given beside taller neighbours, never shrinking below the standard height. */
   readonly fillHeight?: boolean;
+  /** Offer the complete date-by-series table when the chart has a small enough data shape to be useful. */
+  readonly showValuesTable?: boolean;
   /** Text shown when there is nothing to plot. */
   readonly emptyMessage: string;
   readonly inspectionTooltip?: boolean;
@@ -71,6 +73,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const dateControl = useRef<HTMLInputElement>(null);
   const container = useRef<HTMLElement>(null);
   const fillHeight = props.fillHeight === true;
+  const showValuesTable = props.showValuesTable ?? true;
   const { width, filledHeight } = useChartSize(container, plot, fillHeight);
   const plotHeight = fillHeight && filledHeight !== null ? filledHeight : LAYOUT.height;
   const layout = { ...LAYOUT, width, height: width < 480 ? 200 : plotHeight };
@@ -119,7 +122,6 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const titleId = `${props.id}-title`;
   const descriptionId = `${props.id}-description`;
   const highlight = geometry.series.some((entry) => entry.id === highlighted) ? highlighted : null;
-
   if (geometry.empty) {
     return (
       <figure ref={container} class="chart chart-empty">
@@ -128,7 +130,6 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </figure>
     );
   }
-
   const xByTime = new Map(
     geometry.series.flatMap((entry) => entry.points.map((point) => [point.time, point.x] as const)),
   );
@@ -153,13 +154,11 @@ export function LineChart(props: LineChartProps): JSX.Element {
       return `${entry.label}: ${point === undefined ? "Unavailable" : show(point.value)}${point?.detail == null ? "" : ` (${point.detail})`}`;
     })
     .join("; ");
-
   function resetInspection(): void {
     setScrubbed(null);
     setHovered(null);
     setHighlighted(null);
   }
-
   // With two lines the readout above already names them. The highlight buttons stay inline only where a legend is
   // the way to tell many lines apart; otherwise they live with the chart tools.
   const legendInline = geometry.series.filter((entry) => !entry.muted && !entry.markers).length > 2;
@@ -194,7 +193,6 @@ export function LineChart(props: LineChartProps): JSX.Element {
       )}
     </ul>
   );
-
   function scrubTo(event: TargetedPointerEvent<SVGSVGElement>): void {
     const box = event.currentTarget.getBoundingClientRect();
     if (box.width === 0) return;
@@ -362,7 +360,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </label>
       {legendInline && legend}
       <details class="chart-table">
-        <summary>Chart tools and values</summary>
+        <summary>{showValuesTable ? "Chart tools and values" : "Chart tools"}</summary>
         {props.note !== undefined && <p class="chart-note">{props.note}</p>}
         {!legendInline && legend}
         <div class="chart-inspection-actions">
@@ -387,13 +385,15 @@ export function LineChart(props: LineChartProps): JSX.Element {
           Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.
         </p>
 
-        <ChartValuesTable
-          title={props.title}
-          series={props.series}
-          times={times}
-          observation={observation}
-          show={show}
-        />
+        {showValuesTable && (
+          <ChartValuesTable
+            title={props.title}
+            series={props.series}
+            times={times}
+            observation={observation}
+            show={show}
+          />
+        )}
       </details>
     </figure>
   );

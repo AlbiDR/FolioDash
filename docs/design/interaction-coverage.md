@@ -274,7 +274,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 36aa1201392b-1 | [months-view.tsx:282](../../src/interfaces/web/features/overview/months-view.tsx#L282) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
 | e31f7b55bac2-1 | [months-view.tsx:293](../../src/interfaces/web/features/overview/months-view.tsx#L293) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
 | 4eeac9ba431c-1 | [months-view.tsx:349](../../src/interfaces/web/features/overview/months-view.tsx#L349) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
-| 516fd464ddb2-1 | [overview-analysis.tsx:100](../../src/interfaces/web/features/overview/overview-analysis.tsx#L100) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 516fd464ddb2-1 | [overview-analysis.tsx:101](../../src/interfaces/web/features/overview/overview-analysis.tsx#L101) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 7835b073b7a4-1 | [overview-cards.tsx:87](../../src/interfaces/web/features/overview/overview-cards.tsx#L87) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
 | 7629eadcb326-1 | [overview-cards.tsx:153](../../src/interfaces/web/features/overview/overview-cards.tsx#L153) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
 | b203d838d099-1 | [overview-cards.tsx:216](../../src/interfaces/web/features/overview/overview-cards.tsx#L216) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
@@ -297,11 +297,11 @@ One row is a source template; a fund-link template can render many controls. All
 | 4e03b4ce4b63-1 | [overview-view.tsx:250](../../src/interfaces/web/features/overview/overview-view.tsx#L250) | a / action | portfolio-history-link | SOURCE CLASSIFIED; STATES OPEN |
 | d8d6a251e8a5-1 | [donut.tsx:58](../../src/interfaces/web/presentation/charts/donut.tsx#L58) | a / chart-mark | {slice.data.description ?? slice.data.label} | SOURCE CLASSIFIED; STATES OPEN |
 | f0096a0a1206-1 | [line-chart-parts.tsx:67](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L67) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
-| 7f473b4575d1-1 | [line-chart.tsx:174](../../src/interfaces/web/presentation/charts/line-chart.tsx#L174) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 82021d15f438-1 | [line-chart.tsx:242](../../src/interfaces/web/presentation/charts/line-chart.tsx#L242) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| 63b5f07c9cc3-1 | [line-chart.tsx:343](../../src/interfaces/web/presentation/charts/line-chart.tsx#L343) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| 458c1b118a98-1 | [line-chart.tsx:365](../../src/interfaces/web/presentation/charts/line-chart.tsx#L365) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
-| c7758c3b45e9-1 | [line-chart.tsx:369](../../src/interfaces/web/presentation/charts/line-chart.tsx#L369) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
+| 7f473b4575d1-1 | [line-chart.tsx:173](../../src/interfaces/web/presentation/charts/line-chart.tsx#L173) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 82021d15f438-1 | [line-chart.tsx:240](../../src/interfaces/web/presentation/charts/line-chart.tsx#L240) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:341](../../src/interfaces/web/presentation/charts/line-chart.tsx#L341) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 88ed842a2b4d-1 | [line-chart.tsx:363](../../src/interfaces/web/presentation/charts/line-chart.tsx#L363) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| c7758c3b45e9-1 | [line-chart.tsx:367](../../src/interfaces/web/presentation/charts/line-chart.tsx#L367) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
 | f2165f5f8ebb-1 | [monthly-bars.tsx:134](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L134) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9b0ee110f1fd-1 | [monthly-bars.tsx:212](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L212) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | e12440fad7f8-1 | [monthly-bars.tsx:243](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L243) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
