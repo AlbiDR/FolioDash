@@ -9,7 +9,7 @@ import type { CheckpointMarker } from "../../../../core/portfolio/checkpoints";
 import { LineChart } from "../../presentation/charts/line-chart";
 import { Amount } from "../../presentation/privacy/privacy";
 import { Icon } from "../../shared/ui/icons";
-import { euroLabel, euroAxisLabel, monthLabel, observationLabel } from "./model/chart-data";
+import { euroLabel, euroAxisLabel, monthLabel, observationDetail, observationLabel } from "./model/chart-data";
 import type { OverviewKpi, OverviewModel } from "./model/overview-model";
 import { Pill, Signed } from "./parts";
 import { portfolioAttention } from "./model/attention";
@@ -194,6 +194,11 @@ export function OverviewView(props: {
             props.model.dates,
             props.model.labels,
             markers.map((marker) => marker.date),
+          )}
+          formatObservationDetail={observationDetail(
+            props.model.dates,
+            props.model.labels,
+            props.checkpoints?.map((entry) => entry.date),
           )}
           formatValue={euroLabel}
           formatAxisValue={euroAxisLabel}

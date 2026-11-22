@@ -1,4 +1,4 @@
-import type { JSX, RefObject } from "preact";
+import type { ComponentChildren, JSX, RefObject } from "preact";
 import { AnimatedFigure } from "../animated-figure";
 import type { ChartGeometry, ChartSeries, PlottedSeries } from "./line-chart-geometry";
 import { styleClass } from "./line-chart-layout";
@@ -56,41 +56,115 @@ export function ChartReadout(props: {
 }
 
 export function ChartValuesTable(props: {
+  readonly id: string;
   readonly title: string;
   readonly series: readonly ChartSeries[];
   readonly times: readonly number[];
-  readonly observation: (time: number) => string;
+  readonly primaryDate: (time: number) => string;
+  readonly observationDetail?: (time: number) => string | null;
   readonly show: (value: number) => string;
 }): JSX.Element {
-  const { times, observation, show } = props;
+  const { times, show } = props;
+  const headingId = `${props.id}-values-heading`;
   return (
-    <div class="chart-values-scroll" role="region" aria-label={`${props.title}: values table`} tabIndex={0}>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Date</th>
-            {props.series.map((entry) => (
-              <th key={entry.id} scope="col">
-                {entry.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {times.map((time) => (
-            <tr key={time}>
-              <th scope="row">{observation(time)}</th>
-              {props.series.map((entry) => {
-                const point = entry.points.find((candidate) => candidate.time === time);
-                return (
-                  <td key={entry.id}>{point?.value === undefined || point.value === null ? "-" : show(point.value)}</td>
-                );
-              })}
+    <section class="chart-values" aria-labelledby={headingId}>
+      <div class="chart-values-heading">
+        <h3 id={headingId}>Recorded values</h3>
+        <p>Every plotted date in the selected range. A dash means no observation for that series on that date.</p>
+      </div>
+      <div class="chart-values-scroll" role="region" aria-label={`${props.title}: values table`} tabIndex={0}>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              {props.series.map((entry) => (
+                <th key={entry.id} scope="col">
+                  {entry.label}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {times.map((time) => (
+              <tr key={time}>
+                <th scope="row">
+                  <ChartDate label={props.primaryDate(time)} />
+                  <span class="chart-date-detail">{props.observationDetail?.(time) ?? ""}</span>
+                </th>
+                {props.series.map((entry) => {
+                  const point = entry.points.find((candidate) => candidate.time === time);
+                  return (
+                    <td key={entry.id} data-label={entry.label}>
+                      {point?.value === undefined || point.value === null ? "-" : show(point.value)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/** Keeps abbreviated month and year in fixed visual columns while retaining their natural spoken order. */
+export function ChartDate(props: { readonly label: string }): JSX.Element {
+  const date = /^(.*) (\d{2})$/.exec(props.label);
+  if (date === null) return <span class="chart-date-primary">{props.label}</span>;
+  return (
+    <span class="chart-date-primary">
+      <span>{date[1]}</span>
+      <span class="chart-date-year">{date[2]}</span>
+    </span>
+  );
+}
+
+/** Supporting controls and the complete, accessible data view for a line chart. */
+export function ChartInspectionDetails(props: {
+  readonly id: string;
+  readonly title: string;
+  readonly note?: string;
+  readonly legend?: ComponentChildren;
+  readonly resetDisabled: boolean;
+  readonly onReset: () => void;
+  readonly series: readonly ChartSeries[];
+  readonly times: readonly number[];
+  readonly primaryDate: (time: number) => string;
+  readonly observationDetail?: (time: number) => string | null;
+  readonly show: (value: number) => string;
+}): JSX.Element {
+  return (
+    <details class="chart-table">
+      <summary>Chart tools and values</summary>
+      <div class="chart-tools">
+        <div class="chart-tools-heading">
+          <h3>Chart tools</h3>
+          {props.note !== undefined && <p class="chart-note">{props.note}</p>}
+        </div>
+        {props.legend}
+        <div class="chart-inspection-actions">
+          <button class="quiet-action chart-reset" type="button" disabled={props.resetDisabled} onClick={props.onReset}>
+            Reset chart inspection
+          </button>
+          <span class="hint" id={`${props.id}-inspection-help`}>
+            Explore dates with the slider. Escape resets inspection.
+          </span>
+        </div>
+        <p class="chart-tool-note">
+          Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.
+        </p>
+      </div>
+      <ChartValuesTable
+        id={props.id}
+        title={props.title}
+        series={props.series}
+        times={props.times}
+        primaryDate={props.primaryDate}
+        {...(props.observationDetail === undefined ? {} : { observationDetail: props.observationDetail })}
+        show={props.show}
+      />
+    </details>
   );
 }
 

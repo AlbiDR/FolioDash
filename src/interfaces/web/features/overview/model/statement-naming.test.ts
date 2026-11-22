@@ -5,7 +5,7 @@ import { parseIsin } from "../../../../../core/values/isin";
 import { EMPTY_LEDGER, type LedgerState } from "../../../../../core/portfolio/ledger";
 import { ZERO_CENTS, toEuroCents, type EuroCents } from "../../../../../core/values/money";
 import { overviewFromLedger } from "../../../app/session/overview-from-ledger";
-import { monthLabel, observationLabel, utcTime } from "./chart-data";
+import { monthLabel, observationDetail, observationLabel, utcTime } from "./chart-data";
 import { computeDashboard } from "./dashboard-data";
 
 // Synthetic figures only. Every expected name below follows from the stated dates.
@@ -112,6 +112,12 @@ describe("chart naming", () => {
   it("X2: names a statement by its label and exact export date", () => {
     expect(name(utcTime(date("2026-09-15")))).toBe("Sep 26");
     expect(name(utcTime(date("2026-11-01")))).toBe("Oct 26, exported 1 November 2026");
+  });
+
+  it("X3: keeps an exceptional export date as secondary table detail", () => {
+    const detail = observationDetail(model.dates, model.labels);
+    expect(detail(utcTime(date("2026-09-15")))).toBeNull();
+    expect(detail(utcTime(date("2026-11-01")))).toBe("exported 1 November 2026");
   });
 
   it("X1: a calendar position that is not a statement keeps its calendar label", () => {

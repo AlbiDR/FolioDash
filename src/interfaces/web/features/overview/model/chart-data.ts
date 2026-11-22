@@ -51,3 +51,19 @@ export function observationLabel(
     return checkpoint === undefined ? named : `${named}; checkpoint also recorded`;
   };
 }
+
+/** The exceptional extraction date is secondary to the month in dense chart tables. */
+export function observationDetail(
+  dates: readonly IsoDate[],
+  labels: readonly StatementLabel[],
+  checkpointDates: readonly IsoDate[] = [],
+): (time: number) => string | null {
+  const byTime = new Map(dates.map((date, index) => [utcTime(date), labels[index]] as const));
+  const checkpoints = new Map(checkpointDates.map((date) => [utcTime(date), date] as const));
+  return (time) => {
+    const label = byTime.get(time);
+    const checkpoint = checkpoints.get(time);
+    if (label?.detail !== null && label?.detail !== undefined) return label.detail;
+    return checkpoint === undefined ? null : `Checkpoint: ${formatDateLong(checkpoint)}`;
+  };
+}

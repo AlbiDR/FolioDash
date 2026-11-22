@@ -9,7 +9,7 @@ import { type ChartSeries, arrivalBaseline, computeLineChart } from "./line-char
 import { LAYOUT, styleClass } from "./line-chart-layout";
 import {
   ChartReadout,
-  ChartValuesTable,
+  ChartInspectionDetails,
   ChartValueAxis,
   ChartTimeAxis,
   ChartInspectionDots,
@@ -37,6 +37,8 @@ export interface LineChartProps {
   readonly formatTime: (time: number) => string;
   /** Names an actual observation in the readout, the spoken value and the table. Defaults to `formatTime`. */
   readonly formatObservation?: (time: number) => string;
+  /** Exact extraction detail for a dated statement, presented beneath its month in the values table. */
+  readonly formatObservationDetail?: (time: number) => string | null;
   readonly formatValue: (value: number) => string;
   /** Short axis labels may use k/M; the exact formatter still owns the readout, accessible name and values table. */
   readonly formatAxisValue?: (value: number) => string;
@@ -360,40 +362,23 @@ export function LineChart(props: LineChartProps): JSX.Element {
       </label>
       {legendInline && legend}
       {showInspectionDetails && (
-        <details class="chart-table">
-          <summary>Chart tools and values</summary>
-          {props.note !== undefined && <p class="chart-note">{props.note}</p>}
-          {!legendInline && legend}
-          <div class="chart-inspection-actions">
-            <button
-              class="quiet-action chart-reset"
-              type="button"
-              disabled={selectedTime === null && hoveredTime === null && highlight === null}
-              onClick={() => {
-                resetInspection();
-                if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
-                else container.current?.focus({ preventScroll: true });
-              }}
-            >
-              Reset chart inspection
-            </button>
-            <span class="hint" id={`${props.id}-inspection-help`}>
-              Explore dates with the slider. Escape resets inspection.
-            </span>
-          </div>
-
-          <p class="footnote">
-            Select a legend name to highlight its line. Select it again to show all equally. The scale stays the same.
-          </p>
-
-          <ChartValuesTable
-            title={props.title}
-            series={props.series}
-            times={times}
-            observation={observation}
-            show={show}
-          />
-        </details>
+        <ChartInspectionDetails
+          id={props.id}
+          title={props.title}
+          {...(props.note === undefined ? {} : { note: props.note })}
+          {...(legendInline ? {} : { legend })}
+          resetDisabled={selectedTime === null && hoveredTime === null && highlight === null}
+          onReset={() => {
+            resetInspection();
+            if (dateControl.current?.disabled === false) dateControl.current.focus({ preventScroll: true });
+            else container.current?.focus({ preventScroll: true });
+          }}
+          series={props.series}
+          times={times}
+          primaryDate={props.formatTime}
+          {...(props.formatObservationDetail === undefined ? {} : { observationDetail: props.formatObservationDetail })}
+          show={show}
+        />
       )}
     </figure>
   );

@@ -2,6 +2,7 @@ import type { JSX } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { AnimatedFigure } from "../animated-figure";
 import { usePrivacy } from "../privacy/privacy";
+import { ChartDate } from "./line-chart-parts";
 import { useAxisLabels } from "./use-axis-labels";
 import { maskNumbers } from "../privacy/privacy-choice";
 import { type BarSnapshot } from "./motion/bar-morph";
@@ -254,24 +255,38 @@ export function MonthlyBars(props: {
       </div>
       <details class="chart-table">
         <summary>Show the values as a table</summary>
-        <div class="chart-values-scroll" role="region" aria-label={`${props.title}: monthly values table`} tabIndex={0}>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Month</th>
-                <th scope="col">{props.title}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {props.bars.map((bar) => (
-                <tr key={bar.key}>
-                  <th scope="row">{named(bar)}</th>
-                  <td>{bar.value === null ? "-" : show(bar.value)}</td>
+        <section class="chart-values" aria-labelledby={`${props.id}-values-heading`}>
+          <div class="chart-values-heading">
+            <h3 id={`${props.id}-values-heading`}>Recorded values</h3>
+            <p>Every plotted month in the selected range. A dash means the value is unavailable.</p>
+          </div>
+          <div
+            class="chart-values-scroll"
+            role="region"
+            aria-label={`${props.title}: monthly values table`}
+            tabIndex={0}
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col">{props.title}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {props.bars.map((bar) => (
+                  <tr key={bar.key}>
+                    <th scope="row">
+                      <ChartDate label={bar.label} />
+                      <span class="chart-date-detail">{bar.detail ?? ""}</span>
+                    </th>
+                    <td data-label={props.title}>{bar.value === null ? "-" : show(bar.value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </details>
     </figure>
   );
