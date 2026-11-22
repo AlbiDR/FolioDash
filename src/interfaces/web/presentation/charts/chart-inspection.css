@@ -110,8 +110,9 @@
 }
 .chart-values-scroll {
   max-width: 100%;
+  max-block-size: 30rem;
   margin-top: var(--space-3);
-  overflow-x: auto;
+  overflow: auto;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--shape-xs);
@@ -145,6 +146,10 @@
   white-space: nowrap;
 }
 .chart-table thead th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: var(--color-surface);
   color: var(--color-muted);
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
@@ -197,7 +202,9 @@
     padding: var(--space-2);
   }
   .chart-values-scroll {
-    overflow: visible;
+    max-block-size: 26rem;
+    overflow-x: visible;
+    overflow-y: auto;
     background: transparent;
     border: 0;
   }

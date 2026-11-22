@@ -66,6 +66,8 @@ export function ChartValuesTable(props: {
 }): JSX.Element {
   const { times, show } = props;
   const headingId = `${props.id}-values-heading`;
+  const valueSeries = props.series.filter((entry) => !entry.markers);
+  const checkpointSeries = props.series.find((entry) => entry.markers);
   return (
     <section class="chart-values" aria-labelledby={headingId}>
       <div class="chart-values-heading">
@@ -77,7 +79,7 @@ export function ChartValuesTable(props: {
           <thead>
             <tr>
               <th scope="col">Date</th>
-              {props.series.map((entry) => (
+              {valueSeries.map((entry) => (
                 <th key={entry.id} scope="col">
                   {entry.label}
                 </th>
@@ -86,25 +88,52 @@ export function ChartValuesTable(props: {
           </thead>
           <tbody>
             {times.map((time) => (
-              <tr key={time}>
-                <th scope="row">
-                  <ChartDate label={props.primaryDate(time)} />
-                  <span class="chart-date-detail">{props.observationDetail?.(time) ?? ""}</span>
-                </th>
-                {props.series.map((entry) => {
-                  const point = entry.points.find((candidate) => candidate.time === time);
-                  return (
-                    <td key={entry.id} data-label={entry.label}>
-                      {point?.value === undefined || point.value === null ? "-" : show(point.value)}
-                    </td>
-                  );
-                })}
-              </tr>
+              <ChartValuesRow
+                key={time}
+                time={time}
+                series={valueSeries}
+                checkpointSeries={checkpointSeries}
+                primaryDate={props.primaryDate}
+                {...(props.observationDetail === undefined ? {} : { observationDetail: props.observationDetail })}
+                show={show}
+              />
             ))}
           </tbody>
         </table>
       </div>
     </section>
+  );
+}
+
+function ChartValuesRow(props: {
+  readonly time: number;
+  readonly series: readonly ChartSeries[];
+  readonly checkpointSeries: ChartSeries | undefined;
+  readonly primaryDate: (time: number) => string;
+  readonly observationDetail?: (time: number) => string | null;
+  readonly show: (value: number) => string;
+}): JSX.Element {
+  const checkpoint = props.checkpointSeries?.points.find((point) => point.time === props.time);
+  const detail = props.observationDetail?.(props.time) ?? "";
+  const checkpointValue = checkpoint?.value == null ? "" : props.show(checkpoint.value);
+  return (
+    <tr>
+      <th scope="row">
+        <ChartDate label={props.primaryDate(props.time)} />
+        <span class="chart-date-detail">
+          {detail}
+          {checkpointValue === "" ? "" : detail === "" ? `Checkpoint: ${checkpointValue}` : ` (${checkpointValue})`}
+        </span>
+      </th>
+      {props.series.map((entry) => {
+        const point = entry.points.find((candidate) => candidate.time === props.time);
+        return (
+          <td key={entry.id} data-label={entry.label}>
+            {point?.value === undefined || point.value === null ? "-" : props.show(point.value)}
+          </td>
+        );
+      })}
+    </tr>
   );
 }
 
