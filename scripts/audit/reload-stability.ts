@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { withLocalBrowser } from "../lib/local-browser.ts";
+import { type LocalBrowser, withLocalBrowser } from "../lib/local-browser.ts";
 
 const CASES = [
   {
@@ -23,7 +23,10 @@ const CASES = [
 const WIDTHS = [390, 1024, 1440] as const;
 const results: unknown[] = [];
 
-await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
+// Keep classic scrollbars visible here so a deferred route cannot shift the shell unnoticed.
+await withLocalBrowser(checkReloads, 4297, undefined, false);
+
+async function checkReloads({ call, evaluate, origin, waitFor }: LocalBrowser): Promise<void> {
   await call("Emulation.setTimezoneOverride", { timezoneId: "UTC" });
   await call("Emulation.setEmulatedMedia", {
     features: [{ name: "prefers-reduced-motion", value: "no-preference" }],
@@ -157,7 +160,7 @@ await withLocalBrowser(async ({ call, evaluate, origin, waitFor }) => {
       identifier: setup["identifier"],
     });
   }
-}, 4297);
+}
 
 const output = resolve("dist/reload-stability");
 mkdirSync(output, { recursive: true });

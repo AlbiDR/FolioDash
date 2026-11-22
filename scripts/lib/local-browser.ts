@@ -54,6 +54,7 @@ export async function withLocalBrowser(
   run: (browser: LocalBrowser) => Promise<void>,
   APP_PORT = 4197,
   previewDirectory?: string,
+  hideScrollbars = true,
 ): Promise<void> {
   const ORIGIN = `http://127.0.0.1:${String(APP_PORT)}`;
   const chromePath =
@@ -270,7 +271,7 @@ export async function withLocalBrowser(
         "--disable-component-update",
         "--no-first-run",
         "--no-default-browser-check",
-        "--hide-scrollbars",
+        ...(hideScrollbars ? ["--hide-scrollbars"] : []),
         "--remote-debugging-port=0",
         `--user-data-dir=${profile}`,
         "about:blank",
