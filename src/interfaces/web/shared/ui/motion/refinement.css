@@ -30,6 +30,21 @@
     translate: 0 0;
   }
 }
+@keyframes brand-mark-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    scale: 0.86;
+    rotate: -8deg;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+.main-nav .brand img {
+  animation: brand-mark-arrive var(--duration-feedback) var(--ease-spring);
+}
 .expense-review,
 .expense-conflict {
   animation: workflow-arrive var(--duration-feedback) var(--ease-standard);
@@ -78,6 +93,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .main-nav .brand img {
+    animation: none;
+  }
   .card:hover {
     translate: none;
   }
