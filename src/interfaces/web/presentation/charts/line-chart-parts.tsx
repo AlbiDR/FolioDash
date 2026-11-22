@@ -55,6 +55,58 @@ export function ChartReadout(props: {
   );
 }
 
+/** The one rendering boundary from plotted series to their SVG marks. */
+export function ChartSeriesLayer(props: {
+  readonly series: readonly PlottedSeries[];
+  readonly activeTime: number | undefined;
+  readonly lastTime: number | undefined;
+  readonly fillFirst: boolean;
+  readonly hidden: boolean;
+  readonly highlight: string | null;
+}): JSX.Element {
+  return (
+    <>
+      {props.series.map((entry, index) => (
+        <g
+          key={entry.id}
+          class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${props.highlight !== null && props.highlight !== entry.id ? " unfocused" : ""}`}
+          data-series={entry.id}
+        >
+          {props.fillFirst && index === 0 && entry.areas.map((area) => <path key={area} class="area" d={area} />)}
+          {entry.paths.map((path) => (
+            <path key={path} class="line" d={path} fill="none" />
+          ))}
+          {entry.markers &&
+            entry.points.map((point) => (
+              <rect
+                key={point.time}
+                class={`checkpoint-marker${point.time === props.activeTime ? " is-active" : ""}`}
+                x={point.x - 5}
+                y={point.y - 5}
+                width={10}
+                height={10}
+                transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
+                data-time={point.time}
+                {...(props.hidden ? {} : { "data-value": point.value })}
+              />
+            ))}
+          {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
+            <circle
+              key={point.time}
+              class={point.time === props.activeTime ? "is-active" : point.time === props.lastTime ? "is-last" : ""}
+              cx={point.x}
+              cy={point.y}
+              r={4.5}
+              data-time={point.time}
+              {...(props.hidden ? {} : { "data-value": point.value })}
+            />
+          ))}
+        </g>
+      ))}
+    </>
+  );
+}
+
 export function ChartValuesTable(props: {
   readonly id: string;
   readonly title: string;

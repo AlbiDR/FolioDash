@@ -14,6 +14,7 @@ import {
   ChartTimeAxis,
   ChartInspectionDots,
   ChartInspectionTooltip,
+  ChartSeriesLayer,
 } from "./line-chart-parts";
 import { useChartSize } from "./use-chart-size";
 import { useGeometryMorph } from "./motion/use-geometry-morph";
@@ -285,45 +286,14 @@ export function LineChart(props: LineChartProps): JSX.Element {
                 "--plot-arrival-origin": `${String(arrivalBaseline(geometry))}px`,
               }}
             >
-              {geometry.series.map((entry, index) => (
-                <g
-                  key={entry.id}
-                  class={`chart-series ${styleClass(index, entry.slot)}${entry.dashed ? " dashed" : ""}${entry.muted ? " muted" : ""}${highlight !== null && highlight !== entry.id ? " unfocused" : ""}`}
-                  data-series={entry.id}
-                >
-                  {props.fillFirst === true &&
-                    index === 0 &&
-                    entry.areas.map((area) => <path key={area} class="area" d={area} />)}
-                  {entry.paths.map((path) => (
-                    <path key={path} class="line" d={path} fill="none" />
-                  ))}
-                  {entry.markers &&
-                    entry.points.map((point) => (
-                      <rect
-                        key={point.time}
-                        class={`checkpoint-marker${point.time === activeTime ? " is-active" : ""}`}
-                        x={point.x - 5}
-                        y={point.y - 5}
-                        width={10}
-                        height={10}
-                        transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
-                        data-time={point.time}
-                        {...(hidden ? {} : { "data-value": point.value })}
-                      />
-                    ))}
-                  {(entry.muted || entry.markers ? [] : entry.points).map((point) => (
-                    <circle
-                      key={point.time}
-                      class={point.time === activeTime ? "is-active" : point.time === lastTime ? "is-last" : ""}
-                      cx={point.x}
-                      cy={point.y}
-                      r={4.5}
-                      data-time={point.time}
-                      {...(hidden ? {} : { "data-value": point.value })}
-                    />
-                  ))}
-                </g>
-              ))}
+              <ChartSeriesLayer
+                series={geometry.series}
+                activeTime={activeTime}
+                lastTime={lastTime}
+                fillFirst={props.fillFirst === true}
+                hidden={hidden}
+                highlight={highlight}
+              />
             </g>
           </g>
           {showTooltip && <ChartInspectionDots series={geometry.series} time={activeTime} highlight={highlight} />}
