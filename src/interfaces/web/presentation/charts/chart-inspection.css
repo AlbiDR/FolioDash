@@ -181,9 +181,7 @@
   text-align: right;
 }
 
-/* Reserve the second line even when an export was a normal month-end statement. */
 .chart-date-detail {
-  min-height: 1.4em;
   color: var(--color-muted);
   font-size: var(--text-caption);
   font-weight: var(--weight-regular);
@@ -249,9 +247,6 @@
     font-size: var(--text-body);
     font-weight: var(--weight-semibold);
     text-align: left;
-  }
-  .chart-date-detail {
-    min-height: 0;
   }
   .chart-values-scroll tbody td {
     display: grid;
