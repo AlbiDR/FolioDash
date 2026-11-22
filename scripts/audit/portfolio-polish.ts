@@ -107,7 +107,7 @@ await withLocalBrowser(async (browser) => {
       staggeredText: !!title && !!supporting && title.effect.getTiming().delay < supporting.effect.getTiming().delay,
       line: read('.portfolio-trend .plot-arrive', 'plot-rise'),
       sparkline: read('.sparkline .plot-arrive', 'plot-rise'),
-      bars: read('.bars .bar.plot-arrive', 'plot-rise'),
+      bars: read('.bars .bar.motion-bar-rise', 'plot-rise'),
       allocation: read('.donut-arrive', 'ring-grow'),
       weight: read('.share-bar > span', 'bar-grow'),
     };

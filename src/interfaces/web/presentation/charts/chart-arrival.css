@@ -30,10 +30,17 @@
 }
 .motion-bar-rise,
 .motion-ranking-rise {
-  animation-name: bar-grow;
   animation-duration: var(--duration-arrival);
   animation-timing-function: var(--ease-arrival);
   animation-fill-mode: backwards;
+}
+.motion-bar-rise {
+  /* Monthly bars grow from their exact zero line, including losses. */
+  animation-name: plot-rise;
+  transform-origin: 0 var(--plot-arrival-origin);
+}
+.motion-ranking-rise {
+  animation-name: bar-grow;
 }
 .motion-ring-slice {
   animation-name: ring-slice-arrive;
