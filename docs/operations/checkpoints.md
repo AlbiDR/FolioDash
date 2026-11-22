@@ -11,7 +11,7 @@ Decision: FD-026 (the owner's private register).
 - **The list** on the Checkpoints screen shows every active checkpoint, newest first. **Withdraw** takes one off the chart after a confirmation; a correction is a withdrawal followed by a new checkpoint, which may use the same date. Both stay in the log.
 - After any unsuccessful read of the log (altered, missing, incomplete or unreachable) the chart draws no markers until a read succeeds, while the screen keeps listing the device copy with the explanation. When the app is simply not connected, the device copy is shown as it is.
 - A save whose outcome was never confirmed is described on the screen (its date, amount and note, or the checkpoint a withdrawal targets). A command that exists in Google with different content is treated as an integrity failure, never as proof nothing was sent: the receipt stays and writes stay blocked.
-- The signed-out demo shows two sample checkpoints so the screen and the chart can be seen.
+- The signed-out demo shows one sample checkpoint per available year, placed mid-year so the screen and chart show them across the history.
 
 ## Where the data lives
 

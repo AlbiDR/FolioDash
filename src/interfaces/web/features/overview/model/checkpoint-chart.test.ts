@@ -104,8 +104,13 @@ describe("checkpoint markers on the chart", () => {
     expect(withMarkers.metricTrends).toEqual(without.metricTrends);
   });
 
-  it("only the demo has sample checkpoints", () => {
-    expect(demoCheckpoints(demoPortfolio("typical"))).toHaveLength(2);
+  it("only the demo has one sample checkpoint per year", () => {
+    expect(demoCheckpoints(demoPortfolio("typical")).map((entry) => entry.date)).toEqual([
+      date("2023-07-25"),
+      date("2024-07-25"),
+      date("2025-07-25"),
+      date("2026-06-25"),
+    ]);
     expect(demoCheckpoints(demoPortfolio("empty"))).toEqual([]);
   });
 

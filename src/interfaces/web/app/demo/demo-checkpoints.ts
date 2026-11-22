@@ -11,20 +11,26 @@ function after(date: IsoDate, days: number): IsoDate | null {
 }
 
 /**
- * Two synthetic checkpoints between the demo's last statements, so the sample chart and screen show what a
- * checkpoint looks like. They hold no real amount and exist only in the signed-out demo.
+ * One synthetic checkpoint in the middle of each demo year, so the sample chart and screen show what a
+ * checkpoint looks like across the history. They hold no real amount and exist only in the signed-out demo.
  */
 export function demoCheckpoints(model: OverviewModel): readonly Checkpoint[] {
-  if (model.source !== "demo" || model.dates.length < 2) return [];
+  if (model.source !== "demo" || model.dates.length === 0) return [];
   const result: Checkpoint[] = [];
-  for (const [offset, position, days] of [
-    [1.012, model.dates.length - 2, 10],
-    [1.01, model.dates.length - 1, 9],
-  ] as const) {
+  const yearPositions = new Map<string, number[]>();
+  model.dates.forEach((date, position) => {
+    const year = date.slice(0, 4);
+    const positions = yearPositions.get(year) ?? [];
+    positions.push(position);
+    yearPositions.set(year, positions);
+  });
+  for (const positions of yearPositions.values()) {
+    const position = positions[Math.floor(positions.length / 2)];
+    if (position === undefined) continue;
     const statement = model.dates[position];
     const total = model.totals[position]?.value;
-    const date = statement === undefined ? null : after(statement, days);
-    const cents = total === undefined ? null : toEuroCents(Math.round(total * offset));
+    const date = statement === undefined ? null : after(statement, 10);
+    const cents = total === undefined ? null : toEuroCents(Math.round(total * 1.01));
     if (date !== null && cents !== null)
       result.push({ id: `demo-checkpoint-${String(position)}`, date, cents, note: "Sample" });
   }
