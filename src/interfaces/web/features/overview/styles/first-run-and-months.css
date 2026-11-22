@@ -153,18 +153,39 @@
   margin-top: var(--space-3);
 }
 
-/* ---------- Wide screens ---------- */
-@media (min-width: 73.751rem) {
+/* ---------- Portfolio composition ---------- */
+/*
+ * The shell keeps its desktop sidebar from 64rem onwards.  The viewport can
+ * therefore be wide while this dashboard is not: keying its hierarchy to the
+ * viewport would squeeze the summary rail beside a dominant chart.  The
+ * dashboard's own inline size is the available space for these two primary
+ * surfaces, so it is the only safe condition for the wide composition.
+ */
+.portfolio-dashboard {
+  container: portfolio-dashboard / inline-size;
+}
+
+/* Override the shared viewport-based cell spans whenever the shell leaves the
+ * dashboard below its own wide threshold. */
+@container portfolio-dashboard (max-width: 69.999rem) {
+  .portfolio-dashboard > .hero.cell-4,
+  .portfolio-dashboard > .portfolio-trend.cell-8,
+  .portfolio-dashboard > .period-results.cell-4 {
+    grid-column: 1 / -1;
+  }
+}
+
+@container portfolio-dashboard (min-width: 70rem) {
   .portfolio-dashboard > .hero {
-    grid-column: 1 / 5;
+    grid-column: 1 / 6;
     grid-row: 1;
   }
   .portfolio-dashboard > .portfolio-trend {
-    grid-column: 5 / -1;
+    grid-column: 6 / -1;
     grid-row: 1 / 3;
   }
   .portfolio-dashboard > .period-results {
-    grid-column: 1 / 5;
+    grid-column: 1 / 6;
     grid-row: 2;
   }
 }

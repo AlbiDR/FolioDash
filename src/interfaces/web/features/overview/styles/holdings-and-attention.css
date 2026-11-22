@@ -28,12 +28,15 @@
 }
 /* On intermediate screens the holdings table spans the dashboard. Keep both
  * supporting cards on that same grid instead of leaving an empty half-row. */
-@media (min-width: 47.501rem) and (max-width: 73.75rem) {
+@container portfolio-dashboard (min-width: 47.501rem) and (max-width: 69.999rem) {
+  .portfolio-dashboard > .portfolio-holdings.cell-8,
   .portfolio-dashboard > .portfolio-rail {
     grid-column: 1 / -1;
+  }
+  .portfolio-dashboard > .portfolio-rail {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .analysis-grid > .cell-4 {
+  .analysis-grid > :is(.cell-4, .cell-8) {
     grid-column: 1 / -1;
   }
 }
