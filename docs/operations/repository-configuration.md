@@ -35,7 +35,7 @@ Public OAuth client IDs are public by design, so they are variables and never se
 | File | Purpose |
 |---|---|
 | `.github/allowed-contributors.json` | The only humans whose attribution is accepted; GitHub no-reply addresses only, never a personal address |
-| `scripts/verify/project/contributors.ts` | Rejects unapproved or automated authors, committers and co-authors, with two exact historical GitHub merge commit IDs recorded after the auto-merge trial. Their parents and every other commit are checked normally. Dependency-free |
+| `scripts/verify/project/contributors.ts` | Checks all commit authors and co-authors against the approved humans, with an exception for GitHub Actions pull-request merge commits with two parents and GitHub committer metadata. Dependency-free, so it needs no tooling decision |
 | `.github/workflows/verify.yml` | Runs contributor attribution through `npm run verify` on Node 22 with complete history; no separate attribution workflow |
 | `scripts/verify/project/workflows.ts` | Runs pinned, checksum-verified actionlint locally and in the workflow validation job; no npm dependencies required |
 | `scripts/verify/code/punctuation.ts`, `scripts/verify/code/punctuation-policy.ts` | Fails on any em dash or en dash in any tracked text file, with its file, line and column. There is no exception: use a plain hyphen, a colon, a comma or a full stop. Dependency-free. It runs as part of `npm run verify` |
@@ -59,16 +59,16 @@ Settings applied by the owner's request: secret scanning and push protection, De
 
 **Read-only inspection, 2026-11-18, changed nothing.** The live settings match this section: the repository is public; secret scanning and push protection are enabled; the `Protect main` ruleset is active; SHA pinning is required for actions; the `github-pages` environment is restricted to custom branch policies; and `apps-script-deploy` still has no protection rule. Three things are off and unmentioned above: Dependabot security updates (consistent with the decision below), secret scanning for non-provider patterns, and secret-scanning validity checks. The last two are optional features the owner has not been asked about.
 
-**No scheduled Dependabot updates, by design:** the attribution policy rejects any commit authored by automation, and Dependabot's commits are bot-authored, so its pull requests fail it. Version updates are off (no `dependabot.yml`), alerts stay on, the weekly Verify run audits dependencies, and updates are made by hand (a pinned action is updated by editing its SHA). Dependabot security-update pull requests are turned off in the repository settings (owner, 2026-11-02) for the same reason.
+**No scheduled Dependabot updates, by design:** the attribution policy rejects automated authored commits except GitHub Actions pull-request merge commits, and Dependabot's commits are bot-authored, so its pull requests fail it. Version updates are off (no `dependabot.yml`), alerts stay on, the weekly Verify run audits dependencies, and updates are made by hand (a pinned action is updated by editing its SHA). Dependabot security-update pull requests are turned off in the repository settings (owner, 2026-11-02) for the same reason.
 
-**Main policy (2026-11-22):** The owner directed that the project work on `main` as its only branch and not use pull requests for normal changes. Local work runs `npm run verify` and applicable rendered audits before a direct push. The `Protect main` ruleset blocks deletion and force-push, but does not require a pull request or a status check before a push. The full release gate, including README screenshot capture and validation, still runs on `main` and blocks Pages publication if it fails. A direct push is public before that release gate finishes.
+**Main merge policy (2026-11-22):** The owner requested automatic merging to reduce pull-request interruptions. The `Protect main` ruleset still requires a pull request and the `Gate / Validate README screenshots` check against the current base. Repository auto-merge is enabled. The `Auto merge` workflow requests a merge for non-draft pull requests opened or updated by the repository owner from a branch in this repository; it never checks out pull-request code. Forks and other authors do not receive this automation. GitHub waits for the required check; other CI jobs are not currently required by the ruleset and may still be running when a merge occurs. The release workflow independently verifies and publishes the checked main revision. A failed required check, merge conflict or draft state leaves the pull request open for attention; automatic merge never bypasses those conditions.
 
 ## 3. Environment and workflow rules (proposed)
 
 - Apps Script environment: removed on 2026-11-19 with the service, so no environment protection applies to it.
-- Deploy workflows run only on `workflow_dispatch` or a push to `main`. They never run on pull requests and never execute pull-request code.
+- Deploy workflows run only on `workflow_dispatch` or after merge to `main`. They never run on pull requests. The owner-only Auto merge workflow uses `pull_request_target` solely to request a merge and never checks out or executes pull-request code.
 - Default workflow token is read-only (already the case). A job raises permissions only for what it needs.
-- Third-party actions are pinned to a full commit SHA. Dependencies are reviewed before being updated on `main`.
+- Third-party actions are pinned to a full commit SHA. Dependencies are updated by reviewed pull requests.
 - Logs never print secrets or tokens, and debug logging stays off.
 - Fork pull requests get no secrets. Require approval before workflows run for outside contributors.
 - Revoking a leaked clasp token is done in the Google account's third-party access settings, then the secret is replaced.

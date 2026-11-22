@@ -34,32 +34,33 @@ const allowedIdentities = new Set<string>(
 const forbiddenAutomationIdentity =
   /(?:\b(?:ai|bot)\b|claude|codex|copilot|chatgpt|openai|anthropic|gemini|dependabot|github-actions|cursor)/iu;
 
-const log = execFileSync("git", ["log", "--all", "--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x00%x1e"], {
+const log = execFileSync("git", ["log", "--all", "--format=%H%x00%P%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x00%x1e"], {
   encoding: "utf8",
 });
 
-// Only the two immutable GitHub merge commits from the 2026-11-22 auto-merge trial.
-// Their parents and every other commit are checked normally; no bot identity is allowed generally.
-const historicalMerges = new Set([
-  "3c9a48afac48b3b2ba1c936a9d9e8a3e9fec803a",
-  "7153741b6ab2da821a1069612db7a6cf405d7598",
-]);
 const violations: string[] = [];
 for (const record of log.split("\u001e")) {
   const normalized = record.replace(/^\s+|\s+$/gu, "");
   if (normalized.length === 0) continue;
-  const [sha, authorName, authorEmail, committerName, committerEmail, ...messageParts] = normalized.split("\u0000");
+  const [sha, parents, authorName, authorEmail, committerName, committerEmail, ...messageParts] =
+    normalized.split("\u0000");
   const message = messageParts.join("\u0000");
   if (!sha || !authorName || !authorEmail || !committerName || !committerEmail) {
     violations.push("Unable to parse a commit attribution record.");
     continue;
   }
 
-  const historicalMerge = historicalMerges.has(sha);
-  if (!historicalMerge && !allowedIdentities.has(`${authorName}\u0000${authorEmail.toLowerCase()}`)) {
+  const githubMerge =
+    parents?.split(" ").length === 2 &&
+    authorName === "github-actions[bot]" &&
+    authorEmail === "41898282+github-actions[bot]@users.noreply.github.com" &&
+    committerName === "GitHub" &&
+    committerEmail === "noreply@github.com" &&
+    /^Merge pull request #\d+ from /u.test(message);
+  if (!githubMerge && !allowedIdentities.has(`${authorName}\u0000${authorEmail.toLowerCase()}`)) {
     violations.push(`${sha}: author ${authorName} <${authorEmail}> is not an approved human.`);
   }
-  if (!historicalMerge && forbiddenAutomationIdentity.test(`${authorName} ${authorEmail}`)) {
+  if (!githubMerge && forbiddenAutomationIdentity.test(`${authorName} ${authorEmail}`)) {
     violations.push(`${sha}: author metadata identifies automation or an AI system.`);
   }
   if (forbiddenAutomationIdentity.test(`${committerName} ${committerEmail}`)) {
@@ -84,7 +85,5 @@ if (violations.length > 0) {
   );
   process.exitCode = 1;
 } else {
-  process.stdout.write(
-    "Contributor attribution policy passed: approved contributors checked; two historical merge commits recorded.\n",
-  );
+  process.stdout.write("Contributor attribution policy passed: contributors and GitHub merge commits checked.\n");
 }
