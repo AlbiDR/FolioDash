@@ -50,17 +50,25 @@ export async function assertPortfolioLayout(
           const chart = stat.querySelector('.sparkline').getBoundingClientRect();
           const pill = stat.querySelector('.pill');
           const value = stat.querySelector('.stat-value').getBoundingClientRect();
+          const pillBox = pill?.getBoundingClientRect();
           return {
             chartWidth: chart.width,
             pillPresent: pill !== null,
-            pillBeforeChart: pill === null || pill.getBoundingClientRect().right < chart.left,
-            pillGap: pill === null ? null : pill.getBoundingClientRect().left - value.right,
+            valueRight: value.right,
+            pillLeft: pillBox?.left ?? null,
+            pillBeforeChart: pillBox === undefined || pillBox.right < chart.left,
           };
         }),
       };
     })()`)) as {
       width: number;
-      trends: { chartWidth: number; pillPresent: boolean; pillBeforeChart: boolean; pillGap: number | null }[];
+      trends: {
+        chartWidth: number;
+        pillPresent: boolean;
+        valueRight: number;
+        pillLeft: number | null;
+        pillBeforeChart: boolean;
+      }[];
     };
     assert.ok(
       trends.width >= 28 * 16 && trends.width < 38 * 16,
@@ -68,11 +76,14 @@ export async function assertPortfolioLayout(
     );
     assert.ok(
       trends.trends.length === 3 &&
-        trends.trends.every(
-          (trend) =>
-            trend.chartWidth >= 10 * 16 && trend.pillBeforeChart && (trend.pillGap === null || trend.pillGap <= 3 * 16),
-        ),
-      `changes-expanded: trend panels expand while each percentage remains with its amount (${JSON.stringify(trends)})`,
+        trends.trends.every((trend) => trend.chartWidth >= 10 * 16 && trend.pillBeforeChart),
+      `changes-expanded: trend panels expand without displacing their percentages (${JSON.stringify(trends)})`,
+    );
+    const aligned = trends.trends.filter((trend) => trend.pillPresent);
+    assert.ok(
+      aligned.every((trend) => Math.abs(trend.valueRight - (aligned[0]?.valueRight ?? trend.valueRight)) < 1) &&
+        aligned.every((trend) => Math.abs((trend.pillLeft ?? 0) - (aligned[0]?.pillLeft ?? trend.pillLeft ?? 0)) < 1),
+      `changes-expanded: numeric columns stay aligned when figures have different widths (${JSON.stringify(trends)})`,
     );
     return { name: "changes-expanded trends", result: trends };
   }

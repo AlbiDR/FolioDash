@@ -102,14 +102,27 @@
   height: 3rem;
   margin: 0;
 }
-/* A card that is wider than a phone row but not wide enough for three metrics
- * can give each trend its own readable panel. The chart consumes only space
- * the figure does not need, then the three-column layout below takes over. */
-@container periods (min-width: 28rem) and (max-width: 37.999rem) {
+/* Once a Change row has room for a trend, every row keeps the same three
+ * columns. Values and percentages end on stable grid lines regardless of the
+ * digits they contain; the trend grows continuously with the card instead of
+ * jumping to a separate three-column composition at a second breakpoint. */
+@container periods (min-width: 28rem) {
   .stat {
-    grid-template-columns: max-content auto minmax(10rem, 1fr);
+    grid-template-columns: minmax(0, 1fr) 6.25ch clamp(10rem, 34cqi, 18rem);
     grid-template-areas: "label label spark" "value pill spark" "caption caption spark";
     column-gap: var(--space-2);
+  }
+  .stat > .stat-value {
+    min-inline-size: 0;
+    justify-self: end;
+    text-align: end;
+    white-space: nowrap;
+  }
+  .stat > .pill {
+    min-inline-size: 6.25ch;
+    justify-self: end;
+    padding-inline: var(--space-1);
+    text-align: center;
   }
   .stat > .sparkline {
     width: 100%;
@@ -119,31 +132,5 @@
     border-radius: 0;
     background: transparent;
     box-shadow: inset 1px 0 0 var(--color-border);
-  }
-}
-@container periods (min-width: 38rem) {
-  .period-results {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: var(--space-4);
-  }
-  .period-results > .card-title,
-  .period-results > .footnote {
-    grid-column: 1 / -1;
-  }
-  .period-results > .stat,
-  .period-results > .stat:last-of-type {
-    padding-block: var(--space-2) 0;
-  }
-  .period-results > .stat + .stat {
-    border-top: 0;
-  }
-  .stat {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: "label label" "value pill" "caption caption" "spark spark";
-  }
-  .stat > .sparkline {
-    width: 100%;
-    height: 2.5rem;
-    justify-self: stretch;
   }
 }
