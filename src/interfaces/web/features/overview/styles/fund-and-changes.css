@@ -107,13 +107,18 @@
  * the figure does not need, then the three-column layout below takes over. */
 @container periods (min-width: 28rem) and (max-width: 37.999rem) {
   .stat {
-    grid-template-columns: minmax(0, 1fr) auto minmax(9rem, 0.8fr);
+    grid-template-columns: max-content auto minmax(10rem, 1fr);
     grid-template-areas: "label label spark" "value pill spark" "caption caption spark";
+    column-gap: var(--space-2);
   }
   .stat > .sparkline {
     width: 100%;
     height: 3.25rem;
     justify-self: stretch;
+    padding: 0 0 0 var(--space-2);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: inset 1px 0 0 var(--color-border);
   }
 }
 @container periods (min-width: 38rem) {

@@ -49,21 +49,30 @@ export async function assertPortfolioLayout(
         trends: stats.map(stat => {
           const chart = stat.querySelector('.sparkline').getBoundingClientRect();
           const pill = stat.querySelector('.pill');
+          const value = stat.querySelector('.stat-value').getBoundingClientRect();
           return {
             chartWidth: chart.width,
             pillPresent: pill !== null,
             pillBeforeChart: pill === null || pill.getBoundingClientRect().right < chart.left,
+            pillGap: pill === null ? null : pill.getBoundingClientRect().left - value.right,
           };
         }),
       };
-    })()`)) as { width: number; trends: { chartWidth: number; pillPresent: boolean; pillBeforeChart: boolean }[] };
+    })()`)) as {
+      width: number;
+      trends: { chartWidth: number; pillPresent: boolean; pillBeforeChart: boolean; pillGap: number | null }[];
+    };
     assert.ok(
       trends.width >= 28 * 16 && trends.width < 38 * 16,
       "changes-expanded: card is in the expanded-trend range",
     );
     assert.ok(
-      trends.trends.length === 3 && trends.trends.every((trend) => trend.chartWidth >= 9 * 16 && trend.pillBeforeChart),
-      "changes-expanded: every trend claims its inline panel without displacing its percentage",
+      trends.trends.length === 3 &&
+        trends.trends.every(
+          (trend) =>
+            trend.chartWidth >= 10 * 16 && trend.pillBeforeChart && (trend.pillGap === null || trend.pillGap <= 3 * 16),
+        ),
+      `changes-expanded: trend panels expand while each percentage remains with its amount (${JSON.stringify(trends)})`,
     );
     return { name: "changes-expanded trends", result: trends };
   }
