@@ -165,9 +165,10 @@
 }
 
 .chart-date-primary {
-  display: grid;
-  grid-template-columns: minmax(3ch, 1fr) 2ch;
+  display: inline-grid;
+  grid-template-columns: 3ch 2ch;
   column-gap: var(--space-1);
+  width: 5.75ch;
   font-weight: var(--weight-semibold);
 }
 
@@ -182,6 +183,12 @@
   font-size: var(--text-caption);
   font-weight: var(--weight-regular);
   line-height: 1.4;
+  white-space: normal;
+}
+
+.chart-table th:first-child {
+  width: 7rem;
+  min-width: 7rem;
 }
 
 @media (max-width: 47.5rem) {
