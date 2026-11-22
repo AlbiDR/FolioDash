@@ -1,5 +1,4 @@
 // Control inspection: samples every rendered control at rest, hover, focus, press and release.
-import { setTimeout as delay } from "node:timers/promises";
 import type { LocalBrowser } from "../../lib/local-browser.ts";
 import { counters, problems, report, type RenderedControl } from "./state.ts";
 
@@ -32,7 +31,15 @@ export function surveyStates({ call, evaluate, waitFor }: LocalBrowser) {
       await Promise.all(
         ids.map((nodeId) => call("CSS.forcePseudoState", { nodeId, forcedPseudoClasses: pseudoClasses })),
       );
-      await delay(60);
+      // Flush style and let the browser begin its transitions before checking their actual completion.
+      await evaluate("new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
+      await waitFor(
+        async () =>
+          (await evaluate(
+            "document.getAnimations().every(a=>a.playState!=='running'||a.effect?.getComputedTiming().iterations===Infinity)",
+          )) === true,
+        `${state}: forced state animation settlement`,
+      );
     };
     const hover =
       !process.argv.includes("--focus-only") &&
