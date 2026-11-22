@@ -42,17 +42,28 @@ export async function assertPortfolioLayout(
   if (screen.name === "changes-expanded") {
     const trends = (await evaluate(`(() => {
       const card = document.querySelector('.period-results');
-      const charts = [...card.querySelectorAll('.stat > .sparkline')];
+      const stats = [...card.querySelectorAll('.stat')];
       const width = card.getBoundingClientRect().width;
-      return { width, chartWidths: charts.map(chart => chart.getBoundingClientRect().width) };
-    })()`)) as { width: number; chartWidths: number[] };
+      return {
+        width,
+        trends: stats.map(stat => {
+          const chart = stat.querySelector('.sparkline').getBoundingClientRect();
+          const pill = stat.querySelector('.pill');
+          return {
+            chartWidth: chart.width,
+            pillPresent: pill !== null,
+            pillBeforeChart: pill === null || pill.getBoundingClientRect().right < chart.left,
+          };
+        }),
+      };
+    })()`)) as { width: number; trends: { chartWidth: number; pillPresent: boolean; pillBeforeChart: boolean }[] };
     assert.ok(
       trends.width >= 28 * 16 && trends.width < 38 * 16,
       "changes-expanded: card is in the expanded-trend range",
     );
     assert.ok(
-      trends.chartWidths.length === 3 && trends.chartWidths.every((width) => width >= 9 * 16),
-      "changes-expanded: every trend claims its available inline panel",
+      trends.trends.length === 3 && trends.trends.every((trend) => trend.chartWidth >= 9 * 16 && trend.pillBeforeChart),
+      "changes-expanded: every trend claims its inline panel without displacing its percentage",
     );
     return { name: "changes-expanded trends", result: trends };
   }
