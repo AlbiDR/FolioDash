@@ -43,9 +43,13 @@
 .period-results {
   container: periods / inline-size;
   display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(0, 1fr);
   align-content: start;
-  gap: 0;
+  gap: 0 var(--space-2);
   min-width: 0;
+}
+.period-results > * {
+  grid-column: 1 / -1;
 }
 .period-results > .card-title {
   margin-bottom: var(--space-1);
@@ -90,6 +94,7 @@
 }
 .stat > .pill {
   grid-area: pill;
+  white-space: nowrap;
 }
 .stat > .stat-caption {
   grid-area: caption;
@@ -102,13 +107,24 @@
   height: 3rem;
   margin: 0;
 }
+@container periods (max-width: 20rem) {
+  .stat {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "label label" "value pill" "caption caption" "spark spark";
+  }
+  .stat > .sparkline {
+    width: 100%;
+    height: 2.5rem;
+    margin-top: var(--space-2);
+  }
+}
 /* Once a Change row has room for a trend, every row keeps the same three
  * columns. Values and percentages end on stable grid lines regardless of the
  * digits they contain; the trend grows continuously with the card instead of
  * jumping to a separate three-column composition at a second breakpoint. */
 @container periods (min-width: 28rem) {
   .stat {
-    grid-template-columns: minmax(0, 1fr) 6.25ch clamp(10rem, 34cqi, 18rem);
+    grid-template-columns: subgrid;
     grid-template-areas: "label label spark" "value pill spark" "caption caption spark";
     column-gap: var(--space-2);
   }
@@ -119,10 +135,10 @@
     white-space: nowrap;
   }
   .stat > .pill {
-    min-inline-size: 6.25ch;
-    justify-self: end;
+    justify-self: start;
     padding-inline: var(--space-1);
     text-align: center;
+    white-space: nowrap;
   }
   .stat > .sparkline {
     width: 100%;

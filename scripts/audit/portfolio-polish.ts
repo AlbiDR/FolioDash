@@ -359,6 +359,19 @@ await withLocalBrowser(async (browser) => {
       writeFileSync(resolve(output, `${screen.name}-full.png`), Buffer.from(String(full["data"]), "base64"));
     }
     results.push({ name: screen.name, result: layout });
+    if (["narrow", "phone-dark", "changes-expanded", "sidebar-constrained", "desktop-dark"].includes(screen.name)) {
+      await evaluate("document.querySelector('.period-results').scrollIntoView({block:'center',behavior:'instant'})");
+      const card = (await evaluate(`(() => {
+        const r = document.querySelector('.period-results').getBoundingClientRect();
+        return {x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height};
+      })()`)) as { x: number; y: number; width: number; height: number };
+      const shot = await call("Page.captureScreenshot", {
+        format: "png",
+        captureBeyondViewport: true,
+        clip: { ...card, scale: 1 },
+      });
+      writeFileSync(resolve(output, `changes-${screen.name}.png`), Buffer.from(String(shot["data"]), "base64"));
+    }
   }
 }, 4248);
 

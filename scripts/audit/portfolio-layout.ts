@@ -53,6 +53,10 @@ export async function assertPortfolioLayout(
           const pillBox = pill?.getBoundingClientRect();
           return {
             chartWidth: chart.width,
+            chartLeft: chart.left,
+            chartRight: chart.right,
+            rowLeft: stat.getBoundingClientRect().left,
+            rowRight: stat.getBoundingClientRect().right,
             pillPresent: pill !== null,
             valueRight: value.right,
             pillLeft: pillBox?.left ?? null,
@@ -64,6 +68,10 @@ export async function assertPortfolioLayout(
       width: number;
       trends: {
         chartWidth: number;
+        chartLeft: number;
+        chartRight: number;
+        rowLeft: number;
+        rowRight: number;
         pillPresent: boolean;
         valueRight: number;
         pillLeft: number | null;
@@ -80,6 +88,16 @@ export async function assertPortfolioLayout(
       `changes-expanded: trend panels expand without displacing their percentages (${JSON.stringify(trends)})`,
     );
     const aligned = trends.trends.filter((trend) => trend.pillPresent);
+    assert.ok(
+      trends.trends.every(
+        (trend) =>
+          Math.abs(trend.chartLeft - (trends.trends[0]?.chartLeft ?? 0)) < 1 &&
+          Math.abs(trend.chartRight - (trends.trends[0]?.chartRight ?? 0)) < 1 &&
+          Math.abs(trend.rowLeft - (trends.trends[0]?.rowLeft ?? 0)) < 1 &&
+          Math.abs(trend.rowRight - (trends.trends[0]?.rowRight ?? 0)) < 1,
+      ),
+      "changes-expanded: chart edges and row separator edges align",
+    );
     assert.ok(
       aligned.every((trend) => Math.abs(trend.valueRight - (aligned[0]?.valueRight ?? trend.valueRight)) < 1) &&
         aligned.every((trend) => Math.abs((trend.pillLeft ?? 0) - (aligned[0]?.pillLeft ?? trend.pillLeft ?? 0)) < 1),
