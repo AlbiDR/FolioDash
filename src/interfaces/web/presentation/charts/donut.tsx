@@ -1,5 +1,6 @@
 import type { ComponentChildren, JSX } from "preact";
 import { arc, pie } from "d3-shape";
+import { chartArrivalClass, chartArrivalOrder } from "./motion/recipe";
 
 export interface DonutSlice {
   readonly id: string;
@@ -47,9 +48,10 @@ export function Donut(props: {
               arcs.map((slice, index) => {
                 const path = (
                   <path
-                    class={`donut-slice series-${String(index % 8)}`}
+                    class={`donut-slice ${chartArrivalClass("ring-slice")} series-${String(index % 8)}`}
                     data-active={props.activeId === slice.data.id}
                     d={draw(slice) ?? ""}
+                    style={chartArrivalOrder(index)}
                   />
                 );
                 return slice.data.href === undefined ? (

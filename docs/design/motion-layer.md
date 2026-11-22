@@ -1,6 +1,6 @@
 # Motion layer
 
-Status: **Revised 2026-11-19 after review. Steps 1 to 3 done; step 4 closed without code, because its conditions are not met; step 5 recorded the motion stylesheets and their owners.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, the bar morph and presence use them. The changes are behaviour-neutral: the rendered audits pass, and the import journey also asserts presence shifts. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change any visual design or token value. The first draft was committed in `0f63c5a`; this revision supersedes it.
+Status: **Revised 2026-11-22 after the Verdin adaptation review.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, bar morph and presence use them. The data-reveal recipes below now give charts named, token-owned adoption points. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change financial calculation or privacy timing. The first draft was committed in `0f63c5a`; this revision supersedes it.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-12, UXC-13 and ARC-13, the [interaction coverage](interaction-coverage.md) contract and the [rendered interaction audit](../operations/interactions.md). Architecture, not a redesign, so the [Astryx reference](astryx-reference.md) is not the governing reference for the mechanics. Any visual change still follows its own design record.
 
@@ -37,6 +37,18 @@ The feedback CSS keeps its present owners for now. A later step inventories the 
 - Pure timing and geometry live in `.ts` files with their own tests. React hooks stay thin and only connect a controller to a render.
 - The shared primitives add no DOM attributes. Browser audits find motion through `element.getAnimations()` and wait for it to empty, rather than waiting a fixed time. The audits already do this for the chart morphs, the holdings glide and the bar morph.
 - Presence keeps its `data-present` and `data-settled` attributes. `refinement.css` reads them to clip a notice while it collapses, so they are styling state that the page depends on, not test signals. Removing them would change the page, so step 2 does not.
+
+## Recipe catalogue
+
+This is the product's reusable vocabulary, not a count of incidental CSS declarations. A new interface uses a named recipe, its token and its proof rather than introducing an unnamed keyframe. Recipes group into the requested 10 structural animations, 15 micro-animations and 5 micro-interactions.
+
+| Family | Recipes | Shared owner and first applied consumer |
+| --- | --- | --- |
+| Structural animation (10) | panel arrival; ordered content arrival; text arrival; figure transition; line geometry morph; bar rise; ranking-bar rise; ring-slice reveal; checkpoint reveal; keyed-row reorder | `shared/motion/`, `presentation/charts/chart-arrival.css`; Portfolio cards, bars, allocation, checkpoints and holdings |
+| Micro-animation (15) | navigation surface; current-nav emphasis; navigation-toggle cue; search-field boundary; icon-button surface; primary, secondary and quiet action states; inline-link underline; chip hover; chip selected state; tab label; sort-header state; row inspection; date-step direction | `shared/ui/control-feedback.css` and `shared/ui/motion/`; shared controls and Portfolio |
+| Micro-interaction (5) | inspect observation; pin/reset observation; choose reporting range; adjust a bounded value; undo or reverse a transient action | `presentation/charts/`, `shared/ui/range-selector.tsx`, `shared/ui/presence.tsx`; chart inspection, range controls and recovery notices |
+
+The first five newly named chart recipes use only `--motion-index`, supplied by the mark's semantic order. `motion-bar-rise`, `motion-ranking-rise`, `motion-ring-slice` and `motion-marker-arrive` live in `chart-arrival.css`; the selected chart-bar rebound remains in its owning `bars.css`. Chart components use `presentation/charts/motion/recipe.ts` to choose only these named recipes and normalize their semantic order; they do not reproduce CSS names, timing or delays. `motion-range-select` names the reporting-window confirmation in the shared RangeSelector rather than relying on a generic segmented-control declaration. They never delay text, accessibility state, private masking or the exact settled financial geometry. The remaining recipes will be migrated from their existing isolated owners only with a component consumer and rendered proof; they are not counted as completed merely because a matching transition already exists.
 
 ## Migration order
 

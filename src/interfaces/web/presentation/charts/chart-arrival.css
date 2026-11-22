@@ -7,6 +7,49 @@
   animation-delay: var(--section-arrival-delay, 0ms);
   animation-fill-mode: backwards;
 }
+
+/*
+ * Data-reveal recipes. A consumer supplies only --motion-index; the sequence
+ * remains token-owned and every mark still reaches its exact geometry before
+ * it can be inspected. These are deliberately named patterns rather than
+ * incidental animation declarations, so the next chart can adopt one without
+ * re-inventing timing or reduced-motion behaviour.
+ */
+.motion-bar-rise,
+.motion-ranking-rise,
+.motion-ring-slice,
+.motion-marker-arrive {
+  animation-delay: calc(var(--motion-index, 0) * var(--motion-stagger));
+}
+
+/* A selected slice uses the same short, paint-only inspection cue as bars. */
+.donut-slice[data-active="true"] {
+  animation: motion-selection-rebound var(--duration-feedback) var(--ease-spring);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.motion-bar-rise,
+.motion-ranking-rise {
+  animation-name: bar-grow;
+  animation-duration: var(--duration-arrival);
+  animation-timing-function: var(--ease-arrival);
+  animation-fill-mode: backwards;
+}
+.motion-ring-slice {
+  animation-name: ring-slice-arrive;
+  animation-duration: var(--duration-arrival);
+  animation-timing-function: var(--ease-arrival);
+  animation-fill-mode: backwards;
+  transform-origin: center;
+}
+.motion-marker-arrive {
+  animation-name: marker-arrive;
+  animation-duration: var(--duration-feedback);
+  animation-timing-function: var(--ease-spring);
+  animation-fill-mode: backwards;
+  transform-box: fill-box;
+  transform-origin: center;
+}
 .plot-arrive {
   animation-name: plot-rise;
   transform-origin: 0 var(--plot-arrival-origin);
@@ -36,5 +79,34 @@
 @keyframes bar-grow {
   from {
     scale: 0 1;
+  }
+}
+@keyframes ring-slice-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    scale: 0.88;
+  }
+}
+@keyframes marker-arrive {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+@keyframes motion-selection-rebound {
+  50% {
+    scale: 1.06;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-bar-rise,
+  .motion-ranking-rise,
+  .motion-ring-slice,
+  .motion-marker-arrive {
+    animation: none;
+  }
+  .donut-slice[data-active="true"] {
+    animation: none;
   }
 }

@@ -9,7 +9,7 @@ export function RangeSelector<Id extends string>(props: {
 }): JSX.Element {
   return (
     <div
-      class="segmented range-selector"
+      class="segmented range-selector motion-range-select"
       role="group"
       aria-label={props.label}
       style={{

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { AnimatedFigure } from "../animated-figure";
 import { formatPercent } from "../../../../core/values/percent";
+import { chartArrivalClass, chartArrivalOrder } from "./motion/recipe";
 
 export interface PerformanceRow {
   readonly key: string;
@@ -24,7 +25,7 @@ export function PerformanceBars(props: { readonly rows: readonly PerformanceRow[
   const largest = Math.max(0.0001, ...props.rows.map((row) => Math.abs(row.ratio)));
   return (
     <ul class="perf">
-      {props.rows.map((row) => {
+      {props.rows.map((row, index) => {
         const length = (Math.abs(row.ratio) / largest) * 50;
         return (
           <li key={row.key}>
@@ -32,10 +33,11 @@ export function PerformanceBars(props: { readonly rows: readonly PerformanceRow[
               <span class="perf-name">{row.label}</span>
               <span class="perf-track" aria-hidden="true">
                 <span
-                  class={`perf-bar ${row.ratio >= 0 ? "gain" : "loss"}`}
+                  class={`perf-bar ${chartArrivalClass("ranking")} ${row.ratio >= 0 ? "gain" : "loss"}`}
                   style={{
                     width: `${length.toFixed(2)}%`,
                     left: row.ratio >= 0 ? "50%" : `${(50 - length).toFixed(2)}%`,
+                    ...chartArrivalOrder(index),
                   }}
                 />
               </span>

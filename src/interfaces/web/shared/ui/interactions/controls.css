@@ -132,6 +132,18 @@ button:focus-visible {
   position: relative;
 }
 
+/* A reporting-window change is an explicit selection, not a generic button
+ * press. The recipe is shared by every RangeSelector consumer and never
+ * delays the immediately-updated chart geometry or selected state. */
+.motion-range-select button[aria-pressed="true"] {
+  animation: motion-range-confirm var(--duration-feedback) var(--ease-spring);
+}
+@keyframes motion-range-confirm {
+  50% {
+    scale: 1.03;
+  }
+}
+
 /* 09: Privacy icon swap; amounts themselves are replaced immediately. */
 .privacy-icon {
   display: inline-flex;

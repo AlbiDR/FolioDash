@@ -1,5 +1,6 @@
 import type { ComponentChildren, JSX, RefObject } from "preact";
 import { AnimatedFigure } from "../animated-figure";
+import { chartArrivalClass, chartArrivalOrder } from "./motion/recipe";
 import type { ChartGeometry, ChartSeries, PlottedSeries } from "./line-chart-geometry";
 import { styleClass } from "./line-chart-layout";
 import type { PositionedAxisLabel } from "./axis-labels";
@@ -80,13 +81,14 @@ export function ChartSeriesLayer(props: {
             entry.points.map((point) => (
               <rect
                 key={point.time}
-                class={`checkpoint-marker${point.time === props.activeTime ? " is-active" : ""}`}
+                class={`checkpoint-marker ${chartArrivalClass("marker")}${point.time === props.activeTime ? " is-active" : ""}`}
                 x={point.x - 5}
                 y={point.y - 5}
                 width={10}
                 height={10}
                 transform={`rotate(45 ${String(point.x)} ${String(point.y)})`}
                 data-time={point.time}
+                style={chartArrivalOrder(entry.points.indexOf(point))}
                 {...(props.hidden ? {} : { "data-value": point.value })}
               />
             ))}

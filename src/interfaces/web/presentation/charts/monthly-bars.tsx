@@ -7,6 +7,7 @@ import { useAxisLabels } from "./use-axis-labels";
 import { maskNumbers } from "../privacy/privacy-choice";
 import { type BarSnapshot } from "./motion/bar-morph";
 import { useBarMorph } from "./motion/use-bar-morph";
+import { chartArrivalClass, chartArrivalOrder } from "./motion/recipe";
 
 export interface Bar {
   readonly key: string;
@@ -178,8 +179,11 @@ export function MonthlyBars(props: {
               <rect class="bars-hit" x={PAD.side + band * index} y={0} width={band} height={HEIGHT} />
               {value !== null && (
                 <rect
-                  class={value >= 0 ? "bar gain plot-arrive" : "bar loss plot-arrive"}
-                  style={{ "--plot-arrival-origin": `${String(zeroY)}px` }}
+                  class={`bar ${value >= 0 ? "gain" : "loss"} ${chartArrivalClass("bar")}`}
+                  style={{
+                    "--plot-arrival-origin": `${String(zeroY)}px`,
+                    ...chartArrivalOrder(index),
+                  }}
                   x={x}
                   y={y}
                   width={barWidth}
