@@ -25,6 +25,7 @@ import "../shared/ui/motion/charts-and-content.css";
 import "../shared/ui/motion/static-and-native.css";
 import "../shared/ui/motion/refinement.css";
 import "../shared/ui/motion/workflow-feedback.css";
+import "../shared/ui/motion/polish.css";
 import "../shared/ui/control-feedback.css";
 import { App } from "./app";
 import { watchSystemTheme } from "./platform/system-theme";
