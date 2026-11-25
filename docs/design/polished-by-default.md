@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Proposed 2026-11-26 for owner review. Audit done, nothing implemented.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phase 0 in progress.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -35,7 +35,7 @@ Three conclusions:
 - **New polish arrives as new layers.** The four motion commits of 2026-11-26 added `shared/ui/motion/workflow-feedback.css`, `polish.css` and `polish-secondary.css`, each imported after the last. None of the three is in the stylesheet owner table of the [motion layer](motion-layer.md#motion-stylesheets-and-their-owners-step-5-2026-11-19). That record already noted that no check keeps the table honest; this is the drift it predicted.
 - **The primitives are good and underused.** `shared/motion/animate.ts`, `settle.ts` and `reduced-motion.ts` are tested and shared by the page exit, row glide, chart morphs, update fade and Presence. Everything else, including every arrival, is CSS keyframes declared in place.
 - **An unused animation library is installed.** `motion` 14 is a production dependency in `package.json`. It arrived in `f5c2626` with a set of agent skill files; `c9075f1` removed the skill files to unblock Pages, but the dependency stayed, and nothing in `src` or `scripts` imports it. The motion layer record rules out an animation library, and any dependency needs an FD-008 evaluation. Decision 4.
-- **Layout-forcing motion exists under waivers.** Six declarations carry `style-allow layout-motion` waivers, including Presence's collapse of a grid row and its end margin (`shared/ui/motion/refinement.css`) and the sidebar's grid track (`app/styles/shell.css`). UXC-12 says layout-forcing properties never animate while the gate accepts reasoned waivers; the two should say the same thing. Decision 6.
+- **Layout-forcing motion exists under waivers.** Six declarations carry `style-allow layout-motion` waivers, including Presence's collapse of a grid row and its end margin (`shared/ui/motion/refinement.css`) and the sidebar's grid track (`app/styles/shell.css`). UXC-12 allows exactly this, a deliberate layout transition with a reasoned waiver beside it (decision 6).
 
 ### What the cascade actually does
 
@@ -138,12 +138,14 @@ Each phase is its own commit, follows `npm run verify`, the interaction inventor
 
 ## Decisions for the owner
 
+The owner accepted every recommendation below on 2026-11-26 (FD-029). Decision 2 amends the 2026-11-21 per-route arrival direction.
+
 1. **Meaning of "everything in motion".** Recommended: every change is animated and each event is one coordinated movement. Alternative: more simultaneous motion, which the references and NN/g advise against.
 2. **Navigation.** The owner's 2026-11-21 direction is Verdin's: staggered text, count-ups and growing charts on open and on every route entry. Recommended: keep the full arrival on first open and when a page is entered from outside the app, and make in-app navigation a short continuity transition where persistent chrome stays still and the new page arrives as one quicker gesture, closer to Talmo and to NN/g's rule that frequent motion should be shorter. Alternative: keep the full arrival on every route entry, as now, coordinated into one gesture. Choosing the recommendation amends the 2026-11-21 direction, so it needs the owner's word.
 3. **View transitions.** Recommended: adopt same-document view transitions as the continuity mechanism, feature-detected, with the current page motion as the fallback. It is a new mechanism, so it gets its own entry here and in the Astryx register.
 4. **The `motion` package.** Recommended: remove it. The Web Animations API, the shared primitives and view transitions cover every role above. Keeping it requires an FD-008 evaluation and an amendment to the motion layer's no-library rule.
 5. **Spring easing.** Recommended: retire it from hover and press; keep at most the bounded selection rebound.
-6. **Layout motion.** Recommended: keep the reasoned-waiver gate and restate UXC-12 to say so, since the notice collapse and sidebar resize have no transform-only equivalent that preserves their geometry.
+6. **Layout motion.** Recommended: keep the reasoned-waiver gate, since the notice collapse and sidebar resize have no transform-only equivalent that preserves their geometry. On checking, UXC-12 already says a deliberate layout transition carries a reasoned waiver, so the rule and the gate agree and no amendment is needed.
 7. **Strictness of the default.** Recommended: feature stylesheets may not declare motion at all after phase 3. Alternative: allow it with a waiver, as layout motion is.
 
 ## Out of scope
