@@ -116,6 +116,52 @@
 .app-update button:active {
   scale: var(--motion-control-press);
 }
+.topbar-title:focus-within {
+  translate: 0 -1px;
+}
+.status-chip:focus-within {
+  translate: 0 -1px;
+}
+.source-label:active {
+  scale: 0.98;
+}
+.privacy-toggle:active .privacy-icon {
+  scale: 0.86;
+}
+.nav-pill {
+  scale: 1.005;
+}
+.nav-link[aria-current="page"] > svg {
+  rotate: 2deg;
+}
+.chart-readout-item[data-highlighted="true"] {
+  translate: 0 -1px;
+}
+.chart-date-control input:active {
+  scale: 0.995;
+}
+.donut a:active .donut-slice {
+  scale: 0.98;
+}
+.allocation-card .legend a:active .dot {
+  scale: 0.88;
+}
+.history-progress {
+  transition: scale var(--duration-short) var(--ease-spring);
+}
+.expense-review:focus-within {
+  translate: 0 -1px;
+}
+.expense-conflict:focus-within {
+  translate: 0 -1px;
+}
+.account .review-adjustments > h3 {
+  translate: 0 -1px;
+}
+.page-nav {
+  translate: 0 0;
+  transition: translate var(--duration-feedback) var(--ease-smooth);
+}
 @media (prefers-reduced-motion: reduce) {
   .privacy-toggle .privacy-icon,
   .status-chip .status-dot,
@@ -157,6 +203,26 @@
   .account a,
   .get-started button,
   .app-update button {
+    scale: 1;
+    translate: none;
+    rotate: none;
+    transition: none;
+  }
+  .topbar-title,
+  .status-chip,
+  .source-label,
+  .privacy-toggle .privacy-icon,
+  .nav-pill,
+  .nav-link[aria-current="page"] > svg,
+  .chart-readout-item,
+  .chart-date-control input,
+  .donut a .donut-slice,
+  .allocation-card .legend a .dot,
+  .history-progress,
+  .expense-review,
+  .expense-conflict,
+  .account .review-adjustments > h3,
+  .page-nav {
     scale: 1;
     translate: none;
     rotate: none;
