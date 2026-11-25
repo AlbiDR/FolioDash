@@ -29,11 +29,18 @@ interface Violation {
   readonly id: string;
   readonly impact: string | null;
   readonly help: string;
-  readonly nodes: readonly { readonly target: readonly unknown[] }[];
+  readonly nodes: readonly { readonly target: readonly unknown[]; readonly summary: string }[];
 }
 
 const axeSource = readFileSync("node_modules/axe-core/axe.min.js", "utf8");
-const found = new Map<string, { help: string; impact: string; nodes: number }>();
+const WEEK_ROWS = ".expense-week-list button";
+const WEEK_ROW_COUNT = `document.querySelectorAll(${JSON.stringify(WEEK_ROWS)}).length`;
+/** Presses one week row once it is enabled and reports whether it is now the selected day. */
+function selectWeekRow(index: number): string {
+  return `(()=>{const b=document.querySelectorAll(${JSON.stringify(WEEK_ROWS)})[${String(index)}];if(!b||b.disabled)return false;if(b.getAttribute("aria-pressed")!=="true")b.click();return b.getAttribute("aria-pressed")==="true"})()`;
+}
+let screens = 0;
+const found = new Map<string, { help: string; impact: string; nodes: number; elements: string[] }>();
 
 await withLocalBrowser(
   async (browser) => {
@@ -44,24 +51,45 @@ await withLocalBrowser(
       for (const viewport of VIEWPORTS) {
         await steps.visit(route, viewport.width);
         await steps.openDetails();
-        for (const scheme of SCHEMES) {
-          await call("Emulation.setEmulatedMedia", {
-            features: [
-              { name: "prefers-color-scheme", value: scheme },
-              { name: "prefers-reduced-motion", value: "reduce" },
-            ],
-          });
-          // Navigation replaces the page, so axe is injected again on each screen.
-          await evaluate(`${axeSource};true`);
-          const violations = (await evaluate(
-            `axe.run(document,{runOnly:{type:"tag",values:${JSON.stringify(TAGS)}}}).then(r=>JSON.stringify(r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>({target:n.target}))}))))`,
-          )) as string;
-          for (const violation of JSON.parse(violations) as Violation[]) {
-            found.set(`${violation.id} ${route} ${viewport.name} ${scheme}`, {
-              help: violation.help,
-              impact: violation.impact ?? "unknown",
-              nodes: violation.nodes.length,
+        // Expenses opens on today, so which week row is selected depends on the calendar: none at a weekend, a
+        // different one each weekday. Selecting every row in turn audits each day state on the selected background
+        // whatever the date of the run, so a weekend pass can no longer hide a weekday failure.
+        const selections =
+          route === "expenses"
+            ? Array.from({ length: Number(await evaluate(WEEK_ROW_COUNT)) }, (_, index) => index)
+            : [undefined];
+        if (route === "expenses" && selections.length === 0) throw new Error("Expenses: no week rows to select.");
+        for (const selection of selections) {
+          if (selection !== undefined) {
+            await browser.waitFor(
+              async () => (await evaluate(selectWeekRow(selection))) === true,
+              `expenses: select week row ${String(selection + 1)}`,
+            );
+          }
+          const screen = `${route} ${viewport.name}${selection === undefined ? "" : ` day ${String(selection + 1)}`}`;
+          for (const scheme of SCHEMES) {
+            await call("Emulation.setEmulatedMedia", {
+              features: [
+                { name: "prefers-color-scheme", value: scheme },
+                { name: "prefers-reduced-motion", value: "reduce" },
+              ],
             });
+            screens++;
+            // Navigation replaces the page, so axe is injected again on each screen.
+            await evaluate(`${axeSource};true`);
+            const violations = (await evaluate(
+              `axe.run(document,{runOnly:{type:"tag",values:${JSON.stringify(TAGS)}}}).then(r=>JSON.stringify(r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>({target:n.target,summary:(n.failureSummary||"").replace(/\\s+/g," ").trim()}))}))))`,
+            )) as string;
+            for (const violation of JSON.parse(violations) as Violation[]) {
+              found.set(`${violation.id} ${screen} ${scheme}`, {
+                help: violation.help,
+                impact: violation.impact ?? "unknown",
+                nodes: violation.nodes.length,
+                // The selector and axe's own explanation (for contrast: the colours and ratio) make a CI failure
+                // diagnosable from the log alone.
+                elements: violation.nodes.map((node) => `${node.target.map(String).join(" ")}: ${node.summary}`),
+              });
+            }
           }
         }
       }
@@ -72,7 +100,6 @@ await withLocalBrowser(
 
 const output = resolve("dist/accessibility-audit");
 mkdirSync(output, { recursive: true });
-const screens = ROUTES.length * VIEWPORTS.length * SCHEMES.length;
 writeFileSync(
   resolve(output, "report.json"),
   `${JSON.stringify(
@@ -86,7 +113,12 @@ writeFileSync(
   )}\n`,
 );
 if (found.size > 0) {
-  const detail = [...found].sort().map(([key, v]) => `${key} (${v.impact}, ${String(v.nodes)} elements: ${v.help})`);
+  const detail = [...found]
+    .sort()
+    .map(
+      ([key, v]) =>
+        `${key} (${v.impact}, ${String(v.nodes)} elements: ${v.help})${v.elements.map((element) => `\n  ${element}`).join("")}`,
+    );
   console.error(`Accessibility audit failed: ${String(found.size)} violations.\n${detail.join("\n")}`);
   process.exit(1);
 }

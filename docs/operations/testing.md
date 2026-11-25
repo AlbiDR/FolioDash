@@ -10,7 +10,7 @@ Implemented 2026-11-18 as phase 7 of the organization standard. This document ow
 | Property | part of `npm test` | Invariants of the pure kernel over generated inputs: exact cents, dates, decimals, ISIN checksums, canonical JSON, SHA-256 | `npm run verify`, CI |
 | Script | `npm run test:scripts` (`node --test`) | The tooling: icon drawing, PNG integrity, Pages assembly, README manifest | `npm run verify`, CI |
 | Rendered interaction | `npm run audit:interactions` and seven synthetic journeys | Real Chrome, signed-out demo: control feedback, journeys, recovery, sale and reopening | CI, and locally after an interface change |
-| Accessibility | `npm run audit:accessibility` | axe-core rules on 7 screens, 2 widths and 2 colour schemes | CI, and locally after an interface change |
+| Accessibility | `npm run audit:accessibility` | axe-core rules on 8 screens, 2 widths and 2 colour schemes, with Expenses audited once for each selected weekday so the result does not depend on the date of the run (48 screens) | CI, and locally after an interface change |
 | Reduced motion | `npm run audit:reduced-motion` | With `prefers-reduced-motion`, no transition or animation on any element or pseudo-element of 7 screens at 2 widths, smooth scrolling off, amounts hide at once | CI, and locally after an interface change |
 | Mutation | `npm run audit:mutation` | Whether the kernel tests notice a deliberate bug | On demand, about 9 minutes |
 

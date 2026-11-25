@@ -156,7 +156,8 @@
     --surface-high: #303c5e;
     --color-hero: #234684;
     --color-text: #f2f4fa;
-    --color-muted: #9aa1b5;
+    /* At least 4.5:1 on the surface, surface-2, surface-high and the accent-soft selected-row tint. */
+    --color-muted: #a6adc0;
     --color-border: rgba(255, 255, 255, 0.1);
     --color-grid: rgba(255, 255, 255, 0.1);
 
