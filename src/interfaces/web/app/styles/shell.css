@@ -134,8 +134,8 @@ select:focus-visible {
   font-weight: var(--weight-semibold);
   text-decoration: none;
   transition:
-    background var(--duration-short) var(--ease-standard),
-    color var(--duration-short) var(--ease-standard),
+    background var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth),
     transform var(--duration-short) var(--ease-spring);
 }
 
@@ -175,7 +175,7 @@ select:focus-visible {
 
   .shell {
     /* style-allow layout-motion: the sidebar collapses by animating its grid track, so the main column reflows with it */
-    transition: grid-template-columns var(--duration-medium) var(--ease-standard);
+    transition: grid-template-columns var(--duration-medium) var(--ease-smooth);
   }
 
   .shell[data-nav="collapsed"] {
@@ -191,8 +191,8 @@ select:focus-visible {
   .main-nav {
     width: calc(13rem - var(--space-3));
     transition:
-      transform var(--duration-medium) var(--ease-standard),
-      opacity var(--duration-short) var(--ease-standard);
+      transform var(--duration-medium) var(--ease-smooth),
+      opacity var(--duration-short) var(--ease-smooth);
     position: sticky;
     top: var(--space-3);
     left: auto;
@@ -217,7 +217,7 @@ select:focus-visible {
     font-weight: var(--weight-bold);
     letter-spacing: -0.02em;
     transition:
-      color var(--duration-short) var(--ease-standard),
+      color var(--duration-short) var(--ease-smooth),
       transform var(--duration-feedback) var(--ease-spring);
   }
 

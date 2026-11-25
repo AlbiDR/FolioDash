@@ -45,17 +45,17 @@ summary {
 .journey-steps li,
 .journey-steps li > span {
   transition:
-    color var(--duration-short) var(--ease-standard),
-    background-color var(--duration-short) var(--ease-standard);
+    color var(--duration-short) var(--ease-smooth),
+    background-color var(--duration-short) var(--ease-smooth);
 }
 
 /* 01: Enabled button press. */
 button:not(:disabled) {
   transition:
     transform var(--duration-press) var(--ease-standard),
-    background var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard),
-    opacity var(--duration-short) var(--ease-standard);
+    background var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
+    opacity var(--duration-short) var(--ease-smooth);
   -webkit-tap-highlight-color: transparent;
 }
 button:not(:disabled):active {
@@ -117,8 +117,8 @@ button:focus-visible {
   transform: translateX(calc(var(--segment-index) * (100% + 2px)));
   /* style-allow layout-motion: the selection pill is sized from the segment count, so it animates its width when the options change; scaling would distort its rounded ends */
   transition:
-    transform var(--duration-feedback) var(--ease-standard),
-    width var(--duration-short) var(--ease-standard);
+    transform var(--duration-feedback) var(--ease-smooth),
+    width var(--duration-short) var(--ease-smooth);
 }
 .range-selector[dir="rtl"]::before,
 [dir="rtl"] .range-selector:not([dir="ltr"])::before {
@@ -147,7 +147,7 @@ button:focus-visible {
 /* 09: Privacy icon swap; amounts themselves are replaced immediately. */
 .privacy-icon {
   display: inline-flex;
-  animation: icon-swap var(--duration-short) var(--ease-standard);
+  animation: icon-swap var(--duration-short) var(--ease-smooth);
 }
 @keyframes icon-swap {
   from {
@@ -163,8 +163,8 @@ button:focus-visible {
 /* 10: Privacy-state halo. */
 .privacy-toggle {
   transition:
-    background var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard),
+    background var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
     transform var(--duration-press) var(--ease-standard);
 }
 .privacy-toggle[aria-pressed="true"] {
@@ -184,7 +184,7 @@ button:focus-visible {
 .row-link > svg,
 .mobile-holdings a > svg {
   flex-shrink: 0;
-  transition: transform var(--duration-short) var(--ease-standard);
+  transition: transform var(--duration-short) var(--ease-smooth);
 }
 .row-link:focus-visible > svg,
 .mobile-holdings a:focus-visible > svg {
@@ -200,7 +200,7 @@ button:focus-visible {
 /* 13: Keyboard ranking-row emphasis. */
 .perf-row {
   border-radius: var(--shape-sm);
-  transition: background var(--duration-short) var(--ease-standard);
+  transition: background var(--duration-short) var(--ease-smooth);
 }
 .perf-row:focus-visible {
   background: var(--color-accent-soft);
@@ -209,7 +209,7 @@ button:focus-visible {
 /* 14: Allocation legend row feedback. */
 .legend a {
   border-radius: var(--shape-sm);
-  transition: background var(--duration-short) var(--ease-standard);
+  transition: background var(--duration-short) var(--ease-smooth);
 }
 .legend a:focus-visible {
   background: var(--color-accent-soft);
@@ -224,8 +224,8 @@ button:focus-visible {
 .field input,
 .field select {
   transition:
-    border-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard);
+    border-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth);
 }
 @media (hover: hover) and (pointer: fine) {
   .field input:not(:disabled):hover,
@@ -244,7 +244,7 @@ button:focus-visible {
 /* 17: The active fund/question group gains a quiet boundary. */
 .manual-fund,
 .fund-question {
-  transition: box-shadow var(--duration-short) var(--ease-standard);
+  transition: box-shadow var(--duration-short) var(--ease-smooth);
 }
 .manual-fund:focus-within,
 .fund-question:focus-within {
@@ -256,7 +256,7 @@ fieldset > label:has(input),
 label.check {
   border-radius: var(--shape-md);
   padding-inline: var(--space-2);
-  transition: background var(--duration-short) var(--ease-standard);
+  transition: background var(--duration-short) var(--ease-smooth);
 }
 fieldset > label:has(input:checked),
 label.check:has(input:checked) {
@@ -266,7 +266,7 @@ label.check:has(input:checked) {
 /* 19: Date slider thumb halo, including keyboard focus and touch dragging. */
 .chart-date-control input {
   border-radius: var(--shape-sm);
-  transition: box-shadow var(--duration-short) var(--ease-standard);
+  transition: box-shadow var(--duration-short) var(--ease-smooth);
 }
 .chart-date-control input:focus-visible,
 .chart-date-control input:active {

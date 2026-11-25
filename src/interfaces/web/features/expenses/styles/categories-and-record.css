@@ -137,9 +137,9 @@ label.expense-review-filter {
   }
 }
 .expense-date {
-  animation: expense-date-cue var(--duration-feedback) var(--ease-standard);
+  animation: expense-date-cue var(--duration-feedback) var(--ease-smooth);
 }
 .expense-review,
 .expense-conflict {
-  animation: expense-date-cue var(--duration-short) var(--ease-standard);
+  animation: expense-date-cue var(--duration-short) var(--ease-smooth);
 }

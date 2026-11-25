@@ -27,7 +27,7 @@
 
 .bars-item .bar {
   opacity: 0.8;
-  transition: opacity var(--duration-short) var(--ease-standard);
+  transition: opacity var(--duration-short) var(--ease-smooth);
 }
 
 .bars-item.is-active .bar {
