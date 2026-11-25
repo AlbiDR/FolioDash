@@ -71,6 +71,51 @@
 .app-update:focus-within {
   translate: 0 -1px;
 }
+.demo-nav a:active {
+  scale: var(--motion-control-press);
+}
+.page-nav button:active {
+  scale: var(--motion-control-press);
+}
+.expense-week-list button:active,
+.expense-record-list button:active,
+.expense-note-actions button:active {
+  translate: 0 1px;
+}
+.matrix tbody tr:focus-within {
+  translate: 2px 0;
+}
+.legend a:active .dot {
+  scale: 0.88;
+}
+.perf-row:active {
+  translate: 0 1px;
+}
+.bars-item:active .bar {
+  opacity: 0.78;
+}
+.chart-reset:active {
+  scale: var(--motion-control-press);
+}
+.history-progress:focus-within {
+  scale: 1.01;
+}
+.expense-state:focus-within {
+  translate: 0 -1px;
+}
+.review-problem button:active,
+.expense-conflict button:active {
+  scale: var(--motion-control-press);
+}
+.account a:active {
+  translate: 2px 0;
+}
+.get-started button:active {
+  translate: 0 1px;
+}
+.app-update button:active {
+  scale: var(--motion-control-press);
+}
 @media (prefers-reduced-motion: reduce) {
   .privacy-toggle .privacy-icon,
   .status-chip .status-dot,
@@ -94,7 +139,24 @@
   .file-dropzone,
   .notice a,
   .review-problem,
-  .app-update {
+  .app-update,
+  .demo-nav a,
+  .page-nav button,
+  .expense-week-list button,
+  .expense-record-list button,
+  .expense-note-actions button,
+  .matrix tbody tr,
+  .legend a .dot,
+  .perf-row,
+  .bars-item .bar,
+  .chart-reset,
+  .history-progress,
+  .expense-state,
+  .review-problem button,
+  .expense-conflict button,
+  .account a,
+  .get-started button,
+  .app-update button {
     scale: 1;
     translate: none;
     rotate: none;
