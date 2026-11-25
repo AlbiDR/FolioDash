@@ -56,8 +56,24 @@ describe("animated properties", () => {
     ".a { transition: grid-template-rows var(--duration-medium); }",
     ".a { transition-property: height; }",
     ".a { will-change: top; }",
+    ".a { transition: block-size var(--duration-short); }",
+    ".a { transition: max-inline-size var(--duration-short); }",
+    ".a { transition: margin-block-end var(--duration-short); }",
+    ".a { transition: padding-inline-start var(--duration-short); }",
+    ".a { transition: inset-inline-start var(--duration-short); }",
+    ".a { transition: column-gap var(--duration-short); }",
+    ".a { transition: flex-basis var(--duration-short); }",
+    ".a { transition: border-top-width var(--duration-short); }",
+    ".a { transition: border-inline-end-width var(--duration-short); }",
   ])("reports a layout property in %s", (css) => {
     expect(rules(css)).toEqual(["layout-motion"]);
+  });
+  it("accepts paint-only properties whose names resemble layout ones", () => {
+    expect(
+      rules(
+        ".a { transition: border-color var(--duration-short), outline-offset var(--duration-short), translate var(--duration-short); }",
+      ),
+    ).toEqual([]);
   });
   it("reports each layout declaration inside keyframes", () => {
     expect(rules("@keyframes grow { from { height: 0; } to { height: 10px; } }")).toEqual([

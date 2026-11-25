@@ -15,9 +15,27 @@ const MOTION_PROPERTY = /^(?:transition|animation)(?:-duration|-delay|-timing-fu
 const MOTION_LITERAL =
   /(?<![\w.-])(?:(?:\d*\.?\d*[1-9]\d*m?s|ease(?:-in|-out|-in-out)?)(?![\w-])|cubic-bezier\(|steps\()/;
 const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/;
-// Properties that force layout of other elements when animated. Transform, opacity and paint-only properties are not listed.
-const LAYOUT_PROPERTY =
-  /(?<![\w-])(?:width|height|min-width|max-width|min-height|max-height|top|left|right|bottom|margin(?:-[a-z]+)?|padding(?:-[a-z]+)?|font-size|line-height|gap|inset|border-width|grid-template-rows|grid-template-columns|stroke-width|all)(?![\w-])/;
+// Properties that force layout of other elements when animated, in physical and logical spelling. Transform, opacity
+// and paint-only properties are not listed.
+const SIDE = "(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?";
+const LAYOUT_PROPERTY = new RegExp(
+  "(?<![\\w-])(?:" +
+    [
+      "(?:min-|max-)?(?:width|height|block-size|inline-size)",
+      "top|left|right|bottom",
+      `inset${SIDE}`,
+      `margin${SIDE}`,
+      `padding${SIDE}`,
+      `border${SIDE}-width`,
+      "(?:row-|column-)?gap",
+      "flex-basis",
+      "font-size|line-height",
+      "grid-template-rows|grid-template-columns",
+      "stroke-width",
+      "all",
+    ].join("|") +
+    ")(?![\\w-])",
+);
 
 /**
  * A deliberate exception is written inside the block, directly above the declaration it covers:

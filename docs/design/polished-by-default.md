@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phase 0 in progress.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phase 0 done locally; phases 1 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -135,6 +135,19 @@ Each phase is its own commit, follows `npm run verify`, the interaction inventor
 6. **No instant swaps.** Every gap in the surface list gets its role: Presence for layers, a fade-through with height continuity for content that is replaced, a morph for content that stays.
 7. **Live states and figures.** Bounded saving, syncing and status motion; answer FD-028's open question on whether figures count when a sync changes them, with exact text, accessibility and privacy unchanged.
 8. **Proof beyond Chrome.** Physical Android and iPhone, Firefox and WebKit, and a screen reader. Until then every phase stays local synthetic Chrome evidence (STD-11).
+
+### Phase 0 record, 2026-11-26
+
+What changed, all under `src/interfaces/web/` unless named otherwise:
+
+- **Sidebar collapse.** `app/styles/shell.css` owns the shell's and the sidebar's transitions again: its base rules carry the colour and shadow transitions, and its wide-screen rules list the grid track, the slide and the fade together with them. The overriding pair left `shared/ui/motion/refinement.css`.
+- **Workflow states.** Every state in `shared/ui/motion/workflow-feedback.css` now applies only when motion is allowed, so the reduced-motion resets that lost on specificity are no longer needed and were removed. Each element a state moves has one base transition list that keeps its existing properties and adds the individual `scale`, `translate` or `rotate` it changes; state-scoped transition lists, which animated one way and snapped back, are gone. Fields (`shared/ui/control-feedback.css`), the review notice (`refinement.css`) and the expense state (`features/expenses/styles/responsive-and-hover.css`) gained the missing `translate` in their own owners. The interaction history's 2026-11-10 note that reduced-motion tokens neutralise movement under specialized selectors was not true for these literal offsets; it is now moot, since none apply under reduced motion.
+- **Removed.** The permanent 1.005 scale on the navigation pill, the permanent one-pixel raise of a Your data heading, a transition on the page navigation that nothing triggered, and the press scale on an allocation slice, which broke the rule that data marks never move or resize.
+- **Slider thumbs.** The WebKit and Mozilla thumb selectors in `shared/ui/motion/polish-secondary.css` have a rule each.
+- **Style gate.** `scripts/verify/code/style-policy.ts` recognises logical sizes, insets, margins, padding and border widths, `row-gap`, `column-gap` and `flex-basis`, with test cases in `tests/scripts/style-policy.test.ts`. It found one real case at once: the native disclosure animates its content box to and from its auto height, which now carries a reasoned waiver like the notice collapse.
+- **Audit.** `scripts/audit/sidebar-collapse.ts`, run by the Portfolio polish audit at 1440 px, records which properties transition when the sidebar collapses and reopens and checks the exact track at rest. Run against the previous stylesheets it fails; against the fix it passes.
+
+Evidence, local production build in headless Chrome with synthetic data, 2026-11-26: `npm run verify` passed (1,345 tests in 133 files). `npm run audit:rendered` passed: 160 interaction journey assertions and 1,131 control samples across 27 states, every recovery journey, 24 reload cases with zero layout shift, 48 accessibility screens, 48 reduced-motion checks on 16 screens, and the Portfolio polish audit including the sidebar check. `npm run capture:readme` passed. A probe of the built app on every route found all 52 reachable state rules now transitioning the property they change. Physical devices, other engines and screen readers are not covered (STD-11).
 
 ## Decisions for the owner
 

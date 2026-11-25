@@ -57,16 +57,9 @@
   animation: navigation-arrive var(--duration-feedback) var(--ease-standard);
 }
 
-/* T1-T17: explicit properties preserve immediate focus outlines and stable geometry. */
-.shell {
-  transition: background-color var(--duration-medium) var(--ease-standard);
-}
+/* T1-T17: explicit properties preserve immediate focus outlines and stable geometry. The shell and the sidebar own
+ * their transitions in app/styles/shell.css, because the sidebar's collapse is part of the same list. */
 .topbar {
-  transition:
-    background-color var(--duration-medium) var(--ease-standard),
-    box-shadow var(--duration-feedback) var(--ease-standard);
-}
-.main-nav {
   transition:
     background-color var(--duration-medium) var(--ease-standard),
     box-shadow var(--duration-feedback) var(--ease-standard);
@@ -165,7 +158,8 @@
 .review-problem {
   transition:
     background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard);
+    box-shadow var(--duration-short) var(--ease-standard),
+    translate var(--duration-short) var(--ease-smooth);
 }
 .review-adjustments {
   transition:
@@ -181,6 +175,7 @@
     block-size: 0;
     opacity: 0;
     overflow: clip;
+    /* style-allow layout-motion: a native disclosure opens and closes by animating its content box to and from its auto height, which no transform can do without distorting the text */
     transition:
       block-size var(--duration-medium) var(--ease-standard),
       opacity var(--duration-feedback) var(--ease-standard),

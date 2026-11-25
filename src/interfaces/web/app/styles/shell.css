@@ -87,11 +87,15 @@ select:focus-visible {
 
 .shell {
   min-height: 100vh;
+  transition: background-color var(--duration-medium) var(--ease-standard);
 }
 
 .main-nav {
   /* One shape for a dock item and for the selection that slides behind it (shared/ui/motion/ reads the same token). */
   --nav-radius: var(--shape-sm);
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    box-shadow var(--duration-feedback) var(--ease-standard);
   position: fixed;
   z-index: 20;
   left: var(--page-inset);
@@ -175,7 +179,9 @@ select:focus-visible {
 
   .shell {
     /* style-allow layout-motion: the sidebar collapses by animating its grid track, so the main column reflows with it */
-    transition: grid-template-columns var(--duration-medium) var(--ease-smooth);
+    transition:
+      grid-template-columns var(--duration-medium) var(--ease-smooth),
+      background-color var(--duration-medium) var(--ease-standard);
   }
 
   .shell[data-nav="collapsed"] {
@@ -192,7 +198,9 @@ select:focus-visible {
     width: calc(13rem - var(--space-3));
     transition:
       transform var(--duration-medium) var(--ease-smooth),
-      opacity var(--duration-short) var(--ease-smooth);
+      opacity var(--duration-short) var(--ease-smooth),
+      background-color var(--duration-medium) var(--ease-standard),
+      box-shadow var(--duration-feedback) var(--ease-standard);
     position: sticky;
     top: var(--space-3);
     left: auto;

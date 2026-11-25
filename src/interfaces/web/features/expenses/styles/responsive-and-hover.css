@@ -169,7 +169,8 @@
 .expense-entry .expense-state {
   transition:
     background-color var(--duration-short) var(--ease-smooth),
-    color var(--duration-short) var(--ease-smooth);
+    color var(--duration-short) var(--ease-smooth),
+    translate var(--duration-short) var(--ease-smooth);
 }
 .expense-entry .expense-form {
   animation: expense-date-cue var(--duration-medium) var(--ease-smooth);

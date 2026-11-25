@@ -17,8 +17,6 @@
 .field input,
 .field select,
 .field textarea,
-.chart-date-control input::-webkit-slider-thumb,
-.chart-date-control input::-moz-range-thumb,
 .allocation-card .legend a,
 .allocation-card .legend .dot,
 .mobile-holdings a > svg,
@@ -26,5 +24,12 @@
 .month-step > svg,
 .quiet-action > svg,
 .account .review-adjustments > h3 {
+  transition-timing-function: var(--ease-smooth);
+}
+/* Each vendor pseudo-element has its own rule: a browser drops a whole selector list that names one it rejects. */
+.chart-date-control input::-webkit-slider-thumb {
+  transition-timing-function: var(--ease-smooth);
+}
+.chart-date-control input::-moz-range-thumb {
   transition-timing-function: var(--ease-smooth);
 }

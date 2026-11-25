@@ -1,231 +1,213 @@
-@media (hover: hover) and (pointer: fine) {
-  .main-nav .brand:hover img {
-    rotate: 6deg;
+/* Small state movements for workflow controls, their icons and their cards. Owner: docs/design/polished-by-default.md.
+ * Every element a state below moves transitions the individual property it changes, so the state animates both ways;
+ * `transform` in a list does not cover `scale`, `translate` or `rotate`. Nothing here applies under reduced motion: the
+ * states keep their colour and outline feedback from control-feedback.css. Data marks never move or resize. */
+@media (prefers-reduced-motion: no-preference) {
+  /* The elements the states move, with the transitions they already had kept in each list. */
+  .privacy-toggle .privacy-icon {
+    transition:
+      scale var(--duration-short) var(--ease-smooth),
+      rotate var(--duration-feedback) var(--ease-smooth);
   }
-  .privacy-toggle:hover .privacy-icon {
-    scale: 1.08;
+  .status-chip .status-dot {
+    transition: scale var(--duration-short) var(--ease-smooth);
   }
-  .chart-legend-button:hover .chart-swatch {
-    scale: 1.08;
-  }
-}
-.privacy-toggle .privacy-icon {
-  transition: scale var(--duration-short) var(--ease-spring);
-}
-.privacy-toggle[aria-pressed="true"] .privacy-icon {
-  rotate: 180deg;
-  transition: rotate var(--duration-feedback) var(--ease-spring);
-}
-.status-chip:focus-visible .status-dot {
-  scale: 1.25;
-  transition: scale var(--duration-short) var(--ease-spring);
-}
-.chart-legend-button:active .chart-swatch {
-  scale: 0.9;
-  transition: scale var(--duration-press) var(--ease-standard);
-}
-.nav-link:focus-visible > svg {
-  rotate: -4deg;
-}
-.sidebar-toggle:active > svg {
-  scale: 0.88;
-}
-.back-button:active > svg {
-  translate: -2px 0;
-}
-.status-chip:active {
-  scale: var(--motion-control-press);
-}
-.privacy-toggle:focus-visible .privacy-icon {
-  rotate: -8deg;
-}
-.chart-legend-button:focus-visible .chart-swatch {
-  rotate: 5deg;
-}
-.row-link:active > svg,
-.mobile-holdings a:active > svg {
-  scale: 0.88;
-}
-.month-step:active > svg {
-  scale: 0.9;
-}
-.quiet-action:active > svg {
-  scale: 0.88;
-}
-.primary:active,
-.secondary:active {
-  translate: 0 1px;
-}
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  translate: 0 -1px;
-}
-.file-dropzone:focus-within {
-  scale: 1.005;
-}
-.notice a:active {
-  translate: 2px 0;
-}
-.review-problem:focus-within,
-.app-update:focus-within {
-  translate: 0 -1px;
-}
-.demo-nav a:active {
-  scale: var(--motion-control-press);
-}
-.page-nav button:active {
-  scale: var(--motion-control-press);
-}
-.expense-week-list button:active,
-.expense-record-list button:active,
-.expense-note-actions button:active {
-  translate: 0 1px;
-}
-.matrix tbody tr:focus-within {
-  translate: 2px 0;
-}
-.legend a:active .dot {
-  scale: 0.88;
-}
-.perf-row:active {
-  translate: 0 1px;
-}
-.bars-item:active .bar {
-  opacity: 0.78;
-}
-.chart-reset:active {
-  scale: var(--motion-control-press);
-}
-.history-progress:focus-within {
-  scale: 1.01;
-}
-.expense-state:focus-within {
-  translate: 0 -1px;
-}
-.review-problem button:active,
-.expense-conflict button:active {
-  scale: var(--motion-control-press);
-}
-.account a:active {
-  translate: 2px 0;
-}
-.get-started button:active {
-  translate: 0 1px;
-}
-.app-update button:active {
-  scale: var(--motion-control-press);
-}
-.topbar-title:focus-within {
-  translate: 0 -1px;
-}
-.status-chip:focus-within {
-  translate: 0 -1px;
-}
-.source-label:active {
-  scale: 0.98;
-}
-.privacy-toggle:active .privacy-icon {
-  scale: 0.86;
-}
-.nav-pill {
-  scale: 1.005;
-}
-.nav-link[aria-current="page"] > svg {
-  rotate: 2deg;
-}
-.chart-readout-item[data-highlighted="true"] {
-  translate: 0 -1px;
-}
-.chart-date-control input:active {
-  scale: 0.995;
-}
-.donut a:active .donut-slice {
-  scale: 0.98;
-}
-.allocation-card .legend a:active .dot {
-  scale: 0.88;
-}
-.history-progress {
-  transition: scale var(--duration-short) var(--ease-spring);
-}
-.expense-review:focus-within {
-  translate: 0 -1px;
-}
-.expense-conflict:focus-within {
-  translate: 0 -1px;
-}
-.account .review-adjustments > h3 {
-  translate: 0 -1px;
-}
-.page-nav {
-  translate: 0 0;
-  transition: translate var(--duration-feedback) var(--ease-smooth);
-}
-@media (prefers-reduced-motion: reduce) {
-  .privacy-toggle .privacy-icon,
-  .status-chip .status-dot,
   .chart-legend-button .chart-swatch {
-    scale: 1;
-    rotate: none;
-    transition: none;
+    transition:
+      translate var(--duration-short) var(--ease-smooth),
+      scale var(--duration-press) var(--ease-standard),
+      rotate var(--duration-short) var(--ease-smooth);
   }
-  .nav-link > svg,
-  .sidebar-toggle > svg,
-  .back-button > svg,
+  .nav-list .nav-link svg {
+    transition:
+      color var(--duration-short) var(--ease-smooth),
+      transform var(--duration-feedback) var(--ease-smooth),
+      rotate var(--duration-feedback) var(--ease-smooth);
+  }
+  .sidebar-toggle > svg {
+    transition:
+      transform var(--duration-feedback) var(--ease-smooth),
+      opacity var(--duration-short) var(--ease-smooth),
+      scale var(--duration-press) var(--ease-standard);
+  }
   .row-link > svg,
   .mobile-holdings a > svg,
-  .month-step > svg,
-  .quiet-action > svg,
-  .primary,
-  .secondary,
-  .field input,
-  .field select,
-  .field textarea,
-  .file-dropzone,
-  .notice a,
-  .review-problem,
-  .app-update,
-  .demo-nav a,
-  .page-nav button,
-  .expense-week-list button,
-  .expense-record-list button,
-  .expense-note-actions button,
-  .matrix tbody tr,
-  .legend a .dot,
-  .perf-row,
-  .bars-item .bar,
-  .chart-reset,
-  .history-progress,
-  .expense-state,
-  .review-problem button,
-  .expense-conflict button,
-  .account a,
-  .get-started button,
-  .app-update button {
-    scale: 1;
-    translate: none;
-    rotate: none;
-    transition: none;
+  .month-step > svg {
+    transition:
+      transform var(--duration-short) var(--ease-smooth),
+      scale var(--duration-press) var(--ease-standard);
   }
+  .quiet-action > svg,
+  .source-label {
+    transition: scale var(--duration-press) var(--ease-standard);
+  }
+  .back-button > svg,
   .topbar-title,
-  .status-chip,
-  .source-label,
-  .privacy-toggle .privacy-icon,
-  .nav-pill,
-  .nav-link[aria-current="page"] > svg,
   .chart-readout-item,
-  .chart-date-control input,
-  .donut a .donut-slice,
-  .allocation-card .legend a .dot,
-  .history-progress,
   .expense-review,
-  .expense-conflict,
-  .account .review-adjustments > h3,
-  .page-nav {
-    scale: 1;
-    translate: none;
-    rotate: none;
-    transition: none;
+  .expense-conflict {
+    transition: translate var(--duration-short) var(--ease-smooth);
+  }
+  .notice.app-update {
+    transition:
+      background-color var(--duration-short) var(--ease-standard),
+      box-shadow var(--duration-short) var(--ease-standard),
+      translate var(--duration-short) var(--ease-smooth);
+  }
+  .legend .dot {
+    transition:
+      transform var(--duration-feedback) var(--ease-smooth),
+      opacity var(--duration-short) var(--ease-smooth),
+      scale var(--duration-press) var(--ease-standard);
+  }
+  .matrix tbody tr {
+    transition:
+      background-color var(--duration-short) var(--ease-smooth),
+      translate var(--duration-short) var(--ease-smooth);
+  }
+  .file-dropzone,
+  .history-progress {
+    transition: scale var(--duration-short) var(--ease-smooth);
+  }
+
+  /* The states. */
+  @media (hover: hover) and (pointer: fine) {
+    .main-nav .brand:hover img {
+      rotate: 6deg;
+    }
+    .privacy-toggle:hover .privacy-icon {
+      scale: 1.08;
+    }
+    .chart-legend-button:hover .chart-swatch {
+      scale: 1.08;
+    }
+  }
+  .privacy-toggle[aria-pressed="true"] .privacy-icon {
+    rotate: 180deg;
+  }
+  .status-chip:focus-visible .status-dot {
+    scale: 1.25;
+  }
+  .chart-legend-button:active .chart-swatch {
+    scale: 0.9;
+  }
+  .nav-link:focus-visible > svg {
+    rotate: -4deg;
+  }
+  .sidebar-toggle:active > svg {
+    scale: 0.88;
+  }
+  .back-button:active > svg {
+    translate: -2px 0;
+  }
+  .status-chip:active {
+    scale: var(--motion-control-press);
+  }
+  .privacy-toggle:focus-visible .privacy-icon {
+    rotate: -8deg;
+  }
+  .chart-legend-button:focus-visible .chart-swatch {
+    rotate: 5deg;
+  }
+  .row-link:active > svg,
+  .mobile-holdings a:active > svg {
+    scale: 0.88;
+  }
+  .month-step:active > svg {
+    scale: 0.9;
+  }
+  .quiet-action:active > svg {
+    scale: 0.88;
+  }
+  .primary:active,
+  .secondary:active {
+    translate: 0 1px;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    translate: 0 -1px;
+  }
+  .file-dropzone:focus-within {
+    scale: 1.005;
+  }
+  .notice a:active {
+    translate: 2px 0;
+  }
+  .review-problem:focus-within,
+  .app-update:focus-within {
+    translate: 0 -1px;
+  }
+  .demo-nav a:active {
+    scale: var(--motion-control-press);
+  }
+  .page-nav button:active {
+    scale: var(--motion-control-press);
+  }
+  .expense-week-list button:active,
+  .expense-record-list button:active,
+  .expense-note-actions button:active {
+    translate: 0 1px;
+  }
+  .matrix tbody tr:focus-within {
+    translate: 2px 0;
+  }
+  .legend a:active .dot {
+    scale: 0.88;
+  }
+  .perf-row:active {
+    translate: 0 1px;
+  }
+  .bars-item:active .bar {
+    opacity: 0.78;
+  }
+  .chart-reset:active {
+    scale: var(--motion-control-press);
+  }
+  .history-progress:focus-within {
+    scale: 1.01;
+  }
+  .expense-state:focus-within {
+    translate: 0 -1px;
+  }
+  .review-problem button:active,
+  .expense-conflict button:active {
+    scale: var(--motion-control-press);
+  }
+  .account a:active {
+    translate: 2px 0;
+  }
+  .get-started button:active {
+    translate: 0 1px;
+  }
+  .app-update button:active {
+    scale: var(--motion-control-press);
+  }
+  .topbar-title:focus-within {
+    translate: 0 -1px;
+  }
+  .status-chip:focus-within {
+    translate: 0 -1px;
+  }
+  .source-label:active {
+    scale: 0.98;
+  }
+  .privacy-toggle:active .privacy-icon {
+    scale: 0.86;
+  }
+  .nav-link[aria-current="page"] > svg {
+    rotate: 2deg;
+  }
+  .chart-readout-item[data-highlighted="true"] {
+    translate: 0 -1px;
+  }
+  .chart-date-control input:active {
+    scale: 0.995;
+  }
+  .expense-review:focus-within {
+    translate: 0 -1px;
+  }
+  .expense-conflict:focus-within {
+    translate: 0 -1px;
   }
 }

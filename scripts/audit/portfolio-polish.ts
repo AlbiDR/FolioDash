@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { withLocalBrowser } from "../lib/local-browser.ts";
 import { createSteps } from "./interactions/browser-steps.ts";
 import { assertPortfolioLayout } from "./portfolio-layout.ts";
+import { assertSidebarCollapse } from "./sidebar-collapse.ts";
 
 const output = resolve("dist/portfolio-polish");
 mkdirSync(output, { recursive: true });
@@ -223,6 +224,7 @@ await withLocalBrowser(async (browser) => {
     async () => (await evaluate("document.getAnimations().every(a=>a.playState!=='running')")) === true,
     "settled cards",
   );
+  results.push({ name: "sidebar collapse and reopen", result: await assertSidebarCollapse(browser) });
   await evaluate(`(() => {
     const rows=[...document.querySelectorAll('.desktop-holdings tbody tr:not(.holdings-group):not(.closed)')];
     window.polishRow=rows[1];window.polishText=window.polishRow.textContent;

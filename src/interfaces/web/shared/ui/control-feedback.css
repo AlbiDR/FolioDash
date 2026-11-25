@@ -95,7 +95,8 @@
     background-color var(--duration-short) var(--ease-smooth),
     box-shadow var(--duration-short) var(--ease-smooth),
     opacity var(--duration-short) var(--ease-smooth),
-    scale var(--duration-press) var(--ease-standard);
+    scale var(--duration-press) var(--ease-standard),
+    translate var(--duration-short) var(--ease-smooth);
 }
 .shell :is(input, select, textarea):not(:disabled):focus-visible {
   border-color: var(--color-accent);
