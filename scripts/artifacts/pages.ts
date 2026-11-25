@@ -1,4 +1,6 @@
-// Adds synthetic README screenshots beside the checked app without changing its bytes.
+// Adds synthetic README screenshots beside the checked app without changing its bytes. A release normally adds the
+// screenshots captured for its own revision. When that capture failed, it carries over the set the live site already
+// serves instead, so a screenshot failure cannot stop the checked app from being published (docs/operations/github-actions.md).
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -11,6 +13,8 @@ export { README_IMAGES };
 const RECEIPT = "screenshots.json";
 const HEX = /^[a-f0-9]{64}$/u;
 
+const MAX_RECEIPT_BYTES = 8192;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MIN_CLEAR_SHARE = 0.02;
 const SOLID_ALPHA = 128;
 const BAND = 0.12;
@@ -159,7 +163,7 @@ function images(root: string): { name: string; sha256: string; width: number; he
   const result = README_IMAGES.map((name) => {
     const file = join(root, name);
     const stat = lstatSync(file);
-    if (!stat.isFile() || stat.size > 8 * 1024 * 1024)
+    if (!stat.isFile() || stat.size > MAX_IMAGE_BYTES)
       throw new Error("Screenshot must be an ordinary PNG file within its size limit.");
     const bytes = readFileSync(file);
     if (bytes.length < 33 || bytes.toString("ascii", 12, 16) !== "IHDR" || bytes.readUInt32BE(8) !== 13)
@@ -213,7 +217,19 @@ export function writeCaptureReceipt(app: string, screenshots: string, appDigest:
   writeFileSync(join(screenshots, RECEIPT), `${JSON.stringify(receipt, null, 2)}\n`);
 }
 
-export function preparePages(app: string, screenshots: string, output: string, revision: string): void {
+/**
+ * Composes the Pages tree. `carriedOver` is set only when a release reuses the screenshots the live site already serves
+ * because this revision's capture failed. Those images were captured for an earlier revision and app, so the two
+ * provenance checks that tie them to this revision and this app are the only ones skipped: every image, framing and
+ * receipt check still applies, and the images must still match the receipt they were published with.
+ */
+export function preparePages(
+  app: string,
+  screenshots: string,
+  output: string,
+  revision: string,
+  carriedOver = false,
+): void {
   const roots = [app, screenshots, output].map((root) => resolve(root));
   if (
     roots.some((left, index) =>
@@ -222,6 +238,7 @@ export function preparePages(app: string, screenshots: string, output: string, r
   )
     throw new Error("Artifact input and output directories must be separate.");
   const appFiles = readFiles(app);
+  const appDigest = treeDigest(appFiles);
   for (const required of ["index.html", "sw.js", "manifest.webmanifest"])
     if (!appFiles.has(required)) throw new Error(`Checked app is missing ${required}.`);
   if ([...appFiles.keys()].some((name) => name === "readme" || name.startsWith("readme/")))
@@ -230,19 +247,22 @@ export function preparePages(app: string, screenshots: string, output: string, r
   const receiptPath = join(screenshots, RECEIPT);
   if (!lstatSync(receiptPath).isFile()) throw new Error("Screenshot receipt must be an ordinary file.");
   const receiptBytes = readFileSync(receiptPath);
-  if (receiptBytes.length > 8192) throw new Error("Screenshot receipt is too large.");
+  if (receiptBytes.length > MAX_RECEIPT_BYTES) throw new Error("Screenshot receipt is too large.");
   const receipt = object(JSON.parse(receiptBytes.toString("utf8")) as unknown);
   keys(receipt, ["version", "synthetic", "revision", "appSha256", "images"]);
   if (
     receipt["version"] !== 1 ||
     receipt["synthetic"] !== true ||
     typeof receipt["revision"] !== "string" ||
-    !/^[a-f0-9]{40,64}$/u.test(receipt["revision"])
+    !/^[a-f0-9]{40,64}$/u.test(receipt["revision"]) ||
+    typeof receipt["appSha256"] !== "string" ||
+    !HEX.test(receipt["appSha256"])
   )
     throw new Error("Invalid synthetic screenshot provenance.");
-  if (receipt["revision"] !== revision) throw new Error("Screenshots were captured for another revision.");
-  if (receipt["appSha256"] !== treeDigest(appFiles))
-    throw new Error("Checked app differs from the pre-capture receipt.");
+  if (!carriedOver) {
+    if (receipt["revision"] !== revision) throw new Error("Screenshots were captured for another revision.");
+    if (receipt["appSha256"] !== appDigest) throw new Error("Checked app differs from the pre-capture receipt.");
+  }
   if (JSON.stringify(receipt["images"]) !== JSON.stringify(imageRecords))
     throw new Error("Screenshot bytes or dimensions differ from the capture receipt.");
   const expected = new Map(appFiles);
@@ -256,11 +276,39 @@ export function preparePages(app: string, screenshots: string, output: string, r
   const copied = readFiles(output);
   if (copied.size !== expected.size || [...expected].some(([name, bytes]) => !copied.get(name)?.equals(bytes)))
     throw new Error("Pages composition changed a checked file or introduced an extra file.");
-  if (treeDigest(readFiles(app)) !== receipt["appSha256"])
-    throw new Error("The checked app changed during Pages composition.");
+  if (treeDigest(readFiles(app)) !== appDigest) throw new Error("The checked app changed during Pages composition.");
   console.log(
-    `Prepared Pages: ${String(appFiles.size)} byte-identical app files, ${String(README_IMAGES.length)} verified synthetic PNGs and their capture receipt.`,
+    carriedOver
+      ? `Prepared Pages: ${String(appFiles.size)} byte-identical app files, and the ${String(README_IMAGES.length)} verified synthetic PNGs and receipt carried over from the release of ${receipt["revision"]}.`
+      : `Prepared Pages: ${String(appFiles.size)} byte-identical app files, ${String(README_IMAGES.length)} verified synthetic PNGs and their capture receipt.`,
   );
+}
+
+async function download(url: URL, limit: number): Promise<Buffer> {
+  const response = await fetch(url, { redirect: "error", signal: AbortSignal.timeout(30_000) });
+  if (!response.ok)
+    throw new Error(`Cannot download ${url.pathname} from the live site: HTTP ${String(response.status)}.`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length > limit) throw new Error(`${url.pathname} on the live site is larger than its limit.`);
+  return bytes;
+}
+
+/**
+ * Copies the README screenshots and receipt the live site serves into an empty folder, for a release whose own capture
+ * failed. Only the names in scripts/docs/readme-views.ts are requested, so the live receipt cannot choose what is
+ * downloaded. The copies are then checked by preparePages like any capture; when a view was added since the last
+ * release, the live set lacks it and the release fails rather than publish a README with a missing image.
+ */
+export async function fetchPublishedScreenshots(site: string, target: string): Promise<void> {
+  const base = new URL("readme/", site.endsWith("/") ? site : `${site}/`);
+  if (base.protocol !== "https:") throw new Error("The live site must be served over HTTPS.");
+  rmSync(target, { recursive: true, force: true });
+  mkdirSync(target, { recursive: true });
+  for (const [name, limit] of [
+    [RECEIPT, MAX_RECEIPT_BYTES],
+    ...README_IMAGES.map((image) => [image, MAX_IMAGE_BYTES] as const),
+  ] as const)
+    writeFileSync(join(target, name), await download(new URL(name, base), limit));
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -268,5 +316,15 @@ if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
   }).trim();
-  preparePages(resolve("dist/web"), resolve("dist/readme"), resolve("dist/pages"), revision);
+  // `--carry-over <live site URL>`: this revision's capture failed, so reuse the screenshots the live site serves.
+  const [flag, site] = process.argv.slice(2);
+  if (flag === undefined) {
+    preparePages(resolve("dist/web"), resolve("dist/readme"), resolve("dist/pages"), revision);
+  } else if (flag === "--carry-over" && site !== undefined) {
+    const published = resolve("dist/readme-published");
+    await fetchPublishedScreenshots(site, published);
+    preparePages(resolve("dist/web"), published, resolve("dist/pages"), revision, true);
+  } else {
+    throw new Error("Usage: npm run build:pages [-- --carry-over <live site URL>]");
+  }
 }

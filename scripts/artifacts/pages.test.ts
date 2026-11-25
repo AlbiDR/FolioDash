@@ -3,12 +3,20 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { crc32, deflateSync } from "node:zlib";
-import { afterEach, describe, it } from "node:test";
-import { preparePages, readFiles, README_IMAGES, treeDigest, writeCaptureReceipt } from "./pages.ts";
+import { afterEach, describe, it, mock } from "node:test";
+import {
+  fetchPublishedScreenshots,
+  preparePages,
+  readFiles,
+  README_IMAGES,
+  treeDigest,
+  writeCaptureReceipt,
+} from "./pages.ts";
 
 const REVISION = "a".repeat(40);
 const temporary: string[] = [];
 afterEach(() => {
+  mock.restoreAll();
   for (const root of temporary.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -203,5 +211,60 @@ void describe("checked Pages composition", () => {
     assert.throws(() => {
       preparePages(app, screenshots, output, REVISION);
     }, /Unexpected screenshot receipt fields/u);
+  });
+
+  void it("carries over a published set from an earlier revision and app, and says so", () => {
+    const { app, screenshots, output } = fixture();
+    writeFileSync(join(app, "index.html"), "Synthetic app of a later revision");
+    assert.throws(() => {
+      preparePages(app, screenshots, output, "b".repeat(40));
+    }, /another revision/u);
+    const log = mock.method(console, "log", () => undefined);
+    preparePages(app, screenshots, output, "b".repeat(40), true);
+    assert.match(
+      String(log.mock.calls[0]?.arguments[0]),
+      new RegExp(`carried over from the release of ${REVISION}`, "u"),
+    );
+    const composed = readFiles(output);
+    for (const [name, bytes] of readFiles(app)) assert.equal(composed.get(name)?.equals(bytes), true);
+    for (const name of [...README_IMAGES, "screenshots.json"])
+      assert.equal(composed.get(`readme/${name}`)?.equals(readFileSync(join(screenshots, name))), true);
+  });
+
+  void it("still rejects a carried-over image that differs from its published receipt", () => {
+    const { app, screenshots, output } = fixture();
+    const changed = Buffer.from(mobile);
+    writeFileSync(
+      join(screenshots, "portfolio-mobile.png"),
+      Buffer.concat([changed.subarray(0, -12), chunk("tEXt", Buffer.from("Synthetic change")), changed.subarray(-12)]),
+    );
+    assert.throws(() => {
+      preparePages(app, screenshots, output, "b".repeat(40), true);
+    }, /capture receipt/u);
+  });
+
+  void it("downloads only the manifest's images and the receipt from the live site", async () => {
+    const { screenshots } = fixture();
+    const target = join(screenshots, "..", "published");
+    const requested: string[] = [];
+    mock.method(globalThis, "fetch", (url: URL) => {
+      requested.push(url.href);
+      return Promise.resolve(new Response(readFileSync(join(screenshots, url.pathname.split("/").pop() ?? ""))));
+    });
+    await fetchPublishedScreenshots("https://synthetic.example/FolioDash", target);
+    assert.deepEqual(
+      requested.sort(),
+      ["screenshots.json", ...README_IMAGES].map((name) => `https://synthetic.example/FolioDash/readme/${name}`).sort(),
+    );
+    for (const name of ["screenshots.json", ...README_IMAGES])
+      assert.equal(readFileSync(join(target, name)).equals(readFileSync(join(screenshots, name))), true);
+  });
+
+  void it("refuses a live site that is not HTTPS or that is missing an image", async () => {
+    const { screenshots } = fixture();
+    const target = join(screenshots, "..", "published");
+    await assert.rejects(fetchPublishedScreenshots("http://synthetic.example/", target), /HTTPS/u);
+    mock.method(globalThis, "fetch", () => Promise.resolve(new Response("Not found", { status: 404 })));
+    await assert.rejects(fetchPublishedScreenshots("https://synthetic.example/", target), /HTTP 404/u);
   });
 });
