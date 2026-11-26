@@ -183,6 +183,7 @@ Evidence, local production build in headless Chrome with synthetic data, 2026-11
 
 - **The proof tool.** `scripts/audit/motion/snapshot.ts` (`npm run audit:motion-snapshot -- <file>`) reads the computed transition, animation and transform styles of every element on every screen of the production build: at rest at 1440 and 390 px and under reduced motion, and on every control with hover, keyboard focus and press forced, with any transition a forced state starts finished first. `--compare` lists every difference and fails if there is one. Two snapshots of the same build agree on all 87,146 readings.
 - **Move 1, 2026-11-26.** `workflow-feedback.css`, `polish.css` and `polish-secondary.css`, which sat next to each other in the import order, are one state owner, `src/interfaces/web/shared/ui/motion/state.css`, at the same position with their rules in the same order. The snapshot before and after agrees on all 87,146 readings. Unplugging the two polish layers instead changes 2,052 readings, all easings, so their rules stay in force until each element's own owner takes its easing over.
+- **Move 2, 2026-11-26.** The motion declarations of `presentation/charts/charts.css` and `presentation/charts/bars.css` moved to the top of `src/interfaces/web/presentation/charts/chart-arrival.css`, in their original order; the three files load back to back, so nothing between them changed. The snapshot agrees on all 87,146 readings, and the two files no longer carry motion.
 
 ## Implementation brief for phases 2 to 6
 

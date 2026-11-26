@@ -27,7 +27,6 @@
 
 .bars-item .bar {
   opacity: 0.8;
-  transition: opacity var(--duration-short) var(--ease-smooth);
 }
 
 .bars-item.is-active .bar {
@@ -37,19 +36,6 @@
 /* The selected observation confirms a deliberate pin without changing its
  * financial geometry. This is the reusable "select and inspect" recipe. */
 .bars-item[aria-pressed="true"] .bar {
-  animation: chart-selection-rebound var(--duration-feedback) var(--ease-rebound);
   transform-box: fill-box;
   transform-origin: center;
-}
-
-@keyframes chart-selection-rebound {
-  50% {
-    scale: 1.08 1.03;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bars-item[aria-pressed="true"] .bar {
-    animation: none;
-  }
 }

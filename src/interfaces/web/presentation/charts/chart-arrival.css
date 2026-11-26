@@ -1,3 +1,39 @@
+/* Chart motion. Moved here from charts.css and bars.css in phase 3, ahead of the arrival recipes, in their original order. */
+.chart-series {
+  animation: chart-reveal var(--duration-medium) var(--ease-smooth);
+}
+.chart-series.unfocused {
+  animation: none;
+}
+
+@keyframes chart-reveal {
+  from {
+    opacity: var(--motion-reveal-opacity);
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.bars-item .bar {
+  transition: opacity var(--duration-short) var(--ease-smooth);
+}
+.bars-item[aria-pressed="true"] .bar {
+  animation: chart-selection-rebound var(--duration-feedback) var(--ease-rebound);
+}
+
+@keyframes chart-selection-rebound {
+  50% {
+    scale: 1.08 1.03;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bars-item[aria-pressed="true"] .bar {
+    animation: none;
+  }
+}
+
 .plot-arrive,
 .donut-arrive,
 .perf-bar,

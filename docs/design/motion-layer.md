@@ -67,7 +67,6 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 | Stylesheet | Motion it holds | Owner |
 |---|---|---|
 | `features/overview/styles/portfolio-polish.css` | readout inspection surface, paint-only background and shadow feedback | [Portfolio refinement](portfolio-refinement.md) |
-| `presentation/charts/bars.css` | bar emphasis and readout styling inherited from the selected baseline | [Depth and hierarchy](depth-and-hierarchy.md) |
 | `shared/ui/control-feedback.css` | press, hover and focus feedback for every semantic control | [Interaction coverage](interaction-coverage.md) |
 | `shared/ui/interactions/controls.css` | control feedback for the numbered additions | [Interaction coverage](interaction-coverage.md) |
 | `shared/ui/interactions/content.css` | disclosure opening and closing, guide and confirmation cues | [Interaction coverage](interaction-coverage.md) |
@@ -75,7 +74,6 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 | `shared/ui/motion/navigation-and-workflow.css` | navigation and workflow motion | This record |
 | `shared/ui/motion/charts-and-content.css` | legend and content-state feedback | This record; chart marks follow [interaction coverage](interaction-coverage.md) |
 | `shared/ui/motion/static-and-native.css` | native and static elements, and the sparkline area | This record |
-| `presentation/charts/charts.css` | chart series reveal and emphasis | [Interaction coverage](interaction-coverage.md) |
 | `app/styles/shell.css` | sidebar and layout transitions | [UI system](ui-system.md) |
 | `app/styles/page-chrome.css` | page identity, page arrival and global controls | [UI system](ui-system.md) |
 | `app/styles/controls-and-charts.css` | segmented controls and their feedback | [UI system](ui-system.md) |
@@ -85,7 +83,7 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 | `features/overview/styles/holdings-and-attention.css` | holdings share bars and attention | [Dashboard coherence](dashboard-coherence.md) |
 | `features/expenses/styles/categories-and-record.css` | expense categories and record arrival | [Work and expenses](work-expenses-experience.md) |
 | `features/expenses/styles/responsive-and-hover.css` | expense layout and hover | [Work and expenses](work-expenses-experience.md) |
-| `presentation/charts/chart-arrival.css` | chart arrivals: the line plot, allocation ring, performance bars and holdings share bars, and the named recipes bar rise, ranking rise, ring slice, marker arrival and selection rebound | This record ([recipe catalogue](#recipe-catalogue)) |
+| `presentation/charts/chart-arrival.css` | all chart motion: series reveal and emphasis, bar emphasis and the pinned bar's rebound (moved from `charts.css` and `bars.css` on 2026-11-26), and chart arrivals: the line plot, allocation ring, performance bars and holdings share bars, and the named recipes bar rise, ranking rise, ring slice, marker arrival and selection rebound | This record ([recipe catalogue](#recipe-catalogue)) |
 | `shared/ui/motion/state.css` | state movements of workflow controls, their icons and cards, and the one easing of existing state transitions (merged from `workflow-feedback.css`, `polish.css` and `polish-secondary.css` on 2026-11-26) | [Polished by default](polished-by-default.md) |
 | `public/privacy/index.html` | link underline, shadow and press feedback on the standalone privacy page, in its own `<style>` block | [Privacy policy](../operations/privacy-policy.md) |
 

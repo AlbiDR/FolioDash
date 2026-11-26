@@ -114,24 +114,8 @@
 
 /* Present the entire financial shape on first paint; only its emphasis settles. A period change morphs the drawn lines
  * between axes instead (use-geometry-morph.ts). */
-.chart-series {
-  animation: chart-reveal var(--duration-medium) var(--ease-smooth);
-}
 
 /* Inspection owns opacity even if a legend is used during the entrance cue. */
-.chart-series.unfocused {
-  animation: none;
-}
-
-@keyframes chart-reveal {
-  from {
-    opacity: var(--motion-reveal-opacity);
-  }
-
-  to {
-    opacity: 1;
-  }
-}
 
 /* The area under a line fades toward the baseline, so the line carries the eye and the fill only grounds it. */
 .chart-series path.area {
