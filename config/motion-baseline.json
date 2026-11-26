@@ -61,26 +61,26 @@
   },
   "history:enter": {
     "kinds": 9,
-    "elements": 10,
+    "elements": 11,
     "settle": 615,
     "loops": 0
   },
   "history:open": {
     "kinds": 7,
-    "elements": 8,
-    "settle": 615,
+    "elements": 9,
+    "settle": 780,
     "loops": 0
   },
   "import:enter": {
     "kinds": 9,
-    "elements": 10,
+    "elements": 12,
     "settle": 615,
     "loops": 0
   },
   "import:open": {
     "kinds": 7,
-    "elements": 8,
-    "settle": 615,
+    "elements": 10,
+    "settle": 835,
     "loops": 0
   },
   "months:enter": {
