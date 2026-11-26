@@ -18,7 +18,7 @@ export function ImportRoutes(props: {
   return (
     <>
       {route.name === "import" && (
-        <div inert={jsonImportLocked}>
+        <div class="route-frame" inert={jsonImportLocked}>
           <ImportView
             key={data.workbook?.id ?? "signed-out"}
             prepare={prepareImport}
@@ -32,7 +32,7 @@ export function ImportRoutes(props: {
         </div>
       )}
       {route.name === "history" && (
-        <div inert={jsonImportLocked}>
+        <div class="route-frame" inert={jsonImportLocked}>
           <ImportView
             historyMode
             prepare={prepareImport}

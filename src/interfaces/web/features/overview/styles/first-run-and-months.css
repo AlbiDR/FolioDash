@@ -224,3 +224,14 @@
     border-color: CanvasText;
   }
 }
+
+/* The month summary's confirmation cue covers the card without taking part in its layout. */
+.month-summary {
+  position: relative;
+}
+.month-confirm-cue {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}

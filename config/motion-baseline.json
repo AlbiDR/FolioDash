@@ -2,7 +2,7 @@
   "activity:enter": {
     "kinds": 6,
     "elements": 14,
-    "settle": 835,
+    "settle": 573,
     "loops": 0
   },
   "activity:open": {
@@ -14,7 +14,7 @@
   "checkpoints:enter": {
     "kinds": 7,
     "elements": 12,
-    "settle": 725,
+    "settle": 518,
     "loops": 0
   },
   "checkpoints:open": {
@@ -26,7 +26,7 @@
   "connection:enter": {
     "kinds": 6,
     "elements": 13,
-    "settle": 780,
+    "settle": 545,
     "loops": 0
   },
   "connection:open": {
@@ -38,7 +38,7 @@
   "expenses:enter": {
     "kinds": 8,
     "elements": 27,
-    "settle": 945,
+    "settle": 573,
     "loops": 0
   },
   "expenses:open": {
@@ -50,7 +50,7 @@
   "fund:enter": {
     "kinds": 12,
     "elements": 18,
-    "settle": 780,
+    "settle": 545,
     "loops": 0
   },
   "fund:open": {
@@ -62,7 +62,7 @@
   "history:enter": {
     "kinds": 9,
     "elements": 11,
-    "settle": 615,
+    "settle": 463,
     "loops": 0
   },
   "history:open": {
@@ -74,7 +74,7 @@
   "import:enter": {
     "kinds": 9,
     "elements": 12,
-    "settle": 615,
+    "settle": 463,
     "loops": 0
   },
   "import:open": {
@@ -86,7 +86,7 @@
   "months:enter": {
     "kinds": 10,
     "elements": 16,
-    "settle": 835,
+    "settle": 573,
     "loops": 0
   },
   "months:open": {
@@ -98,13 +98,13 @@
   "overview:enter": {
     "kinds": 15,
     "elements": 145,
-    "settle": 3035,
+    "settle": 793,
     "loops": 0
   },
   "overview:open": {
     "kinds": 15,
     "elements": 146,
-    "settle": 3035,
+    "settle": 1165,
     "loops": 0
   }
 }

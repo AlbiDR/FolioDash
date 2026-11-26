@@ -10,6 +10,11 @@ import { prefersReducedMotion, REDUCED_MOTION_QUERY } from "../motion/reduced-mo
  * it stops a motion, so a stop never runs a callback that is waiting for a cancel.
  */
 export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Motion = createMotion()) {
+  // A page reached from inside the app arrives as one quicker gesture than a cold open (FD-029, decision 2). The mark
+  // is styling state read by the arrival stylesheets, set before the new page mounts and kept for later arrivals.
+  const markEntered = (): void => {
+    page.current?.setAttribute("data-arrival", "entered");
+  };
   let animation: Animation | null = null;
   let animated: HTMLElement | null = null;
   let pending: (() => void) | null = null;
@@ -34,7 +39,10 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
     const commit = pending;
     pending = null;
     stop();
-    if (commit !== null) flushSync(commit);
+    if (commit !== null) {
+      markEntered();
+      flushSync(commit);
+    }
   };
   const change = (commit: () => void): void => {
     // The latest destination replaces the pending destination, never mounts an intermediate screen.
@@ -45,6 +53,7 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
     const element = page.current;
     if (element === null || typeof element.animate !== "function" || prefersReducedMotion() || document.hidden) {
       stop();
+      markEntered();
       flushSync(commit);
       return;
     }

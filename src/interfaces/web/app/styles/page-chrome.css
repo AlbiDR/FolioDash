@@ -213,28 +213,35 @@ a.icon-button {
 
 /* Keep section slots in flow while each surface reveals in reading order. */
 #main-content > .get-started,
-#main-content > :is(.dash, .screen, .account, .import) > * {
+#main-content > :is(.dash, .screen, .account, .import) > *,
+#main-content > .route-frame > .import > * {
   --section-arrival-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
 }
-#main-content > :is(.dash, .screen, .account, .import) > :nth-child(2) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(2),
+#main-content > .route-frame > .import > :nth-child(2) {
   --arrival-index: 1;
 }
-#main-content > :is(.dash, .screen, .account, .import) > :nth-child(3) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(3),
+#main-content > .route-frame > .import > :nth-child(3) {
   --arrival-index: 2;
 }
-#main-content > :is(.dash, .screen, .account, .import) > :nth-child(4) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(4),
+#main-content > .route-frame > .import > :nth-child(4) {
   --arrival-index: 3;
 }
-#main-content > :is(.dash, .screen, .account, .import) > :nth-child(5) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(5),
+#main-content > .route-frame > .import > :nth-child(5) {
   --arrival-index: 4;
 }
-#main-content > :is(.dash, .screen, .account, .import) > :nth-child(n + 6) {
+#main-content > :is(.dash, .screen, .account, .import) > :nth-child(n + 6),
+#main-content > .route-frame > .import > :nth-child(n + 6) {
   --arrival-index: 5;
 }
 
 /* Keyboard focus bypasses an entrance delay without moving the layout. */
 #main-content > .get-started:focus-within,
-#main-content > :is(.dash, .screen, .account, .import) > :focus-within {
+#main-content > :is(.dash, .screen, .account, .import) > :focus-within,
+#main-content > .route-frame > .import > :focus-within {
   opacity: 1 !important;
   transform: none !important;
 }

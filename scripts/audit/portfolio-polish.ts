@@ -166,58 +166,58 @@ await withLocalBrowser(async (browser) => {
   results.push({ name: "immediate return from Activity", result: true });
   await call("Animation.setPlaybackRate", { playbackRate: 1 });
 
-  for (const hideDuringCount of [false, true]) {
-    await visit("activity", 1440, "many");
-    const count = (await evaluate(`new Promise(resolve => {
-      let first, middle, exact;
-      const deadline = performance.now() + 3000;
-      document.querySelector('.nav-link[href="#overview"]').click();
-      function sample() {
-        const figure = document.querySelector('.hero-value .amount');
-        const frame = figure?.querySelector('.figure-count')?.getAttribute('data-figure-count');
-        if (first === undefined && frame != null) {
-          first = frame;
-          exact = figure.textContent;
-          if (${String(hideDuringCount)}) {
-            document.querySelector('.privacy-toggle').click();
-            requestAnimationFrame(() => resolve({
-              first, exact, hidden: figure.classList.contains('masked'),
-              transient: figure.querySelector('.figure-count').getAttribute('data-figure-count'),
-            }));
-            return;
-          }
-        }
-        if (frame != null && frame !== first && frame !== exact) middle = frame;
-        if ((first !== undefined && frame == null) || performance.now() > deadline) {
-          resolve({first, middle, exact, final: figure?.textContent, counting: figure?.hasAttribute('data-counting')});
-          return;
-        }
-        requestAnimationFrame(sample);
+  // A page entered from inside the app shows its figures at once (FD-029, decision 2): no counting layer, ever.
+  await visit("activity", 1440, "many");
+  const entered = (await evaluate(`new Promise(resolve => {
+    const deadline = performance.now() + 1500;
+    let firstText, counted = false;
+    document.querySelector('.nav-link[href="#overview"]').click();
+    function sample() {
+      const figure = document.querySelector('.hero-value .amount');
+      if (figure) {
+        firstText ??= figure.textContent;
+        counted ||= !!figure.querySelector('[data-figure-count]') || figure.closest('[data-counting]') !== null;
+      }
+      if (performance.now() > deadline) {
+        resolve({ firstText, finalText: figure?.textContent, counted });
+        return;
       }
       requestAnimationFrame(sample);
-    })`)) as {
-      first?: string;
-      middle?: string;
-      exact?: string;
-      final?: string;
-      counting?: boolean;
-      hidden?: boolean;
-      transient?: string | null;
-    };
-    assert.match(count.first ?? "", /^0,00/);
-    if (hideDuringCount) {
-      assert.equal(count.hidden, true, "privacy masks the count while it is running");
-      assert.equal(count.transient, null, "privacy removes the transient digits");
-    } else {
-      assert.ok(count.middle, "the headline passes through an intermediate amount");
-      assert.equal(count.final, count.exact, "the headline lands on its exact amount");
-      assert.equal(count.counting, false, "the transient layer is removed");
     }
-    results.push({
-      name: hideDuringCount ? "privacy interrupts an active count" : "headline count on Activity to Portfolio",
-      result: count,
-    });
-  }
+    requestAnimationFrame(sample);
+  })`)) as { firstText?: string; finalText?: string; counted: boolean };
+  assert.ok(entered.firstText, "the headline renders on entry from Activity");
+  assert.equal(entered.counted, false, "an in-app entry never counts the headline");
+  assert.equal(entered.firstText, entered.finalText, "the headline shows its exact amount from its first frame");
+  results.push({ name: "headline on Activity to Portfolio", result: entered });
+
+  // Privacy still interrupts a running count, which a cold open now starts.
+  const privacy = await call("Page.addScriptToEvaluateOnNewDocument", {
+    source: `localStorage.setItem('foliodash.privacy.v1', 'shown');
+      const observer = new MutationObserver(() => {
+        const overlay = document.querySelector('.hero-value .figure-count[data-figure-count]');
+        const toggle = document.querySelector('.privacy-toggle');
+        if (!overlay || !toggle || window.privacyInterrupt) return;
+        observer.disconnect();
+        const figure = overlay.closest('.amount') ?? overlay.closest('.animated-figure');
+        toggle.click();
+        requestAnimationFrame(() => {
+          window.privacyInterrupt = {
+            hidden: !!document.querySelector('.hero-value .masked, .hero-value [aria-label="Amount hidden"]'),
+            transient: document.querySelector('.hero-value .figure-count')?.getAttribute('data-figure-count') ?? null,
+            figure: !!figure,
+          };
+        });
+      });
+      observer.observe(document, { attributes: true, childList: true, subtree: true });`,
+  });
+  await call("Page.navigate", { url: `${origin}/?demo=many&polish=privacy#overview` });
+  await waitFor(async () => (await evaluate("!!window.privacyInterrupt")) === true, "a cold-open count is interrupted");
+  await call("Page.removeScriptToEvaluateOnNewDocument", { identifier: privacy["identifier"] });
+  const interrupted = (await evaluate("window.privacyInterrupt")) as { hidden: boolean; transient: string | null };
+  assert.equal(interrupted.hidden, true, "privacy masks the count while it is running");
+  assert.equal(interrupted.transient, null, "privacy removes the transient digits");
+  results.push({ name: "privacy interrupts an active count", result: interrupted });
 
   await visit("overview", 1440, "many");
   await waitFor(

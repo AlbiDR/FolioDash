@@ -38,6 +38,10 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
     // Long statements may contain hundreds of offscreen figures. Animate the ones opening in view.
     const bounds = node.getBoundingClientRect();
     if (bounds.height === 0 || bounds.top >= window.innerHeight || bounds.bottom <= 0) return;
+    // A page entered from inside the app shows its figures at once: counting is part of the cold open only.
+    if (node.closest('[data-arrival="entered"]') !== null) return;
+    // A cell scrolled out of sight inside a wide table is offscreen too: only count what can be seen.
+    if (!visibleSideways(node, bounds)) return;
     const style = getComputedStyle(node);
     const timing = timingFrom(style, "--duration-arrival", "--ease-arrival");
     if (timing.duration === 0) return;
@@ -81,6 +85,17 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
       </span>
     </span>
   );
+}
+
+/** Whether a figure lies inside every horizontally clipping ancestor, such as a scrolling table, and the viewport. */
+function visibleSideways(node: Element, bounds: DOMRect): boolean {
+  if (bounds.right <= 0 || bounds.left >= window.innerWidth) return false;
+  for (let parent = node.parentElement; parent !== null; parent = parent.parentElement) {
+    if (getComputedStyle(parent).overflowX === "visible") continue;
+    const clip = parent.getBoundingClientRect();
+    if (bounds.right <= clip.left || bounds.left >= clip.right) return false;
+  }
+  return true;
 }
 
 export function formatFigureCount(value: number): string {

@@ -29,7 +29,8 @@
   }
 }
 #main-content > .get-started,
-#main-content > :is(.dash, .screen, .account, .import) > * {
+#main-content > :is(.dash, .screen, .account, .import) > *,
+#main-content > .route-frame > .import > * {
   animation: rise var(--duration-arrival) var(--ease-arrival) backwards;
   animation-delay: var(--section-arrival-delay);
 }
@@ -67,10 +68,10 @@
 .page-title-arrival {
   animation: text-arrive var(--duration-medium) var(--ease-smooth) backwards;
 }
+/* Text fades in a step after its region; the region's rise is the only movement, so text never moves twice. */
 @keyframes text-arrive {
   from {
     opacity: 0;
-    transform: translateY(var(--motion-text-rise));
   }
 }
 .nav-pill {
@@ -172,4 +173,26 @@
   .expense-conflict {
     transition: translate var(--duration-short) var(--ease-smooth);
   }
+}
+
+/* A page entered from inside the app (FD-029, decision 2): the same arrival in reading order, quicker and with a shorter
+ * stagger, because frequent motion should be shorter. A cold open keeps the full arrival above. */
+#main-content[data-arrival="entered"] > .get-started,
+#main-content[data-arrival="entered"] > :is(.dash, .screen, .account, .import) > *,
+#main-content[data-arrival="entered"] > .route-frame > .import > * {
+  --section-arrival-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 3) / 2);
+  animation-duration: var(--duration-medium);
+}
+#main-content[data-arrival="entered"]
+  :is(
+    .card-title,
+    .card-subtitle,
+    .hero-value,
+    .hero-gain,
+    .chart-title,
+    .chart-subtitle,
+    .account-lead,
+    .import-heading
+  ) {
+  animation-duration: var(--duration-medium);
 }

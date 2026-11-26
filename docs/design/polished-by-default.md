@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 3 done; phases 4 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 4 done; phases 5 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -190,6 +190,21 @@ Evidence, local production build in headless Chrome with synthetic data, 2026-11
 - **Move 5, 2026-11-26: the easing layer folded away.** Every rule that loads before the old `easing.css` and names one of its selectors now writes `--ease-smooth` into its own transition or animation list, so the curve lives with the list it shapes; two reduced-motion resets and the chart reset's own rule were corrected by hand. The snapshot comparison now expands a shorter timing list by CSS's own repetition rule and ignores the curve of a transition or animation that does not run, because neither changes what renders; two snapshots of one build still agree.
 - **Move 6, 2026-11-26: the foundation regrouped.** `foundation.css` loaded just before the role block with no motion in between, so each of its rules moved to the top of its role file in order. Fields, choices and segmented controls became their own family, `state-fields.css`, to keep every file under the size limit. `screens.css` stays as the screens role: motion particular to one screen, which must load after control feedback because it refines it.
 - **Result.** Motion lives in ten files: `tokens.css`, `control-feedback.css`, `presentation/charts/chart-arrival.css`, and the role owners in `shared/ui/motion/` (arrival, layers, the navigation, chart, content, field and control state families, and screens). The snapshot of the final build agrees with the phase 3 baseline on all 87,146 readings, and the ratchet keeps motion there. Phase 3 is done.
+
+### Phase 4 record, 2026-11-26
+
+What changes for a person, under `src/interfaces/web/`:
+
+- **Month by month counts nothing on a step.** The summary card was keyed by month, so every step remounted it and counted each figure up from zero. Now only a small decorative cue (`.month-confirm-cue` in `features/overview/months-view.tsx`) is keyed: the border confirmation still plays on each step, and the figures change exactly and at once, as the cue's original intent said.
+- **Count-ups only where they can be seen.** `presentation/animated-figure.tsx` also skips a figure outside any horizontally clipping ancestor, such as a cell scrolled out of a wide table. Month by month's cold open now starts 89 count-ups instead of 619.
+- **One movement for text.** Headings and subtitles keep their staggered fade a step after their region, but no longer rise a second time inside their rising card (`shared/ui/motion/arrival.css`).
+- **Chart marks follow their region.** The four named recipes in `presentation/charts/chart-arrival.css` start from the region's arrival delay, half a stagger step apart and at most twelve steps. The Portfolio's cold open settles in 1.17 s instead of 3.04 s.
+- **Import and History arrive like every other page.** Their wrapper (`app/app-import-routes.tsx`) is now a `.route-frame`, and the section arrival names it.
+- **In-app entry is quicker (decision 2).** `shared/ui/use-page-motion.ts` marks the main region `data-arrival="entered"` before the first page reached from inside the app mounts. Under that mark, sections arrive at the layer duration with a shorter stagger, chart growth is quicker, and figures show at once without counting. A cold open, the first load of the app, keeps the full arrival. The mark is styling state, as Presence's attributes are; the motion layer's no-attribute decision concerns test signals. In-app entries now settle in 0.46 to 0.79 s.
+
+**Ceilings.** Every arrival fell or held, except Import and History, which now have the section arrival they lacked: their elements rise by one or two and their cold-open settle by about 0.2 s. That rise is the accepted plan's own change (FD-029, the gap table's Import row), recorded in a separate commit that raises only those four ceilings; the rest were lowered with `--record`.
+
+**Audits.** The Portfolio polish audit's in-app headline journey now asserts the new behaviour strictly: on entry from Activity the headline shows its exact amount from its first frame and never counts. The privacy check it carried moved to a cold open, where counting happens, with the same two assertions.
 
 ## Implementation brief for phases 2 to 6
 

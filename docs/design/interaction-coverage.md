@@ -273,7 +273,7 @@ One row is a source template; a fund-link template can render many controls. All
 | d126bd399f6c-1 | [months-view.tsx:271](../../src/interfaces/web/features/overview/months-view.tsx#L271) | button / action | Previous | SOURCE CLASSIFIED; STATES OPEN |
 | 36aa1201392b-1 | [months-view.tsx:282](../../src/interfaces/web/features/overview/months-view.tsx#L282) | button / action | Next | SOURCE CLASSIFIED; STATES OPEN |
 | e31f7b55bac2-1 | [months-view.tsx:293](../../src/interfaces/web/features/overview/months-view.tsx#L293) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
-| 4eeac9ba431c-1 | [months-view.tsx:349](../../src/interfaces/web/features/overview/months-view.tsx#L349) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
+| 4eeac9ba431c-1 | [months-view.tsx:351](../../src/interfaces/web/features/overview/months-view.tsx#L351) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
 | 516fd464ddb2-1 | [overview-analysis.tsx:102](../../src/interfaces/web/features/overview/overview-analysis.tsx#L102) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 7835b073b7a4-1 | [overview-cards.tsx:87](../../src/interfaces/web/features/overview/overview-cards.tsx#L87) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
 | 7629eadcb326-1 | [overview-cards.tsx:153](../../src/interfaces/web/features/overview/overview-cards.tsx#L153) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |

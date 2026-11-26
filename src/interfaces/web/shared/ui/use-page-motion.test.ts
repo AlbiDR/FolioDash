@@ -130,3 +130,22 @@ it("settles an externally cancelled exit and ignores its stale callback during a
   expect(node.inert).toBe(false);
   motion.cancel();
 });
+
+it("marks a page entered from inside the app before it mounts, with or without the exit", () => {
+  const animated = fixture();
+  let markedBeforeMount = false;
+  animated.motion.change(() => {
+    markedBeforeMount = animated.attributes.has("data-arrival");
+  });
+  expect(animated.attributes.has("data-arrival")).toBe(false);
+  animated.animations[0]?.onfinish?.();
+  expect(markedBeforeMount).toBe(true);
+
+  const reduced = fixture();
+  reduced.media.matches = true;
+  let reducedMarked = false;
+  reduced.motion.change(() => {
+    reducedMarked = reduced.attributes.has("data-arrival");
+  });
+  expect(reducedMarked).toBe(true);
+});

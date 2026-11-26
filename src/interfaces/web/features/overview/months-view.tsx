@@ -305,7 +305,9 @@ export function MonthsView(props: { readonly model: OverviewModel }): JSX.Elemen
               {date === undefined ? "" : ` · ${labels[index]?.long ?? formatDateLong(date)}`}
             </p>
             {month !== undefined && (
-              <div class="card month-summary" key={month.date}>
+              <div class="card month-summary">
+                {/* Only the confirmation cue restarts with each month; the figures stay mounted and change exactly. */}
+                <span class="month-confirm-cue" key={month.date} aria-hidden="true" />
                 <h2 class="card-title">
                   <time dateTime={month.date}>{labels[index]?.long ?? formatDateLong(month.date)}</time>
                 </h2>

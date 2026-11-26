@@ -270,6 +270,8 @@ The owner extended the Verdin reference to staggered text, count-up figures and 
 
 Vertical marks grow from the zero line when the axis includes zero and from the closest visible edge on auto-scaled charts. Horizontal bars grow out from their origin and the allocation ring expands from its centre. The underlying series, gaps, axes and final geometry still use the canonical renderer (UXC-5, UXC-7, UXC-12). Period changes retain their existing morphs. The [Astryx Portfolio Dashboard reference](../design/astryx-reference.md) supplies the existing grouping. The timing and sequence adapt the observed Verdin behaviour to those groups.
 
+> Amended 2026-11-26 by FD-029 ([Polished by default](../design/polished-by-default.md#phase-4-record-2026-11-26)): figures count and charts grow in full on a cold open only; a page entered from inside the app arrives as one quicker gesture, and text fades without a second rise.
+
 ## Stable reload and coordinated arrival, 2026-11-21
 
 The Verdin comparison and the existing Astryx Portfolio Dashboard hierarchy informed the entrance sequence. Cards, text, counters and chart marks share a gentler 560ms easing curve and a 55ms stagger. Each count keeps a fixed numeric footprint throughout the animation. The existing privacy and reduced-motion rules apply (UXC-5, UXC-11, UXC-12, UXC-13).

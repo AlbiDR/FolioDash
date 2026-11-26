@@ -55,7 +55,11 @@
 .motion-ranking-rise,
 .motion-ring-slice,
 .motion-marker-arrive {
-  animation-delay: calc(var(--motion-index, 0) * var(--motion-stagger));
+  /* Marks follow their region's arrival in semantic order, half a stagger step apart and at most twelve steps, so a
+     long history arrives in the same time as a short one. */
+  animation-delay: calc(
+    var(--section-arrival-delay, 0ms) + min(var(--motion-index, 0), 12) * var(--motion-stagger) / 2
+  );
 }
 
 /* A selected slice uses the same short, paint-only inspection cue as bars. */
@@ -152,4 +156,18 @@
   .donut-slice[data-active="true"] {
     animation: none;
   }
+}
+
+/* Chart growth on a page entered from inside the app takes the quicker arrival too (FD-029, decision 2). */
+#main-content[data-arrival="entered"]
+  :is(
+    .plot-arrive,
+    .donut-arrive,
+    .perf-bar,
+    .share-bar > span,
+    .motion-bar-rise,
+    .motion-ranking-rise,
+    .motion-ring-slice
+  ) {
+  animation-duration: var(--duration-medium);
 }

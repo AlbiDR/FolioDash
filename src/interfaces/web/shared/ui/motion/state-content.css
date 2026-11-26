@@ -27,8 +27,9 @@
     transform: translateX(3px);
   }
 }
-/* 36: Changed statement month receives a brief border confirmation, not a number tween. */
-.month-summary {
+/* 36: Changed statement month receives a brief border confirmation, not a number tween. The cue is its own keyed
+ * element, so the card and its figures stay mounted while the month changes. */
+.month-confirm-cue {
   animation: month-confirm var(--duration-feedback) var(--ease-smooth);
 }
 @keyframes month-confirm {
