@@ -153,6 +153,15 @@ await withLocalBrowser(async (browser) => {
     await call("Page.navigate", { url: departure });
     await measureArrival(browser, from, departure);
     await settled(browser, from);
+    // Warm the destination first: a lazily loaded screen that is still fetching its code mounts a moment later, which
+    // changes how many siblings a notice entering through Presence shifts, so a cold fetch would make the count depend on
+    // the runner's speed. The measured entry is a warm in-app entry.
+    await evaluate(`location.hash = ${JSON.stringify(`#${hash}`)}`);
+    await measureArrival(browser, hash, address(origin, hash, `${route}-enter`));
+    await settled(browser, hash);
+    await evaluate(`location.hash = ${JSON.stringify(`#${from}`)}`);
+    await measureArrival(browser, from, departure);
+    await settled(browser, from);
     await freeze(call, true);
     await evaluate(`location.hash = ${JSON.stringify(`#${hash}`)}`);
     measurements[`${route}:enter`] = await measureArrival(browser, hash, address(origin, hash, `${route}-enter`));
