@@ -105,7 +105,7 @@ Since 2026-11-26 `npm run verify:style` keeps this table complete: a stylesheet 
 - No animation library or new dependency.
 - No motion gallery or preview route, which would be a speculative layer.
 - No change to token values or to the visual design.
-- No spring physics beyond the existing `--ease-spring` token.
+- No spring physics beyond the existing `--ease-spring` token. Since 2026-11-26 that curve is `--ease-rebound`, kept only for a selected chart mark's rebound ([Polished by default](polished-by-default.md#phase-2-record-2026-11-26)).
 - No scalar tween until a consumer exists.
 
 ## Decisions and open questions

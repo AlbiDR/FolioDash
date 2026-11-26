@@ -78,16 +78,34 @@
   --radius: var(--shape-sm);
   --radius-lg: var(--shape-lg);
 
-  /* Motion: standard for movement, spring for emphasis. Both are removed for reduced motion. */
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-arrival: cubic-bezier(0.22, 0.7, 0.32, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --duration-short: 180ms;
-  --duration-press: 100ms;
-  --duration-feedback: 220ms;
-  --duration-busy: 900ms;
-  --duration-cue: 150ms;
+  /* Motion, named by role (docs/design/polished-by-default.md). Pick the role, not a value. Reduced motion keeps these
+   * values: the global overrides remove every transition and animation, and the movement distances fall to zero. */
+  --time-press: 100ms; /* a press and its release */
+  --time-cue: 150ms; /* a one-shot cue on a control */
+  --time-state: 180ms; /* hover, focus, colour and selection changes */
+  --time-emphasis: 220ms; /* a change that settles with emphasis, such as a confirmed selection */
+  --time-layer: 380ms; /* layers and morphs: notices, disclosures, the sidebar and chart geometry */
+  --time-page: 450ms; /* moving from one page to another */
+  --time-arrival: 560ms; /* a region arriving */
+  --time-stagger: 55ms; /* the step between arrivals in reading order */
+  --time-loop: 900ms; /* one turn of a busy indicator */
+  --ease-state: cubic-bezier(0.2, 0, 0, 1); /* state changes */
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1); /* movement that settles into place, without overshoot */
+  --ease-arrive: cubic-bezier(0.22, 0.7, 0.32, 1); /* arrivals */
+  --ease-rebound: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoots: only a selected chart mark's bounded rebound */
+  /* Earlier names, kept as aliases until every stylesheet uses the roles (phase 3). */
+  --ease-standard: var(--ease-state);
+  --ease-smooth: var(--ease-settle);
+  --ease-arrival: var(--ease-arrive);
+  --duration-press: var(--time-press);
+  --duration-cue: var(--time-cue);
+  --duration-short: var(--time-state);
+  --duration-feedback: var(--time-emphasis);
+  --duration-medium: var(--time-layer);
+  --duration-navigation: var(--time-page);
+  --duration-arrival: var(--time-arrival);
+  --motion-stagger: var(--time-stagger);
+  --duration-busy: var(--time-loop);
   --motion-nudge: 2px;
   --motion-lift: -2px;
   --motion-press: 0.98;
@@ -100,11 +118,7 @@
   --motion-rise: 18px;
   --motion-text-rise: 8px;
   --motion-arrival-rebound: -1px;
-  --motion-stagger: 55ms;
-  --duration-arrival: 560ms;
   --motion-update-opacity: 0.65;
-  --duration-medium: 380ms;
-  --duration-navigation: 450ms;
 
   --font-body:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto,

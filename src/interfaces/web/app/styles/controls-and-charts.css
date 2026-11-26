@@ -25,7 +25,7 @@
   transition:
     background var(--duration-short) var(--ease-smooth),
     color var(--duration-short) var(--ease-smooth),
-    transform var(--duration-short) var(--ease-spring);
+    transform var(--duration-short) var(--ease-smooth);
 }
 
 .segmented button:active {

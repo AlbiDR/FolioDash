@@ -37,7 +37,7 @@
 /* The selected observation confirms a deliberate pin without changing its
  * financial geometry. This is the reusable "select and inspect" recipe. */
 .bars-item[aria-pressed="true"] .bar {
-  animation: chart-selection-rebound var(--duration-feedback) var(--ease-spring);
+  animation: chart-selection-rebound var(--duration-feedback) var(--ease-rebound);
   transform-box: fill-box;
   transform-origin: center;
 }

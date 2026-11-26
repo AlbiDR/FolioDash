@@ -28,6 +28,26 @@ describe("motion values", () => {
   });
 });
 
+describe("rebound easing", () => {
+  it("is allowed for a selected chart mark's rebound, named in the same animation", () => {
+    expect(rules(".bar { animation: chart-selection-rebound var(--duration-feedback) var(--ease-rebound); }")).toEqual(
+      [],
+    );
+  });
+  it.each([
+    ".a { transition: transform var(--duration-short) var(--ease-rebound); }",
+    ".a { animation: icon-settle var(--duration-feedback) var(--ease-rebound); }",
+    ".a { animation-timing-function: var(--ease-rebound); }",
+    ".a { transition: transform var(--duration-short) var(--ease-spring); }",
+    ".a { animation: chart-selection-rebound var(--duration-feedback) var(--ease-spring); }",
+  ])("reports it anywhere else, and under its retired name, in %s", (css) => {
+    expect(rules(css)).toEqual(["rebound-easing"]);
+  });
+  it("is defined in the token file", () => {
+    expect(rules(":root { --ease-rebound: cubic-bezier(0.34, 1.56, 0.64, 1); }", TOKEN_FILES[0])).toEqual([]);
+  });
+});
+
 describe("colours", () => {
   it("accepts tokens and mixes of tokens", () => {
     expect(rules(".a { color: var(--text); background: color-mix(in srgb, var(--a) 40%, transparent); }")).toEqual([]);

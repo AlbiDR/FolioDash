@@ -15,6 +15,12 @@ const MOTION_PROPERTY = /^(?:transition|animation)(?:-duration|-delay|-timing-fu
 const MOTION_LITERAL =
   /(?<![\w.-])(?:(?:\d*\.?\d*[1-9]\d*m?s|ease(?:-in|-out|-in-out)?)(?![\w-])|cubic-bezier\(|steps\()/;
 const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/;
+// The rebound easing overshoots its end. It belongs only to the bounded rebound of a selected chart mark, named in the
+// same `animation` declaration; hover, press, arrivals and state changes settle without overshoot (FD-029, decision 5).
+// The earlier name `--ease-spring` is retired.
+const REBOUND_EASING = /var\(\s*--ease-(?:rebound|spring)\b/;
+const RETIRED_EASING = /var\(\s*--ease-spring\b/;
+const SELECTION_REBOUND = /(?<![\w-])[\w-]*selection-rebound(?![\w-])/;
 // Properties that force layout of other elements when animated, in physical and logical spelling. Transform, opacity
 // and paint-only properties are not listed.
 const SIDE = "(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?";
@@ -81,7 +87,8 @@ function declarations(source: string): [string, string, boolean][] {
 
 /**
  * Rules: `motion-literal` (a duration or easing written out instead of a token), `raw-color` (a colour written out
- * instead of a token) and `layout-motion` (a layout property transitioned or animated), plus the waiver rules
+ * instead of a token), `layout-motion` (a layout property transitioned or animated) and `rebound-easing` (the
+ * overshooting easing used anywhere but a selected chart mark's rebound, or under its retired name), plus the waiver rules
  * `unknown-waiver`, `waiver-without-reason` and `unused-waiver`. A repeated identical declaration in one file gets a
  * numeric suffix, so a second copy is reported too.
  */
@@ -115,6 +122,13 @@ export function styleViolations(files: readonly StyleFile[]): string[] {
         add("motion-literal", property, value);
       }
       if (!isTokenFile && COLOR_LITERAL.test(bare)) add("raw-color", property, value);
+      if (
+        !isTokenFile &&
+        REBOUND_EASING.test(value) &&
+        (RETIRED_EASING.test(value) || property !== "animation" || !SELECTION_REBOUND.test(value))
+      ) {
+        add("rebound-easing", property, value);
+      }
       const animated =
         property === "transition" || property === "transition-property" || property === "will-change"
           ? bare.replace(/\b(?:transform|opacity)\b/g, "")

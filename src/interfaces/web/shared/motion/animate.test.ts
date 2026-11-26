@@ -5,7 +5,7 @@ const tokens: Record<string, string> = {
   "--duration-medium": "380ms",
   "--ease-standard": " cubic-bezier(0.2, 0, 0, 1) ",
   "--duration-short": "180ms",
-  "--ease-spring": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+  "--ease-rebound": "cubic-bezier(0.34, 1.56, 0.64, 1)",
 };
 const style = { getPropertyValue: (name: string) => tokens[name] ?? "" };
 
@@ -35,7 +35,7 @@ describe("timingFrom", () => {
   });
 
   it("reads other tokens only when a caller names them", () => {
-    expect(timingFrom(style, "--duration-short", "--ease-spring")).toEqual({
+    expect(timingFrom(style, "--duration-short", "--ease-rebound")).toEqual({
       duration: 180,
       easing: "cubic-bezier(0.34, 1.56, 0.64, 1)",
     });

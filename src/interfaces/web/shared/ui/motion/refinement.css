@@ -43,8 +43,8 @@
   }
 }
 .main-nav .brand img {
-  animation: brand-mark-arrive var(--duration-feedback) var(--ease-spring);
-  transition: rotate var(--duration-feedback) var(--ease-spring);
+  animation: brand-mark-arrive var(--duration-feedback) var(--ease-smooth);
+  transition: rotate var(--duration-feedback) var(--ease-smooth);
 }
 .expense-review,
 .expense-conflict {

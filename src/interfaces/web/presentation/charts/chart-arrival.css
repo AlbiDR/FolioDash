@@ -24,7 +24,7 @@
 
 /* A selected slice uses the same short, paint-only inspection cue as bars. */
 .donut-slice[data-active="true"] {
-  animation: motion-selection-rebound var(--duration-feedback) var(--ease-spring);
+  animation: motion-selection-rebound var(--duration-feedback) var(--ease-rebound);
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -52,7 +52,7 @@
 .motion-marker-arrive {
   animation-name: marker-arrive;
   animation-duration: var(--duration-feedback);
-  animation-timing-function: var(--ease-spring);
+  animation-timing-function: var(--ease-arrival);
   animation-fill-mode: backwards;
   transform-box: fill-box;
   transform-origin: center;

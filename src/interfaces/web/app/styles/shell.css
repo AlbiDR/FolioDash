@@ -140,7 +140,7 @@ select:focus-visible {
   transition:
     background var(--duration-short) var(--ease-smooth),
     color var(--duration-short) var(--ease-smooth),
-    transform var(--duration-short) var(--ease-spring);
+    transform var(--duration-short) var(--ease-smooth);
 }
 
 .nav-link:active {
@@ -226,7 +226,7 @@ select:focus-visible {
     letter-spacing: -0.02em;
     transition:
       color var(--duration-short) var(--ease-smooth),
-      transform var(--duration-feedback) var(--ease-spring);
+      transform var(--duration-feedback) var(--ease-smooth);
   }
 
   @media (hover: hover) and (pointer: fine) {

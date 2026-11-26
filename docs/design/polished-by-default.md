@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 and 1 done; phases 2 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 2 done; phases 3 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -155,6 +155,14 @@ Evidence, local production build in headless Chrome with synthetic data, 2026-11
 - **Choreography ceilings.** `scripts/audit/choreography.ts`, in the rendered audit's motion suite, freezes the animation clock and measures a cold open and an in-app entry of every screen and of a fund page at 1440 px, on a pinned Wednesday so Expenses does not vary by weekday. It records the kinds of motion, the elements that move, when the last finite animation ends and how many never end, held under `config/motion-baseline.json` by `scripts/audit/choreography-policy.ts` (tested in `tests/scripts/choreography-policy.test.ts`). The first measurement already names phase 4's targets: about 750 elements move when Month by month arrives, and the Portfolio entry takes about three seconds because the monthly bar stagger has no cap.
 - **Dependency.** The unused `motion` package is removed (decision 4); the lockfile change reverses exactly what `f5c2626` added.
 
+### Phase 2 record, 2026-11-26
+
+- **Role tokens.** `src/interfaces/web/shared/tokens.css` now defines motion by role: `--time-press` (100 ms), `--time-cue` (150), `--time-state` (180), `--time-emphasis` (220), `--time-layer` (380), `--time-page` (450), `--time-arrival` (560), `--time-stagger` (55) and `--time-loop` (900), and the easings `--ease-state`, `--ease-settle` (the references' curve), `--ease-arrive` and `--ease-rebound`. Every earlier name is an alias of its role with the same value, so durations and the other easings render exactly as before; phase 3 moves the stylesheets onto the role names and removes the aliases. The token comment no longer claims that reduced motion removes easings: it removes every transition and animation and zeroes the movement distances.
+- **Spring retired.** A probe of the built app on every route at 1440 and 390 px found five overshooting curves live at rest (the brand's hover lift and tilt, the current navigation icon's settle, the period selector's confirmation and the checkpoint markers' arrival) and six more declared but overridden. All eleven now settle on `--ease-settle`, or `--ease-arrive` for the markers like the other chart arrivals. The only overshoot left is a selected chart mark's bounded rebound (`chart-selection-rebound` and `motion-selection-rebound`), on `--ease-rebound`. After the change the probe finds no overshooting curve at rest, and a pinned monthly bar still rebounds.
+- **Gate.** The style gate's new `rebound-easing` rule rejects the rebound easing anywhere but an `animation` naming a selection rebound, and rejects the retired `--ease-spring` name everywhere, with tests in `tests/scripts/style-policy.test.ts`.
+
+Evidence, local production build in headless Chrome with synthetic data, 2026-11-26: `npm run verify` passed (1,365 tests). `npm run audit:rendered` passed: 160 interaction journey assertions and 1,131 control samples, every recovery journey, 24 reload cases with zero layout shift, 48 accessibility screens, 48 reduced-motion checks, all 18 choreography arrivals within their ceilings, and the Portfolio polish audit. `npm run capture:readme` passed. Physical devices, other engines and screen readers are not covered (STD-11).
+
 ## Implementation brief for phases 2 to 6
 
 Written 2026-11-26 from what phases 0 and 1 found, so the remaining phases can be carried out without rediscovering it. Paths are under `src/interfaces/web/` unless named otherwise.
@@ -170,7 +178,7 @@ Written 2026-11-26 from what phases 0 and 1 found, so the remaining phases can b
 
 ### Phase 2, role tokens
 
-Add role tokens in `shared/tokens.css`, for example `--time-feedback` (100 to 150 ms), `--time-state` (about 220), `--time-layer-in` (about 300), `--time-layer-out` (about 200), `--time-page` (at most 450), `--time-stagger` with `--stagger-cap` (a step count), `--ease-arrive` (the current `--ease-smooth` curve) and `--ease-state` (the current `--ease-standard`). Point the existing tokens at them as aliases, so nothing renders differently, then migrate by role in phase 3 and delete the aliases. Note that the existing `--duration-feedback` (220 ms) is the state role by this naming; do not let the old name decide the new role. Replace `--ease-spring` everywhere except the two bounded selection rebounds (decision 5). Correct the comment in `shared/tokens.css` that claims easings are removed for reduced motion.
+Done; see the [phase 2 record](#phase-2-record-2026-11-26). Changing a role's value toward the NN/g bands, and giving layers a faster exit than entry, are separate design changes for the phases that own those roles.
 
 ### Phase 3, consolidation without changing what renders
 

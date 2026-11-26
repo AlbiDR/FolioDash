@@ -44,7 +44,7 @@
   flex: 0 0 auto;
   transition:
     color var(--duration-short) var(--ease-standard),
-    transform var(--duration-feedback) var(--ease-spring);
+    transform var(--duration-feedback) var(--ease-smooth);
 }
 
 @media (hover: hover) and (pointer: fine) {

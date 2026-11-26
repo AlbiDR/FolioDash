@@ -79,7 +79,7 @@ button:focus-visible {
 
 /* 04: Selected navigation icon settles once when its destination changes. */
 .nav-link[aria-current="page"] > svg {
-  animation: icon-settle var(--duration-feedback) var(--ease-spring);
+  animation: icon-settle var(--duration-feedback) var(--ease-smooth);
 }
 @keyframes icon-settle {
   from {
@@ -136,7 +136,7 @@ button:focus-visible {
  * press. The recipe is shared by every RangeSelector consumer and never
  * delays the immediately-updated chart geometry or selected state. */
 .motion-range-select button[aria-pressed="true"] {
-  animation: motion-range-confirm var(--duration-feedback) var(--ease-spring);
+  animation: motion-range-confirm var(--duration-feedback) var(--ease-smooth);
 }
 @keyframes motion-range-confirm {
   50% {
