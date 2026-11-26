@@ -98,8 +98,9 @@ function declarations(source: string): [string, string, boolean][] {
 export function styleViolations(files: readonly StyleFile[]): string[] {
   const violations: string[] = [];
   for (const { path, text } of files) {
-    if (!path.endsWith(".css")) continue;
-    const isTokenFile = TOKEN_FILES.includes(path);
+    if (!path.endsWith(".css") && !path.endsWith(".html")) continue;
+    // A standalone page served without the app defines the tokens it uses in its own style block.
+    const isTokenFile = TOKEN_FILES.includes(path) || path.endsWith(".html");
     const seen = new Map<string, number>();
     const pending = new Set<string>();
     const add = (rule: string, property: string, value: string): void => {
@@ -150,4 +151,31 @@ export function styleViolations(files: readonly StyleFile[]): string[] {
     unused();
   }
   return violations.sort();
+}
+
+/** Custom properties defined in a stylesheet, first definition wins, with whitespace normalised. */
+function definitions(text: string): Map<string, string> {
+  const found = new Map<string, string>();
+  for (const [property, value] of declarations(text)) {
+    if (property.startsWith("--") && !found.has(property)) found.set(property, value.replace(/\s+/g, " ").trim());
+  }
+  return found;
+}
+
+/**
+ * Rule `token-drift`: a standalone page that carries a shared token must give it the same value as the token file, so
+ * there is still one token system (UXC-1). Page-only names, such as its own palette, are not compared.
+ */
+export function tokenDrift(pages: readonly StyleFile[], tokens: StyleFile): string[] {
+  const shared = definitions(tokens.text);
+  const problems: string[] = [];
+  for (const page of pages) {
+    for (const [name, value] of definitions(page.text)) {
+      const expected = shared.get(name);
+      if (expected !== undefined && expected !== value) {
+        problems.push(`token-drift ${page.path} ${name}: ${value} differs from ${tokens.path} (${expected})`);
+      }
+    }
+  }
+  return problems.sort();
 }

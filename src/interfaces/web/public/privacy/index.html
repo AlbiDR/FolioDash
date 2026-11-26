@@ -12,6 +12,11 @@
     <style>
       :root {
         color-scheme: light dark;
+        /* This page is served without the app, so it carries the shared motion tokens it uses, with the same values
+           (src/interfaces/web/shared/tokens.css; the style check fails if they drift). */
+        --time-press: 100ms;
+        --time-state: 180ms;
+        --ease-state: cubic-bezier(0.2, 0, 0, 1);
         --background: #f3f5f8;
         --surface: #ffffff;
         --text: #19263b;
@@ -50,7 +55,7 @@
       p, ul { margin: 0.5rem 0; }
       ul { padding-left: 1.25rem; }
       li { margin: 0.35rem 0; }
-      a { --interaction-family: action; color: var(--accent); text-underline-offset: 0.15em; transition: box-shadow 180ms ease, text-underline-offset 180ms ease, opacity 100ms ease; }
+      a { --interaction-family: action; color: var(--accent); text-underline-offset: 0.15em; transition: box-shadow var(--time-state) var(--ease-state), text-underline-offset var(--time-state) var(--ease-state), opacity var(--time-press) var(--ease-state); }
       a:focus-visible { box-shadow: 0 2px currentColor; text-underline-offset: 0.3em; }
       a:active { opacity: 0.65; }
       @media (hover: hover) and (pointer: fine) { a:hover { box-shadow: 0 2px currentColor; text-underline-offset: 0.3em; } }

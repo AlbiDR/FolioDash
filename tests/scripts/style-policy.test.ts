@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TOKEN_FILES, styleViolations } from "../../scripts/verify/code/style-policy";
+import { TOKEN_FILES, styleViolations, tokenDrift } from "../../scripts/verify/code/style-policy";
 
 const sheet = (text: string, path = "src/interfaces/web/app/styles/example.css") => [{ path, text }];
 const rules = (text: string, path?: string): string[] =>
@@ -168,5 +168,22 @@ describe("waivers", () => {
     expect(
       rules(".a {\n  color: var(--text);\n  /* style-allow layout-motion: the bar grows to its completion */\n}"),
     ).toEqual(["unused-waiver"]);
+  });
+});
+
+describe("standalone pages", () => {
+  const page = "src/interfaces/web/public/privacy/index.html";
+  it("holds a page's style block to UXC-12, with literals only in its own token definitions", () => {
+    expect(rules("a { transition: opacity 100ms ease; }", page)).toEqual(["motion-literal"]);
+    expect(
+      rules(":root { --time-press: 100ms; --accent: #285bd4; } a { transition: opacity var(--time-press); }", page),
+    ).toEqual([]);
+  });
+  it("reports a shared token whose value drifted from the token file, and ignores page-only names", () => {
+    const tokens = { path: TOKEN_FILES[0] ?? "", text: ":root { --time-press: 100ms; --time-state: 180ms; }" };
+    const pages = [{ path: page, text: ":root { --time-press: 120ms; --time-state: 180ms; --accent: #285bd4; }" }];
+    expect(tokenDrift(pages, tokens)).toEqual([
+      `token-drift ${page} --time-press: 120ms differs from ${TOKEN_FILES[0] ?? ""} (100ms)`,
+    ]);
   });
 });

@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
 import { MOTION_OWNER_RECORD, motionOwnerProblems } from "./motion-owners.ts";
-import { styleViolations, TOKEN_FILES } from "./style-policy.ts";
+import { styleViolations, TOKEN_FILES, tokenDrift } from "./style-policy.ts";
 
 const tracked = [
   ...new Set(
@@ -20,8 +20,8 @@ const tracked = [
 const stylesheets = tracked
   .filter((file) => file.endsWith(".css"))
   .map((path) => ({ path, text: readFileSync(path, "utf8") }));
-// A page's own `<style>` blocks are stylesheets too. The standalone pages keep their own palette, so UXC-12 is applied
-// to the app's stylesheets only; whether it should reach them is open (docs/design/polished-by-default.md).
+// A page's own `<style>` blocks are stylesheets too, held to UXC-12. A standalone page defines the tokens it uses in
+// its own `:root`, and any it shares with the token file must keep the same value.
 const pageStyles = tracked
   .filter((file) => file.endsWith(".html"))
   .map((path) => ({
@@ -31,7 +31,11 @@ const pageStyles = tracked
       .join("\n"),
   }));
 
-const breaches = styleViolations(stylesheets);
+const tokenFile = stylesheets.find((file) => file.path === TOKEN_FILES[0]);
+const breaches = [
+  ...styleViolations([...stylesheets, ...pageStyles]),
+  ...(tokenFile === undefined ? [] : tokenDrift(pageStyles, tokenFile)),
+];
 const unowned = motionOwnerProblems(
   [...stylesheets, ...pageStyles],
   readFileSync(MOTION_OWNER_RECORD, "utf8"),

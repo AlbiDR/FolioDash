@@ -309,14 +309,14 @@ One row is a source template; a fund-link template can render many controls. All
 | 998c257d86cb-1 | [monthly-bars.tsx:267](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L267) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
 | c99f42f2d662-1 | [performance-bars.tsx:32](../../src/interfaces/web/presentation/charts/performance-bars.tsx#L32) | a / action | {'perf-row${row.dim === true ? " dim" : ""}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 87821db5ad79-1 | [privacy.tsx:60](../../src/interfaces/web/presentation/privacy/privacy.tsx#L60) | button / action | privacy-toggle | SOURCE CLASSIFIED; STATES OPEN |
-| f217f265fce6-1 | [index.html:71](../../src/interfaces/web/public/privacy/index.html#L71) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
-| 0c4e99920444-1 | [index.html:107](../../src/interfaces/web/public/privacy/index.html#L107) | a / action | Google's privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| 75fe79f6b648-1 | [index.html:111](../../src/interfaces/web/public/privacy/index.html#L111) | a / action | GitHub's privacy statement | SOURCE CLASSIFIED; STATES OPEN |
-| 1eae7f540e98-1 | [index.html:118](../../src/interfaces/web/public/privacy/index.html#L118) | a / action | Google API Services User Data Policy | SOURCE CLASSIFIED; STATES OPEN |
-| 8a9a885a03b4-1 | [index.html:132](../../src/interfaces/web/public/privacy/index.html#L132) | a / action | myaccount.google.com/permissions | SOURCE CLASSIFIED; STATES OPEN |
-| ed2d1530e46f-1 | [index.html:141](../../src/interfaces/web/public/privacy/index.html#L141) | a / action | github.com/AlbiDR/FolioDash | SOURCE CLASSIFIED; STATES OPEN |
-| f217f265fce6-2 | [index.html:145](../../src/interfaces/web/public/privacy/index.html#L145) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
-| 145a635bff48-1 | [index.html:147](../../src/interfaces/web/public/privacy/index.html#L147) | a / action | Back to FolioDash | SOURCE CLASSIFIED; STATES OPEN |
+| f217f265fce6-1 | [index.html:76](../../src/interfaces/web/public/privacy/index.html#L76) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
+| 0c4e99920444-1 | [index.html:112](../../src/interfaces/web/public/privacy/index.html#L112) | a / action | Google's privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 75fe79f6b648-1 | [index.html:116](../../src/interfaces/web/public/privacy/index.html#L116) | a / action | GitHub's privacy statement | SOURCE CLASSIFIED; STATES OPEN |
+| 1eae7f540e98-1 | [index.html:123](../../src/interfaces/web/public/privacy/index.html#L123) | a / action | Google API Services User Data Policy | SOURCE CLASSIFIED; STATES OPEN |
+| 8a9a885a03b4-1 | [index.html:137](../../src/interfaces/web/public/privacy/index.html#L137) | a / action | myaccount.google.com/permissions | SOURCE CLASSIFIED; STATES OPEN |
+| ed2d1530e46f-1 | [index.html:146](../../src/interfaces/web/public/privacy/index.html#L146) | a / action | github.com/AlbiDR/FolioDash | SOURCE CLASSIFIED; STATES OPEN |
+| f217f265fce6-2 | [index.html:150](../../src/interfaces/web/public/privacy/index.html#L150) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
+| 145a635bff48-1 | [index.html:152](../../src/interfaces/web/public/privacy/index.html#L152) | a / action | Back to FolioDash | SOURCE CLASSIFIED; STATES OPEN |
 | c40ccf39b1a8-1 | [deferred-view.tsx:13](../../src/interfaces/web/shared/ui/deferred-view.tsx#L13) | button / action | Reload view | SOURCE CLASSIFIED; STATES OPEN |
 | 0aecfa0f060a-1 | [page-nav.tsx:18](../../src/interfaces/web/shared/ui/page-nav.tsx#L18) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
 | a337f0db5759-1 | [range-selector.tsx:40](../../src/interfaces/web/shared/ui/range-selector.tsx#L40) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |
