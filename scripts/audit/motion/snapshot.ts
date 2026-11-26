@@ -11,12 +11,46 @@ import { type LocalBrowser, withLocalBrowser } from "../../lib/local-browser.ts"
 
 type Snapshot = Record<string, string>;
 
+/** CSS repeats a shorter transition or animation list to the length of its property or name list, so one curve and
+ * the same curve written once per property are the same style. Compare them expanded. */
+function normalise(reading: string | undefined): string | undefined {
+  if (reading === undefined) return undefined;
+  const fields = new Map(
+    reading.split("; ").map((field) => {
+      const at = field.indexOf("=");
+      return [field.slice(0, at), field.slice(at + 1)] as const;
+    }),
+  );
+  const split = (value: string): string[] => value.split(/,(?![^(]*\))/).map((part) => part.trim());
+  for (const [leader, family] of [
+    ["transition-property", "transition-"],
+    ["animation-name", "animation-"],
+  ] as const) {
+    const length = split(fields.get(leader) ?? "").length;
+    for (const [name, value] of fields) {
+      if (!name.startsWith(family) || name === leader) continue;
+      const parts = split(value);
+      fields.set(name, Array.from({ length }, (_, index) => parts[index % parts.length]).join(", "));
+    }
+  }
+  // A transition that takes no time and has no delay does nothing, whatever its curve.
+  if (
+    split(fields.get("transition-duration") ?? "").every((d) => d === "0s") &&
+    split(fields.get("transition-delay") ?? "").every((d) => d === "0s")
+  ) {
+    fields.delete("transition-timing-function");
+  }
+  // With no animation named, the other animation longhands do nothing either.
+  if (fields.get("animation-name") === "none") fields.delete("animation-timing-function");
+  return [...fields].map(([name, value]) => `${name}=${value}`).join("; ");
+}
+
 const args = process.argv.slice(2);
 if (args[0] === "--compare") {
   const [a, b] = [args[1], args[2]].map((path) => JSON.parse(readFileSync(String(path), "utf8")) as Snapshot);
   if (a === undefined || b === undefined) throw new Error("Usage: --compare <a.json> <b.json>");
   const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
-  const differences = keys.filter((key) => a[key] !== b[key]);
+  const differences = keys.filter((key) => normalise(a[key]) !== normalise(b[key]));
   for (const key of differences.slice(0, 200))
     console.log(`${key}\n  - ${a[key] ?? "(absent)"}\n  + ${b[key] ?? "(absent)"}`);
   if (differences.length > 0) {

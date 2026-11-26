@@ -1,5 +1,8 @@
 /* Layers: anything that appears or leaves, such as notices, disclosures, presence, busy and confirmation cues.
- * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3). */
+.notice[data-busy="true"]::before {
+  animation: busy-turn var(--duration-busy) linear infinite;
+}
 /* Keep the same usable hit area with mouse, keyboard and touch. */
 button,
 .nav-link,
@@ -103,8 +106,8 @@ details[open] > summary::before {
 /* 45: Source chip hover surface. */
 .status-chip {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth);
 }
 @media (hover: hover) and (pointer: fine) {
   .status-chip:hover {
@@ -113,7 +116,7 @@ details[open] > summary::before {
 }
 /* 46: Source dot settles only when the actual source tone changes. */
 .status-dot {
-  animation: motion-dot var(--duration-feedback) var(--ease-standard);
+  animation: motion-dot var(--duration-feedback) var(--ease-smooth);
 }
 @keyframes motion-dot {
   from {
@@ -143,7 +146,7 @@ details[open] > summary::before {
 }
 /* 92: A real available-update notice arrives from above, with no automatic reload. */
 .app-update {
-  animation: motion-update var(--duration-feedback) var(--ease-standard);
+  animation: motion-update var(--duration-feedback) var(--ease-smooth);
 }
 @keyframes motion-update {
   from {
@@ -166,19 +169,19 @@ details[open] > summary::before {
 }
 .expense-note-actions button {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard),
-    transform var(--duration-press) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
+    transform var(--duration-press) var(--ease-smooth);
 }
 .notice {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth);
 }
 .review-problem {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
     translate var(--duration-short) var(--ease-smooth);
 }
 @supports (interpolate-size: allow-keywords) and (transition-behavior: allow-discrete) {
@@ -298,5 +301,15 @@ details[open] > summary::before {
   }
   .status-chip:focus-within {
     translate: 0 -1px;
+  }
+}
+@keyframes feedback-enter {
+  from {
+    opacity: 0.55;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

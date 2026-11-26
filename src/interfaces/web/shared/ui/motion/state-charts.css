@@ -1,5 +1,5 @@
 /* State, chart family: legends, readouts, marks and inspection.
- * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3). */
 /* 13: Keyboard ranking-row emphasis. */
 .perf-row {
   border-radius: var(--shape-sm);
@@ -98,7 +98,7 @@
 }
 /* 69: Keyboard-focused legend swatch nudges into view. */
 .chart-legend-button .chart-swatch {
-  transition: translate var(--duration-short) var(--ease-standard);
+  transition: translate var(--duration-short) var(--ease-smooth);
 }
 .chart-legend-button:focus-visible .chart-swatch {
   translate: var(--motion-nudge) 0;
@@ -107,8 +107,8 @@
 .chart-readout-label {
   border-radius: var(--shape-xs);
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    color var(--duration-short) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth);
 }
 .chart-readout-item[data-highlighted="true"] .chart-readout-label {
   background-color: var(--color-accent-soft);
@@ -116,20 +116,20 @@
 }
 /* 71: Native date-slider thumb press; the hit area and observation coordinates stay fixed. */
 .chart-date-control input::-webkit-slider-thumb {
-  transition: transform var(--duration-press) var(--ease-standard);
+  transition: transform var(--duration-press) var(--ease-smooth);
 }
 .chart-date-control input:active::-webkit-slider-thumb {
   transform: scale(1.1);
 }
 .chart-date-control input::-moz-range-thumb {
-  transition: transform var(--duration-press) var(--ease-standard);
+  transition: transform var(--duration-press) var(--ease-smooth);
 }
 .chart-date-control input:active::-moz-range-thumb {
   transform: scale(1.1);
 }
 /* 72: Active date-slider label. */
 .chart-date-control > span {
-  transition: color var(--duration-short) var(--ease-standard);
+  transition: color var(--duration-short) var(--ease-smooth);
 }
 .chart-date-control:focus-within > span {
   color: var(--color-text);
@@ -139,26 +139,26 @@
   stroke: var(--color-text);
   stroke-opacity: 0;
   transition:
-    opacity var(--duration-short) var(--ease-standard),
-    stroke-opacity var(--duration-short) var(--ease-standard);
+    opacity var(--duration-short) var(--ease-smooth),
+    stroke-opacity var(--duration-short) var(--ease-smooth);
 }
 .bars-item[aria-pressed="true"] .bar {
   stroke-opacity: 1;
 }
 /* 75: Monthly bar keyboard hit region receives a subtle surface. */
 .bars-hit {
-  transition: fill var(--duration-short) var(--ease-standard);
+  transition: fill var(--duration-short) var(--ease-smooth);
 }
 .bars-item:focus-visible .bars-hit {
   fill: var(--color-accent-soft);
 }
 /* 76: Inspected bar month changes are confirmed separately from its financial value. */
 .bars-readout-month {
-  animation: motion-fade var(--duration-cue) var(--ease-standard);
+  animation: motion-fade var(--duration-cue) var(--ease-smooth);
 }
 /* 77: Allocation legend dot acknowledges hover/focus. */
 .legend .dot {
-  transition: transform var(--duration-short) var(--ease-standard);
+  transition: transform var(--duration-short) var(--ease-smooth);
 }
 .legend a:focus-visible .dot {
   transform: scale(1.12);
@@ -206,18 +206,18 @@
 }
 /* 88: Chart-reset action confirms that inspection is now active. */
 .chart-reset:not(:disabled) {
-  animation: motion-edge var(--duration-feedback) var(--ease-standard);
+  animation: motion-edge var(--duration-feedback) var(--ease-smooth);
 }
 /* Cards, charts and stat blocks are containers, not controls: they get no press or focus feedback of their own,
  * and the links and buttons inside them carry it. On fine pointers a card lifts on hover; that rule lives in
  * refinement.css (2026-11-19).
  */
 .spark-area {
-  transition: opacity var(--duration-feedback) var(--ease-standard);
+  transition: opacity var(--duration-feedback) var(--ease-smooth);
 }
 .spark-line {
   /* style-allow layout-motion: stroke width changes paint only and never layout, and gives the inspected line its emphasis */
-  transition: stroke-width var(--duration-feedback) var(--ease-standard);
+  transition: stroke-width var(--duration-feedback) var(--ease-smooth);
 }
 /* Inspection is an opacity/stroke treatment; allocation angles never change. */
 .donut-centre {
@@ -231,8 +231,8 @@
   stroke-width: 0;
   /* style-allow layout-motion: stroke width changes paint only and never layout, and separates the active slice of the ring */
   transition:
-    opacity var(--duration-short) var(--ease-standard),
-    stroke-width var(--duration-short) var(--ease-standard);
+    opacity var(--duration-short) var(--ease-smooth),
+    stroke-width var(--duration-short) var(--ease-smooth);
 }
 .donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) {
   opacity: 0.4;
@@ -284,16 +284,16 @@
 }
 .chart {
   transition:
-    background-color var(--duration-medium) var(--ease-standard),
-    border-color var(--duration-feedback) var(--ease-standard);
+    background-color var(--duration-medium) var(--ease-smooth),
+    border-color var(--duration-feedback) var(--ease-smooth);
 }
 .legend-name {
   transition: color var(--duration-short) var(--ease-standard);
 }
 .legend .dot {
   transition:
-    transform var(--duration-feedback) var(--ease-standard),
-    opacity var(--duration-short) var(--ease-standard);
+    transform var(--duration-feedback) var(--ease-smooth),
+    opacity var(--duration-short) var(--ease-smooth);
 }
 .chart-swatch {
   transition:
@@ -302,22 +302,22 @@
 }
 .chart-legend-button {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    color var(--duration-short) var(--ease-standard),
-    transform var(--duration-press) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth),
+    transform var(--duration-press) var(--ease-smooth);
 }
 @media (prefers-reduced-motion: no-preference) {
   .chart-legend-button .chart-swatch {
     transition:
       translate var(--duration-short) var(--ease-smooth),
-      scale var(--duration-press) var(--ease-standard),
+      scale var(--duration-press) var(--ease-smooth),
       rotate var(--duration-short) var(--ease-smooth);
   }
   .legend .dot {
     transition:
       transform var(--duration-feedback) var(--ease-smooth),
       opacity var(--duration-short) var(--ease-smooth),
-      scale var(--duration-press) var(--ease-standard);
+      scale var(--duration-press) var(--ease-smooth);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -351,5 +351,21 @@
   }
   .chart-date-control input:active {
     scale: 0.995;
+  }
+}
+@keyframes motion-fade {
+  from {
+    opacity: var(--motion-reveal-opacity);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes motion-edge {
+  from {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  to {
+    box-shadow: inset 0 0 0 1px transparent;
   }
 }

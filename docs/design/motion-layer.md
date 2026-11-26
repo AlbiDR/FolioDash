@@ -66,16 +66,15 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 
 | Stylesheet | Motion it holds | Owner |
 |---|---|---|
-| `shared/ui/motion/foundation.css` | the motion of the base page styles (shell and sidebar, page chrome and arrival, segmented controls, tables, forms, notices) and the overview holdings, loading where they loaded | [Polished by default](polished-by-default.md) |
-| `shared/ui/motion/screens.css` | the motion of screen styles that load after control feedback: the Portfolio polish and the expense screens | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/screens.css` | the screens role: motion particular to one screen (the Portfolio polish and the expense screens), loaded after control feedback because it deliberately refines it | [Polished by default](polished-by-default.md) |
 | `shared/ui/control-feedback.css` | press, hover and focus feedback for every semantic control | [Interaction coverage](interaction-coverage.md) |
 | `shared/ui/motion/arrival.css` | how pages, sections, text and the shell arrive. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/layers.css` | anything that appears or leaves, such as notices, disclosures, presence, busy and confirmation cues. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/state-navigation.css` | sidebar, toolbar, page navigation, status and privacy controls. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/state-charts.css` | legends, readouts, marks and inspection. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/state-content.css` | tables, rows, cards, figures and the screens' records. | [Polished by default](polished-by-default.md) |
-| `shared/ui/motion/state-controls.css` | buttons, links, fields, choices and the remaining controls. | [Polished by default](polished-by-default.md) |
-| `shared/ui/motion/easing.css` | rules that only set the curve of transitions declared elsewhere. They load last in the motion block, so they | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/state-fields.css` | fields, choices, segmented controls and file drop | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/state-controls.css` | buttons, links and the remaining controls | [Polished by default](polished-by-default.md) |
 | `presentation/charts/chart-arrival.css` | all chart motion: series reveal and emphasis, bar emphasis and the pinned bar's rebound (moved from `charts.css` and `bars.css` on 2026-11-26), and chart arrivals: the line plot, allocation ring, performance bars and holdings share bars, and the named recipes bar rise, ranking rise, ring slice, marker arrival and selection rebound | This record ([recipe catalogue](#recipe-catalogue)) |
 | `public/privacy/index.html` | link underline, shadow and press feedback on the standalone privacy page, in its own `<style>` block | [Privacy policy](../operations/privacy-policy.md) |
 

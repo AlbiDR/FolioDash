@@ -1,12 +1,11 @@
 /* State, content family: tables, rows, cards, figures and the screens' records.
- * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
-.range-selector[dir="rtl"]::before,
-[dir="rtl"] .range-selector:not([dir="ltr"])::before {
-  transform: translateX(calc(-1 * var(--segment-index) * (100% + 2px)));
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3). */
+.holdings-table tbody tr {
+  transition: background var(--duration-short) var(--ease-smooth);
 }
 /* 11: Phone holding row press. */
 .mobile-holdings a {
-  transition: background var(--duration-press) var(--ease-standard);
+  transition: background var(--duration-press) var(--ease-smooth);
   border-radius: var(--shape-sm);
 }
 .mobile-holdings a:active {
@@ -38,43 +37,6 @@
   }
   to {
     box-shadow: inset 0 0 0 1px var(--color-border);
-  }
-}
-/* 49: Import-mode destination marker. */
-.mode-row .segmented a {
-  position: relative;
-}
-.mode-row .segmented a::after {
-  content: "";
-  position: absolute;
-  left: 25%;
-  right: 25%;
-  bottom: 4px;
-  height: 2px;
-  background: var(--color-accent);
-  border-radius: var(--shape-full);
-  transform: scaleX(0);
-  transition: transform var(--duration-short) var(--ease-standard);
-}
-.mode-row .segmented a[aria-current="page"]::after {
-  transform: scaleX(1);
-}
-/* 54: Native file-picker button hover feedback. */
-.field input::file-selector-button {
-  min-height: var(--touch-target);
-  padding: var(--space-2);
-  margin-right: var(--space-2);
-  border: 0;
-  border-radius: var(--shape-sm);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font: inherit;
-  cursor: pointer;
-  transition: background-color var(--duration-short) var(--ease-standard);
-}
-@media (hover: hover) and (pointer: fine) {
-  .field input:not(:disabled):hover::file-selector-button {
-    background: var(--surface-high);
   }
 }
 /* 60: External workbook-link underline grows without shifting its text. */
@@ -139,7 +101,7 @@
 }
 .month-step > svg {
   flex-shrink: 0;
-  transition: transform var(--duration-short) var(--ease-standard);
+  transition: transform var(--duration-short) var(--ease-smooth);
 }
 .month-step:not(:disabled):focus-visible > svg {
   transform: translateX(calc(var(--step-direction) * var(--motion-nudge)));
@@ -155,14 +117,14 @@
 }
 .hero::before,
 .hero::after {
-  transition: translate var(--duration-medium) var(--ease-standard);
+  transition: translate var(--duration-medium) var(--ease-smooth);
 }
 .hero:focus-within::before {
   translate: var(--motion-nudge) var(--motion-nudge);
 }
 /* Static data rows and cards do not react to the pointer: only what can be pressed suggests that it can. */
 .matrix tbody tr {
-  transition: background-color var(--duration-short) var(--ease-standard);
+  transition: background-color var(--duration-short) var(--ease-smooth);
 }
 .matrix tbody tr:focus-within {
   background-color: var(--color-accent-soft);
@@ -173,11 +135,6 @@
   }
   .mobile-holdings a:hover {
     background-color: var(--color-accent-soft);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .field input::file-selector-button {
-    transition: none !important;
   }
 }
 /* Motion refinement: 4 arrivals, 17 transitions, 15 microtransitions and 5 interactions.
@@ -206,22 +163,22 @@
   animation: workflow-arrive var(--duration-feedback) var(--ease-standard);
 }
 .expense-state {
-  animation: state-arrive var(--duration-feedback) var(--ease-standard);
+  animation: state-arrive var(--duration-feedback) var(--ease-smooth);
 }
 .card {
   transition:
-    background-color var(--duration-medium) var(--ease-standard),
-    border-color var(--duration-feedback) var(--ease-standard);
+    background-color var(--duration-medium) var(--ease-smooth),
+    border-color var(--duration-feedback) var(--ease-smooth);
 }
 @media (hover: hover) and (pointer: fine) {
   /* Cards answer a fine pointer with a small lift and a brighter edge. Their content stays where it is inside the card,
  * and keyboard focus is never delayed. Reduced motion keeps the edge and drops the lift. */
   .card {
     transition:
-      translate var(--duration-feedback) var(--ease-standard),
-      box-shadow var(--duration-feedback) var(--ease-standard),
-      background-color var(--duration-medium) var(--ease-standard),
-      border-color var(--duration-feedback) var(--ease-standard);
+      translate var(--duration-feedback) var(--ease-smooth),
+      box-shadow var(--duration-feedback) var(--ease-smooth),
+      background-color var(--duration-medium) var(--ease-smooth),
+      border-color var(--duration-feedback) var(--ease-smooth);
   }
   .card:hover {
     translate: 0 var(--motion-lift);
@@ -236,36 +193,24 @@
   }
 }
 .hero {
-  transition: background-color var(--duration-medium) var(--ease-standard);
-}
-.expenses-dashboard :is(input, select) {
-  transition:
-    background-color var(--duration-short) var(--ease-standard),
-    border-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard);
+  transition: background-color var(--duration-medium) var(--ease-smooth);
 }
 .expense-state {
   transition:
-    color var(--duration-short) var(--ease-standard),
-    background-color var(--duration-short) var(--ease-standard);
+    color var(--duration-short) var(--ease-smooth),
+    background-color var(--duration-short) var(--ease-smooth);
 }
 .expense-week-list button {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard),
-    transform var(--duration-press) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
+    transform var(--duration-press) var(--ease-smooth);
 }
 .expense-record-list button {
   transition:
-    background-color var(--duration-short) var(--ease-standard),
-    box-shadow var(--duration-short) var(--ease-standard),
-    transform var(--duration-press) var(--ease-standard);
-}
-.expense-field > label {
-  transition: color var(--duration-short) var(--ease-standard);
-}
-.expense-input {
-  transition: color var(--duration-short) var(--ease-standard);
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
+    transform var(--duration-press) var(--ease-smooth);
 }
 .expense-optional-label {
   transition: color var(--duration-short) var(--ease-standard);
@@ -284,14 +229,6 @@
 }
 .account .facts a:focus-visible {
   text-underline-offset: 0.3em;
-}
-/* I1-I5: meaningful user-triggered feedback; static cards never imitate controls. */
-.expense-field:focus-within > label,
-.expense-field:focus-within .expense-optional-label {
-  color: var(--color-accent);
-}
-.expense-field:focus-within .expense-input {
-  color: var(--color-accent);
 }
 .expense-date-controls button:not(:disabled):active {
   translate: 0 var(--motion-nudge);
@@ -312,7 +249,7 @@
   .month-step > svg {
     transition:
       transform var(--duration-short) var(--ease-smooth),
-      scale var(--duration-press) var(--ease-standard);
+      scale var(--duration-press) var(--ease-smooth);
   }
   .matrix tbody tr {
     transition:
@@ -325,9 +262,6 @@
   }
   .month-step:active > svg {
     scale: 0.9;
-  }
-  .file-dropzone:focus-within {
-    scale: 1.005;
   }
   .matrix tbody tr:focus-within {
     translate: 2px 0;
