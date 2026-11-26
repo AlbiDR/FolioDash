@@ -68,7 +68,9 @@ async function measureArrival({ evaluate, waitFor }: LocalBrowser, hash: string,
       busy: [...document.querySelectorAll('#main-content .notice[data-busy=true]')].map(e => e.textContent),
       exiting: document.querySelector('[data-page-exiting]') !== null,
     })`).catch(() => "unavailable");
-    throw new Error(`${error instanceof Error ? error.message : String(error)} Page state: ${String(state)}`);
+    throw new Error(`${error instanceof Error ? error.message : String(error)} Page state: ${String(state)}`, {
+      cause: error,
+    });
   }
   // Nothing finishes while the clock is frozen, so the arrival is complete once three readings agree.
   let previous = "";
