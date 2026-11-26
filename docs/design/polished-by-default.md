@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 2 done; phases 3 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 2 done; phase 3 in progress; phases 4 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -178,6 +178,11 @@ An independent review of phases 0 and 1, by separate reviewers whose findings we
 - **Gate.** The style gate's new `rebound-easing` rule rejects the rebound easing anywhere but an `animation` naming a selection rebound, and rejects the retired `--ease-spring` name everywhere, with tests in `tests/scripts/style-policy.test.ts`.
 
 Evidence, local production build in headless Chrome with synthetic data, 2026-11-26: `npm run verify` passed (1,365 tests). `npm run audit:rendered` passed: 160 interaction journey assertions and 1,131 control samples, every recovery journey, 24 reload cases with zero layout shift, 48 accessibility screens, 48 reduced-motion checks, all 18 choreography arrivals within their ceilings, and the Portfolio polish audit. `npm run capture:readme` passed. Physical devices, other engines and screen readers are not covered (STD-11).
+
+### Phase 3 record, in progress
+
+- **The proof tool.** `scripts/audit/motion/snapshot.ts` (`npm run audit:motion-snapshot -- <file>`) reads the computed transition, animation and transform styles of every element on every screen of the production build: at rest at 1440 and 390 px and under reduced motion, and on every control with hover, keyboard focus and press forced, with any transition a forced state starts finished first. `--compare` lists every difference and fails if there is one. Two snapshots of the same build agree on all 87,146 readings.
+- **Move 1, 2026-11-26.** `workflow-feedback.css`, `polish.css` and `polish-secondary.css`, which sat next to each other in the import order, are one state owner, `src/interfaces/web/shared/ui/motion/state.css`, at the same position with their rules in the same order. The snapshot before and after agrees on all 87,146 readings. Unplugging the two polish layers instead changes 2,052 readings, all easings, so their rules stay in force until each element's own owner takes its easing over.
 
 ## Implementation brief for phases 2 to 6
 

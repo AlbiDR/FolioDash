@@ -110,7 +110,8 @@ scripts/
 ├── artifacts/
 │   └── portfolio-study/
 ├── audit/
-│   └── interactions/
+│   ├── interactions/
+│   └── motion/
 ├── docs/
 ├── lib/
 ├── setup/

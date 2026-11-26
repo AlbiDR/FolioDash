@@ -52,6 +52,7 @@
     "setup:hooks": "node scripts/setup/hooks.ts",
     "audit:reduced-motion": "node scripts/audit/reduced-motion.ts",
     "audit:choreography": "node scripts/audit/choreography.ts",
+    "audit:motion-snapshot": "node scripts/audit/motion/snapshot.ts",
     "audit:accessibility": "node scripts/audit/accessibility.ts",
     "audit:mutation": "stryker run config/stryker.config.json",
     "audit:checkpoints": "node scripts/audit/checkpoints.ts",

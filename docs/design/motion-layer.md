@@ -86,9 +86,7 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 | `features/expenses/styles/categories-and-record.css` | expense categories and record arrival | [Work and expenses](work-expenses-experience.md) |
 | `features/expenses/styles/responsive-and-hover.css` | expense layout and hover | [Work and expenses](work-expenses-experience.md) |
 | `presentation/charts/chart-arrival.css` | chart arrivals: the line plot, allocation ring, performance bars and holdings share bars, and the named recipes bar rise, ranking rise, ring slice, marker arrival and selection rebound | This record ([recipe catalogue](#recipe-catalogue)) |
-| `shared/ui/motion/workflow-feedback.css` | small state movements for workflow controls, their icons and their cards | [Polished by default](polished-by-default.md) |
-| `shared/ui/motion/polish.css` | one easing for existing transitions and animations | [Polished by default](polished-by-default.md) |
-| `shared/ui/motion/polish-secondary.css` | a second easing pass for further existing owners | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/state.css` | state movements of workflow controls, their icons and cards, and the one easing of existing state transitions (merged from `workflow-feedback.css`, `polish.css` and `polish-secondary.css` on 2026-11-26) | [Polished by default](polished-by-default.md) |
 | `public/privacy/index.html` | link underline, shadow and press feedback on the standalone privacy page, in its own `<style>` block | [Privacy policy](../operations/privacy-policy.md) |
 
 Since 2026-11-26 `npm run verify:style` keeps this table complete (`scripts/verify/code/motion-owners.ts`). A stylesheet under the web interface, or a page's own `<style>` block, that declares a transition or an animation (vendor-prefixed or not), defines keyframes or entry styles, or redefines a motion token fails the check until it has exactly one row here with an owner. A row whose stylesheet is gone or no longer moves fails too. The token file needs a row only if motion other than its token definitions is written into it.
