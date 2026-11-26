@@ -26,15 +26,24 @@ const TITLES: Readonly<Record<string, string>> = {
   history: "Import a whole history",
   connection: "Your data",
 };
-const ROUTES = ["overview", "fund", ...Object.keys(TITLES).filter((route) => route !== "overview")];
+// CHOREOGRAPHY_ONLY=import,history limits a diagnostic run to some screens; the gate always measures every one.
+const ONLY = process.env["CHOREOGRAPHY_ONLY"]?.split(",") ?? [];
+const ROUTES = ["overview", "fund", ...Object.keys(TITLES).filter((route) => route !== "overview")].filter(
+  (route) => ONLY.length === 0 || ONLY.includes(route),
+);
 
 type Measured = Choreography & { readonly names: readonly string[]; readonly countUps: number };
 
-// Every animation the arrival started, frozen at its first frame. A count-up runs on its own clock with no target; it is
+// Every visible animation the arrival started, frozen at its first frame. A count-up runs on its own clock with no target; it is
 // found through the attribute it sets while counting and reported apart, because it starts only for figures in view.
 const MEASURE = `(() => {
-  const names = new Set(); const targets = new Set(); let settle = 0; let loops = 0;
+  const names = new Set(); const targets = new Set(); const items = []; let settle = 0; let loops = 0;
   for (const animation of document.getAnimations()) {
+    const t = animation.effect?.target;
+    // Motion nobody can see, such as a heading inside a closed disclosure, is not part of the arrival; counting it would
+    // also make the measure depend on when lazily loaded content happens to mount.
+    if (t && !t.checkVisibility()) continue;
+    items.push((animation.animationName ?? animation.transitionProperty ?? 'script') + '@' + (t ? t.tagName.toLowerCase() + '.' + String(t.getAttribute('class') ?? '').split(' ').slice(0, 2).join('.') : '?') + (animation.effect?.pseudoElement ?? ''));
     names.add(animation instanceof CSSAnimation ? animation.animationName
       : animation instanceof CSSTransition ? 'transition ' + animation.transitionProperty : 'script');
     if (animation.effect?.target) targets.add(animation.effect.target);
@@ -42,7 +51,7 @@ const MEASURE = `(() => {
     if (end === Infinity) loops++; else settle = Math.max(settle, Number(end));
   }
   const countUps = document.querySelectorAll('[data-counting]').length;
-  return { kinds: names.size, elements: targets.size, settle: Math.round(settle), loops, countUps, names: [...names].sort() };
+  return { kinds: names.size, elements: targets.size, settle: Math.round(settle), loops, countUps, names: [...names].sort(), items: items.sort() };
 })()`;
 
 // Each case loads its own address: navigating to an address that differs only in its fragment is a same-document hash
