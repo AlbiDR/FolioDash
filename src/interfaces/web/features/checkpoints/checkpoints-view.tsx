@@ -115,6 +115,11 @@ export function CheckpointsView(props: {
   const { state } = props;
   const blocked = signedOut || busy || !state.ready || state.pending.length > 0 || state.unreadable;
   const entries = listed(state.active);
+  // Rows present when the screen opened arrive with it; a row added afterwards enters as a layer (FD-029, phase 6).
+  // The rows present once the log is first ready are the ones it opened with.
+  const opened = useRef<ReadonlySet<string> | null>(null);
+  if (opened.current === null && state.ready) opened.current = new Set(entries.map((entry) => entry.id));
+  const known = opened.current;
 
   return (
     <section class="screen checkpoints" aria-label="Checkpoints">
@@ -225,7 +230,7 @@ export function CheckpointsView(props: {
         ) : (
           <ul class="checkpoint-list">
             {entries.map((entry) => (
-              <li key={entry.id}>
+              <li key={entry.id} class={known === null || known.has(entry.id) ? undefined : "checkpoint-new"}>
                 <span class="checkpoint-date">{formatDateLong(entry.date)}</span>
                 <span class="checkpoint-value">
                   <Amount cents={entry.cents} />

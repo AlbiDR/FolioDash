@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useRef, useState } from "preact/hooks";
 import { availableRanges, type ChartRange, rangeStart } from "./model/chart-range";
+import { ChangeCue } from "../../shared/ui/change-cue";
 import { RangeSelector } from "../../shared/ui/range-selector";
 import { LineChart } from "../../presentation/charts/line-chart";
 import type { ChartSeries } from "../../presentation/charts/line-chart-geometry";
@@ -139,7 +140,14 @@ export function FundView(props: {
               void copyIsin(fund.isin);
             }}
           >
-            {copying ? "Copying…" : copyFeedback?.isin === fund.isin && copyFeedback.ok ? "Copied" : "Copy ISIN"}
+            {(() => {
+              const label = copying
+                ? "Copying…"
+                : copyFeedback?.isin === fund.isin && copyFeedback.ok
+                  ? "Copied"
+                  : "Copy ISIN";
+              return <ChangeCue value={label}>{label}</ChangeCue>;
+            })()}
           </button>
         </div>
         <p class="copy-feedback" role="status" aria-atomic="true">

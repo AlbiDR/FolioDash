@@ -7,6 +7,7 @@ import { type AllocationSlice } from "./model/dashboard-data";
 import { Donut } from "../../presentation/charts/donut";
 import { Sparkline } from "../../presentation/charts/sparkline";
 import { Amount } from "../../presentation/privacy/privacy";
+import { ChangeCue } from "../../shared/ui/change-cue";
 import { Icon } from "../../shared/ui/icons";
 import type { OverviewFund, OverviewKpi } from "./model/overview-model";
 import { Pill, Signed, tone } from "./parts";
@@ -197,13 +198,13 @@ export function AllocationCard(props: { readonly slices: readonly AllocationSlic
             onFocus={focusSlice}
             centre={
               <>
-                <span class="donut-number">
+                <ChangeCue value={active?.isin ?? null} class="donut-number">
                   <AnimatedFigure
                     value={active === undefined ? props.slices.length : null}
                     text={active === undefined ? formatFigureCount(props.slices.length) : formatPercent(active.share)}
                     format={formatFigureCount}
                   />
-                </span>
+                </ChangeCue>
                 <span class="donut-caption">
                   {active === undefined ? (props.slices.length === 1 ? "fund" : "funds") : "of portfolio"}
                 </span>

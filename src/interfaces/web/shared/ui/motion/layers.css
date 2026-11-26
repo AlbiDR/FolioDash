@@ -318,3 +318,7 @@ details[open] > summary::before {
 .checkpoint-confirm {
   animation: feedback-enter var(--duration-short) var(--ease-smooth);
 }
+/* A checkpoint added while its screen is open enters as a layer; rows present when it opened arrive with the page. */
+.checkpoint-list > li.checkpoint-new {
+  animation: feedback-enter var(--duration-short) var(--ease-smooth);
+}
