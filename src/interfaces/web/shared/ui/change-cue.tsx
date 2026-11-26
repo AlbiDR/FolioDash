@@ -7,21 +7,23 @@ import { createMotion, type Motion, timingFrom } from "../motion/animate";
  * phase 6): the element fades up from the update opacity over the state duration. Nothing plays on the first render,
  * under reduced motion, or without the Web Animations API, and the value itself is never delayed.
  */
+export function playChangeCue(element: Element, motion: Motion): void {
+  const style = getComputedStyle(element);
+  const from = Number.parseFloat(style.getPropertyValue("--motion-update-opacity"));
+  motion.play(
+    element,
+    [{ opacity: Number.isFinite(from) ? from : 0.65 }, { opacity: 1 }],
+    timingFrom(style, "--duration-short", "--ease-smooth"),
+  );
+}
+
 export function useChangeCue(element: RefObject<Element | null>, value: unknown, motion?: Motion): void {
   const player = useMemo(() => motion ?? createMotion(), [motion]);
   const previous = useRef(value);
   useEffect(() => {
     if (Object.is(previous.current, value)) return;
     previous.current = value;
-    const node = element.current;
-    if (node === null) return;
-    const style = getComputedStyle(node);
-    const from = Number.parseFloat(style.getPropertyValue("--motion-update-opacity"));
-    player.play(
-      node,
-      [{ opacity: Number.isFinite(from) ? from : 0.65 }, { opacity: 1 }],
-      timingFrom(style, "--duration-short", "--ease-smooth"),
-    );
+    if (element.current !== null) playChangeCue(element.current, player);
   }, [element, player, value]);
 }
 

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
-import { useLayoutEffect, useRef } from "preact/hooks";
-import { timingFrom } from "../shared/motion/animate";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { createMotion, timingFrom } from "../shared/motion/animate";
+import { playChangeCue } from "../shared/ui/change-cue";
 import { prefersReducedMotion } from "../shared/motion/reduced-motion";
 import { motionMilliseconds } from "../shared/ui/motion-timing";
 
@@ -18,6 +19,19 @@ export function AnimatedFigure(props: AnimatedFigureProps): JSX.Element {
   const overlay = useRef<HTMLSpanElement>(null);
   const mounted = useRef(false);
   const { value, text, format } = props;
+  // A figure that changes while it is on screen is cued, never counted, and its exact text is there from the first
+  // frame (FD-029, phase 7). Hiding or showing amounts is a privacy change: instant and silent, so it never cues.
+  const shown = useRef({ text, masked: props.masked === true });
+  const [motion] = useState(() => createMotion());
+  useEffect(() => {
+    const before = shown.current;
+    const masked = props.masked === true;
+    shown.current = { text, masked };
+    if (before.text === text || before.masked || masked) return;
+    const node = element.current;
+    if (node === null || node.hasAttribute("data-counting")) return;
+    playChangeCue(node, motion);
+  }, [text, props.masked, motion]);
   useLayoutEffect(() => {
     if (mounted.current) return;
     mounted.current = true;

@@ -274,10 +274,10 @@ One row is a source template; a fund-link template can render many controls. All
 | e31f7b55bac2-1 | [months-view.tsx:293](../../src/interfaces/web/features/overview/months-view.tsx#L293) | button / action | Latest | SOURCE CLASSIFIED; STATES OPEN |
 | 4eeac9ba431c-1 | [months-view.tsx:351](../../src/interfaces/web/features/overview/months-view.tsx#L351) | a / action | row-link | SOURCE CLASSIFIED; STATES OPEN |
 | 516fd464ddb2-1 | [overview-analysis.tsx:102](../../src/interfaces/web/features/overview/overview-analysis.tsx#L102) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 7835b073b7a4-1 | [overview-cards.tsx:88](../../src/interfaces/web/features/overview/overview-cards.tsx#L88) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
-| 7629eadcb326-1 | [overview-cards.tsx:154](../../src/interfaces/web/features/overview/overview-cards.tsx#L154) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
-| b203d838d099-1 | [overview-cards.tsx:217](../../src/interfaces/web/features/overview/overview-cards.tsx#L217) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 79d1b03ed21a-1 | [overview-cards.tsx:256](../../src/interfaces/web/features/overview/overview-cards.tsx#L256) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
+| 7835b073b7a4-1 | [overview-cards.tsx:87](../../src/interfaces/web/features/overview/overview-cards.tsx#L87) | div / scroll-region | table-scroll flat | SOURCE CLASSIFIED; STATES OPEN |
+| 7629eadcb326-1 | [overview-cards.tsx:153](../../src/interfaces/web/features/overview/overview-cards.tsx#L153) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
+| b203d838d099-1 | [overview-cards.tsx:216](../../src/interfaces/web/features/overview/overview-cards.tsx#L216) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 79d1b03ed21a-1 | [overview-cards.tsx:255](../../src/interfaces/web/features/overview/overview-cards.tsx#L255) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
 | f9deda2cfc0c-1 | [overview-holdings.tsx:104](../../src/interfaces/web/features/overview/overview-holdings.tsx#L104) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
 | df5f93250bb8-1 | [overview-holdings.tsx:167](../../src/interfaces/web/features/overview/overview-holdings.tsx#L167) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
 | 2cc174d3262d-1 | [overview-holdings.tsx:185](../../src/interfaces/web/features/overview/overview-holdings.tsx#L185) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |

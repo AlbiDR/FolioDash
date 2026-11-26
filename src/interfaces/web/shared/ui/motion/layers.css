@@ -1,7 +1,10 @@
 /* Layers: anything that appears or leaves, such as notices, disclosures, presence, busy and confirmation cues.
  * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3). */
+/* A busy indicator turns five times, about four and a half seconds, and then holds its arc. Moving content that runs
+ * longer than five seconds needs a way to stop it (WCAG 2.2.2); the message beside the indicator keeps saying what is
+ * happening for as long as it takes (FD-029, phase 7). */
 .notice[data-busy="true"]::before {
-  animation: busy-turn var(--duration-busy) linear infinite;
+  animation: busy-turn var(--duration-busy) linear 5;
 }
 /* Keep the same usable hit area with mouse, keyboard and touch. */
 button,
@@ -40,7 +43,7 @@ details[open] > summary::before {
   border-top-color: var(--color-accent);
   border-radius: 50%;
   vertical-align: -0.1rem;
-  animation: busy-turn var(--duration-busy) linear infinite;
+  animation: busy-turn var(--duration-busy) linear 5;
 }
 @keyframes busy-turn {
   to {
