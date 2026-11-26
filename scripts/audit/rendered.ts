@@ -2,7 +2,10 @@ import { execFileSync } from "node:child_process";
 import process from "node:process";
 
 const suites = {
-  interactions: ["audit:interactions"],
+  // One interaction audit, split by part so that no single runner sets the length of the gate.
+  "interactions-portfolio": ["audit:interactions -- portfolio"],
+  "interactions-records": ["audit:interactions -- records"],
+  "interactions-phone": ["audit:interactions -- phone"],
   recovery: [
     "audit:backfill-recovery",
     "audit:expense-recovery",
@@ -25,5 +28,5 @@ if (suite === "--matrix") {
   const audits =
     suite === undefined ? Object.values(suites).flat() : Object.entries(suites).find(([name]) => name === suite)?.[1];
   if (audits === undefined) throw new Error(`Unknown rendered audit suite: ${String(suite)}`);
-  for (const audit of audits) execFileSync("npm", ["run", audit], { stdio: "inherit" });
+  for (const audit of audits) execFileSync("npm", ["run", ...audit.split(" ")], { stdio: "inherit" });
 }

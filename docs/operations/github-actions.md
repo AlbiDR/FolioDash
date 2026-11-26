@@ -37,7 +37,7 @@ flowchart LR
     release --> publish[publish: Pages deploy, if still current main]
 ```
 
-[The rendered audit runner](../../scripts/audit/rendered.ts) owns suite membership. `npm run audit:rendered` runs all twelve audits locally, and `npm run audit:rendered -- recovery` runs a single suite. CI generates its matrix from the same runner and reports each suite separately. The suites cover interactions, recovery and other synthetic journeys, accessibility, reduced motion and portfolio polish. The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default).
+[The rendered audit runner](../../scripts/audit/rendered.ts) owns suite membership. `npm run audit:rendered` runs every suite locally, and `npm run audit:rendered -- recovery` runs a single suite. CI generates its matrix from the same runner and reports each suite separately. The suites cover interactions, recovery and other synthetic journeys, accessibility, reduced motion and portfolio polish. The interaction audit is one audit split into three suites, `interactions-portfolio`, `interactions-records` and `interactions-phone`, each running one part of it on its own runner (see [Gate timing](#gate-timing-2026-11-26)). The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default).
 
 Both builds receive the public repository variable `VITE_GOOGLE_CLIENT_ID`. A release fails with a redacted configuration error if it is empty. A pull request or weekly run can verify without a release client ID. No Google token, credential or private workbook data enters this path.
 
@@ -156,4 +156,12 @@ Inside `verify`, `npm run verify` took 136 seconds, and 83 of them were `test:sc
 
 The workflow definitions were reviewed in the same pass and left as they are. Setup is about 10 seconds per job with the npm cache, the site is built once, the jobs already run in parallel, and no job repeats another's work beyond the one-second build inside `npm run verify`.
 
-What now sets the release time is the `interactions` suite: one script, about 100 seconds for 27 rendered states, after about 35 seconds of build and runner setup. Shortening it means splitting that audit across runners while keeping its whole-inventory coverage assertions, which is a change to the audit and not to a workflow. It is not done here.
+After that change the `interactions` suite set the release time: one script, about 100 seconds for 27 rendered states, after about 35 seconds of build and runner setup. On the owner's go-ahead the same day, `scripts/audit/interactions.ts` lists its eight journeys in three named parts, and the rendered audit runner runs each part as its own suite:
+
+| Suite | Journeys | Rendered states | Assertions | Control samples |
+|---|---|---|---|---|
+| `interactions-portfolio` | portfolio, range selector, disclosures | 4 | 75 | 300 |
+| `interactions-records` | holdings, expenses and import, history | 12 | 50 | 490 |
+| `interactions-phone` | phone, earlier history | 11 | 35 | 341 |
+
+Every journey belongs to exactly one part, because the parts are the only list of journeys, and the order within a part is the order the full audit used. The disclosures journey depends on the Portfolio that the range selector journey leaves open, so the two share a part. The other parts start with their own navigation, and each passed alone. Each part checks every control it renders against the same rules and fails on the same problems. Locally on 2026-11-26 the three parts made 160 journey assertions and 1,131 control samples across 27 states, exactly what the full audit made in one browser. `npm run audit:interactions` with no part still runs the whole audit in one browser and writes `report.json`. A part writes `report.<part>.json`. Each part pays its own runner setup and browser start-up, about 35 seconds, in exchange for running in parallel. Locally the parts took 46, 37 and 49 seconds against 86 for the whole audit. The CI saving is reported with the pushed run, not claimed here.
