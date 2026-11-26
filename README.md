@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/interfaces/web/public/icons/icon.svg" width="176" height="176" alt="FolioDash app icon">
+  <img src="src/interfaces/web/public/icons/icon.svg" width="144" height="144" alt="FolioDash app icon">
 </p>
 
 <h1 align="center">FolioDash</h1>
@@ -10,30 +10,30 @@
 </p>
 
 <p align="center">
-  <a href="https://albidr.github.io/FolioDash/"><strong>Explore the demo</strong></a> ·
-  <a href="#the-whole-picture">The whole picture</a> ·
-  <a href="#a-closer-look">A closer look</a> ·
-  <a href="#how-it-works">How it works</a> ·
-  <a href="#run-locally">Run locally</a>
-</p>
-
-<p align="center">
   <a href="https://github.com/AlbiDR/FolioDash/actions/workflows/release-site.yml"><img src="https://github.com/AlbiDR/FolioDash/actions/workflows/release-site.yml/badge.svg?branch=main&amp;event=push" alt="Release site workflow status"></a>
   <a href="#under-the-hood"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" alt="Built with TypeScript"></a>
   <a href="#under-the-hood"><img src="https://img.shields.io/badge/Preact-673AB8?style=flat-square&amp;logo=preact&amp;logoColor=white" alt="Interface built with Preact"></a>
 </p>
 
-<br>
+<p align="center">
+  <a href="https://albidr.github.io/FolioDash/"><strong>Explore the demo</strong></a> ·
+  <a href="#the-whole-picture">Overview</a> ·
+  <a href="#every-screen">Screens</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#run-locally">Run locally</a> ·
+  <a href="#scope-and-limits">Scope</a> ·
+  <a href="#documentation">Docs</a>
+</p>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://albidr.github.io/FolioDash/readme/hero-dark.png">
     <img src="https://albidr.github.io/FolioDash/readme/hero-light.png" width="1040" alt="FolioDash portfolio overview with total value, gain, the Performance chart and changes over time">
   </picture>
-  <br>
 </p>
 
-<br>
+> [!NOTE]
+> **An early build, ready to explore.** The demo runs without Google. Full Google integration and physical-device acceptance are still in progress. See [what has been verified](#what-has-been-verified).
 
 ## The whole picture
 
@@ -55,8 +55,6 @@ A statement tells you what your funds are worth on a date. FolioDash connects th
     </td>
   </tr>
 </table>
-
-<br>
 
 ## A closer look
 
@@ -81,8 +79,6 @@ One visual language across the portfolio, the working week and the phone in your
 </table>
 
 <p align="center"><sub>Desktop and phone-sized browser views, with synthetic demo data.</sub></p>
-
-<br>
 
 ## Every screen
 
@@ -139,19 +135,13 @@ These views are captured automatically from the published demo, so they always m
 </table>
 <!-- readme-gallery:end -->
 
-<br>
-
 ## How it works
 
-1. **Get a feel for it.** Open the demo and explore a synthetic portfolio and expense history. No account is needed; demo expense edits reset on reload.
+1. **Get a feel for it.** Open the [demo](https://albidr.github.io/FolioDash/) and explore a synthetic portfolio and expense history. No account is needed; demo expense edits reset on reload.
 2. **Bring your history.** For your own records, connect Google and choose supported bank Excel exports, separately or in a workbook with a statement per sheet. Check dates, holdings and cash movements before confirming.
 3. **Make it a routine.** Return to your portfolio, look into a fund, or record a workday. You can track expenses without importing a portfolio.
 
 The interface uses English labels and Italian/EUR formatting. The installable app is designed for Mac and Android; [installation and device evidence](docs/operations/pwa.md) records what has been checked.
-
-> **An early build, ready to explore.** The demo runs without Google. Full Google integration and physical-device acceptance are still in progress. [Current evidence](docs/operations/onboarding-acceptance.md).
-
-<br>
 
 ## Run locally
 
@@ -166,9 +156,14 @@ npm run dev
 
 Open the URL printed by Vite. The demo is ready without credentials or configuration.
 
-For local Google access, use an existing public OAuth client ID with that origin authorised. Enter it in **Your data > Advanced: Google client ID**, or supply `VITE_GOOGLE_CLIENT_ID` when starting or building the app. For provider tests, use the isolated [synthetic onboarding procedure](docs/operations/onboarding-acceptance.md); ordinary sign-in can reconnect an existing workbook.
+### Google access (optional)
 
-<br>
+Use an existing public OAuth client ID with your local origin authorised, and supply it in either way:
+
+- enter it in **Your data > Advanced: Google client ID**, or
+- set `VITE_GOOGLE_CLIENT_ID` when starting or building the app.
+
+For provider tests, use the isolated [synthetic onboarding procedure](docs/operations/onboarding-acceptance.md); ordinary sign-in can reconnect an existing workbook.
 
 ## Under the hood
 
@@ -176,42 +171,86 @@ For local Google access, use an existing public OAuth client ID with that origin
 
 One pure financial kernel owns the calculations. Use cases connect it to the interface and adapters, while your Google workbook remains the durable record. The browser keeps a rebuildable device copy for faster reads and offline viewing. [Explore the architecture](docs/architecture/cleanstack.md).
 
+### Everyday commands
+
+| Command | What it does |
+|---|---|
+| `npm run doctor` | Checks this machine. Start a session with it. |
+| `npm run dev` | Starts the app with the synthetic demo. |
+| `npm run verify` | Runs the full gate (see below). |
+| `npm run health` | Shows where the repository stands. |
+| `npm run audit:dependencies` | Audits dependencies; fails on moderate or greater severity. |
+| `npm run build`, then `npm run preview` | Builds and serves a production preview. |
+| `npm run verify:workflows` | Lints the workflows. Required after workflow edits. |
+
 <details>
-<summary><strong>Development and verification</strong></summary>
+<summary><strong>What verification covers</strong></summary>
 
 <br>
 
-```sh
-npm run doctor   # check this machine
-npm run verify
-npm run health   # where the repository stands
-npm run audit:dependencies
-```
+`npm run verify` covers repository boundaries and structure, documentation, style, formatting, attribution and punctuation policies, types, lint, tests with coverage, Pages artifact integrity, production/PWA output, and a scan for credentials.
 
-Verification covers repository boundaries and structure, documentation, style, formatting, attribution and punctuation policies, types, lint, tests with coverage, Pages artifact integrity, production/PWA output, and a scan for credentials. The dependency audit fails on moderate or greater severity. CI checks Node 22; the existing Pages pipeline publishes the checked artifact. Workflow edits also require `npm run verify:workflows`.
+CI checks Node 22; the existing Pages pipeline publishes the checked artifact. The [Actions guide](docs/operations/github-actions.md) describes the pipeline.
 
-For a production preview, run `npm run build`, then `npm run preview`. README screenshots refresh automatically with successful `main` releases. CI captures the checked build in a fresh browser profile, blocks external requests, and publishes the images at stable Pages URLs. No screenshot commits or manual recaptures are needed.
+</details>
+
+<details>
+<summary><strong>How the README screenshots stay current</strong></summary>
+
+<br>
+
+README screenshots refresh automatically with successful `main` releases. CI captures the checked build in a fresh browser profile, blocks external requests, and publishes the images at stable Pages URLs. No screenshot commits or manual recaptures are needed.
 
 To reproduce locally, run `npm run build`, `npm run capture:readme`, then `npm run build:pages`. `CHROME_PATH` selects a Chrome executable when needed. Capture output stays in ignored `dist/readme/`; `dist/pages/` combines it with a byte-for-byte copy of the checked application.
 
+</details>
+
+## Scope and limits
+
+| Area | Works today | Not yet |
+|---|---|---|
+| **Imports**<br>[Import workflow](docs/operations/importing-history.md) | The supported Fideuram XLSX layout, with one statement per calendar month, appended chronologically. A history import saves statement by statement and preserves confirmed saves if interrupted. | Other bank layouts and earlier-history insertion. |
+| **Expenses**<br>[Expense definitions](docs/operations/work-expenses.md) | Today and earlier Monday-Friday workdays, stored separately within the same workbook. | Weekend expense entry. |
+| **Backup and recovery**<br>[Expense recovery](docs/operations/work-expenses.md) | Complete expense correction-history backup, and confirmed restoration into a never-initialised expense store. | Portfolio JSON export. Portfolio device recovery omits original bank statements. |
+| **Financial meaning**<br>[Reporting policy](docs/architecture/cleanstack.md#53-reporting-policy) | Exact EUR cents and the accepted `legacy-parity-v1` policy. Year to date starts at the January statement. Cash-timing percentages are estimates. | No returns are annualised, time-weighted or money-weighted. |
+
+## Your data
+
+- **You authorise it.** Direct Google access uses user authorisation and the `drive.file` scope.
+- **Your workbook is the record.** Financial saves require Google; uncertain outcomes are checked before continuing.
+- **Device copies are disposable.** They are plain local data. Signing out or choosing Forget this device clears them without deleting the workbook.
+- **Not end-to-end encrypted.** FolioDash adds no end-to-end encryption of its own.
+- **Still open.** Original-file archival, retention duration and broader session/privacy acceptance.
+
+Read the [data and connection design](docs/architecture/google-sheets-backend.md) and the [privacy policy](https://albidr.github.io/FolioDash/privacy/).
+
+> [!IMPORTANT]
+> Keep real statements, identifiers, private screenshots, backups and credentials outside the repository, fixtures, logs and builds. GitHub secrets belong to deployment/CI. The existing Google Sheets project stays separate.
+
+## What has been verified
+
+| Status | Evidence |
+|---|---|
+| **Passed** | A one-account synthetic portfolio create/save/read-back/replay flow, from an Android emulator at a local origin. |
+| **Separate gates, still open** | Live expense writes, deployed-origin and two-account acceptance, simultaneous-device proof, and physical Android/WebAPK checks. |
+
+Screenshots establish presentation only. Details: [onboarding evidence](docs/operations/onboarding-acceptance.md) · [web quality contract](docs/operations/web-quality.md).
+
+## Documentation
+
+| Topic | Read |
+|---|---|
+| Architecture and engineering standards | [CleanStack](docs/architecture/cleanstack.md) |
+| Google data and connection design | [Google-backed architecture](docs/architecture/google-sheets-backend.md) |
+| Importing statements | [Starting from Excel history](docs/operations/importing-history.md) |
+| Work expenses | [Expense definitions and recovery](docs/operations/work-expenses.md) |
+| Installable app | [Installation and device evidence](docs/operations/pwa.md) |
+| CI and releases | [GitHub Actions](docs/operations/github-actions.md) |
+| Everything else | [Documentation map](docs/README.md) |
+
+## Contributing
+
 Read the [working agreement](AGENTS.md), [contribution guide](.github/CONTRIBUTING.md) and [Actions guide](docs/operations/github-actions.md) before changing the project. Licensing remains undecided; external contributions cannot be accepted yet.
-
-</details>
-
-<details>
-<summary><strong>Current scope and data</strong></summary>
-
-<br>
-
-- **Imports:** the supported Fideuram XLSX layout, with one statement per calendar month, appended chronologically. Other bank layouts and earlier-history insertion are unsupported. A history import saves statement by statement and preserves confirmed saves if interrupted. [Import workflow](docs/operations/importing-history.md).
-- **Expenses:** today and earlier Monday-Friday workdays, stored separately within the same workbook. Complete correction-history backup and confirmed restoration into a never-initialised expense store are implemented. Portfolio JSON export is not implemented; portfolio device recovery omits original bank statements. [Expense definitions and recovery](docs/operations/work-expenses.md).
-- **Financial meaning:** exact EUR cents and the accepted `legacy-parity-v1` policy. Year to date starts at the January statement. Cash-timing percentages are estimates; no returns are annualised, time-weighted or money-weighted. [Reporting policy](docs/architecture/cleanstack.md#53-reporting-policy).
-- **Data ownership:** direct Google access uses user authorisation and `drive.file`. Device copies are plain local data; signing out or choosing Forget this device clears them without deleting the workbook. Financial saves require Google; uncertain outcomes are checked before continuing. This is not FolioDash end-to-end encryption. [Data and connection design](docs/architecture/google-sheets-backend.md).
-- **Evidence:** a one-account synthetic portfolio create/save/read-back/replay flow passed from an Android emulator at a local origin. Live expense writes, deployed-origin and two-account acceptance, simultaneous-device proof, and physical Android/WebAPK checks remain separate gates. Screenshots establish presentation only. [Onboarding evidence](docs/operations/onboarding-acceptance.md) · [Web quality contract](docs/operations/web-quality.md).
-
-Keep real statements, identifiers, private screenshots, backups and credentials outside the repository, fixtures, logs and builds. GitHub secrets belong to deployment/CI. Original-file archival, retention duration and broader session/privacy acceptance remain open. The existing Google Sheets project stays separate.
-
-</details>
 
 <br>
 
