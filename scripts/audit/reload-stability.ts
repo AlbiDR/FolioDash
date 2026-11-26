@@ -56,8 +56,9 @@ async function checkReloads({ call, evaluate, origin, waitFor }: LocalBrowser): 
         let shellFrame;
         let initial;
         let sawCounter = false;
-        const reveal = {first: undefined, intermediate: false, final: undefined};
+        const reveal = {first: undefined, intermediate: false, final: undefined, settledAfter: undefined};
         let paintedFallback = false;
+        let windowClosed = false;
         function layoutBox(element) {
           const box = element.getBoundingClientRect();
           let top = box.top + window.scrollY;
@@ -68,9 +69,14 @@ async function checkReloads({ call, evaluate, origin, waitFor }: LocalBrowser): 
           }
           return [top, element.clientWidth, element.clientHeight];
         }
+        // The hero's own finite entrance, pending or running. A busy runner can start it late, so its end state is read
+        // once it has finished rather than at a fixed time.
+        function heroEntering(hero) {
+          return hero.getAnimations().some(animation =>
+            (animation.pending || animation.playState === 'running') &&
+            animation.effect?.getComputedTiming().endTime !== Infinity);
+        }
         function sample(time) {
-          paintedFallback ||= [...document.querySelectorAll('#main-content [data-busy]')]
-            .some(node => node.textContent.includes('Loading view'));
           const hero = document.querySelector('.portfolio-dashboard > .hero');
           if (hero) {
             const opacity = Number(getComputedStyle(hero).opacity);
@@ -78,6 +84,22 @@ async function checkReloads({ call, evaluate, origin, waitFor }: LocalBrowser): 
             reveal.intermediate ||= opacity > 0.1 && opacity < 0.9;
             reveal.final = opacity;
           }
+          // Layout evidence keeps its fixed window; only the hero's entrance is followed until it ends, up to ten seconds.
+          if (windowClosed) {
+            if (hero && heroEntering(hero) && time - started < 10000) {
+              requestAnimationFrame(sample);
+              return;
+            }
+            reveal.settledAfter = firstFrame === undefined ? undefined : Math.round(time - firstFrame);
+            window.reloadEvidence = {
+              firstFrame, shellFrame, shifts, changes, sawCounter, reveal, paintedFallback,
+              type: performance.getEntriesByType('navigation')[0]?.type,
+              plot: document.querySelector('.chart-svg')?.getAttribute('viewBox'),
+            };
+            return;
+          }
+          paintedFallback ||= [...document.querySelectorAll('#main-content [data-busy]')]
+            .some(node => node.textContent.includes('Loading view'));
           if (document.querySelector('.topbar')) shellFrame ??= time;
           const panels = [...document.querySelectorAll(${JSON.stringify(selector)})];
           if (panels.length && shellFrame !== undefined) {
@@ -95,12 +117,7 @@ async function checkReloads({ call, evaluate, origin, waitFor }: LocalBrowser): 
           if ((firstFrame !== undefined && time - firstFrame >= 1000) || time - started >= 4500) {
             addShifts(observer.takeRecords());
             observer.disconnect();
-            window.reloadEvidence = {
-              firstFrame, shellFrame, shifts, changes, sawCounter, reveal, paintedFallback,
-              type: performance.getEntriesByType('navigation')[0]?.type,
-              plot: document.querySelector('.chart-svg')?.getAttribute('viewBox'),
-            };
-            return;
+            windowClosed = true;
           }
           requestAnimationFrame(sample);
         }
@@ -132,7 +149,7 @@ async function checkReloads({ call, evaluate, origin, waitFor }: LocalBrowser): 
           shifts: unknown[];
           changes: unknown[];
           sawCounter: boolean;
-          reveal: { first?: number; intermediate: boolean; final?: number };
+          reveal: { first?: number; intermediate: boolean; final?: number; settledAfter?: number };
           paintedFallback: boolean;
           plot?: string;
         };
