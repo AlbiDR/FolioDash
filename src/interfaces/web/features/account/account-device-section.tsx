@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
 import { Icon } from "../../shared/ui/icons";
+import { Presence } from "../../shared/ui/presence";
 import type { AccountShared } from "./use-account-controller";
 
 export function AccountDeviceSection(p: { readonly shared: AccountShared }): JSX.Element {
@@ -41,42 +42,45 @@ export function AccountDeviceSection(p: { readonly shared: AccountShared }): JSX
       </ul>
       {!signedOut && (
         <>
-          {confirmForget ? (
-            <div class="review-problem" role="alert">
-              <h3>Forget this device?</h3>
-              <p>
-                This removes the saved copy, Google access and the remembered account from this device and signs you
-                out. Your Google Sheet is not touched, and you can continue with Google again any time.
-              </p>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  actions.forget();
-                  setConfirmForget(false);
-                  setMessage({
-                    good: true,
-                    title: "This device was forgotten",
-                    body: "The saved copy on this device was removed. Your Google Sheet is unchanged.",
-                  });
-                  requestAnimationFrame(() => connectionHeading.current?.focus());
-                }}
-              >
-                Yes, forget this device
-              </button>{" "}
-              <button
-                type="button"
-                ref={keepButton}
-                disabled={busy}
-                onClick={() => {
-                  setConfirmForget(false);
-                  requestAnimationFrame(() => forgetButton.current?.focus());
-                }}
-              >
-                Keep it
-              </button>
-            </div>
-          ) : (
+          <Presence show={confirmForget}>
+            {confirmForget && (
+              <div class="review-problem" role="alert">
+                <h3>Forget this device?</h3>
+                <p>
+                  This removes the saved copy, Google access and the remembered account from this device and signs you
+                  out. Your Google Sheet is not touched, and you can continue with Google again any time.
+                </p>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    actions.forget();
+                    setConfirmForget(false);
+                    setMessage({
+                      good: true,
+                      title: "This device was forgotten",
+                      body: "The saved copy on this device was removed. Your Google Sheet is unchanged.",
+                    });
+                    requestAnimationFrame(() => connectionHeading.current?.focus());
+                  }}
+                >
+                  Yes, forget this device
+                </button>{" "}
+                <button
+                  type="button"
+                  ref={keepButton}
+                  disabled={busy}
+                  onClick={() => {
+                    setConfirmForget(false);
+                    requestAnimationFrame(() => forgetButton.current?.focus());
+                  }}
+                >
+                  Keep it
+                </button>
+              </div>
+            )}
+          </Presence>
+          {!confirmForget && (
             <button
               type="button"
               ref={forgetButton}

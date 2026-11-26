@@ -6,6 +6,7 @@ import { AccountDeviceSection } from "./account-device-section";
 import { AccountHealth, AccountHistoryRecovery, AccountOrganize, AccountRestore } from "./account-maintenance";
 import type { AccountViewProps } from "./account-types";
 import { useAccountController } from "./use-account-controller";
+import { Presence } from "../../shared/ui/presence";
 
 /** The one place to see and control where the person's data lives. Plain words, one clear next step. */
 export function AccountView(props: AccountViewProps): JSX.Element {
@@ -17,21 +18,23 @@ export function AccountView(props: AccountViewProps): JSX.Element {
     <section class="account screen" aria-labelledby="account-connection-heading">
       <p class="account-lead">Check synchronization, verify your saved history and manage the copy on this device.</p>
       <div class="status" data-busy={busy} aria-live="polite">
-        {pending !== null && (
-          <p>
-            {pending === "connect"
-              ? "Waiting for Google…"
-              : pending === "sync"
-                ? "Checking your latest saved history…"
-                : pending === "restore"
-                  ? "Restoring your spreadsheet and checking the result…"
-                  : pending === "restore-history"
-                    ? "Restoring or checking your previous portfolio history…"
-                    : pending === "verify"
-                      ? "Reading and checking your saved statements…"
-                      : "Checking and organizing your spreadsheet…"}
-          </p>
-        )}
+        <Presence show={pending !== null}>
+          {pending !== null && (
+            <p>
+              {pending === "connect"
+                ? "Waiting for Google…"
+                : pending === "sync"
+                  ? "Checking your latest saved history…"
+                  : pending === "restore"
+                    ? "Restoring your spreadsheet and checking the result…"
+                    : pending === "restore-history"
+                      ? "Restoring or checking your previous portfolio history…"
+                      : pending === "verify"
+                        ? "Reading and checking your saved statements…"
+                        : "Checking and organizing your spreadsheet…"}
+            </p>
+          )}
+        </Presence>
       </div>
 
       <AccountConnectionCard shared={shared} />

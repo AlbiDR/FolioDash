@@ -118,12 +118,12 @@ One row is a source template; a fund-link template can render many controls. All
 | bed0a9a37174-1 | [account-connection-card.tsx:82](../../src/interfaces/web/features/account/account-connection-card.tsx#L82) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 848b787c9375-1 | [account-connection-card.tsx:98](../../src/interfaces/web/features/account/account-connection-card.tsx#L98) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
 | 54878b227f1f-1 | [account-connection-card.tsx:107](../../src/interfaces/web/features/account/account-connection-card.tsx#L107) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
-| 76a11d141f10-1 | [account-device-section.tsx:23](../../src/interfaces/web/features/account/account-device-section.tsx#L23) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 4ab8089492ae-1 | [account-device-section.tsx:51](../../src/interfaces/web/features/account/account-device-section.tsx#L51) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 86aff31fdb88-1 | [account-device-section.tsx:67](../../src/interfaces/web/features/account/account-device-section.tsx#L67) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
-| aac0d5636e10-1 | [account-device-section.tsx:80](../../src/interfaces/web/features/account/account-device-section.tsx#L80) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
-| 2515b7231c01-1 | [account-device-section.tsx:97](../../src/interfaces/web/features/account/account-device-section.tsx#L97) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
-| 69a086d974e6-1 | [account-device-section.tsx:103](../../src/interfaces/web/features/account/account-device-section.tsx#L103) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
+| 76a11d141f10-1 | [account-device-section.tsx:24](../../src/interfaces/web/features/account/account-device-section.tsx#L24) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| 4ab8089492ae-1 | [account-device-section.tsx:53](../../src/interfaces/web/features/account/account-device-section.tsx#L53) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 86aff31fdb88-1 | [account-device-section.tsx:69](../../src/interfaces/web/features/account/account-device-section.tsx#L69) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |
+| aac0d5636e10-1 | [account-device-section.tsx:84](../../src/interfaces/web/features/account/account-device-section.tsx#L84) | button / action | Forget this device | SOURCE CLASSIFIED; STATES OPEN |
+| 2515b7231c01-1 | [account-device-section.tsx:101](../../src/interfaces/web/features/account/account-device-section.tsx#L101) | summary / action | How staying connected works | SOURCE CLASSIFIED; STATES OPEN |
+| 69a086d974e6-1 | [account-device-section.tsx:107](../../src/interfaces/web/features/account/account-device-section.tsx#L107) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
 | a175abc4ca2d-1 | [account-maintenance.tsx:35](../../src/interfaces/web/features/account/account-maintenance.tsx#L35) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | eb1277452721-1 | [account-maintenance.tsx:45](../../src/interfaces/web/features/account/account-maintenance.tsx#L45) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 8a0820cc4508-1 | [account-maintenance.tsx:59](../../src/interfaces/web/features/account/account-maintenance.tsx#L59) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
@@ -135,10 +135,9 @@ One row is a source template; a fund-link template can render many controls. All
 | 34b238e379d3-1 | [get-started.tsx:38](../../src/interfaces/web/features/account/get-started.tsx#L38) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 1b2d6955418b-1 | [get-started.tsx:59](../../src/interfaces/web/features/account/get-started.tsx#L59) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 56991a97d0b5-1 | [get-started.tsx:72](../../src/interfaces/web/features/account/get-started.tsx#L72) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| dd307829b019-1 | [activity-view.tsx:74](../../src/interfaces/web/features/activity/activity-view.tsx#L74) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f38d7908966f-1 | [activity-view.tsx:85](../../src/interfaces/web/features/activity/activity-view.tsx#L85) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 96b48440953a-1 | [activity-view.tsx:101](../../src/interfaces/web/features/activity/activity-view.tsx#L101) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 8fb3a5f38652-1 | [activity-view.tsx:117](../../src/interfaces/web/features/activity/activity-view.tsx#L117) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| dd307829b019-1 | [activity-view.tsx:75](../../src/interfaces/web/features/activity/activity-view.tsx#L75) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f38d7908966f-1 | [activity-view.tsx:86](../../src/interfaces/web/features/activity/activity-view.tsx#L86) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 96b48440953a-1 | [activity-view.tsx:102](../../src/interfaces/web/features/activity/activity-view.tsx#L102) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aacae9081f0e-1 | [checkpoints-preserved.tsx:95](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L95) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
 | d12f8f03fdda-1 | [checkpoints-preserved.tsx:122](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L122) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
 | cf7a6afc5921-1 | [checkpoints-view.tsx:155](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L155) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
@@ -162,17 +161,17 @@ One row is a source template; a fund-link template can render many controls. All
 | 1f45fbc38e57-1 | [expense-entry-card.tsx:108](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L108) | input / field | Jump to date | SOURCE CLASSIFIED; STATES OPEN |
 | 53422b789b19-1 | [expense-entry-card.tsx:126](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L126) | button / action | {'Previous workday, ${workdayLabel(previousWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 52914b5ece35-1 | [expense-entry-card.tsx:139](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L139) | button / action | {'Next workday, ${workdayLabel(nextWorkday)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 434cf1d07777-1 | [expense-entry-card.tsx:164](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L164) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 4770e94f0ceb-1 | [expense-entry-card.tsx:180](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L180) | button / action | Discard draft | SOURCE CLASSIFIED; STATES OPEN |
-| eb0a37625454-1 | [expense-entry-card.tsx:218](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L218) | button / action | Confirm correction | SOURCE CLASSIFIED; STATES OPEN |
-| e5bfa4c01040-1 | [expense-entry-card.tsx:221](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L221) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
-| ce9580aec11c-1 | [expense-entry-card.tsx:242](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L242) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
-| dab25c45976b-1 | [expense-entry-card.tsx:250](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L250) | button / action | Save this day | SOURCE CLASSIFIED; STATES OPEN |
-| c1da53d40cfc-1 | [expense-entry-card.tsx:253](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L253) | button / action | Discard and open day | SOURCE CLASSIFIED; STATES OPEN |
-| 4bbe9cd8c9c6-1 | [expense-entry-card.tsx:273](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L273) | button / action | Check save outcome | SOURCE CLASSIFIED; STATES OPEN |
-| b8715bf1e565-1 | [expense-entry-card.tsx:280](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L280) | summary / action | Previous saved versions | SOURCE CLASSIFIED; STATES OPEN |
-| 39a91636d8c4-1 | [expense-entry-card.tsx:288](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L288) | summary / action | Earlier version | SOURCE CLASSIFIED; STATES OPEN |
-| ae05de395af7-1 | [expense-entry-card.tsx:299](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L299) | button / action | Use these amounts | SOURCE CLASSIFIED; STATES OPEN |
+| 434cf1d07777-1 | [expense-entry-card.tsx:165](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L165) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 4770e94f0ceb-1 | [expense-entry-card.tsx:181](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L181) | button / action | Discard draft | SOURCE CLASSIFIED; STATES OPEN |
+| eb0a37625454-1 | [expense-entry-card.tsx:220](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L220) | button / action | Confirm correction | SOURCE CLASSIFIED; STATES OPEN |
+| e5bfa4c01040-1 | [expense-entry-card.tsx:223](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L223) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
+| ce9580aec11c-1 | [expense-entry-card.tsx:245](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L245) | button / action | Keep editing | SOURCE CLASSIFIED; STATES OPEN |
+| dab25c45976b-1 | [expense-entry-card.tsx:253](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L253) | button / action | Save this day | SOURCE CLASSIFIED; STATES OPEN |
+| c1da53d40cfc-1 | [expense-entry-card.tsx:256](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L256) | button / action | Discard and open day | SOURCE CLASSIFIED; STATES OPEN |
+| 4bbe9cd8c9c6-1 | [expense-entry-card.tsx:277](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L277) | button / action | Check save outcome | SOURCE CLASSIFIED; STATES OPEN |
+| b8715bf1e565-1 | [expense-entry-card.tsx:284](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L284) | summary / action | Previous saved versions | SOURCE CLASSIFIED; STATES OPEN |
+| 39a91636d8c4-1 | [expense-entry-card.tsx:292](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L292) | summary / action | Earlier version | SOURCE CLASSIFIED; STATES OPEN |
+| ae05de395af7-1 | [expense-entry-card.tsx:303](../../src/interfaces/web/features/expenses/expense-entry-card.tsx#L303) | button / action | Use these amounts | SOURCE CLASSIFIED; STATES OPEN |
 | 721f34b7f496-1 | [expense-entry-form.tsx:45](../../src/interfaces/web/features/expenses/expense-entry-form.tsx#L45) | input / field | {'expense-${String(index)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9ad576e5a4d4-1 | [expense-entry-form.tsx:131](../../src/interfaces/web/features/expenses/expense-entry-form.tsx#L131) | button / action | primary expense-save-button | SOURCE CLASSIFIED; STATES OPEN |
 | 73a1f4b124ab-1 | [expense-entry-form.tsx:151](../../src/interfaces/web/features/expenses/expense-entry-form.tsx#L151) | button / action | Show amounts to edit | SOURCE CLASSIFIED; STATES OPEN |

@@ -157,32 +157,34 @@ export function ExpenseEntryCard(p: { readonly shared: ExpenseShared }): JSX.Ele
           <p class="expense-note">This day has not happened yet. Browse ahead, and record it when it arrives.</p>
         )}
       </Presence>
-      {showForm && <ExpenseEntryForm shared={p.shared} />}
-      {showForm && (
-        <div class="expense-entry-actions expense-secondary-actions">
-          {filled === 0 && (
-            <button
-              type="button"
-              disabled={hidden || entryDisabled}
-              onClick={() => {
-                setEditor((current) => ({
-                  ...current,
-                  draft: EMPTY_EXPENSE_DRAFT.map((_, index) =>
-                    EXPENSE_REQUIRED_INDICES.some((field) => field === index) ? "0" : "",
-                  ) as unknown as ExpenseDraft,
-                }));
-              }}
-            >
-              {editor.date === props.today ? "No costs today" : "No costs this day"}
-            </button>
-          )}
-          {dirty && (
-            <button type="button" disabled={busy || waiting} onClick={discard}>
-              Discard draft
-            </button>
-          )}
-        </div>
-      )}
+      <Presence show={showForm}>{showForm && <ExpenseEntryForm shared={p.shared} />}</Presence>
+      <Presence show={showForm}>
+        {showForm && (
+          <div class="expense-entry-actions expense-secondary-actions">
+            {filled === 0 && (
+              <button
+                type="button"
+                disabled={hidden || entryDisabled}
+                onClick={() => {
+                  setEditor((current) => ({
+                    ...current,
+                    draft: EMPTY_EXPENSE_DRAFT.map((_, index) =>
+                      EXPENSE_REQUIRED_INDICES.some((field) => field === index) ? "0" : "",
+                    ) as unknown as ExpenseDraft,
+                  }));
+                }}
+              >
+                {editor.date === props.today ? "No costs today" : "No costs this day"}
+              </button>
+            )}
+            {dirty && (
+              <button type="button" disabled={busy || waiting} onClick={discard}>
+                Discard draft
+              </button>
+            )}
+          </div>
+        )}
+      </Presence>
       <Presence show={reviewing}>
         {reviewing && (
           <div class="expense-review" role="region" aria-label="Review correction">
@@ -234,28 +236,30 @@ export function ExpenseEntryCard(p: { readonly shared: ExpenseShared }): JSX.Ele
           </div>
         )}
       </Presence>
-      {destination !== null && (
-        <div class="expense-review" role="region" aria-label="Unsaved day">
-          <h3>Your changes are still here</h3>
-          <p>Save this day or discard its draft before opening {formatDateLong(destination)}.</p>
-          <div class="expense-entry-actions">
-            <button
-              type="button"
-              onClick={() => {
-                setDestination(null);
-              }}
-            >
-              Keep editing
-            </button>
-            <button type="button" disabled={cannotSave} onClick={() => void save()}>
-              Save this day
-            </button>
-            <button type="button" onClick={discard}>
-              Discard and open day
-            </button>
+      <Presence show={destination !== null}>
+        {destination !== null && (
+          <div class="expense-review" role="region" aria-label="Unsaved day">
+            <h3>Your changes are still here</h3>
+            <p>Save this day or discard its draft before opening {formatDateLong(destination)}.</p>
+            <div class="expense-entry-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setDestination(null);
+                }}
+              >
+                Keep editing
+              </button>
+              <button type="button" disabled={cannotSave} onClick={() => void save()}>
+                Save this day
+              </button>
+              <button type="button" onClick={discard}>
+                Discard and open day
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </Presence>
       <div class="expense-save-feedback" role="status" aria-live="polite">
         <p key={feedback || String(dirty)}>
           {feedback ||

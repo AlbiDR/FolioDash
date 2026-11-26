@@ -3,6 +3,7 @@ import { useMemo, useState } from "preact/hooks";
 import { EXPENSE_LABELS, type ExpenseDay } from "../../../../core/expenses/work-expenses";
 import { AnimatedFigure, formatFigureCount } from "../../presentation/animated-figure";
 import { Amount } from "../../presentation/privacy/privacy";
+import { RangeSelector } from "../../shared/ui/range-selector";
 import {
   ACTIVITY_SORTS,
   ACTIVITY_STATUSES,
@@ -112,19 +113,15 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
             </select>
           </label>
         </div>
-        <div class="segmented activity-status" role="group" aria-label="Status">
-          {ACTIVITY_STATUSES.map((item) => (
-            <button
-              key={item}
-              type="button"
-              aria-pressed={status === item ? "true" : "false"}
-              onClick={() => {
-                setStatus(parseActivityStatus(item));
-              }}
-            >
-              {STATUS_LABELS[item]}
-            </button>
-          ))}
+        <div class="activity-status">
+          <RangeSelector
+            label="Status"
+            options={ACTIVITY_STATUSES.map((item) => ({ id: item, label: STATUS_LABELS[item] }))}
+            value={status}
+            onChange={(item) => {
+              setStatus(parseActivityStatus(item));
+            }}
+          />
         </div>
       </section>
 
