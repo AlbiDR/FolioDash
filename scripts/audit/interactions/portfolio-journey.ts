@@ -36,42 +36,57 @@ export async function portfolioJourney({
             return [box.top + top, box.bottom - (insets[2] ?? top)] as const;
           };
           const [top, bottom] = edges();
-          link.click();
-          let expanded = false;
-          let movedDuringExit = false;
-          const deadline = performance.now() + 2500;
-          while (performance.now() < deadline) {
-            await new Promise(requestAnimationFrame);
-            const [nextTop, nextBottom] = edges();
-            const lead = movingDown ? nextBottom - bottom : top - nextTop;
-            const trail = movingDown ? nextTop - top : bottom - nextBottom;
-            // The old page leaves through its exit animation, or as a view transition's outgoing image (FD-029).
-            const leaving =
-              document.querySelector("[data-page-exiting]") !== null ||
-              document
-                .getAnimations()
-                .some((animation) =>
-                  ((animation.effect as KeyframeEffect | null)?.pseudoElement ?? "").startsWith(
-                    "::view-transition-old",
-                  ),
-                );
-            movedDuringExit ||= lead > 1 && leaving;
-            expanded ||= lead - trail > bottom - top;
-            const box = link.getBoundingClientRect();
-            if (
-              Math.abs(nextTop - (horizontal ? box.left : box.top)) < 1 &&
-              Math.abs(nextBottom - (horizontal ? box.right : box.bottom)) < 1
-            ) {
-              const icon = link.querySelector("svg")?.getBoundingClientRect();
-              if (!icon) return false;
-              // Make the pill participate in hit testing to detect a fill painted over the icon.
-              pill.style.pointerEvents = "auto";
-              const hit = document.elementFromPoint(icon.left + icon.width / 2, icon.top + icon.height / 2);
-              pill.style.pointerEvents = "";
-              return movedDuringExit && expanded && link.contains(hit) && link.getAttribute("aria-current") === "page";
-            }
+          // A view transition is followed for its whole life, not only in the frames that happen to sample its outgoing
+          // image, so a busy renderer cannot miss it (FD-029).
+          const transition = { running: false };
+          const start = (
+            document as { startViewTransition?: Document["startViewTransition"] }
+          ).startViewTransition?.bind(document);
+          if (start !== undefined) {
+            document.startViewTransition = ((update: ViewTransitionUpdateCallback) => {
+              const started = start(update);
+              transition.running = true;
+              void started.finished.finally(() => {
+                transition.running = false;
+              });
+              return started;
+            }) as typeof document.startViewTransition;
           }
-          return false;
+          link.click();
+          try {
+            let expanded = false;
+            let movedDuringExit = false;
+            const deadline = performance.now() + 2500;
+            while (performance.now() < deadline) {
+              await new Promise(requestAnimationFrame);
+              const [nextTop, nextBottom] = edges();
+              const lead = movingDown ? nextBottom - bottom : top - nextTop;
+              const trail = movingDown ? nextTop - top : bottom - nextBottom;
+              // The old page leaves through its exit animation, or as a view transition's outgoing page (FD-029).
+              const leaving = document.querySelector("[data-page-exiting]") !== null || transition.running;
+              movedDuringExit ||= lead > 1 && leaving;
+              expanded ||= lead - trail > bottom - top;
+              const box = link.getBoundingClientRect();
+              if (
+                !transition.running &&
+                Math.abs(nextTop - (horizontal ? box.left : box.top)) < 1 &&
+                Math.abs(nextBottom - (horizontal ? box.right : box.bottom)) < 1
+              ) {
+                const icon = link.querySelector("svg")?.getBoundingClientRect();
+                if (!icon) return false;
+                // Make the pill participate in hit testing to detect a fill painted over the icon.
+                pill.style.pointerEvents = "auto";
+                const hit = document.elementFromPoint(icon.left + icon.width / 2, icon.top + icon.height / 2);
+                pill.style.pointerEvents = "";
+                return (
+                  movedDuringExit && expanded && link.contains(hit) && link.getAttribute("aria-current") === "page"
+                );
+              }
+            }
+            return false;
+          } finally {
+            if (start !== undefined) document.startViewTransition = start;
+          }
         },
         route,
         down,
