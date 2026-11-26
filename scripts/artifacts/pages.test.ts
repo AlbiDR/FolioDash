@@ -54,9 +54,14 @@ function png(width: number, height: number, box?: readonly [number, number, numb
 
 const FRAMED = [0.03, 0.04, 0.97, 0.96] as const;
 
+// The smallest desktop picture the assembly accepts. Every check measures shares of the picture, so a larger fixture
+// proves nothing more and only slows each case: the assembly decodes all fifteen images every time it runs.
+const WIDTH = 1600;
+const HEIGHT = 800;
+
 const desktop = png(2880, 1200);
 const mobile = png(780, 1688, [0.02, 0, 0.98, 1]);
-const clear = png(2480, 3600, FRAMED);
+const clear = png(WIDTH, HEIGHT, FRAMED);
 
 function fixture(): { app: string; screenshots: string; output: string } {
   const root = mkdtempSync(join(tmpdir(), "foliodash-pages-test-"));
@@ -175,7 +180,7 @@ void describe("checked Pages composition", () => {
 
   void it("rejects an image that is drawn on an opaque page background", () => {
     const { app, screenshots, output } = fixture();
-    writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, [0, 0, 1, 1]));
+    writeFileSync(join(screenshots, "hero-light.png"), png(WIDTH, HEIGHT, [0, 0, 1, 1]));
     assert.throws(() => {
       writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION);
     }, /without a page background/u);
@@ -191,7 +196,7 @@ void describe("checked Pages composition", () => {
   ] as const)
     void it(`rejects ${problem}`, () => {
       const { app, screenshots } = fixture();
-      writeFileSync(join(screenshots, "hero-light.png"), png(2480, 3600, box));
+      writeFileSync(join(screenshots, "hero-light.png"), png(WIDTH, HEIGHT, box));
       assert.throws(() => {
         writeCaptureReceipt(app, screenshots, treeDigest(readFiles(app)), REVISION);
       }, pattern);

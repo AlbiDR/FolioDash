@@ -147,3 +147,13 @@ Open decisions that these changes do not settle:
 - **Required status checks are off by the owner's choice** (see [repository configuration](repository-configuration.md)). A failing commit can therefore land on `main`. The release gate is what keeps it off the Pages site.
 - **The workflows run Node 22 only** since 2026-11-17 (`c567086`). [AGENTS.md](../../AGENTS.md) still says Node 22 and 24. The owner should decide which statement is right. Older sections that describe a Node 22 and 24 matrix are historical.
 - **The hover assertion branches on the runner.** Headless Linux reports no fine pointer, so the CI run asserts that a hovered card does not lift and never checks the lift itself. The claim that no CDP emulation can change the pointer media has not been tested.
+
+## Gate timing, 2026-11-26
+
+Measured on the release run for `04b3212` (2 minutes 52 seconds from push to published site). Two paths finished within five seconds of each other and set that time: the `verify` job (2 minutes 32 seconds) and `build` followed by the `interactions` audit suite (2 minutes 27 seconds). Every other job finished earlier.
+
+Inside `verify`, `npm run verify` took 136 seconds, and 83 of them were `test:scripts`. One file, `scripts/artifacts/pages.test.ts`, took 82 seconds: each of its 17 cases builds fifteen synthetic screenshots and the assembly decodes all of them, and the desktop fixtures were 2480 by 3600 pixels. The fixtures are now 1600 by 800, the smallest desktop picture the assembly accepts. Every framing and integrity check measures shares of the picture, so the cases and their assertions are unchanged. Locally the file went from 60 seconds to 9, and `npm run verify` is shorter by the same amount on every machine.
+
+The workflow definitions were reviewed in the same pass and left as they are. Setup is about 10 seconds per job with the npm cache, the site is built once, the jobs already run in parallel, and no job repeats another's work beyond the one-second build inside `npm run verify`.
+
+What now sets the release time is the `interactions` suite: one script, about 100 seconds for 27 rendered states, after about 35 seconds of build and runner setup. Shortening it means splitting that audit across runners while keeping its whole-inventory coverage assertions, which is a change to the audit and not to a workflow. It is not done here.
