@@ -78,6 +78,7 @@ src/
         │       ├── model/
         │       └── styles/
         ├── presentation/
+        │   ├── browser/
         │   ├── charts/
         │   │   └── motion/
         │   └── privacy/
@@ -89,6 +90,7 @@ src/
         └── shared/
             ├── motion/
             └── ui/
+                ├── browser/
                 └── motion/
 ```
 

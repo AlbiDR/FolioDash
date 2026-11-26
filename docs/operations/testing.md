@@ -9,12 +9,17 @@ Implemented 2026-11-18 as phase 7 of the organization standard. This document ow
 | Unit and contract | `npm test` (Vitest, with coverage) | Behaviour of the kernel, applications, adapters and session logic against fakes | `npm run verify`, CI |
 | Property | part of `npm test` | Invariants of the pure kernel over generated inputs: exact cents, dates, decimals, ISIN checksums, canonical JSON, SHA-256 | `npm run verify`, CI |
 | Script | `npm run test:scripts` (`node --test`) | The tooling: icon drawing, PNG integrity, Pages assembly, README manifest | `npm run verify`, CI |
+| Browser component | `npm run test:browser` (Vitest browser mode, Chrome) | A motion component or hook mounted in a real browser: the Web Animations API, view transitions, layout and computed styles behave as for people. Seconds, not the minutes of a rendered audit, and a failure names the component | CI (the `accessibility-and-polish` suite), and locally after changing a component |
 | Rendered interaction | `npm run audit:interactions` and seven synthetic journeys | Real Chrome, signed-out demo: control feedback, journeys, recovery, sale and reopening | CI, and locally after an interface change |
 | Accessibility | `npm run audit:accessibility` | axe-core rules on 8 screens, 2 widths and 2 colour schemes, with Expenses audited once for each selected weekday so the result does not depend on the date of the run (48 screens) | CI, and locally after an interface change |
 | Reduced motion | `npm run audit:reduced-motion` | With `prefers-reduced-motion`, no transition or animation on any element or pseudo-element of 7 screens at 2 widths, smooth scrolling off, amounts hide at once | CI, and locally after an interface change |
 | Mutation | `npm run audit:mutation` | Whether the kernel tests notice a deliberate bug | On demand, about 9 minutes |
 
 None of this is live-Google or real-device proof (`GAT-5`). Every run uses synthetic data.
+
+## Browser component tests
+
+Unit tests run in Node, with no document, so they test logic and cannot mount a component. Components that move are tested in a real browser instead (`config/vitest.browser.config.ts`, files named `*.test.tsx` in a `browser/` folder beside what they test, such as `src/interfaces/web/shared/ui/browser/`). They use the installed Google Chrome, or the `CHROME_PATH` override, and no browser is downloaded. A failing test's screenshot goes under `dist/browser-tests/`, never the repository root. `*.test.tsx` files are not product code, so the coverage ratchet excludes them as it excludes `*.test.ts`; coverage still measures only Node runs, and the floors did not move. The suite covers the change cue, Presence's exit and sibling shift, the count-up's in-view rules (including a figure clipped sideways in a scroll container, which needs real layout) and the page motion hook against real view transitions. It is not a substitute for the rendered audits: it tests one component at a time, with no router, data or theme around it.
 
 ## Ratchets
 

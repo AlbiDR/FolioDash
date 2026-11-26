@@ -25,6 +25,17 @@ The lockfile also synchronises its root Node requirement with the existing `pack
 
 Added 2026-11-17 for the organization standard. Prettier 3.9.10, MIT licence, development dependency only, exact-pinned. It is pinned exactly because formatter output changes between releases, and a drifting range would make the format check flaky. Release 3.9.10 was published on 2026-10-10; the newer 3.10.0 and 3.10.1 (2026-11-11 and 2026-11-12) were passed over until they have aged. It runs only at development time through `npm run format` and `npm run format:check`, with configuration in `config/prettier.json`, and ships nothing to the browser. It is installed with `--ignore-scripts` like every other dependency. Markdown, YAML and the public asset folder are outside its scope for now.
 
+## Browser component tests, 2026-11-26
+
+Added on the owner's request ("add browser component tests") as the FD-008 evaluation for this dependency. Both are development dependencies, exact-pinned, installed with `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`, and neither ships in the application (`npm ls --omit=dev` finds neither). `npm audit` reports no vulnerability.
+
+| Package | Version | Licence | Published | Purpose |
+|---|---|---|---|---|
+| `@vitest/browser-playwright` | 5.0.5 | MIT | 2026-10-15 | Vitest browser mode with Playwright as its provider, pinned to the installed Vitest 5.0.5 exactly |
+| `playwright` | 1.65.1 | Apache-2.0 | 2026-11-13 | Starts and drives the browser for those tests. No browser is downloaded: the tests use the Google Chrome already installed, or the `CHROME_PATH` override, like the rendered audits |
+
+Together they add about 20 MB to `node_modules` (`playwright-core` is 14 MB) and no application bytes. They exist for one purpose: component tests of motion in a real browser (`npm run test:browser`, [Testing](testing.md#browser-component-tests)). If those tests stop earning their place, removing the two packages and `config/vitest.browser.config.ts` leaves nothing else behind.
+
 ## Test layer, 2026-11-18
 
 Added for phase 7 of the organization standard. All are development dependencies, installed with `--ignore-scripts`, exact-pinned, and none ships in the application.
