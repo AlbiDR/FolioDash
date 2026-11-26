@@ -26,6 +26,12 @@ describe("motion values", () => {
     const css = ":root { --duration-short: 180ms; --ease-standard: cubic-bezier(0.2, 0, 0, 1); }";
     expect(rules(css, TOKEN_FILES[0])).toEqual([]);
   });
+  it("is allowed in the token file only in the token definitions themselves", () => {
+    expect(rules(".a { transition: opacity 180ms ease; color: #fff; }", TOKEN_FILES[0])).toEqual([
+      "motion-literal",
+      "raw-color",
+    ]);
+  });
 });
 
 describe("rebound easing", () => {
@@ -94,6 +100,11 @@ describe("animated properties", () => {
         ".a { transition: border-color var(--duration-short), outline-offset var(--duration-short), translate var(--duration-short); }",
       ),
     ).toEqual([]);
+  });
+  it("reads a vendor-prefixed property by its standard name", () => {
+    expect(rules(".a { -webkit-transition: width var(--duration-short); }")).toEqual(["layout-motion"]);
+    expect(rules(".a { -webkit-transition: opacity 180ms ease; }")).toEqual(["motion-literal"]);
+    expect(rules("@-webkit-keyframes grow { to { height: 10px; } }")).toEqual(["layout-motion"]);
   });
   it("reports each layout declaration inside keyframes", () => {
     expect(rules("@keyframes grow { from { height: 0; } to { height: 10px; } }")).toEqual([

@@ -15,6 +15,9 @@ const MOTION_PROPERTY = /^(?:transition|animation)(?:-duration|-delay|-timing-fu
 const MOTION_LITERAL =
   /(?<![\w.-])(?:(?:\d*\.?\d*[1-9]\d*m?s|ease(?:-in|-out|-in-out)?)(?![\w-])|cubic-bezier\(|steps\()/;
 const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/;
+// A vendor-prefixed property applies like its standard name, so the rules read it by that name.
+const VENDOR_PREFIX = /^-(?:webkit|moz|ms|o)-/;
+const KEYFRAMES = /^@(?:-(?:webkit|moz|ms|o)-)?keyframes\b/;
 // The rebound easing overshoots its end. It belongs only to the bounded rebound of a selected chart mark, named in the
 // same `animation` declaration; hover, press, arrivals and state changes settle without overshoot (FD-029, decision 5).
 // The earlier name `--ease-spring` is retired.
@@ -69,7 +72,7 @@ function declarations(source: string): [string, string, boolean][] {
   let buffer = "";
   const take = (): void => {
     const match = /^([a-z-]+)\s*:\s*([\s\S]*)$/.exec(buffer.trim());
-    if (match !== null) found.push([match[1] ?? "", match[2] ?? "", stack.some((s) => s.startsWith("@keyframes"))]);
+    if (match !== null) found.push([match[1] ?? "", match[2] ?? "", stack.some((s) => KEYFRAMES.test(s))]);
     buffer = "";
   };
   for (const character of text) {
@@ -118,22 +121,25 @@ export function styleViolations(files: readonly StyleFile[]): string[] {
         continue;
       }
       const bare = withoutVariables(value);
-      if (!isTokenFile && MOTION_PROPERTY.test(property) && MOTION_LITERAL.test(bare)) {
+      const name = property.replace(VENDOR_PREFIX, "");
+      // The token file may write values out, but only in the token definitions themselves.
+      const definesToken = isTokenFile && property.startsWith("--");
+      if (!definesToken && MOTION_PROPERTY.test(name) && MOTION_LITERAL.test(bare)) {
         add("motion-literal", property, value);
       }
-      if (!isTokenFile && COLOR_LITERAL.test(bare)) add("raw-color", property, value);
+      if (!definesToken && COLOR_LITERAL.test(bare)) add("raw-color", property, value);
       if (
-        !isTokenFile &&
+        !definesToken &&
         REBOUND_EASING.test(value) &&
-        (RETIRED_EASING.test(value) || property !== "animation" || !SELECTION_REBOUND.test(value))
+        (RETIRED_EASING.test(value) || name !== "animation" || !SELECTION_REBOUND.test(value))
       ) {
         add("rebound-easing", property, value);
       }
       const animated =
-        property === "transition" || property === "transition-property" || property === "will-change"
+        name === "transition" || name === "transition-property" || name === "will-change"
           ? bare.replace(/\b(?:transform|opacity)\b/g, "")
-          : inKeyframes && property !== "opacity" && property !== "transform"
-            ? property
+          : inKeyframes && name !== "opacity" && name !== "transform"
+            ? name
             : "";
       if (animated !== "" && LAYOUT_PROPERTY.test(animated)) {
         if (pending.has("layout-motion")) pending.delete("layout-motion");

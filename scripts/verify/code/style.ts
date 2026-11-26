@@ -1,7 +1,7 @@
 // Enforces the style contract (docs/architecture/cleanstack.md UXC-12). There is no record of exceptions: a
 // duration, an easing or a colour must come from a token, and a layout property may animate only with a reasoned
-// waiver written beside the declaration (see style-policy.ts). Every stylesheet that carries motion has an owner in the
-// motion layer's table (see motion-owners.ts).
+// waiver written beside the declaration (see style-policy.ts). It also keeps the motion layer's owner table complete:
+// every stylesheet that carries motion, including a `<style>` block in a page, has one owner (see motion-owners.ts).
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -9,26 +9,45 @@ import process from "node:process";
 import { MOTION_OWNER_RECORD, motionOwnerProblems } from "./motion-owners.ts";
 import { styleViolations, TOKEN_FILES } from "./style-policy.ts";
 
-const files = [
+const tracked = [
   ...new Set(
     execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { encoding: "utf8" }).split(
       "\0",
     ),
   ),
-]
-  .filter((file) => file.startsWith("src/") && file.endsWith(".css") && existsSync(file))
-  .map((path) => ({ path, text: readFileSync(path, "utf8") }));
+].filter((file) => file.startsWith("src/") && existsSync(file));
 
-const violations = [
-  ...styleViolations(files),
-  ...motionOwnerProblems(files, readFileSync(MOTION_OWNER_RECORD, "utf8"), TOKEN_FILES),
-];
-if (violations.length > 0) {
+const stylesheets = tracked
+  .filter((file) => file.endsWith(".css"))
+  .map((path) => ({ path, text: readFileSync(path, "utf8") }));
+// A page's own `<style>` blocks are stylesheets too. The standalone pages keep their own palette, so UXC-12 is applied
+// to the app's stylesheets only; whether it should reach them is open (docs/design/polished-by-default.md).
+const pageStyles = tracked
+  .filter((file) => file.endsWith(".html"))
+  .map((path) => ({
+    path,
+    text: [...readFileSync(path, "utf8").matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)]
+      .map((match) => match[1] ?? "")
+      .join("\n"),
+  }));
+
+const breaches = styleViolations(stylesheets);
+const unowned = motionOwnerProblems(
+  [...stylesheets, ...pageStyles],
+  readFileSync(MOTION_OWNER_RECORD, "utf8"),
+  TOKEN_FILES,
+);
+if (breaches.length > 0) {
   console.error(
-    `Style check failed: ${String(violations.length)} breaches of UXC-12. Use a token from src/interfaces/web/shared/tokens.css, animate transform and opacity, or explain a deliberate layout transition with /* style-allow layout-motion: reason */ above the declaration. Every stylesheet that carries motion has one row in the owner table of ${MOTION_OWNER_RECORD}.\n${violations.join("\n")}`,
+    `Style check failed: ${String(breaches.length)} breaches of UXC-12. Use a token from src/interfaces/web/shared/tokens.css, animate transform and opacity, keep the rebound easing for a selected chart mark, or explain a deliberate layout transition with /* style-allow layout-motion: reason */ above the declaration.\n${breaches.join("\n")}`,
   );
-  process.exit(1);
 }
+if (unowned.length > 0) {
+  console.error(
+    `Motion owner check failed: ${String(unowned.length)} problems. Every stylesheet that carries motion has exactly one row, with an owner, in the table of ${MOTION_OWNER_RECORD}, and the table lists nothing that no longer moves.\n${unowned.join("\n")}`,
+  );
+}
+if (breaches.length > 0 || unowned.length > 0) process.exit(1);
 console.log(
-  `Style check passed: ${String(files.length)} stylesheets, no breach of UXC-12, every motion stylesheet has an owner.`,
+  `Style check passed: ${String(stylesheets.length)} stylesheets, no breach of UXC-12; every motion stylesheet and page style has one owner.`,
 );
