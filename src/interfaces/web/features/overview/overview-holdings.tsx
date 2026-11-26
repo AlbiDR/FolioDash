@@ -1,5 +1,5 @@
 import type { JSX, RefObject } from "preact";
-import { useRef } from "preact/hooks";
+import { useLayoutEffect, useRef } from "preact/hooks";
 import { formatDateLong } from "../../../../core/values/iso-date";
 import { Icon } from "../../shared/ui/icons";
 import { useRowGlide } from "../../shared/ui/use-row-glide";
@@ -68,6 +68,16 @@ export function HoldingsCard(props: {
     gain,
   } = props;
   const card = useRef<HTMLDivElement>(null);
+  // Funds not listed in the previous render are new in this one (a search returned them, or the closed block opened).
+  // Only they fade in; a row that stays keeps its element and is never re-faded.
+  const listedBefore = useRef<ReadonlySet<string> | null>(null);
+  const fresh: ReadonlySet<string> =
+    listedBefore.current === null
+      ? new Set()
+      : new Set(listedFunds.filter((fund) => !listedBefore.current?.has(fund.isin)).map((fund) => fund.isin));
+  useLayoutEffect(() => {
+    listedBefore.current = new Set(listedFunds.map((fund) => fund.isin));
+  });
   // Surviving keyed rows also glide when a search or the closed-fund fold changes their positions. New rows draw
   // immediately; their figures are never tweened. The shared controller carries an interrupted glide forward.
   useRowGlide(card, GLIDING_ROWS, JSON.stringify([holdingsSort, query, closedOpen]));
@@ -86,7 +96,10 @@ export function HoldingsCard(props: {
   };
 
   const holdingRow = (fund: OverviewFund): JSX.Element => (
-    <tr key={fund.isin} class={fund.status === "closed" ? "closed" : ""}>
+    <tr
+      key={fund.isin}
+      class={`${fund.status === "closed" ? "closed" : ""}${fresh.has(fund.isin) ? " holding-new" : ""}`.trim()}
+    >
       <th scope="row">
         <a href={`#fund/${fund.isin}`} class="stretched">
           {fund.name}
@@ -211,12 +224,12 @@ export function HoldingsCard(props: {
       {funds.length > 0 && listedFunds.length === 0 && (
         <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>
       )}
-      <MobileHoldings funds={listedFunds} filtered={query.length > 0} />
+      <MobileHoldings funds={listedFunds} fresh={fresh} />
       {funds.length === 0 ? (
         <p class="empty-note">No funds are held.</p>
       ) : (
         <div class="table-scroll flat desktop-holdings" role="region" aria-label="Fund holdings" tabIndex={0}>
-          <table class="holdings-table" data-filtered={query.length > 0}>
+          <table class="holdings-table">
             <thead>
               <tr>
                 {HOLDINGS_COLUMNS.map((key) => (

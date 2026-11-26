@@ -5,6 +5,7 @@ import { MAX_NOTE_LENGTH, isSafeNote } from "../../../../core/portfolio/checkpoi
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/values/iso-date";
 import { type EuroCents, parseItalianAmount } from "../../../../core/values/money";
 import { Amount } from "../../presentation/privacy/privacy";
+import { Presence } from "../../shared/ui/presence";
 import { PendingDescription, PreservedList, listed } from "./checkpoints-preserved";
 import "./checkpoints.css";
 
@@ -129,39 +130,47 @@ export function CheckpointsView(props: {
           The total value of your funds on a day between two statements. It is value only: it includes any money you
           paid in or took out, and it never changes a statement or a gain.
         </p>
-        {signedOut && (
-          <p class="notice" role="status">
-            This is a sample. Continue with Google to record your own checkpoints.
-          </p>
-        )}
-        {!signedOut && !state.ready && state.message === "" && (
-          <p class="notice" role="status">
-            Checking your checkpoints.
-          </p>
-        )}
-        {state.message !== "" && (
-          <p class="notice notice-warning" role="status">
-            {state.message}
-          </p>
-        )}
-        {state.pending.length > 0 && (
-          <div class="notice notice-warning" role="status">
-            <p>
-              A save was sent but its outcome was never confirmed. Nothing else can be saved until it is checked.
-              Checking only reads; it never sends the save again.
+        <Presence show={signedOut}>
+          {signedOut && (
+            <p class="notice" role="status">
+              This is a sample. Continue with Google to record your own checkpoints.
             </p>
-            <ul class="checkpoint-pending">
-              {state.pending.map((command) => (
-                <li key={command.id}>
-                  <PendingDescription command={command} active={state.active} />
-                </li>
-              ))}
-            </ul>
-            <button type="button" disabled={busy} onClick={() => void check()}>
-              Check outcome
-            </button>
-          </div>
-        )}
+          )}
+        </Presence>
+        <Presence show={!signedOut && !state.ready && state.message === ""}>
+          {!signedOut && !state.ready && state.message === "" && (
+            <p class="notice" role="status">
+              Checking your checkpoints.
+            </p>
+          )}
+        </Presence>
+        <Presence show={state.message !== ""}>
+          {state.message !== "" && (
+            <p class="notice notice-warning" role="status">
+              {state.message}
+            </p>
+          )}
+        </Presence>
+        <Presence show={state.pending.length > 0}>
+          {state.pending.length > 0 && (
+            <div class="notice notice-warning" role="status">
+              <p>
+                A save was sent but its outcome was never confirmed. Nothing else can be saved until it is checked.
+                Checking only reads; it never sends the save again.
+              </p>
+              <ul class="checkpoint-pending">
+                {state.pending.map((command) => (
+                  <li key={command.id}>
+                    <PendingDescription command={command} active={state.active} />
+                  </li>
+                ))}
+              </ul>
+              <button type="button" disabled={busy} onClick={() => void check()}>
+                Check outcome
+              </button>
+            </div>
+          )}
+        </Presence>
         <form class="checkpoint-form" onSubmit={(event) => void save(event)} noValidate>
           <label class="field">
             Date
@@ -213,11 +222,13 @@ export function CheckpointsView(props: {
         <p class="checkpoint-feedback" role="status" aria-live="polite">
           {outcome}
         </p>
-        {problem !== "" && (
-          <p class="notice notice-warning" role="alert">
-            {problem}
-          </p>
-        )}
+        <Presence show={problem !== ""}>
+          {problem !== "" && (
+            <p class="notice notice-warning" role="alert">
+              {problem}
+            </p>
+          )}
+        </Presence>
       </div>
 
       <div class="card">

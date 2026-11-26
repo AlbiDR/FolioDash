@@ -56,9 +56,9 @@
     background-size: 100% 1px;
   }
 }
-/* 65: Newly returned search rows appear; existing matching rows are not remounted. */
-.mobile-holdings[data-filtered="true"] > li,
-.holdings-table[data-filtered="true"] tbody > tr {
+/* 65: Funds newly listed (a search returned them, or the closed block opened) fade in; rows that stay are not re-faded. */
+.mobile-holdings > li.holding-new,
+.holdings-table tbody > tr.holding-new {
   animation: motion-fade var(--duration-cue) var(--ease-standard);
 }
 /* 67: Browser-recorded summary settles after the actual local record completes. */

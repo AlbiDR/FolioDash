@@ -7,12 +7,13 @@ import { Percent, Pill, Signed } from "./parts";
 /** The phone's holdings preserve the same figures and keyed fund identity as the desktop table. */
 export function MobileHoldings(props: {
   readonly funds: readonly OverviewFund[];
-  readonly filtered: boolean;
+  /** Funds that were not listed before this render: only they fade in, so a search never re-fades the rows that stay. */
+  readonly fresh: ReadonlySet<string>;
 }): JSX.Element {
   return (
-    <ul class="mobile-holdings" data-filtered={props.filtered}>
+    <ul class="mobile-holdings">
       {props.funds.map((fund) => (
-        <li key={fund.isin}>
+        <li key={fund.isin} class={props.fresh.has(fund.isin) ? "holding-new" : undefined}>
           <a href={`#fund/${fund.isin}`} class="holding">
             <span class="holding-id">
               <span class="holding-name">{fund.name}</span>
