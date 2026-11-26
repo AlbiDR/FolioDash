@@ -1,0 +1,391 @@
+/* State, control family: buttons, links, fields, choices and the remaining controls.
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
+/* The numbered inventory in docs/operations/interactions.md owns the original additions.
+ * This layer only changes feedback. It never delays an action or interpolates money.
+ */
+/* Pressed state, for touch as much as for a mouse. It is a translucent layer painted as the control's own
+ * background image, so it is clipped by that control's border radius and can never have another shape. It uses the
+ * control's text colour, so it reads on light, dark and navy surfaces alike. Zero specificity: a control that has a
+ * pressed style of its own simply replaces it. Fields are not pressed, they take focus. */
+:where(
+  a[href],
+  button:not(:disabled),
+  summary,
+  [role="button"],
+  label:has(> input[type="checkbox"]),
+  label:has(> input[type="radio"])
+):active {
+  background-image: linear-gradient(
+    color-mix(in srgb, currentcolor 14%, transparent),
+    color-mix(in srgb, currentcolor 14%, transparent)
+  );
+}
+button {
+  min-width: var(--touch-target);
+}
+.icon-button {
+  width: var(--touch-target);
+  height: var(--touch-target);
+}
+summary {
+  align-content: center;
+  cursor: pointer;
+}
+/* Import progress steps share the same short cue. */
+.journey-steps li,
+.journey-steps li > span {
+  transition:
+    color var(--duration-short) var(--ease-smooth),
+    background-color var(--duration-short) var(--ease-smooth);
+}
+/* 01: Enabled button press. */
+button:not(:disabled) {
+  transition:
+    transform var(--duration-press) var(--ease-standard),
+    background var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth),
+    opacity var(--duration-short) var(--ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled):active {
+  scale: var(--motion-control-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  /* 02: Primary action lift, only on devices with a real hover pointer. */
+  .primary:not(:disabled):hover {
+    box-shadow: 0 4px 12px var(--color-accent-soft);
+  }
+  .primary:not(:disabled):hover:active {
+    scale: var(--motion-control-press);
+  }
+}
+/* 03: Keyboard button focus halo; the existing outline is retained. */
+button:focus-visible {
+  box-shadow: 0 0 0 5px var(--color-accent-soft);
+}
+/* 06: One moving selection pill. Keyboard interactions 07 and 08 live in RangeSelector. */
+.range-selector {
+  position: relative;
+  isolation: isolate;
+}
+.range-selector::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+  bottom: 3px;
+  inset-inline-start: 3px;
+  width: calc((100% - 6px - (var(--segment-count) - 1) * 2px) / var(--segment-count));
+  border-radius: inherit;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px var(--color-border);
+  transform: translateX(calc(var(--segment-index) * (100% + 2px)));
+  /* style-allow layout-motion: the selection pill is sized from the segment count, so it animates its width when the options change; scaling would distort its rounded ends */
+  transition:
+    transform var(--duration-feedback) var(--ease-smooth),
+    width var(--duration-short) var(--ease-smooth);
+}
+.range-selector button[aria-pressed="true"] {
+  background: transparent;
+  box-shadow: none;
+}
+.range-selector button {
+  position: relative;
+}
+/* A reporting-window change is an explicit selection, not a generic button
+ * press. The recipe is shared by every RangeSelector consumer and never
+ * delays the immediately-updated chart geometry or selected state. */
+.motion-range-select button[aria-pressed="true"] {
+  animation: motion-range-confirm var(--duration-feedback) var(--ease-smooth);
+}
+@keyframes motion-range-confirm {
+  50% {
+    scale: 1.03;
+  }
+}
+/* 15: Input hover border. 16: Input focus halo. */
+.field input,
+.field select {
+  transition:
+    border-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth);
+}
+@media (hover: hover) and (pointer: fine) {
+  .field input:not(:disabled):hover,
+  .field select:not(:disabled):hover {
+    border-color: var(--color-muted);
+  }
+}
+.field input:focus-visible,
+.field select:focus-visible {
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+.field input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+/* 17: The active fund/question group gains a quiet boundary. */
+.manual-fund,
+.fund-question {
+  transition: box-shadow var(--duration-short) var(--ease-smooth);
+}
+.manual-fund:focus-within,
+.fund-question:focus-within {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+/* 18: Checked answers retain a visible selected surface. */
+fieldset > label:has(input),
+label.check {
+  border-radius: var(--shape-md);
+  padding-inline: var(--space-2);
+  transition: background var(--duration-short) var(--ease-smooth);
+}
+fieldset > label:has(input:checked),
+label.check:has(input:checked) {
+  background: var(--color-accent-soft);
+}
+/* 20: Newly mounted fund cards enter without moving existing cards. */
+.manual-fund {
+  animation: feedback-enter var(--duration-short) var(--ease-standard);
+}
+/* 21, 22, 23: Add, remove and undo focus handoffs live in ManualEntry. */
+/* 24: Entry-method panel transition. 25: Values/review transition, with drafts mounted. */
+.entry-panel:not([hidden]),
+.manual-entry > form:not([hidden]),
+.manual-entry > .review:not([hidden]) {
+  animation: feedback-enter var(--duration-short) var(--ease-standard);
+}
+@keyframes feedback-enter {
+  from {
+    opacity: 0.55;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* 26: Disclosure content fades in. 27: A stable, rotating disclosure indicator. */
+summary {
+  list-style: none;
+}
+summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: 0 0.65rem 0 0.1rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--duration-short) var(--ease-smooth);
+}
+/* Functional additions 38-42 live in MonthsView, LineChart, FundView and OverviewView. */
+.isin-code {
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* 47: Toolbar icon hover boundary. */
+.icon-button {
+  transition:
+    background var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+}
+/* Shared label cue for changes within the current page. */
+@keyframes motion-label {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(var(--motion-nudge));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* 50: Search-result count confirmation (counts only, never financial amounts). */
+.filter-count {
+  display: inline-block;
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-fade {
+  from {
+    opacity: var(--motion-reveal-opacity);
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* 51: Active field label. */
+.field > label {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.field:focus-within > label {
+  color: var(--color-accent);
+}
+/* 52: Active field instructions become more prominent. */
+.field > .hint {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.field:focus-within > .hint {
+  color: var(--color-text);
+}
+/* 53: Placeholder recedes when typing begins; the visible label remains. */
+.field input::placeholder {
+  opacity: 1;
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+.field input:focus::placeholder {
+  opacity: 0.6;
+}
+/* 55: Valid manual subtotal gains a boundary, with its number updated immediately. */
+.manual-total {
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.manual-total[data-complete="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+/* 56: Validation label enters/leaves its error colour. */
+.field:has(input[aria-invalid="true"]) > label {
+  color: var(--color-error);
+}
+/* 57: Native checkbox check confirmation; its enclosing target retains its size. */
+input[type="checkbox"]:checked {
+  animation: motion-choice var(--duration-cue) var(--ease-standard);
+}
+@keyframes motion-choice {
+  from {
+    scale: var(--motion-control-press);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+/* 58: Native radio selection confirmation. */
+input[type="radio"]:checked {
+  animation: motion-choice var(--duration-cue) var(--ease-standard);
+}
+/* 59: Disabled controls fade to their actual availability state. */
+button:disabled {
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+/* 61: Disclosure hover surface. */
+summary {
+  border-radius: var(--shape-sm);
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  summary:hover {
+    background-color: var(--color-accent-soft);
+  }
+}
+/* 62: Disclosure keyboard-focus boundary. */
+summary:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+/* 63: Clipboard outcome appears without removing its live region. */
+.copy-result {
+  display: inline-block;
+  animation: motion-label var(--duration-cue) var(--ease-standard);
+}
+/* 64: A newly empty fund search explains itself gently. */
+.search-empty {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+/* 66: Ready/review panels confirm readiness with a quiet edge. */
+.review-adjustments {
+  animation: motion-edge var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-edge {
+  from {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  to {
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+/* 87: Actual source-status text changes soften; no source state is invented. */
+.source-label {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+/* 91: Real Google-consent waiting state gains a single edge cue, never a heartbeat. */
+.get-started button[data-working="true"] {
+  animation: motion-wait var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-wait {
+  from {
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  to {
+    box-shadow: inset 0 0 0 1px var(--color-on-accent);
+  }
+}
+.link-button:active {
+  scale: var(--motion-control-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-button:hover {
+    box-shadow: var(--shadow-inspect);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Native-control pseudo-elements are not covered by the universal element override. */
+  .field input::placeholder {
+    transition: none !important;
+  }
+}
+.segmented {
+  transition: background-color var(--duration-medium) var(--ease-standard);
+}
+.review-adjustments {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@starting-style {
+  .presence[data-present="true"][data-initial="false"] {
+    grid-template-rows: 0fr;
+    opacity: var(--motion-reveal-opacity);
+    margin-block-end: calc(-1 * var(--presence-gap, 0px));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .quiet-action > svg,
+  .source-label {
+    transition: scale var(--duration-press) var(--ease-standard);
+  }
+  .quiet-action:active > svg {
+    scale: 0.88;
+  }
+  .primary:active,
+  .secondary:active {
+    translate: 0 1px;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    translate: 0 -1px;
+  }
+  .get-started button:active {
+    translate: 0 1px;
+  }
+  .source-label:active {
+    scale: 0.98;
+  }
+}

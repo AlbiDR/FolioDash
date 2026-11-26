@@ -1,0 +1,355 @@
+/* State, chart family: legends, readouts, marks and inspection.
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
+/* 13: Keyboard ranking-row emphasis. */
+.perf-row {
+  border-radius: var(--shape-sm);
+  transition: background var(--duration-short) var(--ease-smooth);
+}
+.perf-row:focus-visible {
+  background: var(--color-accent-soft);
+}
+/* 14: Allocation legend row feedback. */
+.legend a {
+  border-radius: var(--shape-sm);
+  transition: background var(--duration-short) var(--ease-smooth);
+}
+.legend a:focus-visible {
+  background: var(--color-accent-soft);
+}
+@media (hover: hover) and (pointer: fine) {
+  .legend a:hover {
+    background: var(--color-accent-soft);
+  }
+}
+/* 19: Date slider thumb halo, including keyboard focus and touch dragging. */
+.chart-date-control input {
+  border-radius: var(--shape-sm);
+  transition: box-shadow var(--duration-short) var(--ease-smooth);
+}
+.chart-date-control input:focus-visible,
+.chart-date-control input:active {
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+/* 30: Chart legend spotlight (bounds and every plotted observation stay unchanged). */
+.chart-legend-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--shape-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.chart-legend-button[aria-pressed="true"] {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+.chart-series {
+  transition: opacity var(--duration-short) var(--ease-smooth);
+}
+.chart-series.unfocused {
+  opacity: 0.25;
+}
+/* 31: Active chart observations gain emphasis without tweening financial coordinates. */
+.chart-series circle {
+  transition:
+    opacity var(--duration-press) var(--ease-standard),
+    r var(--duration-press) var(--ease-standard);
+}
+.chart-series circle.is-active {
+  r: 6px;
+}
+/* 32: Monthly bar pinning by tap/Enter/Space lives in MonthlyBars. */
+.bars-item[aria-pressed="true"] .bar {
+  stroke: var(--color-text);
+  stroke-width: 1;
+}
+.bars-item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+/* 34: Selected legend swatch confirms the chosen line once. */
+.chart-legend-button[aria-pressed="true"] .chart-swatch {
+  transform-origin: left center;
+  animation: swatch-confirm var(--duration-feedback) var(--ease-smooth);
+}
+@keyframes swatch-confirm {
+  from {
+    transform: scaleX(0.65);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.chart-reset {
+  margin-top: var(--space-2);
+}
+@media (hover: hover) and (pointer: fine) {
+  /* Set B: charts, tables and content-state feedback (68-92). */
+  /* 68: Chart legend hover surface. */
+  .chart-legend-button:hover {
+    background: var(--color-accent-soft);
+  }
+}
+/* 69: Keyboard-focused legend swatch nudges into view. */
+.chart-legend-button .chart-swatch {
+  transition: translate var(--duration-short) var(--ease-standard);
+}
+.chart-legend-button:focus-visible .chart-swatch {
+  translate: var(--motion-nudge) 0;
+}
+/* 70: The readout label follows the highlighted series; amounts do not animate. */
+.chart-readout-label {
+  border-radius: var(--shape-xs);
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard);
+}
+.chart-readout-item[data-highlighted="true"] .chart-readout-label {
+  background-color: var(--color-accent-soft);
+  color: var(--color-text);
+}
+/* 71: Native date-slider thumb press; the hit area and observation coordinates stay fixed. */
+.chart-date-control input::-webkit-slider-thumb {
+  transition: transform var(--duration-press) var(--ease-standard);
+}
+.chart-date-control input:active::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+.chart-date-control input::-moz-range-thumb {
+  transition: transform var(--duration-press) var(--ease-standard);
+}
+.chart-date-control input:active::-moz-range-thumb {
+  transform: scale(1.1);
+}
+/* 72: Active date-slider label. */
+.chart-date-control > span {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.chart-date-control:focus-within > span {
+  color: var(--color-text);
+}
+/* 74: Monthly bar pin outline fades to the actual selected state. */
+.bars-item .bar {
+  stroke: var(--color-text);
+  stroke-opacity: 0;
+  transition:
+    opacity var(--duration-short) var(--ease-standard),
+    stroke-opacity var(--duration-short) var(--ease-standard);
+}
+.bars-item[aria-pressed="true"] .bar {
+  stroke-opacity: 1;
+}
+/* 75: Monthly bar keyboard hit region receives a subtle surface. */
+.bars-hit {
+  transition: fill var(--duration-short) var(--ease-standard);
+}
+.bars-item:focus-visible .bars-hit {
+  fill: var(--color-accent-soft);
+}
+/* 76: Inspected bar month changes are confirmed separately from its financial value. */
+.bars-readout-month {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
+}
+/* 77: Allocation legend dot acknowledges hover/focus. */
+.legend .dot {
+  transition: transform var(--duration-short) var(--ease-standard);
+}
+.legend a:focus-visible .dot {
+  transform: scale(1.12);
+}
+@media (hover: hover) and (pointer: fine) {
+  .legend a:hover .dot {
+    transform: scale(1.12);
+  }
+}
+/* 78: Allocation legend dot press. */
+.legend a:active .dot {
+  transform: scale(0.9);
+}
+/* 79: Inspected ranking bar brightens without changing its length. */
+.perf-bar {
+  transition: filter var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .perf-row:hover .perf-bar {
+    filter: brightness(1.15);
+  }
+}
+.perf-row:focus-visible .perf-bar {
+  filter: brightness(1.15);
+}
+/* 80: Keyboard-focused ranking track boundary. */
+.perf-track {
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.perf-row:focus-visible .perf-track {
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+/* 81: Holdings share bar brightens on inspection, never changing its width. */
+.share-bar > span {
+  opacity: 0.7;
+  transition: opacity var(--duration-short) var(--ease-standard);
+}
+.holdings-table tr:focus-within .share-bar > span {
+  opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .holdings-table tr:hover .share-bar > span {
+    opacity: 1;
+  }
+}
+/* 88: Chart-reset action confirms that inspection is now active. */
+.chart-reset:not(:disabled) {
+  animation: motion-edge var(--duration-feedback) var(--ease-standard);
+}
+/* Cards, charts and stat blocks are containers, not controls: they get no press or focus feedback of their own,
+ * and the links and buttons inside them carry it. On fine pointers a card lifts on hover; that rule lives in
+ * refinement.css (2026-11-19).
+ */
+.spark-area {
+  transition: opacity var(--duration-feedback) var(--ease-standard);
+}
+.spark-line {
+  /* style-allow layout-motion: stroke width changes paint only and never layout, and gives the inspected line its emphasis */
+  transition: stroke-width var(--duration-feedback) var(--ease-standard);
+}
+/* Inspection is an opacity/stroke treatment; allocation angles never change. */
+.donut-centre {
+  pointer-events: none;
+}
+.donut[data-inspecting="true"] .donut-number {
+  font-size: max(var(--text-body), min(1.5rem, 13cqi));
+}
+.donut-slice {
+  stroke: var(--color-surface);
+  stroke-width: 0;
+  /* style-allow layout-motion: stroke width changes paint only and never layout, and separates the active slice of the ring */
+  transition:
+    opacity var(--duration-short) var(--ease-standard),
+    stroke-width var(--duration-short) var(--ease-standard);
+}
+.donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) {
+  opacity: 0.4;
+}
+.donut-slice[data-active="true"] {
+  stroke-width: 2;
+}
+.donut a:focus-visible {
+  outline: none;
+}
+.donut a:focus-visible .donut-slice {
+  stroke: var(--color-text);
+  stroke-width: 3;
+}
+.donut a:active .donut-slice {
+  opacity: 0.7;
+}
+.allocation-card .legend a {
+  min-height: var(--touch-target);
+}
+.allocation-card .legend a[data-active="true"] {
+  background: var(--color-accent-soft);
+}
+.allocation-card .legend a[data-active="true"] .dot {
+  transform: scale(1.12);
+}
+.allocation-card .legend a:active .dot {
+  transform: scale(0.9);
+}
+.allocation-card .legend-name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (hover: hover) and (pointer: fine) {
+  .perf-row:hover,
+  .row-link:hover {
+    background-color: var(--color-accent-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-date-control input::-webkit-slider-thumb {
+    transition: none !important;
+    transform: none !important;
+  }
+  .chart-date-control input::-moz-range-thumb {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+.chart {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    border-color var(--duration-feedback) var(--ease-standard);
+}
+.legend-name {
+  transition: color var(--duration-short) var(--ease-standard);
+}
+.legend .dot {
+  transition:
+    transform var(--duration-feedback) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+.chart-swatch {
+  transition:
+    translate var(--duration-short) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard);
+}
+.chart-legend-button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chart-legend-button .chart-swatch {
+    transition:
+      translate var(--duration-short) var(--ease-smooth),
+      scale var(--duration-press) var(--ease-standard),
+      rotate var(--duration-short) var(--ease-smooth);
+  }
+  .legend .dot {
+    transition:
+      transform var(--duration-feedback) var(--ease-smooth),
+      opacity var(--duration-short) var(--ease-smooth),
+      scale var(--duration-press) var(--ease-standard);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @media (hover: hover) and (pointer: fine) {
+    .chart-legend-button:hover .chart-swatch {
+      scale: 1.08;
+    }
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chart-legend-button:active .chart-swatch {
+    scale: 0.9;
+  }
+  .chart-legend-button:focus-visible .chart-swatch {
+    rotate: 5deg;
+  }
+  .legend a:active .dot {
+    scale: 0.88;
+  }
+  .perf-row:active {
+    translate: 0 1px;
+  }
+  .bars-item:active .bar {
+    opacity: 0.78;
+  }
+  .chart-reset:active {
+    scale: var(--motion-control-press);
+  }
+  .chart-readout-item[data-highlighted="true"] {
+    translate: 0 -1px;
+  }
+  .chart-date-control input:active {
+    scale: 0.995;
+  }
+}

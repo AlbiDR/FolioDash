@@ -59,7 +59,7 @@ The delivered CSS defines these individual states; a state definition alone does
 | `motion-marker-arrive` | `presentation/charts/chart-arrival.css` via `motion/recipe.ts` | Performance-chart checkpoint markers | Build and focused chart tests pass; rendered audit blocked before chart journey |
 | `chart-selection-rebound` | `presentation/charts/bars.css` | Pinned monthly bar | Build and focused chart tests pass; rendered audit blocked before chart journey |
 | `motion-selection-rebound` | `presentation/charts/chart-arrival.css` | Active allocation slice | Build and focused chart tests pass; rendered audit blocked before chart journey |
-| `motion-range-select` | `shared/ui/interactions/controls.css` | Portfolio and Fund period controls | Build and style gate pass; rendered audit blocked before journey |
+| `motion-range-select` | `shared/ui/motion/state-controls.css` | Portfolio and Fund period controls | Build and style gate pass; rendered audit blocked before journey |
 
 All seven recipes use existing motion tokens and the global reduced-motion override. They animate presentation only: financial values, private-data hiding, selected state, keyboard focus and final geometric measurements update immediately. The ranking bar now brightens on keyboard focus as well as fine-pointer hover, an adaptation of the reference's parallel pointer and focus inspection. It changes only presentation, not bar length. The existing [Astryx reference](astryx-reference.md) and [Portfolio refinement](portfolio-refinement.md) continue to govern composition and prior chart adaptations. Interaction inventory and rendered audits are separate from the source survey; touch, screen reader, other browser engines and physical-device proof remain open (STD-11).
 

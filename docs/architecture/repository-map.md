@@ -89,7 +89,6 @@ src/
         └── shared/
             ├── motion/
             └── ui/
-                ├── interactions/
                 └── motion/
 ```
 

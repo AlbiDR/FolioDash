@@ -1,0 +1,302 @@
+/* Layers: anything that appears or leaves, such as notices, disclosures, presence, busy and confirmation cues.
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
+/* Keep the same usable hit area with mouse, keyboard and touch. */
+button,
+.nav-link,
+.status-chip,
+summary,
+.field input:not([type="checkbox"]):not([type="radio"]),
+.field select {
+  min-height: var(--touch-target);
+}
+details[open] > :not(summary) {
+  animation: disclosure-enter var(--duration-short) var(--ease-smooth);
+}
+@keyframes disclosure-enter {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
+/* 28: Only actual reading/saving work gets a spinner, never a simulated percentage. */
+.status[data-busy="true"] > p::before {
+  content: "";
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: var(--space-2);
+  border: 2px solid var(--color-accent-soft);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  vertical-align: -0.1rem;
+  animation: busy-turn var(--duration-busy) linear infinite;
+}
+@keyframes busy-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* 29: New notices and validation messages enter once; they never auto-dismiss. */
+.notice,
+.field-error,
+.review-problem,
+.expense-note {
+  animation: disclosure-enter var(--duration-short) var(--ease-smooth);
+}
+/* 33: Inspection crosshair entrance, with no interpolation of its date/coordinates. */
+.chart-guide {
+  animation: guide-appear var(--duration-short) var(--ease-smooth);
+}
+@keyframes guide-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* 37: A restored fund card briefly changes tone so Undo's result is easy to locate. */
+.manual-fund.restored-fund {
+  animation:
+    feedback-enter var(--duration-short) var(--ease-smooth),
+    restored-confirm var(--duration-medium) var(--ease-smooth);
+}
+@keyframes restored-confirm {
+  from {
+    background-color: var(--color-accent-soft);
+  }
+  to {
+    background-color: var(--color-surface-2);
+  }
+}
+@media (forced-colors: active) {
+  .status-dot {
+    border: 1px solid CanvasText;
+  }
+  .card,
+  .chart,
+  .notice,
+  .review-problem,
+  .review-adjustments,
+  .expense-note,
+  .expense-review,
+  .expense-conflict {
+    border: 1px solid CanvasText;
+  }
+  .notice::before,
+  .review-problem::before,
+  .review-adjustments::before,
+  .expense-note::before,
+  .expense-review::before,
+  .expense-conflict::before {
+    background: CanvasText;
+  }
+}
+/* 45: Source chip hover surface. */
+.status-chip {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+@media (hover: hover) and (pointer: fine) {
+  .status-chip:hover {
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+}
+/* 46: Source dot settles only when the actual source tone changes. */
+.status-dot {
+  animation: motion-dot var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-dot {
+  from {
+    transform: scale(0.7);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+/* 90: Confirmed history progress follows the real saved count; no fabricated progress. */
+.history-progress {
+  height: var(--space-2);
+  margin-top: var(--space-2);
+  border-radius: var(--shape-full);
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+.history-progress::before {
+  content: "";
+  display: block;
+  width: var(--completion);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  /* style-allow layout-motion: the fill grows to its completion; scaling would distort its rounded end */
+  transition: width var(--duration-short) var(--ease-standard);
+}
+/* 92: A real available-update notice arrives from above, with no automatic reload. */
+.app-update {
+  animation: motion-update var(--duration-feedback) var(--ease-standard);
+}
+@keyframes motion-update {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateY(calc(-1 * var(--motion-nudge)));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .privacy-toggle .privacy-icon,
+  .status-chip .status-dot,
+  .chart-legend-button .chart-swatch {
+    scale: 1;
+    rotate: none;
+    transition: none;
+  }
+}
+.expense-note-actions button {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.notice {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard);
+}
+.review-problem {
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    box-shadow var(--duration-short) var(--ease-standard),
+    translate var(--duration-short) var(--ease-smooth);
+}
+@supports (interpolate-size: allow-keywords) and (transition-behavior: allow-discrete) {
+  /* Native disclosure content remains inert when closed; supporting engines animate both directions. */
+  details {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    opacity: 0;
+    overflow: clip;
+    /* style-allow layout-motion: a native disclosure opens and closes by animating its content box to and from its auto height, which no transform can do without distorting the text */
+    transition:
+      block-size var(--duration-medium) var(--ease-standard),
+      opacity var(--duration-feedback) var(--ease-standard),
+      content-visibility var(--duration-medium) allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+  /* The content box owns the reveal; avoid a second animation on every child. */
+  details[open] > :not(summary) {
+    animation: none;
+  }
+}
+.expense-note-actions button > svg {
+  transition: scale var(--duration-feedback) var(--ease-standard);
+}
+.expense-note-actions button:not(:disabled):active > svg {
+  scale: var(--motion-press);
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Explicitly cover the native disclosure pseudo-element as well as inherited size interpolation. */
+  details {
+    interpolate-size: numeric-only;
+  }
+  details::details-content {
+    transition: none !important;
+  }
+  .expense-note-actions button > svg {
+    scale: none !important;
+  }
+}
+/* Retained notices collapse both their box and the parent row gap. CSS reverses an interrupted
+ * dismissal from its current position. Content remains context-aware, including privacy masking. */
+.presence {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-block-end: 0;
+  /* style-allow layout-motion: a dismissed notice collapses by animating its grid row from 1fr to 0fr, which animates to and from auto height without measuring it */
+  transition:
+    grid-template-rows var(--duration-medium) var(--ease-standard),
+    opacity var(--duration-short) var(--ease-standard),
+    margin-block-end var(--duration-medium) var(--ease-standard);
+}
+.presence-content {
+  min-height: 0;
+  display: flow-root;
+}
+.presence[data-present="false"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-block-end: calc(-1 * var(--presence-gap, 0px));
+  pointer-events: none;
+}
+.presence[data-present="false"] > .presence-content,
+.presence[data-settled="false"] > .presence-content {
+  overflow: hidden;
+}
+/* The wrapper supplies entry opacity; suppress competing one-shot child fades on reversal. */
+.presence-content > :is(.notice, .review-problem, .review-adjustments, .expense-note) {
+  animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .status-chip .status-dot {
+    transition: scale var(--duration-short) var(--ease-smooth);
+  }
+  .notice.app-update {
+    transition:
+      background-color var(--duration-short) var(--ease-standard),
+      box-shadow var(--duration-short) var(--ease-standard),
+      translate var(--duration-short) var(--ease-smooth);
+  }
+  .file-dropzone,
+  .history-progress {
+    transition: scale var(--duration-short) var(--ease-smooth);
+  }
+  .status-chip:focus-visible .status-dot {
+    scale: 1.25;
+  }
+  .status-chip:active {
+    scale: var(--motion-control-press);
+  }
+  .notice a:active {
+    translate: 2px 0;
+  }
+  .review-problem:focus-within,
+  .app-update:focus-within {
+    translate: 0 -1px;
+  }
+  .expense-week-list button:active,
+  .expense-record-list button:active,
+  .expense-note-actions button:active {
+    translate: 0 1px;
+  }
+  .history-progress:focus-within {
+    scale: 1.01;
+  }
+  .review-problem button:active,
+  .expense-conflict button:active {
+    scale: var(--motion-control-press);
+  }
+  .app-update button:active {
+    scale: var(--motion-control-press);
+  }
+  .status-chip:focus-within {
+    translate: 0 -1px;
+  }
+}

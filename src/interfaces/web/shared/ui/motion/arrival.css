@@ -1,0 +1,102 @@
+/* Arrival: how pages, sections, text and the shell arrive.
+ * Role owner under docs/design/polished-by-default.md; rules keep their original relative order (phase 3, move 3). */
+.nav-pill {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0;
+  border-radius: var(--nav-radius, var(--shape-sm));
+  background: var(--primary-container);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-on-accent) 16%, transparent),
+    0 6px 18px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  transition: box-shadow var(--duration-short) var(--ease-standard);
+}
+.nav-pill[aria-hidden="true"] {
+  display: block;
+}
+@media (min-width: 64rem) {
+  .nav-pill {
+    min-height: var(--nav-row-height);
+  }
+}
+@keyframes navigation-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    translate: 0 var(--motion-nudge);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes brand-mark-arrive {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    scale: 0.86;
+    rotate: -8deg;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+.main-nav .brand img {
+  animation: brand-mark-arrive var(--duration-feedback) var(--ease-smooth);
+  transition: rotate var(--duration-feedback) var(--ease-smooth);
+}
+.page-nav {
+  animation: navigation-arrive var(--duration-feedback) var(--ease-standard);
+}
+/* T1-T17: explicit properties preserve immediate focus outlines and stable geometry. The shell and the sidebar own
+ * their transitions in app/styles/shell.css, because the sidebar's collapse is part of the same list. */
+.topbar {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    box-shadow var(--duration-feedback) var(--ease-standard);
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-nav .brand img {
+    animation: none;
+    rotate: none;
+    transition: none;
+  }
+}
+.page-nav button.page-nav-item {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+.page-nav button.page-nav-item {
+  transition:
+    color var(--duration-short) var(--ease-standard),
+    background-color var(--duration-short) var(--ease-standard),
+    border-color var(--duration-short) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard),
+    translate var(--duration-short) var(--ease-standard);
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-nav-item,
+  .expense-date-controls button {
+    translate: none !important;
+  }
+}
+/* The outgoing landmark is inert while usePageMotion settles the latest requested destination. */
+#main-content {
+  transform-origin: top center;
+}
+#main-content[data-page-exiting="true"] {
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .back-button > svg,
+  .topbar-title,
+  .chart-readout-item,
+  .expense-review,
+  .expense-conflict {
+    transition: translate var(--duration-short) var(--ease-smooth);
+  }
+}
