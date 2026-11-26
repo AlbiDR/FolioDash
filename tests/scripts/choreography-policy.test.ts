@@ -24,6 +24,25 @@ describe("choreographyProblems", () => {
   });
 });
 
+describe("malformed ceilings", () => {
+  it("reports a missing or misspelled measure instead of silently skipping it", () => {
+    const ceilings = { "months:open": { kinds: 9, element: 700, settle: 835 } } as unknown as Parameters<
+      typeof choreographyProblems
+    >[1];
+    expect(choreographyProblems({ "months:open": arrival(9, 900, 5000, 3) }, ceilings)).toEqual([
+      "choreography-invalid months:open: elements",
+      "choreography-invalid months:open: loops",
+      "choreography-settle months:open: 5000 > 835",
+    ]);
+  });
+  it("never records NaN or null for a malformed measure", () => {
+    const ceilings = { "months:open": { kinds: 9, elements: Number.NaN, settle: 835, loops: 0 } };
+    expect(loweredCeilings({ "months:open": arrival(9, 600, 800, 0) }, ceilings)).toEqual({
+      "months:open": arrival(9, 600, 800, 0),
+    });
+  });
+});
+
 describe("loweredCeilings", () => {
   it("lowers each measure independently and never raises one", () => {
     const ceilings = { "overview:open": arrival(34, 60, 1400, 1) };

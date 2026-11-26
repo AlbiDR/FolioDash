@@ -1,61 +1,61 @@
 {
   "activity:enter": {
-    "kinds": 7,
-    "elements": 25,
-    "settle": 835,
-    "loops": 0
-  },
-  "activity:open": {
-    "kinds": 8,
-    "elements": 26,
-    "settle": 835,
-    "loops": 0
-  },
-  "checkpoints:enter": {
-    "kinds": 8,
-    "elements": 14,
-    "settle": 725,
-    "loops": 0
-  },
-  "checkpoints:open": {
-    "kinds": 9,
-    "elements": 15,
-    "settle": 725,
-    "loops": 0
-  },
-  "connection:enter": {
     "kinds": 6,
     "elements": 14,
     "settle": 835,
     "loops": 0
   },
-  "connection:open": {
+  "activity:open": {
     "kinds": 7,
     "elements": 15,
     "settle": 835,
     "loops": 0
   },
+  "checkpoints:enter": {
+    "kinds": 7,
+    "elements": 12,
+    "settle": 725,
+    "loops": 0
+  },
+  "checkpoints:open": {
+    "kinds": 8,
+    "elements": 13,
+    "settle": 725,
+    "loops": 0
+  },
+  "connection:enter": {
+    "kinds": 6,
+    "elements": 13,
+    "settle": 780,
+    "loops": 0
+  },
+  "connection:open": {
+    "kinds": 7,
+    "elements": 14,
+    "settle": 780,
+    "loops": 0
+  },
   "expenses:enter": {
-    "kinds": 9,
-    "elements": 30,
+    "kinds": 8,
+    "elements": 27,
     "settle": 945,
     "loops": 0
   },
   "expenses:open": {
-    "kinds": 10,
-    "elements": 31,
+    "kinds": 9,
+    "elements": 28,
     "settle": 945,
     "loops": 0
   },
   "fund:enter": {
-    "kinds": 13,
-    "elements": 27,
+    "kinds": 12,
+    "elements": 18,
     "settle": 780,
     "loops": 0
   },
   "fund:open": {
-    "kinds": 11,
-    "elements": 26,
+    "kinds": 10,
+    "elements": 17,
     "settle": 780,
     "loops": 0
   },
@@ -84,26 +84,26 @@
     "loops": 0
   },
   "months:enter": {
-    "kinds": 11,
-    "elements": 753,
+    "kinds": 10,
+    "elements": 16,
     "settle": 835,
     "loops": 0
   },
   "months:open": {
-    "kinds": 9,
-    "elements": 634,
+    "kinds": 8,
+    "elements": 15,
     "settle": 835,
     "loops": 0
   },
   "overview:enter": {
-    "kinds": 16,
-    "elements": 157,
+    "kinds": 15,
+    "elements": 145,
     "settle": 3035,
     "loops": 0
   },
   "overview:open": {
-    "kinds": 16,
-    "elements": 158,
+    "kinds": 15,
+    "elements": 146,
     "settle": 3035,
     "loops": 0
   }

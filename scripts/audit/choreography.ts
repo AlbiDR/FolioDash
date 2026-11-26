@@ -1,7 +1,10 @@
 // How each screen arrives in the actual production renderer, with synthetic data in a fresh Chrome profile, held under
-// recorded ceilings that may only fall (docs/design/polished-by-default.md, phase 1). The animation clock is frozen
-// before each arrival, so every animation the arrival starts is still present to be counted, whatever the runner's
-// speed. `npm run audit:choreography -- --record` lowers the ceilings in config/motion-baseline.json to the measurement.
+// recorded ceilings that may only fall (docs/design/polished-by-default.md, phase 1). The document's animation clock is
+// frozen before each arrival, so every CSS and Web Animations motion the arrival starts is still present to be
+// counted, whatever the runner's speed. Not counted: count-ups (reported, not held), whose number depends on which
+// figures are in view; the sidebar's selection, which moves on its own frame loop; and the outgoing page's exit, which
+// a timer cancels while the clock is frozen. `npm run audit:choreography -- --record` lowers the ceilings in
+// config/motion-baseline.json to the measurement, and still fails if any arrival rose.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
@@ -25,10 +28,10 @@ const TITLES: Readonly<Record<string, string>> = {
 };
 const ROUTES = ["overview", "fund", ...Object.keys(TITLES).filter((route) => route !== "overview")];
 
-type Measured = Choreography & { readonly names: readonly string[] };
+type Measured = Choreography & { readonly names: readonly string[]; readonly countUps: number };
 
-// Every animation the arrival started, frozen at its first frame. A count-up runs on its own clock with no target, so
-// it is found through the attribute it sets while counting.
+// Every animation the arrival started, frozen at its first frame. A count-up runs on its own clock with no target; it is
+// found through the attribute it sets while counting and reported apart, because it starts only for figures in view.
 const MEASURE = `(() => {
   const names = new Set(); const targets = new Set(); let settle = 0; let loops = 0;
   for (const animation of document.getAnimations()) {
@@ -38,10 +41,8 @@ const MEASURE = `(() => {
     const end = animation.effect?.getComputedTiming().endTime ?? 0;
     if (end === Infinity) loops++; else settle = Math.max(settle, Number(end));
   }
-  const counting = document.querySelectorAll('[data-counting]');
-  if (counting.length > 0) names.add('count-up');
-  counting.forEach((element) => targets.add(element));
-  return { kinds: names.size, elements: targets.size, settle: Math.round(settle), loops, names: [...names].sort() };
+  const countUps = document.querySelectorAll('[data-counting]').length;
+  return { kinds: names.size, elements: targets.size, settle: Math.round(settle), loops, countUps, names: [...names].sort() };
 })()`;
 
 // Each case loads its own address: navigating to an address that differs only in its fragment is a same-document hash
@@ -114,9 +115,12 @@ await withLocalBrowser(async (browser) => {
     ],
   });
   // A fixed Wednesday: Expenses shows its entry form on a weekday and a notice at weekends, so the date must not vary.
+  // A synthetic client ID: every release build carries a real one, which changes Your data and the sign-in notices, so
+  // a local build without one would otherwise measure different screens from CI's.
   await call("Page.addScriptToEvaluateOnNewDocument", {
     source: `(() => {
       localStorage.setItem('foliodash.privacy.v1', 'shown');
+      localStorage.setItem('foliodash.client.v1', '123456-syntheticaudit.apps.googleusercontent.com');
       const today = Date.parse('2026-11-18T12:00:00Z');
       const NativeDate = Date;
       window.Date = new Proxy(NativeDate, {
@@ -165,18 +169,19 @@ const measured = Object.fromEntries(
   ]),
 );
 const ceilings = (existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : {}) as Ceilings;
-if (recording) {
-  writeFileSync(BASELINE, `${JSON.stringify(loweredCeilings(measured, ceilings), null, 2)}\n`);
-  console.log(`Choreography ceilings recorded for ${String(Object.keys(measured).length)} arrivals in ${BASELINE}.`);
-} else {
-  const problems = choreographyProblems(measured, ceilings);
-  if (problems.length > 0) {
-    console.error(
-      `Choreography audit failed: ${String(problems.length)} arrivals rose above their recorded ceilings (docs/design/polished-by-default.md). A deliberate reduction is recorded with npm run audit:choreography -- --record; a ceiling never rises.\n${problems.join("\n")}`,
-    );
-    process.exit(1);
-  }
-  console.log(
-    `Choreography audit passed: ${String(Object.keys(measured).length)} arrivals within their ceilings. Report: dist/choreography/report.json`,
+// Recording lowers what fell and leaves new cases at their measurement; a rise still fails, so it is never mistaken for
+// a recorded success and first discovered in CI.
+const recorded = recording ? loweredCeilings(measured, ceilings) : ceilings;
+if (recording) writeFileSync(BASELINE, `${JSON.stringify(recorded, null, 2)}\n`);
+const problems = choreographyProblems(measured, recorded);
+if (problems.length > 0) {
+  console.error(
+    `Choreography audit failed: ${String(problems.length)} problems (docs/design/polished-by-default.md). A deliberate reduction is recorded with npm run audit:choreography -- --record; a ceiling never rises without an owner decision.\n${problems.join("\n")}`,
   );
+  process.exit(1);
 }
+console.log(
+  recording
+    ? `Choreography ceilings recorded for ${String(Object.keys(measured).length)} arrivals in ${BASELINE}.`
+    : `Choreography audit passed: ${String(Object.keys(measured).length)} arrivals within their ceilings. Report: dist/choreography/report.json`,
+);

@@ -19,12 +19,22 @@ const MEASURES = ["kinds", "elements", "settle", "loops"] as const;
 
 const byName = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
+/** A recorded measure must be a whole, finite, non-negative number; anything else would compare as never exceeded. */
+const valid = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value >= 0;
+
 /**
  * Rules: `choreography-<measure>` (a case measured above its ceiling), `choreography-unrecorded` (a case with no
- * ceiling yet) and `choreography-unmeasured` (a ceiling whose case no longer runs, so it cannot silently go stale).
+ * ceiling yet), `choreography-unmeasured` (a ceiling whose case no longer runs, so it cannot silently go stale) and
+ * `choreography-invalid` (a ceiling with a missing or malformed measure, which would otherwise disable that check).
  */
 export function choreographyProblems(measured: Readonly<Record<string, Choreography>>, ceilings: Ceilings): string[] {
   const problems: string[] = [];
+  for (const name of Object.keys(ceilings).sort(byName)) {
+    const ceiling = ceilings[name] as Readonly<Record<string, unknown>> | undefined;
+    for (const measure of MEASURES) {
+      if (!valid(ceiling?.[measure])) problems.push(`choreography-invalid ${name}: ${measure}`);
+    }
+  }
   for (const name of Object.keys(measured).sort(byName)) {
     const values = measured[name];
     const ceiling = ceilings[name];
@@ -34,8 +44,9 @@ export function choreographyProblems(measured: Readonly<Record<string, Choreogra
       continue;
     }
     for (const measure of MEASURES) {
-      if (values[measure] > ceiling[measure]) {
-        problems.push(`choreography-${measure} ${name}: ${String(values[measure])} > ${String(ceiling[measure])}`);
+      const limit = ceiling[measure];
+      if (valid(limit) && values[measure] > limit) {
+        problems.push(`choreography-${measure} ${name}: ${String(values[measure])} > ${String(limit)}`);
       }
     }
   }
@@ -58,15 +69,17 @@ export function loweredCeilings(
     const values = measured[name];
     if (values === undefined) continue;
     const ceiling = ceilings[name];
-    result[name] =
-      ceiling === undefined
-        ? { kinds: values.kinds, elements: values.elements, settle: values.settle, loops: values.loops }
-        : {
-            kinds: Math.min(values.kinds, ceiling.kinds),
-            elements: Math.min(values.elements, ceiling.elements),
-            settle: Math.min(values.settle, ceiling.settle),
-            loops: Math.min(values.loops, ceiling.loops),
-          };
+    // A malformed measure is reported by choreographyProblems; here it falls back to the measurement, never to NaN.
+    const lower = (measure: (typeof MEASURES)[number]): number => {
+      const limit = ceiling?.[measure];
+      return valid(limit) ? Math.min(values[measure], limit) : values[measure];
+    };
+    result[name] = {
+      kinds: lower("kinds"),
+      elements: lower("elements"),
+      settle: lower("settle"),
+      loops: lower("loops"),
+    };
   }
   return result;
 }
