@@ -62,7 +62,7 @@ Each step is behaviour-neutral, so the built output and the audits must not chan
 
 ## Motion stylesheets and their owners (step 5, 2026-11-19)
 
-The original seventeen stylesheets carry transitions, animations or keyframes. Two additional owners are recorded below for the selected surfaces prototype and the actual Portfolio refinement of 2026-11-21. Each stylesheet has one owner: the design record that governs its area. Step 5 itself moved no value and changed no motion; subsequent visual changes are recorded in their own design documents.
+The original seventeen stylesheets carry transitions, animations or keyframes. Two additional owners are recorded below for the selected surfaces prototype and the actual Portfolio refinement of 2026-11-21, and four more on 2026-11-26: the chart arrival recipes, which had been missing, and the three layers added that day, which [Polished by default](polished-by-default.md) folds into role owners in its phase 3. Each stylesheet has one owner: the design record that governs its area. Step 5 itself moved no value and changed no motion; subsequent visual changes are recorded in their own design documents.
 
 | Stylesheet | Motion it holds | Owner |
 |---|---|---|
@@ -85,8 +85,12 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 | `features/overview/styles/holdings-and-attention.css` | holdings share bars and attention | [Dashboard coherence](dashboard-coherence.md) |
 | `features/expenses/styles/categories-and-record.css` | expense categories and record arrival | [Work and expenses](work-expenses-experience.md) |
 | `features/expenses/styles/responsive-and-hover.css` | expense layout and hover | [Work and expenses](work-expenses-experience.md) |
+| `presentation/charts/chart-arrival.css` | named chart arrivals: bar rise, ranking rise, ring slice, marker arrival and selection rebound | This record ([recipe catalogue](#recipe-catalogue)) |
+| `shared/ui/motion/workflow-feedback.css` | small state movements for workflow controls, their icons and their cards | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/polish.css` | one easing for existing transitions and animations | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/polish-secondary.css` | a second easing pass for further existing owners | [Polished by default](polished-by-default.md) |
 
-A check that every motion stylesheet appears in this table is not yet part of `npm run verify`. Adding one would stop the list drifting, and it is the next thing to propose if the table is kept.
+Since 2026-11-26 `npm run verify:style` keeps this table complete: a stylesheet under the web interface that declares a transition or an animation, or defines keyframes, fails the check until it has a row here, and a row whose stylesheet is gone or no longer moves fails too (`scripts/verify/code/motion-owners.ts`).
 
 ## Proof
 

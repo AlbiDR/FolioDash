@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phase 0 done locally; phases 1 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 and 1 done; phases 2 to 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -148,6 +148,64 @@ What changed, all under `src/interfaces/web/` unless named otherwise:
 - **Audit.** `scripts/audit/sidebar-collapse.ts`, run by the Portfolio polish audit at 1440 px, records which properties transition when the sidebar collapses and reopens and checks the exact track at rest. Run against the previous stylesheets it fails; against the fix it passes.
 
 Evidence, local production build in headless Chrome with synthetic data, 2026-11-26: `npm run verify` passed (1,345 tests in 133 files). `npm run audit:rendered` passed: 160 interaction journey assertions and 1,131 control samples across 27 states, every recovery journey, 24 reload cases with zero layout shift, 48 accessibility screens, 48 reduced-motion checks on 16 screens, and the Portfolio polish audit including the sidebar check. `npm run capture:readme` passed. A probe of the built app on every route found all 52 reachable state rules now transitioning the property they change. Physical devices, other engines and screen readers are not covered (STD-11).
+
+### Phase 1 record, 2026-11-26
+
+- **Owner table kept complete.** `scripts/verify/code/motion-owners.ts`, run by `npm run verify:style` and tested in `tests/scripts/motion-owners.test.ts`, fails a stylesheet that carries motion without a row in the [motion layer's owner table](motion-layer.md#motion-stylesheets-and-their-owners-step-5-2026-11-19), and a row whose stylesheet is gone or no longer moves. It found exactly the four unlisted stylesheets, which now have rows.
+- **Choreography ceilings.** `scripts/audit/choreography.ts`, in the rendered audit's motion suite, freezes the animation clock and measures a cold open and an in-app entry of every screen and of a fund page at 1440 px, on a pinned Wednesday so Expenses does not vary by weekday. It records the kinds of motion, the elements that move, when the last finite animation ends and how many never end, held under `config/motion-baseline.json` by `scripts/audit/choreography-policy.ts` (tested in `tests/scripts/choreography-policy.test.ts`). The first measurement already names phase 4's targets: about 750 elements move when Month by month arrives, and the Portfolio entry takes about three seconds because the monthly bar stagger has no cap.
+- **Dependency.** The unused `motion` package is removed (decision 4); the lockfile change reverses exactly what `f5c2626` added.
+
+## Implementation brief for phases 2 to 6
+
+Written 2026-11-26 from what phases 0 and 1 found, so the remaining phases can be carried out without rediscovering it. Paths are under `src/interfaces/web/` unless named otherwise.
+
+### Cascade facts every phase must respect
+
+- **Import order decides ties.** `app/main.tsx` imports tokens, charts, `app/styles/`, the overview feature styles, `shared/ui/interactions/`, then `shared/ui/motion/` in the order navigation-and-workflow, charts-and-content, static-and-native, refinement, workflow-feedback, polish, polish-secondary, and `shared/ui/control-feedback.css` last. Lazily loaded feature styles (the expense stylesheets) load after all of them and win every tie.
+- **Control feedback owns every control's transition list.** Its selector is stronger and it loads last, so a `transition` written for a button, link, summary or field anywhere else is dead. Extend that file's lists instead.
+- **`transform` in a transition list does not cover `scale`, `translate` or `rotate`.** They are separate properties and each needs its own entry, or the state snaps.
+- **A rule that sets only `transition-timing-function` replaces the easing of every property in the element's list.** The two polish files do this; phase 3 removes them.
+- **Never group vendor pseudo-elements in one selector list.** A browser drops the whole list if it rejects one of them.
+- **Put state movements inside `@media (prefers-reduced-motion: no-preference)`** rather than resetting them under `reduce`, where resets lose on specificity.
+
+### Phase 2, role tokens
+
+Add role tokens in `shared/tokens.css`, for example `--time-feedback` (100 to 150 ms), `--time-state` (about 220), `--time-layer-in` (about 300), `--time-layer-out` (about 200), `--time-page` (at most 450), `--time-stagger` with `--stagger-cap` (a step count), `--ease-arrive` (the current `--ease-smooth` curve) and `--ease-state` (the current `--ease-standard`). Point the existing tokens at them as aliases, so nothing renders differently, then migrate by role in phase 3 and delete the aliases. Note that the existing `--duration-feedback` (220 ms) is the state role by this naming; do not let the old name decide the new role. Replace `--ease-spring` everywhere except the two bounded selection rebounds (decision 5). Correct the comment in `shared/tokens.css` that claims easings are removed for reduced motion.
+
+### Phase 3, consolidation without changing what renders
+
+- **Prove neutrality with a computed-style snapshot, not by reading CSS.** Before editing, add an audit that walks every element on every route at 1440 and 390 px, in light and dark, with and without reduced motion, and records `transition`, `animation`, `transform`, `scale`, `translate` and `rotate` at rest and under forced `:hover`, `:focus-visible` and `:active` (Chrome's `CSS.forcePseudoState`). Run it before and after each move; the JSON must be identical, or each difference is listed and accepted as a design change.
+- **Owners after consolidation:** `shared/tokens.css`, `shared/ui/control-feedback.css` (feedback), one stylesheet each for layers, page arrival and state movements in `shared/ui/motion/`, and `presentation/charts/chart-arrival.css`. Fold the polish files, `workflow-feedback.css`, `refinement.css` and the motion declarations in `app/styles/` and `features/` into them.
+- **Then the ratchet:** extend `scripts/verify/code/motion-owners.ts` with a rule that `transition`, `animation` and `@keyframes` appear only in the owner files (decision 7), and shrink the motion layer's owner table to them.
+
+### Phase 4, one page gesture
+
+- The page arrival in `app/styles/page-chrome.css` only staggers direct children of `.dash`, `.screen`, `.account`, `.import` and `.get-started`. Import and History sit inside an inert wrapper (`app/app-import-routes.tsx`), so they get no arrival at all. Base the arrival on the page root instead of the wrapper structure.
+- Remove the separate text arrival from headings and subtitles inside a region; the region's arrival carries them. Time count-ups (`presentation/animated-figure.tsx`, which already reads `--section-arrival-delay`) and chart growth from their region's delay.
+- Cap the chart mark stagger. In `presentation/charts/chart-arrival.css` the delay is `--motion-index` times `--motion-stagger` with no cap, which is why the Portfolio entry measures about three seconds. Use `min()` against the cap, or spread the steps across `--time-page`.
+- Decision 2 needs the page to know whether it was opened or entered in the app. The page motion controller (`shared/ui/use-page-motion.ts`) can set a styling attribute on the main region for the duration of an arrival, as Presence's `data-present` is styling state. Record it as such: the motion layer's no-attribute decision is about test signals, not styling.
+- Month by month: the choreography baseline shows about 750 elements animating on entry. Find which transition the matrix cells run before changing anything.
+- Month by month's summary card is keyed by month (`features/overview/months-view.tsx`), so each step remounts it and counts every figure up from zero. Keep the card mounted across steps, so figures update exactly and immediately, and give the change a short fade-through as the data-change role. This is a correctness fix; do it first.
+
+### Phase 5, continuity with view transitions
+
+- Wrap the commit in `use-page-motion.ts` with `document.startViewTransition` when it exists, motion is allowed and the document is visible. Otherwise keep the current exit. Never run both.
+- Give the sidebar, the toolbar and the page title a `view-transition-name`, so they hold still while the content moves on a short shared axis built from tokens. For a holding row opening its fund, name the row's fund title and the fund page's title the same just before the transition and remove the name after it; names must be unique in the document.
+- Start chart arrivals after the transition's `finished` promise, because the snapshot is a static image while it runs. Keep focus handling as it is now, and check that the sticky toolbar never hides the focused control (WCAG 2.4.11).
+- Confirm engine support at the time of the change (same-document view transitions reached Baseline in October 2025 according to MDN), and add an Astryx register entry (UXC-11).
+
+### Phase 6, no instant swaps
+
+Work through the [gap table](#gaps-by-surface) by role. Presence for layers: the Expenses entry form at weekends, the Your data busy line, the forget-device confirmation, and the notices that only fade in. The sliding selection the period control already has for the Activity status and Import entry-method controls. Row glide (`shared/ui/use-row-glide.ts`) for Checkpoints and Activity rows. A height transition with a reasoned waiver, like Presence's, for the holdings card when a filter or fold changes its height.
+
+### Working notes from phases 0 and 1
+
+- **Preview caching:** the production preview registers the app's service worker, which serves the previous build after a rebuild. Unregister it and clear its caches in the page before checking a change.
+- **Hidden browser pane:** the built-in browser pane does not advance the animation clock while it is hidden or its tab is in the background. Use the headless audits for motion evidence.
+- **Hash-only addresses:** an address that differs only in its fragment is a same-document navigation, not a page load. Give each cold open its own query.
+- **Commit hook:** it runs the format, structure, docs and style checks over the whole working tree, untracked files included. Set unrelated in-progress files aside (`git stash push -u -- <paths>`) before committing a finished phase.
+- **File size:** the structure check caps file length, so put a new audit check in its own module rather than growing an existing audit.
+- **Choreography ceilings:** `npm run audit:choreography -- --record` only lowers them. A rise needs an owner decision recorded here and a hand edit of `config/motion-baseline.json` in its own commit.
 
 ## Decisions for the owner
 

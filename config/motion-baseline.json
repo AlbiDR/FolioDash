@@ -1,0 +1,110 @@
+{
+  "activity:enter": {
+    "kinds": 7,
+    "elements": 25,
+    "settle": 835,
+    "loops": 0
+  },
+  "activity:open": {
+    "kinds": 8,
+    "elements": 26,
+    "settle": 835,
+    "loops": 0
+  },
+  "checkpoints:enter": {
+    "kinds": 8,
+    "elements": 14,
+    "settle": 725,
+    "loops": 0
+  },
+  "checkpoints:open": {
+    "kinds": 9,
+    "elements": 15,
+    "settle": 725,
+    "loops": 0
+  },
+  "connection:enter": {
+    "kinds": 6,
+    "elements": 14,
+    "settle": 835,
+    "loops": 0
+  },
+  "connection:open": {
+    "kinds": 7,
+    "elements": 15,
+    "settle": 835,
+    "loops": 0
+  },
+  "expenses:enter": {
+    "kinds": 9,
+    "elements": 30,
+    "settle": 945,
+    "loops": 0
+  },
+  "expenses:open": {
+    "kinds": 10,
+    "elements": 31,
+    "settle": 945,
+    "loops": 0
+  },
+  "fund:enter": {
+    "kinds": 13,
+    "elements": 27,
+    "settle": 780,
+    "loops": 0
+  },
+  "fund:open": {
+    "kinds": 11,
+    "elements": 26,
+    "settle": 780,
+    "loops": 0
+  },
+  "history:enter": {
+    "kinds": 9,
+    "elements": 10,
+    "settle": 615,
+    "loops": 0
+  },
+  "history:open": {
+    "kinds": 7,
+    "elements": 8,
+    "settle": 615,
+    "loops": 0
+  },
+  "import:enter": {
+    "kinds": 9,
+    "elements": 10,
+    "settle": 615,
+    "loops": 0
+  },
+  "import:open": {
+    "kinds": 7,
+    "elements": 8,
+    "settle": 615,
+    "loops": 0
+  },
+  "months:enter": {
+    "kinds": 11,
+    "elements": 753,
+    "settle": 835,
+    "loops": 0
+  },
+  "months:open": {
+    "kinds": 9,
+    "elements": 634,
+    "settle": 835,
+    "loops": 0
+  },
+  "overview:enter": {
+    "kinds": 16,
+    "elements": 157,
+    "settle": 3035,
+    "loops": 0
+  },
+  "overview:open": {
+    "kinds": 16,
+    "elements": 158,
+    "settle": 3035,
+    "loops": 0
+  }
+}

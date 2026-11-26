@@ -51,6 +51,7 @@
     "health": "node scripts/audit/health.ts",
     "setup:hooks": "node scripts/setup/hooks.ts",
     "audit:reduced-motion": "node scripts/audit/reduced-motion.ts",
+    "audit:choreography": "node scripts/audit/choreography.ts",
     "audit:accessibility": "node scripts/audit/accessibility.ts",
     "audit:mutation": "stryker run config/stryker.config.json",
     "audit:checkpoints": "node scripts/audit/checkpoints.ts",
@@ -87,7 +88,6 @@
     "d3-array": "^3.2.4",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
-    "motion": "^14.14.0",
     "preact": "^11.1.1"
   }
 }

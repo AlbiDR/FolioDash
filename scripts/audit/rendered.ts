@@ -14,7 +14,7 @@ const suites = {
     "audit:reload-stability",
   ],
   accessibility: ["audit:accessibility"],
-  motion: ["audit:reduced-motion"],
+  motion: ["audit:reduced-motion", "audit:choreography"],
   portfolio: ["audit:portfolio-polish"],
 };
 
