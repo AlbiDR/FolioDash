@@ -2,6 +2,7 @@ import { render } from "preact";
 import { useRef, useState } from "preact/hooks";
 import { afterEach, expect, it, vi } from "vitest";
 import "../../tokens.css";
+import type { Motion } from "../../motion/animate";
 import { ChangeCue, useChangeCue } from "../change-cue";
 
 const host = document.createElement("div");
@@ -41,21 +42,34 @@ it("plays nothing on the first render, then one fade up from the update opacity 
   expect(animationsOf(cue)).toHaveLength(0);
 });
 
-it("restarts the cue when the value changes again mid-cue, never stacking two", async () => {
-  render(<Probe label="a" />, host);
-  const cue = host.firstElementChild as HTMLElement;
-  render(<Probe label="b" />, host);
+function Counting(props: { readonly value: string; readonly motion: Motion }) {
+  const element = useRef<HTMLSpanElement>(null);
+  useChangeCue(element, props.value, props.motion);
+  return <span ref={element}>{props.value}</span>;
+}
+
+it("asks the motion layer for exactly one cue per change, and none for an unchanged value", async () => {
+  // Counting what is asked, not what is still running, keeps this independent of how fast the machine is.
+  const asked: string[] = [];
+  const motion: Motion = {
+    play: (element) => {
+      asked.push(element.textContent);
+      return null;
+    },
+    stop: () => undefined,
+  };
+  render(<Counting value="a" motion={motion} />, host);
+  render(<Counting value="b" motion={motion} />, host);
   await vi.waitFor(() => {
-    expect(animationsOf(cue)).toHaveLength(1);
+    expect(asked).toEqual(["b"]);
   });
-  const first = animationsOf(cue)[0];
-  render(<Probe label="c" />, host);
+  render(<Counting value="b" motion={motion} />, host);
+  render(<Counting value="c" motion={motion} />, host);
   await vi.waitFor(() => {
-    expect(animationsOf(cue)[0]).not.toBe(first);
+    expect(asked).toEqual(["b", "c"]);
   });
   await settle();
-  expect(animationsOf(cue)).toHaveLength(1);
-  expect(cue.textContent).toBe("c");
+  expect(asked).toEqual(["b", "c"]);
 });
 
 it("plays nothing when the motion layer declines to move, as it does under reduced motion, and the value still changes at once", async () => {

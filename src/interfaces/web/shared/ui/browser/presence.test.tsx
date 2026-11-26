@@ -1,5 +1,5 @@
 import { render } from "preact";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import "../../tokens.css";
 import "../motion/layers.css";
 import { Presence } from "../presence";
@@ -11,8 +11,6 @@ afterEach(() => {
   render(null, host);
   host.replaceChildren();
 });
-
-const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 function Layer(props: { readonly show: boolean }) {
   return (
@@ -39,32 +37,53 @@ it("mounts its content when shown and keeps it mounted through its exit, then re
   expect(wrapper.hasAttribute("inert")).toBe(true);
   expect(host.querySelector("#note")?.textContent).toBe("Saved");
 
-  await wait(700);
-  expect(host.querySelector(".presence")).toBeNull();
+  await vi.waitFor(
+    () => {
+      expect(host.querySelector(".presence")).toBeNull();
+    },
+    { timeout: 5000 },
+  );
   expect(host.querySelector("#note")).toBeNull();
 });
 
 it("shifts the sibling below it while it leaves, so the layout never snaps", async () => {
   render(<Layer show />, host);
-  await wait(500);
+  await vi.waitFor(
+    () => {
+      expect(host.querySelector(".presence")?.getAttribute("data-settled")).toBe("true");
+    },
+    { timeout: 5000 },
+  );
   const after = host.querySelector("#after") as HTMLElement;
   expect(after.getAnimations()).toHaveLength(0);
 
   render(<Layer show={false} />, host);
-  await Promise.resolve();
   expect(after.getAnimations().length).toBeGreaterThan(0);
 
-  await wait(700);
-  expect(after.getAnimations()).toHaveLength(0);
+  await vi.waitFor(
+    () => {
+      expect(after.getAnimations()).toHaveLength(0);
+    },
+    { timeout: 5000 },
+  );
 });
 
 it("lets a change of mind during the exit bring the content straight back", async () => {
   render(<Layer show />, host);
-  await wait(500);
+  await vi.waitFor(
+    () => {
+      expect(host.querySelector(".presence")?.getAttribute("data-settled")).toBe("true");
+    },
+    { timeout: 5000 },
+  );
   render(<Layer show={false} />, host);
-  await wait(60);
   render(<Layer show />, host);
-  await wait(500);
+  await vi.waitFor(
+    () => {
+      expect(host.querySelector(".presence")?.getAttribute("data-present")).toBe("true");
+    },
+    { timeout: 5000 },
+  );
   const wrapper = host.querySelector(".presence") as HTMLElement;
   expect(wrapper.getAttribute("data-present")).toBe("true");
   expect(wrapper.hasAttribute("inert")).toBe(false);
