@@ -37,7 +37,7 @@ flowchart LR
     release --> publish[publish: Pages deploy, if still current main]
 ```
 
-[The rendered audit runner](../../scripts/audit/rendered.ts) owns suite membership. `npm run audit:rendered` runs every suite locally, and `npm run audit:rendered -- recovery` runs a single suite. CI generates its matrix from the same runner and reports each suite separately. The suites cover interactions, recovery and other synthetic journeys, accessibility, reduced motion and portfolio polish. The interaction audit is one audit split into three suites, `interactions-portfolio`, `interactions-records` and `interactions-phone`, each running one part of it on its own runner (see [Gate timing](#gate-timing-2026-11-26)). The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default).
+[The rendered audit runner](../../scripts/audit/rendered.ts) owns suite membership. `npm run audit:rendered` runs every suite locally, and `npm run audit:rendered -- accessibility-and-polish` runs a single suite. CI generates its matrix from the same runner and reports each suite separately. The suites cover interactions, recovery and other synthetic journeys, accessibility, reduced motion and portfolio polish. There are five suites because GitHub starts at most five macOS jobs at once here, and the runner refuses a sixth. The interaction audit runs in three parts, one in each of three suites, and the suites are balanced by measured time (see [Gate timing](#gate-timing-2026-11-26)). The audits use the Chrome that `scripts/lib/local-browser.ts` finds (the `CHROME_PATH` override, or the platform default).
 
 Both builds receive the public repository variable `VITE_GOOGLE_CLIENT_ID`. A release fails with a redacted configuration error if it is empty. A pull request or weekly run can verify without a release client ID. No Google token, credential or private workbook data enters this path.
 
@@ -158,10 +158,22 @@ The workflow definitions were reviewed in the same pass and left as they are. Se
 
 After that change the `interactions` suite set the release time: one script, about 100 seconds for 27 rendered states, after about 35 seconds of build and runner setup. On the owner's go-ahead the same day, `scripts/audit/interactions.ts` lists its eight journeys in three named parts, and the rendered audit runner runs each part as its own suite:
 
-| Suite | Journeys | Rendered states | Assertions | Control samples |
+| Part | Journeys | Rendered states | Assertions | Control samples |
 |---|---|---|---|---|
-| `interactions-portfolio` | portfolio, range selector, disclosures | 4 | 75 | 300 |
-| `interactions-records` | holdings, expenses and import, history | 12 | 50 | 490 |
-| `interactions-phone` | phone, earlier history | 11 | 35 | 341 |
+| `portfolio` | portfolio, range selector, disclosures | 4 | 75 | 300 |
+| `records` | holdings, expenses and import, history | 12 | 50 | 490 |
+| `phone` | phone, earlier history | 11 | 35 | 341 |
 
-Every journey belongs to exactly one part, because the parts are the only list of journeys, and the order within a part is the order the full audit used. The disclosures journey depends on the Portfolio that the range selector journey leaves open, so the two share a part. The other parts start with their own navigation, and each passed alone. Each part checks every control it renders against the same rules and fails on the same problems. Locally on 2026-11-26 the three parts made 160 journey assertions and 1,131 control samples across 27 states, exactly what the full audit made in one browser. `npm run audit:interactions` with no part still runs the whole audit in one browser and writes `report.json`. A part writes `report.<part>.json`. Each part pays its own runner setup and browser start-up, about 35 seconds, in exchange for running in parallel. Locally the parts took 46, 37 and 49 seconds against 86 for the whole audit. The CI saving is reported with the pushed run, not claimed here.
+Every journey belongs to exactly one part, because the parts are the only list of journeys, and the order within a part is the order the full audit used. The disclosures journey depends on the Portfolio that the range selector journey leaves open, so the two share a part. The other parts start with their own navigation, and each passed alone. Each part checks every control it renders against the same rules and fails on the same problems. Locally on 2026-11-26 the three parts made 160 journey assertions and 1,131 control samples across 27 states, exactly what the full audit made in one browser. `npm run audit:interactions` with no part still runs the whole audit in one browser and writes `report.json`. A part writes `report.<part>.json`. Each part pays its own runner setup and browser start-up, about 35 seconds, in exchange for running in parallel. Locally the parts took 46, 37 and 49 seconds against 86 for the whole audit. The first pushed run, for `1bd5e7c`, was slower, not faster: 4 minutes 22 seconds from push to published site. Seven macOS suites were more than GitHub would start at once. Five started together, and the other two started within three seconds of the first two finishing, so the account runs at most five macOS jobs at a time. The motion suite, which had just gained the choreography audit, was one of the two that waited, and it ran for 2 minutes 38 seconds.
+
+The audit times measured in that run, from the start of each audit to the end of its job, were: reduced motion 80 seconds, interaction part `portfolio` 77, part `records` 56, choreography 55, part `phone` 44, reload stability 43, portfolio polish 43, accessibility 42, and the other seven recovery audits 20 together. That is about 460 seconds of audits, so five runners cannot finish in less than about 92 seconds each. Each runner adds about 15 seconds of setup. The runner now has exactly five suites, packed from those times:
+
+| Suite | Audits | Measured audit time |
+|---|---|---|
+| `interactions-portfolio` | interaction part `portfolio` | 77 s |
+| `interactions-records-and-reload` | interaction part `records`, reload stability | 99 s |
+| `interactions-phone-and-choreography` | interaction part `phone`, choreography | 99 s |
+| `accessibility-and-polish` | accessibility, portfolio polish | 85 s |
+| `reduced-motion-and-recovery` | reduced motion and the other seven recovery audits | 100 s |
+
+`node scripts/audit/rendered.ts --matrix` fails if a sixth suite is added, so the limit cannot be exceeded silently. When an audit grows or a new one arrives, rebalance the five suites instead of adding one. The run for this change reports the result.
