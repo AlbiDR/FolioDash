@@ -10,7 +10,9 @@ import {
 import { formatDateLong } from "../../../../core/values/iso-date";
 import type { LedgerState } from "../../../../core/portfolio/ledger";
 import type { RecordResult, RemoteSave } from "../../../../applications/import/import-model";
+import { HistoryReady } from "./history-ready";
 import { type Phase, describeFailure } from "./history-phase";
+import { Presence } from "../../shared/ui/presence";
 
 export function HistoryView(props: {
   readonly ledger: LedgerState;
@@ -239,11 +241,13 @@ export function HistoryView(props: {
         checked with the same rules as a single import, and each save is read back. It can be repeated safely: it
         resumes after what the spreadsheet already holds.
       </p>
-      {props.save === undefined && (
-        <p class="notice notice-warning" role="status">
-          Connect to your spreadsheet on the Your data screen first. Nothing can be saved until then.
-        </p>
-      )}
+      <Presence show={props.save === undefined}>
+        {props.save === undefined && (
+          <p class="notice notice-warning" role="status">
+            Connect to your spreadsheet on the Your data screen first. Nothing can be saved until then.
+          </p>
+        )}
+      </Presence>
       <div class="field">
         <label for="history-file">History file (.json)</label>
         <input
@@ -260,50 +264,25 @@ export function HistoryView(props: {
         />
       </div>
 
-      {phase.name === "problem" && (
-        <div class="review-problem" role="alert">
-          <h3 ref={resultHeading} tabIndex={-1}>
-            This cannot be imported
-          </h3>
-          <p>{phase.message}</p>
-        </div>
-      )}
+      <Presence show={phase.name === "problem"}>
+        {phase.name === "problem" && (
+          <div class="review-problem" role="alert">
+            <h3 ref={resultHeading} tabIndex={-1}>
+              This cannot be imported
+            </h3>
+            <p>{phase.message}</p>
+          </div>
+        )}
+      </Presence>
       {phase.name === "ready" && (
-        <div class="review-adjustments" role="status">
-          <h3 ref={resultHeading} tabIndex={-1}>
-            Ready
-          </h3>
-          <p>
-            {fileName} holds {phase.statements.length} statements, from{" "}
-            {formatDateLong(phase.statements[0]?.date as never)} to{" "}
-            {formatDateLong(phase.statements[phase.statements.length - 1]?.date as never)}. Your spreadsheet already
-            holds {phase.alreadyRecorded}; {phase.toSave.length} new {phase.toSave.length === 1 ? "month" : "months"}{" "}
-            will be saved.
-          </p>
-          {phase.statements.some((statement) => statement.source !== undefined) && (
-            <p>
-              Each month in this file carries its exact bank statement. Any month your spreadsheet holds without its
-              statement gets it attached, in one step. The figures already saved do not change, and a statement that
-              does not reproduce its month is refused.
-            </p>
-          )}
-          {phase.toSave.length === 0 &&
-          !(phase.alreadyRecorded > 0 && phase.statements.some((statement) => statement.source !== undefined)) ? (
-            <p>Nothing to do: the spreadsheet already holds this whole history.</p>
-          ) : (
-            props.save !== undefined && (
-              <button
-                type="button"
-                class="primary"
-                onClick={() => void start(props.save as RemoteSave, phase.statements, phase.toSave)}
-              >
-                {phase.toSave.length > 0
-                  ? `Save ${String(phase.toSave.length)} new ${phase.toSave.length === 1 ? "month" : "months"} and attach bank statements`
-                  : "Check and attach bank statements"}
-              </button>
-            )
-          )}
-        </div>
+        <HistoryReady
+          phase={phase}
+          fileName={fileName}
+          heading={resultHeading}
+          {...(props.save === undefined
+            ? {}
+            : { onStart: () => void start(props.save as RemoteSave, phase.statements, phase.toSave) })}
+        />
       )}
       <div aria-live="polite" class="status" data-busy={busy}>
         {phase.name === "reading" && <p>Reading and checking your history file…</p>}
@@ -335,54 +314,58 @@ export function HistoryView(props: {
           </p>
         )}
       </div>
-      {phase.name === "stopped" && (
-        <div class="review-problem" role="alert">
-          <h3>Stopped after {phase.saved} saved</h3>
-          <p>
-            Statement dated {formatDateLong(phase.statement.date)}: {describeFailure(phase.failure)} Nothing after it
-            was attempted.
-          </p>
-          {uncertain && props.save !== undefined && (
-            <>
-              <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
-              <button
-                type="button"
-                disabled={checking}
-                onClick={() =>
-                  void check(
-                    props.save as RemoteSave,
-                    (phase as { statement: HistoryStatement }).statement,
-                    phase.statements,
-                  )
-                }
-              >
-                {checking ? "Checking the save…" : "Check what happened"}
-              </button>
-            </>
-          )}
-          {!uncertain && <p>Choose the file again to resume from what the spreadsheet holds.</p>}
-        </div>
-      )}
-      {phase.name === "attach-stopped" && (
-        <div class="review-problem" role="alert">
-          <h3>{uncertain ? "Check the bank-statement attachment" : "The bank statements were not attached"}</h3>
-          <p>{describeFailure(phase.failure)}</p>
-          {uncertain && props.save !== undefined ? (
-            <>
-              <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
-              <button
-                type="button"
-                disabled={checking}
-                onClick={() => void checkAttach(props.save as RemoteSave, phase.commandId, phase.statements)}
-              >
-                {checking ? "Checking the save…" : "Check what happened"}
-              </button>
-            </>
-          ) : (
-            <p>Choose the file again to try again.</p>
-          )}
-        </div>
-      )}
+      <Presence show={phase.name === "stopped"}>
+        {phase.name === "stopped" && (
+          <div class="review-problem" role="alert">
+            <h3>Stopped after {phase.saved} saved</h3>
+            <p>
+              Statement dated {formatDateLong(phase.statement.date)}: {describeFailure(phase.failure)} Nothing after it
+              was attempted.
+            </p>
+            {uncertain && props.save !== undefined && (
+              <>
+                <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
+                <button
+                  type="button"
+                  disabled={checking}
+                  onClick={() =>
+                    void check(
+                      props.save as RemoteSave,
+                      (phase as { statement: HistoryStatement }).statement,
+                      phase.statements,
+                    )
+                  }
+                >
+                  {checking ? "Checking the save…" : "Check what happened"}
+                </button>
+              </>
+            )}
+            {!uncertain && <p>Choose the file again to resume from what the spreadsheet holds.</p>}
+          </div>
+        )}
+      </Presence>
+      <Presence show={phase.name === "attach-stopped"}>
+        {phase.name === "attach-stopped" && (
+          <div class="review-problem" role="alert">
+            <h3>{uncertain ? "Check the bank-statement attachment" : "The bank statements were not attached"}</h3>
+            <p>{describeFailure(phase.failure)}</p>
+            {uncertain && props.save !== undefined ? (
+              <>
+                <p>Do not start again yet. Checking reads your spreadsheet and writes nothing.</p>
+                <button
+                  type="button"
+                  disabled={checking}
+                  onClick={() => void checkAttach(props.save as RemoteSave, phase.commandId, phase.statements)}
+                >
+                  {checking ? "Checking the save…" : "Check what happened"}
+                </button>
+              </>
+            ) : (
+              <p>Choose the file again to try again.</p>
+            )}
+          </div>
+        )}
+      </Presence>
       {phase.name === "checked" && (
         <div class="review-adjustments" role="status">
           <p>{phase.message}</p>

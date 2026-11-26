@@ -2,6 +2,7 @@ import type { ConnectOutcome } from "../../../../applications/session/session-mo
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 import { describeConnect } from "./account-text";
+import { Presence } from "../../shared/ui/presence";
 
 /**
  * The first thing a new person sees above the sample: what it is and the one thing to do next.
@@ -50,11 +51,13 @@ export function GetStarted(props: {
       {!props.clientConfigured && (
         <p class="hint">This site has no Google client set up yet. Add it on the Your data screen.</p>
       )}
-      {problem !== null && (
-        <p class="field-error" role="alert">
-          {problem}
-        </p>
-      )}
+      <Presence show={problem !== null}>
+        {problem !== null && (
+          <p class="field-error" role="alert">
+            {problem}
+          </p>
+        )}
+      </Presence>
       <details class="setup-details">
         <summary>How setup works</summary>
         <ol class="steps">

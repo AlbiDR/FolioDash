@@ -242,11 +242,13 @@ export function FundQuestion(props: {
           </button>
         </div>
       </Presence>
-      {error !== undefined && attempted && (
-        <p id={id("error")} class="field-error" role="alert">
-          {error}
-        </p>
-      )}
+      <Presence show={error !== undefined && attempted}>
+        {error !== undefined && attempted && (
+          <p id={id("error")} class="field-error" role="alert">
+            {error}
+          </p>
+        )}
+      </Presence>
     </fieldset>
   );
 }

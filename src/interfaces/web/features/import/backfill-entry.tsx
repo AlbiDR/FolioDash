@@ -21,6 +21,7 @@ import { BackfillDone } from "./backfill-done";
 import { BackfillMore } from "./backfill-more";
 import { BackfillPreview } from "./backfill-preview";
 import { BackfillValuesForm } from "./backfill-values-form";
+import { Presence } from "../../shared/ui/presence";
 
 /** Guided review of an earlier manual statement and the former opening month. */
 export function BackfillEntry(props: {
@@ -383,11 +384,13 @@ export function BackfillEntry(props: {
             recover={recover}
           />
         )}
-        {problem !== "" && (
-          <p class="field-error" role="alert">
-            {problem}
-          </p>
-        )}
+        <Presence show={problem !== ""}>
+          {problem !== "" && (
+            <p class="field-error" role="alert">
+              {problem}
+            </p>
+          )}
+        </Presence>
       </div>
     </section>
   );

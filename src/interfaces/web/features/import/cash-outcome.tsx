@@ -3,6 +3,7 @@ import type { FundCommand, PlanRow, applyImport } from "../../../../core/stateme
 import type { RecordResult, RemoteSave } from "../../../../applications/import/import-model";
 import { type IsoDate, formatDateLong } from "../../../../core/values/iso-date";
 import { Amount } from "../../presentation/privacy/privacy";
+import { Presence } from "../../shared/ui/presence";
 
 const ACTION_TEXT: Readonly<Record<FundCommand["action"], string>> = {
   Start: "Starting balance",
@@ -83,61 +84,69 @@ export function SaveOutcome(props: {
   const { saving, checkSave } = props;
   return (
     <>
-      {saving.name === "not-saved" && (
-        <div class="review-problem" role="alert">
-          <h4>Not saved</h4>
-          <p>{saving.message}</p>
-        </div>
-      )}
-      {saving.name === "refused" && (
-        <div class="review-problem" role="alert">
-          <h4>Not saved</h4>
-          {saving.outcome.status === "stale" && (
+      <Presence show={saving.name === "not-saved"}>
+        {saving.name === "not-saved" && (
+          <div class="review-problem" role="alert">
+            <h4>Not saved</h4>
+            <p>{saving.message}</p>
+          </div>
+        )}
+      </Presence>
+      <Presence show={saving.name === "refused"}>
+        {saving.name === "refused" && (
+          <div class="review-problem" role="alert">
+            <h4>Not saved</h4>
+            {saving.outcome.status === "stale" && (
+              <p>
+                Another device changed your portfolio. This statement was not saved. Your inputs are still here. Check
+                the updated history and review your decisions before confirming again; reconnect in Your data if Google
+                could not be checked.
+              </p>
+            )}
+            {saving.outcome.status === "rejected" && (
+              <>
+                <p>The spreadsheet service checked the statement and did not accept it. Nothing was saved.</p>
+                <ul>
+                  {saving.outcome.messages.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {saving.outcome.status === "damaged" && (
+              <p>{saving.outcome.message} Nothing was saved. Do not record anything until the ledger is restored.</p>
+            )}
+          </div>
+        )}
+      </Presence>
+      <Presence show={saving.name === "saved-not-reloaded"}>
+        {saving.name === "saved-not-reloaded" && (
+          <div class="review-problem" role="alert">
+            <h4>Saved, but not reloaded</h4>
             <p>
-              Another device changed your portfolio. This statement was not saved. Your inputs are still here. Check the
-              updated history and review your decisions before confirming again; reconnect in Your data if Google could
-              not be checked.
+              The statement was recorded in your spreadsheet, but the ledger could not be read back. Do not record it
+              again. Checking reads your spreadsheet and writes nothing.
             </p>
-          )}
-          {saving.outcome.status === "rejected" && (
-            <>
-              <p>The spreadsheet service checked the statement and did not accept it. Nothing was saved.</p>
-              <ul>
-                {saving.outcome.messages.map((message) => (
-                  <li key={message}>{message}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          {saving.outcome.status === "damaged" && (
-            <p>{saving.outcome.message} Nothing was saved. Do not record anything until the ledger is restored.</p>
-          )}
-        </div>
-      )}
-      {saving.name === "saved-not-reloaded" && (
-        <div class="review-problem" role="alert">
-          <h4>Saved, but not reloaded</h4>
-          <p>
-            The statement was recorded in your spreadsheet, but the ledger could not be read back. Do not record it
-            again. Checking reads your spreadsheet and writes nothing.
-          </p>
-          {props.save !== undefined && (
+            {props.save !== undefined && (
+              <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>
+                Check what happened
+              </button>
+            )}
+          </div>
+        )}
+      </Presence>
+      <Presence show={saving.name === "unknown" && props.save !== undefined}>
+        {saving.name === "unknown" && props.save !== undefined && (
+          <div class="review-problem" role="alert">
+            <h4>The result is not known</h4>
+            <p>{saving.message}</p>
+            <p>Do not try again yet. Checking reads your spreadsheet and writes nothing.</p>
             <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>
               Check what happened
             </button>
-          )}
-        </div>
-      )}
-      {saving.name === "unknown" && props.save !== undefined && (
-        <div class="review-problem" role="alert">
-          <h4>The result is not known</h4>
-          <p>{saving.message}</p>
-          <p>Do not try again yet. Checking reads your spreadsheet and writes nothing.</p>
-          <button type="button" onClick={() => void checkSave(props.save as RemoteSave)}>
-            Check what happened
-          </button>
-        </div>
-      )}
+          </div>
+        )}
+      </Presence>
     </>
   );
 }

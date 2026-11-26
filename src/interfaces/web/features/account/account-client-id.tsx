@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
 import type { AccountShared } from "./use-account-controller";
+import { Presence } from "../../shared/ui/presence";
 
 export function AccountClientId(p: { readonly shared: AccountShared }): JSX.Element {
   const { props, x } = p.shared;
@@ -30,11 +31,13 @@ export function AccountClientId(p: { readonly shared: AccountShared }): JSX.Elem
                   setClientError(false);
                 }}
               />
-              {clientError && (
-                <p id="client-id-error" class="field-error" role="alert">
-                  That does not look like a client ID. It ends with .apps.googleusercontent.com.
-                </p>
-              )}
+              <Presence show={clientError}>
+                {clientError && (
+                  <p id="client-id-error" class="field-error" role="alert">
+                    That does not look like a client ID. It ends with .apps.googleusercontent.com.
+                  </p>
+                )}
+              </Presence>
             </div>
             <button
               type="button"

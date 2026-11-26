@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { ExpenseSaveOutcome } from "../../../../applications/session/expense-model";
+import { Presence } from "../../shared/ui/presence";
 
 export function ExpenseDataTools(props: {
   readonly days: number;
@@ -147,25 +148,27 @@ export function ExpenseDataTools(props: {
           The JSON backup contains private amounts and every saved correction. It can restore expense history into an
           empty expense store; it does not replace or merge an existing history.
         </p>
-        {!props.ready && (
-          <div class="notice notice-warning" role="status">
-            <p>
-              {props.message ||
-                (props.connected
-                  ? "Check your expense records against Google before restoring. Your selected backup stays here."
-                  : "Connect to Google and check your expense records before restoring. Your selected backup stays here.")}
-            </p>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                void sync();
-              }}
-            >
-              {props.connected ? "Check expense records" : "Connect and check expense records"}
-            </button>
-          </div>
-        )}
+        <Presence show={!props.ready}>
+          {!props.ready && (
+            <div class="notice notice-warning" role="status">
+              <p>
+                {props.message ||
+                  (props.connected
+                    ? "Check your expense records against Google before restoring. Your selected backup stays here."
+                    : "Connect to Google and check your expense records before restoring. Your selected backup stays here.")}
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  void sync();
+                }}
+              >
+                {props.connected ? "Check expense records" : "Connect and check expense records"}
+              </button>
+            </div>
+          )}
+        </Presence>
         <button type="button" disabled={props.commands === 0 || busy} onClick={download}>
           Download expense backup
         </button>

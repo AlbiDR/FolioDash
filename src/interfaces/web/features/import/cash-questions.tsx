@@ -16,6 +16,7 @@ import type { ReviewStatement } from "../../../../applications/import/import-mod
 import { type Answer, BLANK, type CashReviewDraft, build } from "./cash-answers";
 import { FundQuestion } from "./cash-fund-question";
 import { CashSummary, SaveOutcome, type SaveState } from "./cash-outcome";
+import { Presence } from "../../shared/ui/presence";
 
 export function CashQuestions(props: {
   readonly statement: ReviewStatement;
@@ -328,11 +329,13 @@ export function CashQuestions(props: {
               ? "Confirm and record this statement"
               : "Keep these answers and continue"}
         </button>
-        {hasErrors && attempted && (
-          <p class="field-error" role="alert">
-            Some questions above still need an answer.
-          </p>
-        )}
+        <Presence show={hasErrors && attempted}>
+          {hasErrors && attempted && (
+            <p class="field-error" role="alert">
+              Some questions above still need an answer.
+            </p>
+          )}
+        </Presence>
         <div aria-live="polite" data-busy={saving.name === "saving"} class="status">
           {saving.name === "saving" && (
             <p>

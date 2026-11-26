@@ -183,13 +183,15 @@ export function ManualEntry(props: {
                     Comma for decimals. Enter 0 explicitly for a zero value.
                   </p>
                 </div>
-                {errors.length > 0 && (
-                  <ul class="field-error">
-                    {errors.map((error) => (
-                      <li key={error}>{error.replace("Fund 1: ", "")}</li>
-                    ))}
-                  </ul>
-                )}
+                <Presence show={errors.length > 0}>
+                  {errors.length > 0 && (
+                    <ul class="field-error">
+                      {errors.map((error) => (
+                        <li key={error}>{error.replace("Fund 1: ", "")}</li>
+                      ))}
+                    </ul>
+                  )}
+                </Presence>
                 {row.known && (
                   <p id={`${row.id}-removal-help`} class="hint">
                     If you sold all of this fund, mark it as no longer held. You will review the sale and proceeds
@@ -266,16 +268,18 @@ export function ManualEntry(props: {
             I hold no funds on this date. Review closures and full proceeds next.
           </label>
         )}
-        {attempted && !result.ok && (
-          <div class="review-problem" role="alert">
-            <h4>Check your entries</h4>
-            <ul>
-              {result.errors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <Presence show={attempted && !result.ok}>
+          {attempted && !result.ok && (
+            <div class="review-problem" role="alert">
+              <h4>Check your entries</h4>
+              <ul>
+                {result.errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Presence>
         {attempted && rows.length === 0 && !emptyConfirmed && (
           <p role="alert">Confirm that no funds are held, or add a fund.</p>
         )}

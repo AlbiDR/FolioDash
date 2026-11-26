@@ -8,6 +8,7 @@ import type { LedgerState } from "../../../../core/portfolio/ledger";
 import { parseIsoDate } from "../../../../core/values/iso-date";
 import { statementDateIssue } from "../../../../core/statements/import-plan";
 import { Amount } from "../../presentation/privacy/privacy";
+import { Presence } from "../../shared/ui/presence";
 
 /** The first step: pick the statements to include and check each date, before anything is reviewed. */
 export function ExcelDatesStep(props: {
@@ -34,27 +35,31 @@ export function ExcelDatesStep(props: {
         For a workbook with several statements, a full date in each sheet name is proposed (YYYY-MM-DD or DD-MM-YYYY).
         Otherwise enter it below. The workbook's creation date is never applied to all its sheets.
       </p>
-      {props.review.problems.length > 0 && (
-        <div class="review-problem" role="alert">
-          <h4>Choose the files again to resolve these problems</h4>
-          <ul>
-            {props.review.problems.map((problem, index) => (
-              <li key={index}>{problem}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {props.review.notices.length > 0 && (
-        <div class="notice notice-warning">
-          <h4>Sheets not included</h4>
-          <p>Check that none of these sheets contain statements you need.</p>
-          <ul>
-            {props.review.notices.map((notice, index) => (
-              <li key={index}>{notice}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Presence show={props.review.problems.length > 0}>
+        {props.review.problems.length > 0 && (
+          <div class="review-problem" role="alert">
+            <h4>Choose the files again to resolve these problems</h4>
+            <ul>
+              {props.review.problems.map((problem, index) => (
+                <li key={index}>{problem}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Presence>
+      <Presence show={props.review.notices.length > 0}>
+        {props.review.notices.length > 0 && (
+          <div class="notice notice-warning">
+            <h4>Sheets not included</h4>
+            <p>Check that none of these sheets contain statements you need.</p>
+            <ul>
+              {props.review.notices.map((notice, index) => (
+                <li key={index}>{notice}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Presence>
       {props.ledger.snapshots.at(-1) !== undefined && (
         <button
           type="button"
@@ -120,15 +125,17 @@ export function ExcelDatesStep(props: {
           )}
         </fieldset>
       ))}
-      {!plan.ok && (
-        <div class="review-problem" role="status">
-          <ul>
-            {plan.messages.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Presence show={!plan.ok}>
+        {!plan.ok && (
+          <div class="review-problem" role="status">
+            <ul>
+              {plan.messages.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Presence>
       <p class="hint" aria-live="polite">
         {entries.filter((entry) => entry.selected).length} of {entries.length} statements selected.
       </p>
