@@ -1,13 +1,13 @@
 {
   "activity:enter": {
-    "kinds": 11,
-    "elements": 15,
+    "kinds": 12,
+    "elements": 16,
     "settle": 573,
     "loops": 0
   },
   "activity:open": {
-    "kinds": 7,
-    "elements": 15,
+    "kinds": 8,
+    "elements": 16,
     "settle": 835,
     "loops": 0
   },
