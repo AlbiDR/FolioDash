@@ -246,10 +246,10 @@ One row is a source template; a fund-link template can render many controls. All
 | 5406f045370f-1 | [import-review.tsx:39](../../src/interfaces/web/features/import/import-review.tsx#L39) | input / field | statement-date | SOURCE CLASSIFIED; STATES OPEN |
 | 1d453b2b68bc-1 | [import-review.tsx:68](../../src/interfaces/web/features/import/import-review.tsx#L68) | select / field | sheet-choice | SOURCE CLASSIFIED; STATES OPEN |
 | fe7909821ac9-1 | [import-statement.tsx:122](../../src/interfaces/web/features/import/import-statement.tsx#L122) | summary / action | Categories in the file | SOURCE CLASSIFIED; STATES OPEN |
-| c7d02f2d8ea0-1 | [import-view.tsx:147](../../src/interfaces/web/features/import/import-view.tsx#L147) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
-| 433af233c51f-1 | [import-view.tsx:158](../../src/interfaces/web/features/import/import-view.tsx#L158) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
-| 9afbc4887c4a-1 | [import-view.tsx:173](../../src/interfaces/web/features/import/import-view.tsx#L173) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
-| a4ef13a46b03-1 | [import-view.tsx:214](../../src/interfaces/web/features/import/import-view.tsx#L214) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
+| c7d02f2d8ea0-1 | [import-view.tsx:158](../../src/interfaces/web/features/import/import-view.tsx#L158) | button / action | Import Excel | SOURCE CLASSIFIED; STATES OPEN |
+| 433af233c51f-1 | [import-view.tsx:169](../../src/interfaces/web/features/import/import-view.tsx#L169) | button / action | Enter manually | SOURCE CLASSIFIED; STATES OPEN |
+| 9afbc4887c4a-1 | [import-view.tsx:182](../../src/interfaces/web/features/import/import-view.tsx#L182) | button / action | Add earlier history | SOURCE CLASSIFIED; STATES OPEN |
+| a4ef13a46b03-1 | [import-view.tsx:223](../../src/interfaces/web/features/import/import-view.tsx#L223) | input / field | statement-file | SOURCE CLASSIFIED; STATES OPEN |
 | e431be296b26-1 | [manual-entry.tsx:116](../../src/interfaces/web/features/import/manual-entry.tsx#L116) | input / field | manual-date | SOURCE CLASSIFIED; STATES OPEN |
 | 1e0dc92f72a2-1 | [manual-entry.tsx:143](../../src/interfaces/web/features/import/manual-entry.tsx#L143) | input / field | {'${row.id}-name'} | SOURCE CLASSIFIED; STATES OPEN |
 | a2d7f0f324c4-1 | [manual-entry.tsx:154](../../src/interfaces/web/features/import/manual-entry.tsx#L154) | input / field | {'${row.id}-isin'} | SOURCE CLASSIFIED; STATES OPEN |

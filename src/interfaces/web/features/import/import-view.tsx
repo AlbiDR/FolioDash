@@ -102,6 +102,8 @@ export function ImportView(props: {
     }
   }
 
+  const earlierAvailable =
+    props.ledger.snapshots.length > 0 && props.workbookId !== undefined && props.save?.backfill !== undefined;
   return (
     <section aria-labelledby="import-heading" class="import">
       <h2 id="import-heading" class="import-heading">
@@ -143,7 +145,16 @@ export function ImportView(props: {
         )}
       </Presence>
       {!props.historyMode && (
-        <div class="segmented entry-methods" role="group" aria-label="Entry method">
+        <div
+          class="segmented range-selector motion-range-select entry-methods"
+          role="group"
+          aria-label="Entry method"
+          style={{
+            // The shared sliding selection, as in the period control: one pill moves to the chosen method.
+            "--segment-count": earlierAvailable ? 3 : 2,
+            "--segment-index": method === "file" ? 0 : method === "manual" ? 1 : 2,
+          }}
+        >
           <button
             type="button"
             disabled={saveLocked || batchLocked || phase.name === "reading"}
@@ -167,22 +178,20 @@ export function ImportView(props: {
           >
             Enter manually
           </button>
-          {props.ledger.snapshots.length > 0 &&
-            props.workbookId !== undefined &&
-            props.save?.backfill !== undefined && (
-              <button
-                type="button"
-                disabled={saveLocked || batchLocked || phase.name === "reading"}
-                aria-controls="earlier-entry-panel"
-                aria-pressed={method === "earlier"}
-                onClick={() => {
-                  setBackfillStarted(true);
-                  setMethod("earlier");
-                }}
-              >
-                Add earlier history
-              </button>
-            )}
+          {earlierAvailable && (
+            <button
+              type="button"
+              disabled={saveLocked || batchLocked || phase.name === "reading"}
+              aria-controls="earlier-entry-panel"
+              aria-pressed={method === "earlier"}
+              onClick={() => {
+                setBackfillStarted(true);
+                setMethod("earlier");
+              }}
+            >
+              Add earlier history
+            </button>
+          )}
         </div>
       )}
       <div id="manual-entry-panel" class="entry-panel" hidden={method !== "manual"}>

@@ -313,3 +313,8 @@ details[open] > summary::before {
     transform: none;
   }
 }
+
+/* A checkpoint's withdraw confirmation replaces its button inside the row; it enters as a layer (FD-029, phase 6). */
+.checkpoint-confirm {
+  animation: feedback-enter var(--duration-short) var(--ease-smooth);
+}

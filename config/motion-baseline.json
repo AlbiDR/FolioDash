@@ -37,14 +37,14 @@
   },
   "expenses:enter": {
     "kinds": 13,
-    "elements": 28,
+    "elements": 27,
     "settle": 573,
     "loops": 0
   },
   "expenses:open": {
     "kinds": 9,
-    "elements": 28,
-    "settle": 945,
+    "elements": 27,
+    "settle": 890,
     "loops": 0
   },
   "fund:enter": {
