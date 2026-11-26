@@ -196,7 +196,11 @@ export function AppTopbar(props: {
         </a>
       )}
       <div class="topbar-title">
-        <h1 key={pageTitle} id="page-title" class="page-title-arrival">
+        <h1
+          key={pageTitle}
+          id="page-title"
+          class={route.name === "fund" ? "page-title-arrival fund-title" : "page-title-arrival"}
+        >
           {pageTitle}
         </h1>
       </div>

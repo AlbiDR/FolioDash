@@ -45,7 +45,17 @@ export async function portfolioJourney({
             const [nextTop, nextBottom] = edges();
             const lead = movingDown ? nextBottom - bottom : top - nextTop;
             const trail = movingDown ? nextTop - top : bottom - nextBottom;
-            movedDuringExit ||= lead > 1 && document.querySelector("[data-page-exiting]") !== null;
+            // The old page leaves through its exit animation, or as a view transition's outgoing image (FD-029).
+            const leaving =
+              document.querySelector("[data-page-exiting]") !== null ||
+              document
+                .getAnimations()
+                .some((animation) =>
+                  ((animation.effect as KeyframeEffect | null)?.pseudoElement ?? "").startsWith(
+                    "::view-transition-old",
+                  ),
+                );
+            movedDuringExit ||= lead > 1 && leaving;
             expanded ||= lead - trail > bottom - top;
             const box = link.getBoundingClientRect();
             if (

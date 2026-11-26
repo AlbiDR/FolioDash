@@ -7,6 +7,7 @@ import { OverviewView } from "../features/overview/overview-view";
 import { PrivacyProvider, usePrivacyChoice } from "../presentation/privacy/privacy";
 import { Presence } from "../shared/ui/presence";
 import { usePageMotion } from "../shared/ui/use-page-motion";
+import { useFundTitleContinuity } from "./fund-continuity";
 import { DeferredView } from "../shared/ui/deferred-view";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "../shared/ui/sidebar-choice";
 import { useMediaQuery } from "../shared/ui/use-media-query";
@@ -47,6 +48,7 @@ import {
 export function App(): JSX.Element {
   const page = useRef<HTMLElement>(null);
   const pageMotion = usePageMotion(page);
+  useFundTitleContinuity();
   const header = useRef<HTMLElement>(null);
   const navigation = useRef<HTMLElement>(null);
   useFocusVisibility(header, navigation);

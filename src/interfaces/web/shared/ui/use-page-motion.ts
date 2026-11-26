@@ -15,6 +15,7 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
   const markEntered = (): void => {
     page.current?.setAttribute("data-arrival", "entered");
   };
+  let transitioning: ViewTransition | null = null;
   let animation: Animation | null = null;
   let animated: HTMLElement | null = null;
   let pending: (() => void) | null = null;
@@ -43,6 +44,8 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
       markEntered();
       flushSync(commit);
     }
+    // A forced finish commits here and now; a view transition still waiting for its update has nothing left to do.
+    transitioning?.skipTransition();
   };
   const change = (commit: () => void): void => {
     // The latest destination replaces the pending destination, never mounts an intermediate screen.
@@ -55,6 +58,32 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
       stop();
       markEntered();
       flushSync(commit);
+      return;
+    }
+    // Where the browser has same-document view transitions, the sidebar and toolbar hold still while the page changes
+    // (FD-029, decision 3); the latest destination is committed once the old page has been captured.
+    if (typeof document.startViewTransition === "function") {
+      stop();
+      pending = commit;
+      try {
+        const transition = document.startViewTransition(() => {
+          const latest = pending;
+          pending = null;
+          if (latest !== null) {
+            markEntered();
+            flushSync(latest);
+          }
+        });
+        transitioning = transition;
+        // A transition skipped by a forced finish or replaced by a newer navigation rejects these; that is expected.
+        transition.ready.catch(() => undefined);
+        transition.updateCallbackDone.catch(() => undefined);
+        void transition.finished.finally(() => {
+          if (transitioning === transition) transitioning = null;
+        });
+      } catch {
+        finish();
+      }
       return;
     }
     const current = getComputedStyle(element);
@@ -98,12 +127,14 @@ export function createPageMotion(page: RefObject<HTMLElement | null>, motion: Mo
     finish,
     cancel: (): void => {
       pending = null;
+      transitioning?.skipTransition();
       stop();
     },
   };
 }
 
-/** One live page at a time: finish the exit before replacing it, and coalesce rapid destinations. */
+/** One live page at a time: change pages inside a view transition, or finish the exit before replacing it, and coalesce
+ * rapid destinations. */
 export function usePageMotion(page: RefObject<HTMLElement | null>) {
   const motion = useMemo(() => createPageMotion(page), [page]);
   useEffect(() => {

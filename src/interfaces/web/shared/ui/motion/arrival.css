@@ -196,3 +196,44 @@
   ) {
   animation-duration: var(--duration-medium);
 }
+
+/* Changing pages (FD-029, decision 3). The sidebar and toolbar carry their own view-transition names, so they hold still
+ * while the outgoing page leaves on the motion tokens and the new page plays its own arrival. The name of a fund in the
+ * row that opened it becomes the fund page's title. Browsers without view transitions keep the page exit in
+ * shared/ui/use-page-motion.ts; reduced motion uses neither. */
+@media (prefers-reduced-motion: no-preference) {
+  .main-nav {
+    view-transition-name: sidebar;
+  }
+  .topbar {
+    view-transition-name: toolbar;
+  }
+  .fund-title {
+    view-transition-name: fund-title;
+  }
+  ::view-transition-group(sidebar),
+  ::view-transition-old(sidebar),
+  ::view-transition-new(sidebar),
+  ::view-transition-group(toolbar),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  ::view-transition-old(toolbar),
+  ::view-transition-new(toolbar) {
+    animation-duration: var(--duration-short);
+    animation-timing-function: var(--ease-standard);
+  }
+  ::view-transition-old(root) {
+    animation: page-leave var(--duration-short) var(--ease-standard) both;
+  }
+  ::view-transition-group(fund-title) {
+    animation-duration: var(--duration-medium);
+    animation-timing-function: var(--ease-smooth);
+  }
+}
+@keyframes page-leave {
+  to {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--motion-nudge)));
+  }
+}

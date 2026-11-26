@@ -149,3 +149,49 @@ it("marks a page entered from inside the app before it mounts, with or without t
   });
   expect(reducedMarked).toBe(true);
 });
+
+function withViewTransitions() {
+  const setup = fixture();
+  const updates: (() => void)[] = [];
+  const skip = vi.fn();
+  Object.assign(setup.visibility, {
+    startViewTransition: (update: () => void) => {
+      updates.push(update);
+      return {
+        finished: new Promise(() => undefined),
+        ready: Promise.reject(new Error("skipped")),
+        updateCallbackDone: Promise.resolve(),
+        skipTransition: skip,
+      };
+    },
+  });
+  return { ...setup, updates, skip };
+}
+
+it("changes pages inside a view transition, committing only the latest destination once the old page is captured", () => {
+  const { motion, node, attributes, updates } = withViewTransitions();
+  const first = vi.fn();
+  const last = vi.fn(() => {
+    expect(attributes.has("data-arrival")).toBe(true);
+  });
+  motion.change(first);
+  motion.change(last);
+  expect(updates).toHaveLength(1);
+  expect(first).not.toHaveBeenCalled();
+  updates[0]?.();
+  expect(first).not.toHaveBeenCalled();
+  expect(last).toHaveBeenCalledOnce();
+  expect(node.animate).not.toHaveBeenCalled();
+  expect(node.inert).toBe(false);
+});
+
+it("commits at once when forced to finish during a view transition, and the late update does nothing", () => {
+  const { motion, updates, skip } = withViewTransitions();
+  const commit = vi.fn();
+  motion.change(commit);
+  motion.finish();
+  expect(commit).toHaveBeenCalledOnce();
+  expect(skip).toHaveBeenCalled();
+  updates[0]?.();
+  expect(commit).toHaveBeenCalledOnce();
+});

@@ -239,10 +239,22 @@ export async function rangeSelectorJourney({ call, evaluate, waitFor, check, vis
   await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
   await delay(260);
   // A route change moves the current page out before the next screen mounts, and the next page arrives afterwards.
-  await evaluate("location.hash='#expenses'");
-  await delay(40);
+  // The exit is the page's own animation, or a view transition's outgoing image where the browser has them (FD-029).
   await check(
-    "document.getElementById('main-content').getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().fill==='forwards')",
+    `new Promise((resolve) => {
+      const deadline = performance.now() + 500;
+      location.hash = '#expenses';
+      const sample = () => {
+        const exit = document.getElementById('main-content').getAnimations()
+          .some((a) => a.playState === 'running' && a.effect.getComputedTiming().fill === 'forwards');
+        const outgoing = document.getAnimations()
+          .some((a) => a.playState === 'running' && String(a.effect?.pseudoElement ?? '').startsWith('::view-transition-old(root)'));
+        if (exit || outgoing) resolve(true);
+        else if (performance.now() > deadline) resolve(false);
+        else requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    })`,
     "a route change moves the current page out before the next one mounts",
   );
   await waitFor(

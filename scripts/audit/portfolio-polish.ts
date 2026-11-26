@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { withLocalBrowser } from "../lib/local-browser.ts";
 import { createSteps } from "./interactions/browser-steps.ts";
 import { assertPortfolioLayout } from "./portfolio-layout.ts";
+import { assertFundContinuity } from "./motion/continuity.ts";
 import { assertSidebarCollapse } from "./sidebar-collapse.ts";
 
 const output = resolve("dist/portfolio-polish");
@@ -225,6 +226,12 @@ await withLocalBrowser(async (browser) => {
     "settled cards",
   );
   results.push({ name: "sidebar collapse and reopen", result: await assertSidebarCollapse(browser) });
+  results.push({ name: "holding row opens its fund as one transition", result: await assertFundContinuity(browser) });
+  await visit("overview", 1440, "many");
+  await waitFor(
+    async () => (await evaluate("document.getAnimations().every(a=>a.playState!=='running')")) === true,
+    "settled cards after returning",
+  );
   await evaluate(`(() => {
     const rows=[...document.querySelectorAll('.desktop-holdings tbody tr:not(.holdings-group):not(.closed)')];
     window.polishRow=rows[1];window.polishText=window.polishRow.textContent;
