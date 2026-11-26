@@ -5,6 +5,15 @@
 
 import type { StyleFile } from "./style-policy.ts";
 
+/** Where motion may be written (decision 7): the role owners, control feedback, the chart owner and standalone pages,
+ * which carry the tokens they use. A feature or page stylesheet gets its motion from these, never writes its own. */
+export const MOTION_LOCATIONS: readonly string[] = [
+  "src/interfaces/web/shared/ui/motion/",
+  "src/interfaces/web/shared/ui/control-feedback.css",
+  "src/interfaces/web/presentation/charts/chart-arrival.css",
+  "src/interfaces/web/public/",
+];
+
 /** The design record whose table names each motion stylesheet's owner. */
 export const MOTION_OWNER_RECORD = "docs/design/motion-layer.md";
 const TABLE_HEADING = "## Motion stylesheets and their owners";
@@ -76,8 +85,8 @@ export function ownerTablePaths(record: string): string[] {
 /**
  * Rules: `motion-owner-missing` (a stylesheet under the web interface carries motion but has no row),
  * `motion-owner-stale` (a row names a stylesheet that no longer exists or no longer carries motion),
- * `motion-owner-duplicate` (a stylesheet has more than one row) and `motion-owner-unowned` (a row with an empty owner
- * cell). A token file is held to the same rule: defining the motion tokens is its job, so it needs a row only if a
+ * `motion-owner-duplicate` (a stylesheet has more than one row), `motion-owner-unowned` (a row with an empty owner
+ * cell) and `motion-outside-owner` (motion written outside the owner locations). A token file is held to the same rule: defining the motion tokens is its job, so it needs a row only if a
  * transition, an animation, keyframes or entry styles are written into it.
  */
 export function motionOwnerProblems(
@@ -97,6 +106,9 @@ export function motionOwnerProblems(
   if (rows.length === 0) problems.push(`motion-owner-table ${MOTION_OWNER_RECORD}: no owner table found`);
   for (const path of [...moving].sort()) {
     if (!listed.has(path)) problems.push(`motion-owner-missing ${WEB_ROOT}${path}`);
+    if (!MOTION_LOCATIONS.some((location) => `${WEB_ROOT}${path}`.startsWith(location))) {
+      problems.push(`motion-outside-owner ${WEB_ROOT}${path}`);
+    }
   }
   for (const [path, count] of [...listed.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     if (!moving.has(path)) problems.push(`motion-owner-stale ${WEB_ROOT}${path}`);

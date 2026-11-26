@@ -14,6 +14,7 @@ import "./styles/phone.css";
 import "./styles/content-and-notices.css";
 import "../features/overview/styles/summary.css";
 import "../features/overview/styles/holdings-and-attention.css";
+import "../shared/ui/motion/foundation.css";
 import "../features/overview/styles/fund-and-changes.css";
 import "../features/overview/styles/holdings-rows.css";
 import "../features/overview/styles/allocation-and-references.css";
@@ -26,6 +27,7 @@ import "../shared/ui/motion/state-content.css";
 import "../shared/ui/motion/state-controls.css";
 import "../shared/ui/motion/easing.css";
 import "../shared/ui/control-feedback.css";
+import "../shared/ui/motion/screens.css";
 import { App } from "./app";
 import { watchSystemTheme } from "./platform/system-theme";
 

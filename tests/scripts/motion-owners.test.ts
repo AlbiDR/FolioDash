@@ -59,15 +59,18 @@ describe("carriesMotion", () => {
 
 describe("ownerTablePaths", () => {
   it("reads only the owner table's rows", () => {
-    expect(ownerTablePaths(record("shared/a.css", "app/b.css"))).toEqual(["shared/a.css", "app/b.css"]);
+    expect(ownerTablePaths(record("shared/ui/motion/a.css", "app/b.css"))).toEqual([
+      "shared/ui/motion/a.css",
+      "app/b.css",
+    ]);
   });
   it("reads page styles and owners, and skips rows inside an HTML comment", () => {
-    const text = record("shared/a.css").replace(
+    const text = record("shared/ui/motion/a.css").replace(
       "\n\n## Proof",
       "\n| `public/page/index.html` | page links | [Page](page.md) |\n<!--\n| `shared/old.css` | gone | [Old](old.md) |\n-->\n\n## Proof",
     );
     expect(ownerTableRows(text)).toEqual([
-      { path: "shared/a.css", owner: "[A record](a.md)" },
+      { path: "shared/ui/motion/a.css", owner: "[A record](a.md)" },
       { path: "public/page/index.html", owner: "[Page](page.md)" },
     ]);
   });
@@ -80,51 +83,58 @@ describe("motionOwnerProblems", () => {
   const tokens = ["src/interfaces/web/shared/tokens.css"];
   it("passes when every moving stylesheet has exactly one row", () => {
     const files = [
-      web("shared/a.css", ".a { transition: opacity var(--duration-short); }"),
+      web("shared/ui/motion/a.css", ".a { transition: opacity var(--duration-short); }"),
       web("app/still.css", ".a { color: var(--text); }"),
       web("shared/tokens.css", ":root { --duration-short: 180ms; }"),
     ];
-    expect(motionOwnerProblems(files, record("shared/a.css"), tokens)).toEqual([]);
+    expect(motionOwnerProblems(files, record("shared/ui/motion/a.css"), tokens)).toEqual([]);
   });
   it("reports a moving stylesheet with no owner, such as a new polish layer", () => {
     const files = [
-      web("shared/a.css", ".a { transition: opacity var(--duration-short); }"),
-      web("shared/polish.css", ".a { transition-timing-function: var(--ease-smooth); }"),
+      web("shared/ui/motion/a.css", ".a { transition: opacity var(--duration-short); }"),
+      web("shared/ui/motion/polish.css", ".a { transition-timing-function: var(--ease-smooth); }"),
     ];
-    expect(motionOwnerProblems(files, record("shared/a.css"), tokens)).toEqual([
-      "motion-owner-missing src/interfaces/web/shared/polish.css",
+    expect(motionOwnerProblems(files, record("shared/ui/motion/a.css"), tokens)).toEqual([
+      "motion-owner-missing src/interfaces/web/shared/ui/motion/polish.css",
     ]);
   });
   it("reports a row whose stylesheet is gone or no longer moves", () => {
-    const files = [web("shared/a.css", ".a { color: var(--text); }")];
-    expect(motionOwnerProblems(files, record("shared/a.css", "shared/gone.css"), tokens)).toEqual([
-      "motion-owner-stale src/interfaces/web/shared/a.css",
-      "motion-owner-stale src/interfaces/web/shared/gone.css",
+    const files = [web("shared/ui/motion/a.css", ".a { color: var(--text); }")];
+    expect(motionOwnerProblems(files, record("shared/ui/motion/a.css", "shared/ui/motion/gone.css"), tokens)).toEqual([
+      "motion-owner-stale src/interfaces/web/shared/ui/motion/a.css",
+      "motion-owner-stale src/interfaces/web/shared/ui/motion/gone.css",
     ]);
   });
   it("reports a stylesheet with two rows, and a row with no owner", () => {
     const files = [
-      web("shared/a.css", ".a { transition: opacity var(--duration-short); }"),
-      web("shared/b.css", ".b { transition: opacity var(--duration-short); }"),
+      web("shared/ui/motion/a.css", ".a { transition: opacity var(--duration-short); }"),
+      web("shared/ui/motion/b.css", ".b { transition: opacity var(--duration-short); }"),
     ];
-    const text = record("shared/a.css", "shared/a.css", "shared/b.css").replace(
-      "| `shared/b.css` | something | [A record](a.md) |",
-      "| `shared/b.css` | something | |",
+    const text = record("shared/ui/motion/a.css", "shared/ui/motion/a.css", "shared/ui/motion/b.css").replace(
+      "| `shared/ui/motion/b.css` | something | [A record](a.md) |",
+      "| `shared/ui/motion/b.css` | something | |",
     );
     expect(motionOwnerProblems(files, text, tokens)).toEqual([
-      "motion-owner-duplicate src/interfaces/web/shared/a.css: 2 rows",
-      "motion-owner-unowned src/interfaces/web/shared/b.css",
+      "motion-owner-duplicate src/interfaces/web/shared/ui/motion/a.css: 2 rows",
+      "motion-owner-unowned src/interfaces/web/shared/ui/motion/b.css",
     ]);
   });
   it("needs a row for the token file only when motion beyond its definitions is written into it", () => {
     const quiet = [web("shared/tokens.css", ":root { --time-state: 180ms; }")];
-    expect(motionOwnerProblems(quiet, record("shared/a.css").replace("shared/a.css", "x.css"), tokens)).toEqual([
-      "motion-owner-stale src/interfaces/web/x.css",
-    ]);
+    expect(
+      motionOwnerProblems(quiet, record("shared/ui/motion/a.css").replace("shared/ui/motion/a.css", "x.css"), tokens),
+    ).toEqual(["motion-owner-stale src/interfaces/web/x.css"]);
     const moving = [web("shared/tokens.css", ":root { --time-state: 180ms; } .a { transition: opacity 1s; }")];
     expect(motionOwnerProblems(moving, record("x.css"), tokens)).toEqual([
       "motion-owner-missing src/interfaces/web/shared/tokens.css",
+      "motion-outside-owner src/interfaces/web/shared/tokens.css",
       "motion-owner-stale src/interfaces/web/x.css",
+    ]);
+  });
+  it("reports motion written in a feature stylesheet, even with a row", () => {
+    const files = [web("features/expenses/styles/base.css", ".a { transition: opacity var(--duration-short); }")];
+    expect(motionOwnerProblems(files, record("features/expenses/styles/base.css"), tokens)).toEqual([
+      "motion-outside-owner src/interfaces/web/features/expenses/styles/base.css",
     ]);
   });
   it("reports a missing table rather than passing silently", () => {

@@ -67,7 +67,6 @@ table {
 
 .holdings-table tbody tr {
   position: relative;
-  transition: background var(--duration-short) var(--ease-smooth);
 }
 
 .holdings-table tbody tr:last-child th,

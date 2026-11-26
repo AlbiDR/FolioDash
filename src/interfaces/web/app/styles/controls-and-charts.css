@@ -22,10 +22,6 @@
   border: 0;
   border-radius: var(--shape-full);
   cursor: pointer;
-  transition:
-    background var(--duration-short) var(--ease-smooth),
-    color var(--duration-short) var(--ease-smooth),
-    transform var(--duration-short) var(--ease-smooth);
 }
 
 .segmented button:active {
@@ -49,9 +45,6 @@
   font-weight: var(--weight-semibold);
   text-decoration: none;
   border-radius: var(--shape-full);
-  transition:
-    background var(--duration-short) var(--ease-smooth),
-    color var(--duration-short) var(--ease-smooth);
 }
 
 .segmented a[aria-current="page"] {

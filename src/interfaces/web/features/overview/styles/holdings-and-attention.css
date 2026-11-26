@@ -107,7 +107,6 @@
   cursor: pointer;
 }
 .group-toggle > svg {
-  transition: transform var(--duration-short) var(--ease-smooth);
   transform: rotate(90deg);
 }
 .group-toggle[aria-expanded="false"] > svg {

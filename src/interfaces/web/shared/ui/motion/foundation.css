@@ -1,0 +1,142 @@
+/* Foundation: the motion of the base page styles and the overview holdings, which load before the overview screens.
+ * Role owner under docs/design/polished-by-default.md; moved here in phase 3, move 4, in the original order. */
+
+/* From app/styles/shell.css. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.shell {
+  transition: background-color var(--duration-medium) var(--ease-standard);
+}
+.main-nav {
+  transition:
+    background-color var(--duration-medium) var(--ease-standard),
+    box-shadow var(--duration-feedback) var(--ease-standard);
+}
+.nav-link {
+  transition:
+    background var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth),
+    transform var(--duration-short) var(--ease-smooth);
+}
+@media (min-width: 64rem) {
+  .shell {
+    /* style-allow layout-motion: the sidebar collapses by animating its grid track, so the main column reflows with it */
+    transition:
+      grid-template-columns var(--duration-medium) var(--ease-smooth),
+      background-color var(--duration-medium) var(--ease-standard);
+  }
+  .main-nav {
+    transition:
+      transform var(--duration-medium) var(--ease-smooth),
+      opacity var(--duration-short) var(--ease-smooth),
+      background-color var(--duration-medium) var(--ease-standard),
+      box-shadow var(--duration-feedback) var(--ease-standard);
+  }
+  .main-nav .brand {
+    transition:
+      color var(--duration-short) var(--ease-smooth),
+      transform var(--duration-feedback) var(--ease-smooth);
+  }
+}
+
+/* From app/styles/page-chrome.css. */
+.icon-button {
+  transition:
+    background var(--duration-short) var(--ease-smooth),
+    transform var(--duration-short) var(--ease-smooth);
+}
+.privacy-toggle {
+  transition:
+    background var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth),
+    transform var(--duration-short) var(--ease-smooth);
+}
+#main-content > .get-started,
+#main-content > :is(.dash, .screen, .account, .import) > * {
+  animation: rise var(--duration-arrival) var(--ease-arrival) backwards;
+  animation-delay: var(--section-arrival-delay);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise));
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(var(--motion-arrival-rebound));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+#main-content
+  :is(
+    .card-title,
+    .card-subtitle,
+    .hero-value,
+    .hero-gain,
+    .chart-title,
+    .chart-subtitle,
+    .account-lead,
+    .import-heading
+  ) {
+  animation: text-arrive var(--duration-arrival) var(--ease-arrival) backwards;
+  animation-delay: calc(var(--section-arrival-delay) + var(--motion-stagger));
+}
+#main-content :is(.card-subtitle, .chart-subtitle, .hero-gain) {
+  animation-delay: calc(var(--section-arrival-delay) + 2 * var(--motion-stagger));
+}
+.page-title-arrival {
+  animation: text-arrive var(--duration-medium) var(--ease-arrival) backwards;
+}
+@keyframes text-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-text-rise));
+  }
+}
+
+/* From app/styles/controls-and-charts.css. */
+.segmented button {
+  transition:
+    background var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth),
+    transform var(--duration-short) var(--ease-smooth);
+}
+.segmented a {
+  transition:
+    background var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth);
+}
+
+/* From app/styles/tables.css. */
+.holdings-table tbody tr {
+  transition: background var(--duration-short) var(--ease-smooth);
+}
+
+/* From app/styles/forms-and-buttons.css. */
+.backfill-phase {
+  animation: motion-label var(--duration-feedback) var(--ease-smooth);
+}
+.cash-movements {
+  animation: motion-label var(--duration-short) var(--ease-smooth);
+}
+.questions-body > .summary {
+  animation: motion-label var(--duration-feedback) var(--ease-smooth);
+}
+
+/* From app/styles/content-and-notices.css. */
+.notice[data-busy="true"]::before {
+  animation: busy-turn var(--duration-busy) linear infinite;
+}
+
+/* From features/overview/styles/holdings-and-attention.css. */
+.group-toggle > svg {
+  transition: transform var(--duration-short) var(--ease-smooth);
+}

@@ -125,21 +125,3 @@ label.expense-review-filter {
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
-
-@keyframes expense-date-cue {
-  from {
-    opacity: var(--motion-reveal-opacity);
-    transform: translateX(var(--motion-nudge));
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.expense-date {
-  animation: expense-date-cue var(--duration-feedback) var(--ease-smooth);
-}
-.expense-review,
-.expense-conflict {
-  animation: expense-date-cue var(--duration-short) var(--ease-smooth);
-}

@@ -65,13 +65,6 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -87,15 +80,11 @@ select:focus-visible {
 
 .shell {
   min-height: 100vh;
-  transition: background-color var(--duration-medium) var(--ease-standard);
 }
 
 .main-nav {
   /* One shape for a dock item and for the selection that slides behind it (shared/ui/motion/ reads the same token). */
   --nav-radius: var(--shape-sm);
-  transition:
-    background-color var(--duration-medium) var(--ease-standard),
-    box-shadow var(--duration-feedback) var(--ease-standard);
   position: fixed;
   z-index: 20;
   left: var(--page-inset);
@@ -137,10 +126,6 @@ select:focus-visible {
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  transition:
-    background var(--duration-short) var(--ease-smooth),
-    color var(--duration-short) var(--ease-smooth),
-    transform var(--duration-short) var(--ease-smooth);
 }
 
 .nav-link:active {
@@ -177,13 +162,6 @@ select:focus-visible {
     grid-template-columns: 13rem minmax(0, 1fr);
   }
 
-  .shell {
-    /* style-allow layout-motion: the sidebar collapses by animating its grid track, so the main column reflows with it */
-    transition:
-      grid-template-columns var(--duration-medium) var(--ease-smooth),
-      background-color var(--duration-medium) var(--ease-standard);
-  }
-
   .shell[data-nav="collapsed"] {
     grid-template-columns: 0 minmax(0, 1fr);
   }
@@ -196,11 +174,6 @@ select:focus-visible {
 
   .main-nav {
     width: calc(13rem - var(--space-3));
-    transition:
-      transform var(--duration-medium) var(--ease-smooth),
-      opacity var(--duration-short) var(--ease-smooth),
-      background-color var(--duration-medium) var(--ease-standard),
-      box-shadow var(--duration-feedback) var(--ease-standard);
     position: sticky;
     top: var(--space-3);
     left: auto;
@@ -224,9 +197,6 @@ select:focus-visible {
     font-size: var(--text-title);
     font-weight: var(--weight-bold);
     letter-spacing: -0.02em;
-    transition:
-      color var(--duration-short) var(--ease-smooth),
-      transform var(--duration-feedback) var(--ease-smooth);
   }
 
   @media (hover: hover) and (pointer: fine) {

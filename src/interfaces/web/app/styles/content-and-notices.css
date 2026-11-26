@@ -113,7 +113,6 @@
   border: 2px solid color-mix(in srgb, var(--tone) 25%, transparent);
   border-top-color: var(--tone);
   border-radius: 50%;
-  animation: busy-turn var(--duration-busy) linear infinite;
 }
 .notice h3,
 .notice h4,

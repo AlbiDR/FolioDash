@@ -66,7 +66,8 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 
 | Stylesheet | Motion it holds | Owner |
 |---|---|---|
-| `features/overview/styles/portfolio-polish.css` | readout inspection surface, paint-only background and shadow feedback | [Portfolio refinement](portfolio-refinement.md) |
+| `shared/ui/motion/foundation.css` | the motion of the base page styles (shell and sidebar, page chrome and arrival, segmented controls, tables, forms, notices) and the overview holdings, loading where they loaded | [Polished by default](polished-by-default.md) |
+| `shared/ui/motion/screens.css` | the motion of screen styles that load after control feedback: the Portfolio polish and the expense screens | [Polished by default](polished-by-default.md) |
 | `shared/ui/control-feedback.css` | press, hover and focus feedback for every semantic control | [Interaction coverage](interaction-coverage.md) |
 | `shared/ui/motion/arrival.css` | how pages, sections, text and the shell arrive. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/layers.css` | anything that appears or leaves, such as notices, disclosures, presence, busy and confirmation cues. | [Polished by default](polished-by-default.md) |
@@ -75,15 +76,6 @@ The original seventeen stylesheets carry transitions, animations or keyframes. T
 | `shared/ui/motion/state-content.css` | tables, rows, cards, figures and the screens' records. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/state-controls.css` | buttons, links, fields, choices and the remaining controls. | [Polished by default](polished-by-default.md) |
 | `shared/ui/motion/easing.css` | rules that only set the curve of transitions declared elsewhere. They load last in the motion block, so they | [Polished by default](polished-by-default.md) |
-| `app/styles/shell.css` | sidebar and layout transitions | [UI system](ui-system.md) |
-| `app/styles/page-chrome.css` | page identity, page arrival and global controls | [UI system](ui-system.md) |
-| `app/styles/controls-and-charts.css` | segmented controls and their feedback | [UI system](ui-system.md) |
-| `app/styles/forms-and-buttons.css` | form labels and import screens | [UI system](ui-system.md) |
-| `app/styles/tables.css` | table row feedback | [UI system](ui-system.md) |
-| `app/styles/content-and-notices.css` | notice and busy-state motion | [UI system](ui-system.md) |
-| `features/overview/styles/holdings-and-attention.css` | holdings share bars and attention | [Dashboard coherence](dashboard-coherence.md) |
-| `features/expenses/styles/categories-and-record.css` | expense categories and record arrival | [Work and expenses](work-expenses-experience.md) |
-| `features/expenses/styles/responsive-and-hover.css` | expense layout and hover | [Work and expenses](work-expenses-experience.md) |
 | `presentation/charts/chart-arrival.css` | all chart motion: series reveal and emphasis, bar emphasis and the pinned bar's rebound (moved from `charts.css` and `bars.css` on 2026-11-26), and chart arrivals: the line plot, allocation ring, performance bars and holdings share bars, and the named recipes bar rise, ranking rise, ring slice, marker arrival and selection rebound | This record ([recipe catalogue](#recipe-catalogue)) |
 | `public/privacy/index.html` | link underline, shadow and press feedback on the standalone privacy page, in its own `<style>` block | [Privacy policy](../operations/privacy-policy.md) |
 

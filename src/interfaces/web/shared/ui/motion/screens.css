@@ -1,0 +1,62 @@
+/* Screens: the motion of screen styles that load after control feedback (the Portfolio polish and the expense screens).
+ * Role owner under docs/design/polished-by-default.md; moved here in phase 3, move 4, in the original order. */
+
+/* From features/overview/styles/portfolio-polish.css. */
+.portfolio-trend .chart-readout {
+  transition:
+    background-color var(--duration-feedback) var(--ease-smooth),
+    box-shadow var(--duration-feedback) var(--ease-smooth);
+}
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-trend .chart-readout {
+    transition: none;
+  }
+}
+
+/* From features/expenses/styles/categories-and-record.css. */
+@keyframes expense-date-cue {
+  from {
+    opacity: var(--motion-reveal-opacity);
+    transform: translateX(var(--motion-nudge));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.expense-date {
+  animation: expense-date-cue var(--duration-feedback) var(--ease-smooth);
+}
+.expense-review,
+.expense-conflict {
+  animation: expense-date-cue var(--duration-short) var(--ease-smooth);
+}
+
+/* From features/expenses/styles/responsive-and-hover.css. */
+.expense-field {
+  transition:
+    background-color var(--duration-short) var(--ease-smooth),
+    box-shadow var(--duration-short) var(--ease-smooth);
+}
+.expense-entry .expense-state {
+  transition:
+    background-color var(--duration-short) var(--ease-smooth),
+    color var(--duration-short) var(--ease-smooth),
+    translate var(--duration-short) var(--ease-smooth);
+}
+.expense-entry .expense-form {
+  animation: expense-date-cue var(--duration-medium) var(--ease-smooth);
+}
+.expense-save-feedback > p:not(:empty) {
+  animation: expense-date-cue var(--duration-feedback) var(--ease-smooth);
+}
+@media (prefers-reduced-motion: reduce) {
+  .expense-field,
+  .expense-entry .expense-state {
+    transition-duration: 0s;
+  }
+  .expense-entry .expense-form,
+  .expense-save-feedback > p:not(:empty) {
+    animation: none;
+  }
+}

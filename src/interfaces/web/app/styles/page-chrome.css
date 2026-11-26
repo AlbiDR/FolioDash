@@ -35,9 +35,6 @@
   border: 0;
   border-radius: var(--shape-full);
   cursor: pointer;
-  transition:
-    background var(--duration-short) var(--ease-smooth),
-    transform var(--duration-short) var(--ease-smooth);
 }
 
 .icon-button:active {
@@ -148,10 +145,6 @@ a.icon-button {
   border: 0;
   border-radius: var(--shape-full);
   cursor: pointer;
-  transition:
-    background var(--duration-short) var(--ease-smooth),
-    color var(--duration-short) var(--ease-smooth),
-    transform var(--duration-short) var(--ease-smooth);
 }
 
 .privacy-toggle:active {
@@ -221,9 +214,7 @@ a.icon-button {
 /* Keep section slots in flow while each surface reveals in reading order. */
 #main-content > .get-started,
 #main-content > :is(.dash, .screen, .account, .import) > * {
-  animation: rise var(--duration-arrival) var(--ease-arrival) backwards;
   --section-arrival-delay: calc(var(--motion-stagger) * min(var(--arrival-index, 0), 5));
-  animation-delay: var(--section-arrival-delay);
 }
 #main-content > :is(.dash, .screen, .account, .import) > :nth-child(2) {
   --arrival-index: 1;
@@ -241,54 +232,11 @@ a.icon-button {
   --arrival-index: 5;
 }
 
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(var(--motion-rise));
-  }
-  78% {
-    opacity: 1;
-    transform: translateY(var(--motion-arrival-rebound));
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-#main-content
-  :is(
-    .card-title,
-    .card-subtitle,
-    .hero-value,
-    .hero-gain,
-    .chart-title,
-    .chart-subtitle,
-    .account-lead,
-    .import-heading
-  ) {
-  animation: text-arrive var(--duration-arrival) var(--ease-arrival) backwards;
-  animation-delay: calc(var(--section-arrival-delay) + var(--motion-stagger));
-}
-#main-content :is(.card-subtitle, .chart-subtitle, .hero-gain) {
-  animation-delay: calc(var(--section-arrival-delay) + 2 * var(--motion-stagger));
-}
-
 /* Keyboard focus bypasses an entrance delay without moving the layout. */
 #main-content > .get-started:focus-within,
 #main-content > :is(.dash, .screen, .account, .import) > :focus-within {
   opacity: 1 !important;
   transform: none !important;
-}
-
-.page-title-arrival {
-  animation: text-arrive var(--duration-medium) var(--ease-arrival) backwards;
-}
-@keyframes text-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(var(--motion-text-rise));
-  }
 }
 
 @media (max-width: 73.75rem) {

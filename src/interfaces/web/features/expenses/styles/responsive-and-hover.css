@@ -155,9 +155,6 @@
 .expense-field {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--shape-md);
-  transition:
-    background-color var(--duration-short) var(--ease-smooth),
-    box-shadow var(--duration-short) var(--ease-smooth);
 }
 .expense-field[data-filled="true"] {
   background: color-mix(in srgb, var(--color-accent-soft) 45%, transparent);
@@ -165,28 +162,6 @@
 .expense-field:focus-within {
   background: var(--color-accent-soft);
   box-shadow: inset 3px 0 var(--color-accent);
-}
-.expense-entry .expense-state {
-  transition:
-    background-color var(--duration-short) var(--ease-smooth),
-    color var(--duration-short) var(--ease-smooth),
-    translate var(--duration-short) var(--ease-smooth);
-}
-.expense-entry .expense-form {
-  animation: expense-date-cue var(--duration-medium) var(--ease-smooth);
-}
-.expense-save-feedback > p:not(:empty) {
-  animation: expense-date-cue var(--duration-feedback) var(--ease-smooth);
-}
-@media (prefers-reduced-motion: reduce) {
-  .expense-field,
-  .expense-entry .expense-state {
-    transition-duration: 0s;
-  }
-  .expense-entry .expense-form,
-  .expense-save-feedback > p:not(:empty) {
-    animation: none;
-  }
 }
 
 .expense-entry[data-dirty="true"] .expense-save-dock {
