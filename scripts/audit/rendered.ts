@@ -10,7 +10,7 @@ const suites = {
   "interactions-portfolio": ["audit:interactions -- portfolio"],
   "interactions-records-and-reload": ["audit:interactions -- records", "audit:reload-stability"],
   "interactions-phone-and-choreography": ["audit:interactions -- phone", "audit:choreography"],
-  "accessibility-and-polish": ["audit:accessibility", "audit:portfolio-polish", "test:browser"],
+  "accessibility-and-polish": ["audit:accessibility", "audit:portfolio-polish", "test:browser", "audit:cross-engine"],
   "reduced-motion-and-recovery": [
     "audit:reduced-motion",
     "audit:backfill-recovery",

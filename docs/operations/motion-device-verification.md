@@ -12,7 +12,7 @@ Status: **Proposed 2026-11-27; not run.** This is phase 8 of the [polished-by-de
 
 | Not proven | Why it matters |
 |---|---|
-| Safari and Firefox as whole products, and every mobile browser | The component tests run in the WebKit and Firefox engines on desktop; the full-page audits do not. Different engines run view transitions, entry styles, individual transform properties and animated disclosures differently, or not at all |
+| Safari and Firefox as whole products, and real phones | The component tests and `npm run audit:cross-engine` (all screens, search, privacy, reduced motion, touch emulation as an iPhone 15 and a Pixel 7) run in the WebKit, Firefox and Chrome engines; emulation is not hardware. Different engines run view transitions, entry styles, individual transform properties and animated disclosures differently, or not at all |
 | Physical devices | Frame pacing, touch, safe areas, edge-swipe back |
 | Screen readers | Notices now enter and leave through a wrapper; announcements, focus and the "pressed" state of the new selectors are untested with assistive technology |
 | The installed app (PWA) | Standalone window, update flow, launch animation |

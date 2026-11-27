@@ -1,4 +1,4 @@
-# Device check: a step-by-step guide for the owner
+# Device check: what is automated and what is left for you
 
 Status: **Written 2026-11-27; not run.** This is the plain version of the scripts in [motion verification on other browsers and real devices](motion-device-verification.md). You need no technical knowledge. You look at the app on your own devices, say what you saw, and send it back. Nothing here uses real data.
 

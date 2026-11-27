@@ -111,6 +111,7 @@ scripts/
 ├── artifacts/
 │   └── portfolio-study/
 ├── audit/
+│   ├── browsers/
 │   ├── interactions/
 │   └── motion/
 ├── docs/
