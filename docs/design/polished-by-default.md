@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 5 and 7 done; phase 6 done except the items listed under its tail; phase 8 open.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 5 and 7 done; phase 6 done except the items listed under its tail; phase 8 planned, not run.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -134,7 +134,7 @@ Each phase is its own commit, follows `npm run verify`, the interaction inventor
 5. **Continuity.** Same-document view transitions for navigation where supported, with the current page motion as the fallback and nothing under reduced motion. Sidebar, toolbar and page title hold still; a holding row expands into its fund page and a month into Month by month.
 6. **No instant swaps.** Every gap in the surface list gets its role: Presence for layers, a fade-through with height continuity for content that is replaced, a morph for content that stays.
 7. **Live states and figures.** Bounded saving, syncing and status motion; answer FD-028's open question on whether figures count when a sync changes them, with exact text, accessibility and privacy unchanged.
-8. **Proof beyond Chrome.** Physical Android and iPhone, Firefox and WebKit, and a screen reader. Until then every phase stays local synthetic Chrome evidence (STD-11).
+8. **Proof beyond Chrome.** Planned in [Motion verification on other browsers and real devices](../operations/motion-device-verification.md): a proposed device matrix, eleven scripts and a results table for the owner to run, and an automated WebKit and Firefox option that needs a decision. Not run; until a row passes with evidence, every phase stays local synthetic Chrome evidence (STD-11).
 
 ### Phase 0 record, 2026-11-26
 
