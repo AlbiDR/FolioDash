@@ -278,16 +278,16 @@ One row is a source template; a fund-link template can render many controls. All
 | 7629eadcb326-1 | [overview-cards.tsx:153](../../src/interfaces/web/features/overview/overview-cards.tsx#L153) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
 | b203d838d099-1 | [overview-cards.tsx:216](../../src/interfaces/web/features/overview/overview-cards.tsx#L216) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 79d1b03ed21a-1 | [overview-cards.tsx:255](../../src/interfaces/web/features/overview/overview-cards.tsx#L255) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
-| f9deda2cfc0c-1 | [overview-holdings.tsx:118](../../src/interfaces/web/features/overview/overview-holdings.tsx#L118) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| df5f93250bb8-1 | [overview-holdings.tsx:181](../../src/interfaces/web/features/overview/overview-holdings.tsx#L181) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| 2cc174d3262d-1 | [overview-holdings.tsx:199](../../src/interfaces/web/features/overview/overview-holdings.tsx#L199) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| da704f763dd4-1 | [overview-holdings.tsx:214](../../src/interfaces/web/features/overview/overview-holdings.tsx#L214) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
-| d3a4efd49a16-1 | [overview-holdings.tsx:245](../../src/interfaces/web/features/overview/overview-holdings.tsx#L245) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 5c6a45aa4640-1 | [overview-holdings.tsx:261](../../src/interfaces/web/features/overview/overview-holdings.tsx#L261) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
-| 8f79016434cd-1 | [overview-holdings.tsx:290](../../src/interfaces/web/features/overview/overview-holdings.tsx#L290) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
-| db7bc1d27aff-1 | [overview-holdings.tsx:346](../../src/interfaces/web/features/overview/overview-holdings.tsx#L346) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f918f1311e07-1 | [overview-holdings.tsx:355](../../src/interfaces/web/features/overview/overview-holdings.tsx#L355) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| 5b681e5e2d09-1 | [overview-holdings.tsx:389](../../src/interfaces/web/features/overview/overview-holdings.tsx#L389) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| f9deda2cfc0c-1 | [overview-holdings.tsx:95](../../src/interfaces/web/features/overview/overview-holdings.tsx#L95) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| df5f93250bb8-1 | [overview-holdings.tsx:158](../../src/interfaces/web/features/overview/overview-holdings.tsx#L158) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 2cc174d3262d-1 | [overview-holdings.tsx:176](../../src/interfaces/web/features/overview/overview-holdings.tsx#L176) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| da704f763dd4-1 | [overview-holdings.tsx:191](../../src/interfaces/web/features/overview/overview-holdings.tsx#L191) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
+| 1589a456ca04-1 | [overview-holdings.tsx:222](../../src/interfaces/web/features/overview/overview-holdings.tsx#L222) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 5c6a45aa4640-1 | [overview-holdings.tsx:238](../../src/interfaces/web/features/overview/overview-holdings.tsx#L238) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
+| 8f79016434cd-1 | [overview-holdings.tsx:267](../../src/interfaces/web/features/overview/overview-holdings.tsx#L267) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
+| db7bc1d27aff-1 | [overview-holdings.tsx:323](../../src/interfaces/web/features/overview/overview-holdings.tsx#L323) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f918f1311e07-1 | [overview-holdings.tsx:332](../../src/interfaces/web/features/overview/overview-holdings.tsx#L332) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 5b681e5e2d09-1 | [overview-holdings.tsx:366](../../src/interfaces/web/features/overview/overview-holdings.tsx#L366) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4c27cd5734fc-1 | [overview-view.tsx:87](../../src/interfaces/web/features/overview/overview-view.tsx#L87) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
 | 68f008a1b407-1 | [overview-view.tsx:91](../../src/interfaces/web/features/overview/overview-view.tsx#L91) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4e586bf3824f-1 | [overview-view.tsx:133](../../src/interfaces/web/features/overview/overview-view.tsx#L133) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
