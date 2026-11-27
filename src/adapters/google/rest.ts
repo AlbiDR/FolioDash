@@ -29,9 +29,13 @@ export type RestFailure =
 export type RestResult<T> =
   { readonly ok: true; readonly value: T } | { readonly ok: false; readonly failure: RestFailure };
 
-/** Whether a failed call is known not to have changed anything. A lost answer is not such a failure. */
+/**
+ * Whether a failed call is known not to have changed anything. A lost answer is not such a failure, and neither is an
+ * answer nobody expected (a redirect, a timeout, a status outside the ones sorted above): the write may have been applied
+ * behind it, so it stays an unknown outcome and is never retried blindly.
+ */
 export function wroteNothing(failure: RestFailure): boolean {
-  return failure === "unauthorised" || failure === "forbidden" || failure === "not-found" || failure === "unexpected";
+  return failure === "unauthorised" || failure === "forbidden" || failure === "not-found";
 }
 
 /**

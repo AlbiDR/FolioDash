@@ -2,7 +2,15 @@ import type { SourceRecord } from "../../applications/import/statement-source";
 import { canonicalJson } from "../../core/integrity/canonical-json";
 import { type FundCommand } from "../../core/statements/import-plan";
 import { parseIsoDate } from "../../core/values/iso-date";
-import { type Fund, type LedgerState, type Snapshot, EMPTY_LEDGER, validateLedger } from "../../core/portfolio/ledger";
+import {
+  type Fund,
+  type LedgerState,
+  type Snapshot,
+  EMPTY_LEDGER,
+  isWellFormedFund,
+  isWellFormedSnapshot,
+  validateLedger,
+} from "../../core/portfolio/ledger";
 import { type StoredSheet, parseStoredSheet } from "../../core/statements/raw-sheet";
 import { sha256Hex } from "../../core/integrity/sha256";
 import type { LedgerRow } from "./row-ledger-record";
@@ -150,8 +158,12 @@ export function decodeRows(rows: readonly LedgerRow[]): Decoded {
     }
     if (row.checksum !== checksum || sha256Hex(row.payload) !== checksum)
       return damaged("A snapshot record failed its checksum.");
-    return parseJson(row.payload) as Snapshot;
+    const snapshot = parseJson(row.payload);
+    // The checksum only proves the text was not altered; its shape still has to be a snapshot's before it is read.
+    if (!isWellFormedSnapshot(snapshot)) return damaged("A snapshot record is not a snapshot.");
+    return snapshot as Snapshot;
   });
+  if (!meta.funds.every(isWellFormedFund)) return damaged("The fund list is not a list of funds.");
 
   const state: LedgerState = { revision: commit.revision, funds: meta.funds, snapshots };
   const issues = validateLedger(state);

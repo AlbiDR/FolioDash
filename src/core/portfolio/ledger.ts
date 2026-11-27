@@ -191,7 +191,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isWellFormedFund(value: unknown): boolean {
+export function isWellFormedFund(value: unknown): boolean {
   return isRecord(value) && ["isin", "name", "fullName", "firstDate"].every((key) => typeof value[key] === "string");
 }
 
@@ -204,7 +204,7 @@ function isWellFormedHolding(value: unknown): boolean {
   );
 }
 
-function isWellFormedSnapshot(value: unknown): boolean {
+export function isWellFormedSnapshot(value: unknown): boolean {
   return (
     isRecord(value) &&
     typeof value["date"] === "string" &&

@@ -105,3 +105,26 @@ describe("decoding a committed revision", () => {
     expect(() => decodeRows(closed(records))).not.toThrow();
   });
 });
+
+describe("a record with a valid checksum but the wrong shape", () => {
+  // The checksum is a plain SHA-256 anyone can recompute, so it proves integrity, not that the content is a ledger.
+  const good = '{"date":"2026-01-01","fundsSubtotal":0,"holdings":{}}';
+  function ledger(funds: unknown[], snapshot: string): LedgerRow[] {
+    const records = [
+      row("META", header({ funds })),
+      row("SNAPSHOT", snapshot),
+      row("TIMELINE", JSON.stringify([[1, sha256Hex(snapshot)]])),
+    ];
+    return closed(records);
+  }
+  for (const [name, funds, snapshot] of [
+    ["an empty snapshot", [], "{}"],
+    ["a null snapshot", [], "null"],
+    ["null holdings", [], '{"date":"2026-01-01","fundsSubtotal":0,"holdings":null}'],
+    ["a null fund", [null], good],
+  ] as const) {
+    it(`is damaged, not a crash: ${name}`, () => {
+      expect(() => decodeRows(ledger([...funds], snapshot))).toThrow(DamagedLedger);
+    });
+  }
+});
