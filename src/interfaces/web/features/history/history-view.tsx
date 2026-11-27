@@ -308,7 +308,10 @@ export function HistoryView(props: {
         )}
         {phase.name === "done" && (
           <p>
-            Done: {phase.attached > 0 ? `${String(phase.attached)} bank statements attached, ` : ""}
+            Done:{" "}
+            {phase.attached > 0
+              ? `${String(phase.attached)} bank ${phase.attached === 1 ? "statement" : "statements"} attached, `
+              : ""}
             {phase.saved} {phase.saved === 1 ? "month" : "months"} saved to your spreadsheet and read back. The Overview
             now shows the ledger the spreadsheet holds.
           </p>

@@ -97,6 +97,7 @@ export function CheckpointsView(props: {
   async function withdraw(id: string): Promise<void> {
     setConfirming(null);
     setOutcome("");
+    setProblem("");
     setBusy(true);
     const result = await props.onVoid(id);
     setBusy(false);
@@ -106,6 +107,8 @@ export function CheckpointsView(props: {
   }
 
   async function check(): Promise<void> {
+    setOutcome("");
+    setProblem("");
     setBusy(true);
     const result = await props.onCheck();
     setBusy(false);
