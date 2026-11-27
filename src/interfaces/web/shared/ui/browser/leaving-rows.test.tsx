@@ -42,3 +42,23 @@ it("keeps a removed row on screen, fading, in its own place and then drops it", 
     expect(ids()).toEqual(["a", "c"]);
   });
 });
+
+it("drops each leaving row after its own time, not after the latest one left", async () => {
+  render(<List ids={["a", "b", "c", "d"]} />, host);
+  render(<List ids={["a", "c", "d"]} />, host);
+  await vi.waitFor(() => {
+    expect(ids()).toEqual(["a", "b*", "c", "d"]);
+  });
+  const started = performance.now();
+  await new Promise((done) => setTimeout(done, 120));
+  render(<List ids={["a", "c"]} />, host);
+  await vi.waitFor(() => {
+    expect(ids().some((id) => id.startsWith("b"))).toBe(false);
+  });
+  // b left first, so it goes about 210 ms after it left, well before d (left 120 ms later) goes.
+  expect(performance.now() - started).toBeLessThan(300);
+  expect(ids()).toContain("d*");
+  await vi.waitFor(() => {
+    expect(ids()).toEqual(["a", "c"]);
+  });
+});

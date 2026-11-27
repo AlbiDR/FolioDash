@@ -16,14 +16,19 @@ export function useHeightGlide(box: RefObject<HTMLElement | null>, changeKey: st
     const node = box.current;
     if (node === null) return;
     const previous = state.height;
+    const changed = state.key !== changeKey;
+    // An unrelated render leaves a glide in progress alone; the height is recorded again once it is at rest.
+    if (!changed) {
+      if (node.getAnimations().length === 0) state.height = node.getBoundingClientRect().height;
+      return;
+    }
     // The glide still running is part of what is drawn: measure the box at rest, then restart from where it was drawn.
     const drawn = node.getBoundingClientRect().height;
     state.motion.stop(node);
     const height = node.getBoundingClientRect().height;
     state.height = height;
-    const changed = state.key !== changeKey;
     state.key = changeKey;
-    if (!changed || previous === 0 || Math.abs(previous - height) < 1) return;
+    if (previous === 0 || Math.abs(previous - height) < 1) return;
     const from = Math.abs(drawn - height) >= 1 ? drawn : previous;
     state.motion.play(
       node,

@@ -20,10 +20,24 @@ export function euroLabel(value: number): string {
 /** Axis display only: k denotes thousands, M millions. Readouts and tables always retain euroLabel's exact cents. */
 export function euroAxisLabel(value: number): string {
   if (!Number.isFinite(value)) return "";
+  const units = [
+    { scale: 1, suffix: "", digits: 0 },
+    { scale: 1_000, suffix: "k", digits: 1 },
+    { scale: 1_000_000, suffix: "M", digits: 1 },
+  ] as const;
   const magnitude = Math.abs(value);
-  const scale = magnitude >= 1_000_000 ? 1_000_000 : magnitude >= 1_000 ? 1_000 : 1;
-  const suffix = scale === 1_000_000 ? "M" : scale === 1_000 ? "k" : "";
-  return `${new Intl.NumberFormat("it-IT", { maximumFractionDigits: scale === 1 ? 0 : 1 }).format(value === 0 ? 0 : value / scale)}${suffix}`;
+  let at = magnitude >= 1_000_000 ? 2 : magnitude >= 1_000 ? 1 : 0;
+  const roundedIn = (index: number): number => {
+    const unit = units[index] ?? units[0];
+    const factor = 10 ** unit.digits;
+    // Half away from zero, as the number formatter rounds, so -1,25k and 1,25k are mirror images.
+    return (Math.sign(value) * Math.round((Math.abs(value) / unit.scale) * factor)) / factor;
+  };
+  // Rounding can reach the next unit (999 999 is "1M", not "1000k"), so the unit follows the rounded figure.
+  while (at < 2 && Math.abs(roundedIn(at)) >= 1_000) at += 1;
+  const unit = units[at] ?? units[0];
+  const shown = roundedIn(at);
+  return `${new Intl.NumberFormat("it-IT", { maximumFractionDigits: unit.digits }).format(shown === 0 ? 0 : shown)}${unit.suffix}`;
 }
 
 export function euros(cents: EuroCents | null): number | null {

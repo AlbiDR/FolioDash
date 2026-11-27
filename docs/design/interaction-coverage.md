@@ -135,19 +135,19 @@ One row is a source template; a fund-link template can render many controls. All
 | 34b238e379d3-1 | [get-started.tsx:39](../../src/interfaces/web/features/account/get-started.tsx#L39) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 1b2d6955418b-1 | [get-started.tsx:62](../../src/interfaces/web/features/account/get-started.tsx#L62) | summary / action | How setup works | SOURCE CLASSIFIED; STATES OPEN |
 | 56991a97d0b5-1 | [get-started.tsx:75](../../src/interfaces/web/features/account/get-started.tsx#L75) | a / action | Privacy policy | SOURCE CLASSIFIED; STATES OPEN |
-| dd307829b019-1 | [activity-view.tsx:88](../../src/interfaces/web/features/activity/activity-view.tsx#L88) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f38d7908966f-1 | [activity-view.tsx:99](../../src/interfaces/web/features/activity/activity-view.tsx#L99) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 96b48440953a-1 | [activity-view.tsx:115](../../src/interfaces/web/features/activity/activity-view.tsx#L115) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| dd307829b019-1 | [activity-view.tsx:91](../../src/interfaces/web/features/activity/activity-view.tsx#L91) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f38d7908966f-1 | [activity-view.tsx:102](../../src/interfaces/web/features/activity/activity-view.tsx#L102) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 96b48440953a-1 | [activity-view.tsx:118](../../src/interfaces/web/features/activity/activity-view.tsx#L118) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aacae9081f0e-1 | [checkpoints-preserved.tsx:95](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L95) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
 | d12f8f03fdda-1 | [checkpoints-preserved.tsx:122](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L122) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
-| cf7a6afc5921-1 | [checkpoints-view.tsx:171](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L171) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
-| f9bd2f9a23de-1 | [checkpoints-view.tsx:180](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L180) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 2a8698cac4d9-1 | [checkpoints-view.tsx:192](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L192) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 2d6e7a441ed7-1 | [checkpoints-view.tsx:208](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L208) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 55a4a17869f1-1 | [checkpoints-view.tsx:220](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L220) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
-| a1faa757a9e8-1 | [checkpoints-view.tsx:265](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L265) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
-| f742351aba49-1 | [checkpoints-view.tsx:268](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L268) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
-| 69fd8dab50bd-1 | [checkpoints-view.tsx:278](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L278) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| cf7a6afc5921-1 | [checkpoints-view.tsx:174](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L174) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
+| f9bd2f9a23de-1 | [checkpoints-view.tsx:183](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L183) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2a8698cac4d9-1 | [checkpoints-view.tsx:195](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L195) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2d6e7a441ed7-1 | [checkpoints-view.tsx:211](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L211) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 55a4a17869f1-1 | [checkpoints-view.tsx:223](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L223) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
+| a1faa757a9e8-1 | [checkpoints-view.tsx:268](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L268) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
+| f742351aba49-1 | [checkpoints-view.tsx:271](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L271) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
+| 69fd8dab50bd-1 | [checkpoints-view.tsx:281](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L281) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | e7f0ed9b6deb-1 | [expense-data-tools.tsx:160](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L160) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 4bc397f59864-1 | [expense-data-tools.tsx:172](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L172) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
 | df97eafc8842-1 | [expense-data-tools.tsx:177](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L177) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |
@@ -194,8 +194,8 @@ One row is a source template; a fund-link template can render many controls. All
 | 1652ed28b427-1 | [expenses-view.tsx:56](../../src/interfaces/web/features/expenses/expenses-view.tsx#L56) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
 | 2bd1f8aec6ce-1 | [history-ready.tsx:37](../../src/interfaces/web/features/history/history-ready.tsx#L37) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 1714900b765d-1 | [history-view.tsx:253](../../src/interfaces/web/features/history/history-view.tsx#L253) | input / field | history-file | SOURCE CLASSIFIED; STATES OPEN |
-| c482dfce264b-1 | [history-view.tsx:328](../../src/interfaces/web/features/history/history-view.tsx#L328) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 3bbc96f60d24-1 | [history-view.tsx:355](../../src/interfaces/web/features/history/history-view.tsx#L355) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| c482dfce264b-1 | [history-view.tsx:331](../../src/interfaces/web/features/history/history-view.tsx#L331) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 3bbc96f60d24-1 | [history-view.tsx:358](../../src/interfaces/web/features/history/history-view.tsx#L358) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | bc22230538c1-1 | [backfill-done.tsx:18](../../src/interfaces/web/features/import/backfill-done.tsx#L18) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 38dd2f4fda3b-1 | [backfill-done.tsx:27](../../src/interfaces/web/features/import/backfill-done.tsx#L27) | button / action | Restore the history from before this change | SOURCE CLASSIFIED; STATES OPEN |
 | 731c4e114863-1 | [backfill-entry.tsx:278](../../src/interfaces/web/features/import/backfill-entry.tsx#L278) | button / action | Back to values | SOURCE CLASSIFIED; STATES OPEN |
@@ -301,11 +301,11 @@ One row is a source template; a fund-link template can render many controls. All
 | 7f473b4575d1-1 | [line-chart.tsx:176](../../src/interfaces/web/presentation/charts/line-chart.tsx#L176) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
 | c6193f965996-1 | [line-chart.tsx:243](../../src/interfaces/web/presentation/charts/line-chart.tsx#L243) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
 | 63b5f07c9cc3-1 | [line-chart.tsx:313](../../src/interfaces/web/presentation/charts/line-chart.tsx#L313) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
-| a313b9a2cb99-1 | [monthly-bars.tsx:136](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L136) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
-| 9b0ee110f1fd-1 | [monthly-bars.tsx:217](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L217) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
-| e12440fad7f8-1 | [monthly-bars.tsx:248](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L248) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
-| 754edc475ea5-1 | [monthly-bars.tsx:261](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L261) | summary / action | Show the values as a table | SOURCE CLASSIFIED; STATES OPEN |
-| 998c257d86cb-1 | [monthly-bars.tsx:267](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L267) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
+| af96ebe7883e-1 | [monthly-bars.tsx:136](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L136) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| 9b0ee110f1fd-1 | [monthly-bars.tsx:219](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L219) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
+| e12440fad7f8-1 | [monthly-bars.tsx:250](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L250) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
+| 754edc475ea5-1 | [monthly-bars.tsx:263](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L263) | summary / action | Show the values as a table | SOURCE CLASSIFIED; STATES OPEN |
+| 998c257d86cb-1 | [monthly-bars.tsx:269](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L269) | div / scroll-region | {'${props.title}: monthly values table'} | SOURCE CLASSIFIED; STATES OPEN |
 | c99f42f2d662-1 | [performance-bars.tsx:32](../../src/interfaces/web/presentation/charts/performance-bars.tsx#L32) | a / action | {'perf-row${row.dim === true ? " dim" : ""}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 87821db5ad79-1 | [privacy.tsx:60](../../src/interfaces/web/presentation/privacy/privacy.tsx#L60) | button / action | privacy-toggle | SOURCE CLASSIFIED; STATES OPEN |
 | f217f265fce6-1 | [index.html:76](../../src/interfaces/web/public/privacy/index.html#L76) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
@@ -320,7 +320,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 8cfcca95fe93-1 | [disclosure.test.tsx:18](../../src/interfaces/web/shared/ui/browser/disclosure.test.tsx#L18) | summary / action | More | SOURCE CLASSIFIED; STATES OPEN |
 | c40ccf39b1a8-1 | [deferred-view.tsx:13](../../src/interfaces/web/shared/ui/deferred-view.tsx#L13) | button / action | Reload view | SOURCE CLASSIFIED; STATES OPEN |
 | acf2678485d1-1 | [page-nav.tsx:19](../../src/interfaces/web/shared/ui/page-nav.tsx#L19) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
-| a337f0db5759-1 | [range-selector.tsx:40](../../src/interfaces/web/shared/ui/range-selector.tsx#L40) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |
+| a337f0db5759-1 | [range-selector.tsx:42](../../src/interfaces/web/shared/ui/range-selector.tsx#L42) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |
 
 <!-- interaction-inventory:end -->
 

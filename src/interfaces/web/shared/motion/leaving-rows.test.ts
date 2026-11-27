@@ -41,3 +41,14 @@ it("drops items at once when motion is not retained", () => {
   const { rows } = mergeLeaving(["a"], ["a", "b"], key, none, false);
   expect(rows).toEqual([{ item: "a", leaving: false }]);
 });
+
+it("keeps a leaving item after the row it followed when a row is inserted above it", () => {
+  const first = mergeLeaving(["a", "c"], ["a", "b", "c"], key, none, true);
+  const { rows } = mergeLeaving(["x", "a", "c"], ["a", "c"], key, first.ghosts, true);
+  expect(rows.map((row) => row.item)).toEqual(["x", "a", "b", "c"]);
+});
+
+it("keeps two items that left after the same row in their old order", () => {
+  const { rows } = mergeLeaving(["a", "d"], ["a", "b", "c", "d"], key, none, true);
+  expect(rows.map((row) => row.item)).toEqual(["a", "b", "c", "d"]);
+});

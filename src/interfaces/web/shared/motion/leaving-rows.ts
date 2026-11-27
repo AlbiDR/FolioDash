@@ -9,13 +9,16 @@ export interface LeavingRow<T> {
 
 interface Ghost<T> {
   readonly item: T;
+  /** Where it was, as a fallback when the row it followed has gone too. */
   readonly index: number;
+  /** The key of the live row it followed, so a row inserted above it does not move it. Null when it was first. */
+  readonly after: string | null;
 }
 
 /**
- * The rows to draw: every current item, plus each item that was drawn last time and is gone now, kept at the place
- * it held (clamped to the list) and marked as leaving. Presence cannot do this for table rows or list items, because
- * it wraps its content in a `div`; this keeps the row's own element instead.
+ * The rows to draw: every current item, plus each item that was drawn last time and is gone now, kept after the row it
+ * followed and marked as leaving. Presence cannot do this for table rows or list items, because it wraps its content in
+ * a `div`; this keeps the row's own element instead.
  */
 export function mergeLeaving<T>(
   items: readonly T[],
@@ -30,12 +33,21 @@ export function mergeLeaving<T>(
     for (const [key, ghost] of ghosts) if (!current.has(key)) next.set(key, ghost);
     drawn.forEach((item, index) => {
       const key = keyOf(item);
-      if (!current.has(key) && !next.has(key)) next.set(key, { item, index });
+      if (current.has(key) || next.has(key)) return;
+      const before = drawn[index - 1];
+      next.set(key, { item, index, after: before === undefined ? null : keyOf(before) });
     });
   }
   const rows: LeavingRow<T>[] = items.map((item) => ({ item, leaving: false }));
   const ordered = [...next.values()].sort((a, b) => a.index - b.index);
-  for (const ghost of ordered) rows.splice(Math.min(ghost.index, rows.length), 0, { item: ghost.item, leaving: true });
+  for (const ghost of ordered) {
+    const anchor = ghost.after === null ? -1 : rows.findIndex((row) => keyOf(row.item) === ghost.after);
+    let at = ghost.after !== null && anchor === -1 ? Math.min(ghost.index, rows.length) : anchor + 1;
+    // Rows that left after the same row keep their old order.
+    while (ghost.after !== null && anchor !== -1 && rows[at]?.leaving === true) at += 1;
+    while (ghost.after === null && rows[at]?.leaving === true) at += 1;
+    rows.splice(at, 0, { item: ghost.item, leaving: true });
+  }
   return { rows, ghosts: next };
 }
 
@@ -60,13 +72,24 @@ export function useLeavingRows<T>(
     .filter((row) => row.leaving)
     .map((row) => keyOf(row.item))
     .join("\u0000");
+  // Each leaving row has its own deadline, so a row that leaves later never holds an earlier one on screen.
+  const deadlines = useRef(new Map<string, number>());
   useEffect(() => {
-    if (leavingKeys === "") return undefined;
-    const duration = motionMilliseconds(getComputedStyle(document.documentElement).getPropertyValue("--duration-cue"));
-    const timeout = setTimeout(() => {
-      ghosts.current = new Map();
-      setVersion((value) => value + 1);
-    }, duration + 60);
+    const keys = leavingKeys === "" ? [] : leavingKeys.split("\u0000");
+    const now = performance.now();
+    const hold = motionMilliseconds(getComputedStyle(document.documentElement).getPropertyValue("--duration-cue")) + 60;
+    for (const key of keys) if (!deadlines.current.has(key)) deadlines.current.set(key, now + hold);
+    for (const key of [...deadlines.current.keys()]) if (!keys.includes(key)) deadlines.current.delete(key);
+    if (keys.length === 0) return undefined;
+    const earliest = Math.min(...keys.map((key) => deadlines.current.get(key) ?? now));
+    const timeout = setTimeout(
+      () => {
+        const at = performance.now() + 4;
+        ghosts.current = new Map([...ghosts.current].filter(([key]) => (deadlines.current.get(key) ?? 0) > at));
+        setVersion((value) => value + 1);
+      },
+      Math.max(0, earliest - now),
+    );
     return () => {
       clearTimeout(timeout);
     };

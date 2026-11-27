@@ -68,6 +68,7 @@ src/
         ├── features/
         │   ├── account/
         │   ├── activity/
+        │   │   ├── browser/
         │   │   └── styles/
         │   ├── checkpoints/
         │   ├── expenses/

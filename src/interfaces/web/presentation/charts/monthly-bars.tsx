@@ -149,6 +149,8 @@ export function MonthlyBars(props: {
                   setPinned((current) => (current === bar.key ? null : bar.key));
                   return;
                 }
+                // Browser shortcuts such as Alt+Left (back) are not the bars' keys.
+                if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
                 const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
                 let target: number;
                 if (event.key === "ArrowRight")

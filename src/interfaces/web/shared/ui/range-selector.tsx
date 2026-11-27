@@ -20,6 +20,8 @@ export function RangeSelector<Id extends string>(props: {
         ),
       }}
       onKeyDown={(event) => {
+        // Browser shortcuts such as Alt+Left (back) are not the selector's keys.
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         const index = props.options.findIndex((option) => option.id === props.value);
         const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
         let target: number;

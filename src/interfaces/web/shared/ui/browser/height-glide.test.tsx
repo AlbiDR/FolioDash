@@ -38,3 +38,13 @@ it("eases a box from its old height to its new one when its key changes, and not
   expect(frames[0]?.["height"]).toBe("160px");
   expect(frames.at(-1)?.["height"]).toBe("80px");
 });
+
+it("leaves a glide running when something unrelated re-renders", async () => {
+  render(<Box rows={2} changeKey="a" />, host);
+  render(<Box rows={5} changeKey="b" />, host);
+  await vi.waitFor(() => {
+    expect(box().getAnimations()).toHaveLength(1);
+  });
+  render(<Box rows={5} changeKey="b" />, host);
+  expect(box().getAnimations()).toHaveLength(1);
+});

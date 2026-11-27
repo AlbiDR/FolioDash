@@ -48,3 +48,14 @@ describe("euroAxisLabel", () => {
     expect(euroAxisLabel(Number.POSITIVE_INFINITY)).toBe("");
   });
 });
+
+it("moves an axis label to the next unit when rounding reaches it, and never prints a negative zero", () => {
+  expect(euroAxisLabel(999_999)).toBe("1M");
+  expect(euroAxisLabel(999_950)).toBe("1M");
+  expect(euroAxisLabel(999_949)).toBe("999,9k");
+  expect(euroAxisLabel(-999_999)).toBe("-1M");
+  expect(euroAxisLabel(999_999_999)).toBe("1000M");
+  expect(euroAxisLabel(999.6)).toBe("1k");
+  expect(euroAxisLabel(-0.4)).toBe("0");
+  expect(euroAxisLabel(1500)).toBe("1,5k");
+});
