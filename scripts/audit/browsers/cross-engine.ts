@@ -141,17 +141,21 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
       errors.push(message.text());
   });
   try {
+    // Cold open: it draws, it fits the screen, and where motion is on the engine really animates it. A page that is
+    // still loading on a slow machine may start its arrival late, so the page itself watches every frame for an
+    // animation instead of this script sampling one instant.
+    await page.addInitScript(`window.__sawAnimation = false;
+      const watch = () => { if (document.getAnimations().length > 0) window.__sawAnimation = true; else requestAnimationFrame(watch); };
+      requestAnimationFrame(watch);`);
     await page.goto(`${origin}/#overview`);
-    // Cold open: it draws, it fits the screen, and where motion is on the engine really animates it.
-    await delay(250);
-    const early = await page.evaluate("document.getAnimations().length");
     await settle();
+    const sawAnimation = (await page.evaluate("window.__sawAnimation")) === true;
     expectThat(
       (await page.evaluate("!!document.querySelector('.hero .hero-value')")) === true,
       "the Portfolio did not draw",
       where,
     );
-    if (!reduced) expectThat(Number(early) > 0, "nothing animated while the Portfolio arrived", where);
+    if (!reduced) expectThat(sawAnimation, "nothing animated while the Portfolio arrived", where);
     for (const route of ROUTES) {
       await go(page, route);
       const here = `${where}, ${route}`;
