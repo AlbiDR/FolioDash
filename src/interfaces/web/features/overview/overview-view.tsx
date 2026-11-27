@@ -20,6 +20,7 @@ import { Glossary, MoversCard, StatCard, AllocationCard } from "./overview-cards
 import { HoldingsCard } from "./overview-holdings";
 import "./portfolio-feedback.css";
 import "./styles/portfolio-polish.css";
+import { Presence } from "../../shared/ui/presence";
 
 const STATS: readonly {
   readonly label: string;
@@ -226,15 +227,17 @@ export function OverviewView(props: {
         })}
         {props.model.estimated && <p class="footnote">Cash timing affects percentage estimates.</p>}
       </section>
-      {attention.length > 0 && (
-        <section class="cell-12 attention" aria-label="Needs attention">
-          {attention.map((item) => (
-            <p key={item.id} class="notice notice-warning" role="status">
-              {item.message} <a href={item.href}>{item.action}</a>
-            </p>
-          ))}
-        </section>
-      )}
+      <Presence show={attention.length > 0} class="cell-12">
+        {attention.length > 0 && (
+          <section class="attention" aria-label="Needs attention">
+            {attention.map((item) => (
+              <p key={item.id} class="notice notice-warning" role="status">
+                {item.message} <a href={item.href}>{item.action}</a>
+              </p>
+            ))}
+          </section>
+        )}
+      </Presence>
       <section class="portfolio-explore cell-12" aria-labelledby="portfolio-explore-heading">
         <h2 id="portfolio-explore-heading" class="visually-hidden">
           Explore your portfolio

@@ -7,6 +7,7 @@ import {
 } from "../../../../core/expenses/work-expenses";
 import { ExpenseAmount } from "./expense-format";
 import type { ExpenseShared } from "./use-expense-editor";
+import { Presence } from "../../shared/ui/presence";
 
 export function ExpenseEntryForm(p: { readonly shared: ExpenseShared }): JSX.Element {
   const { props, x } = p.shared;
@@ -77,11 +78,13 @@ export function ExpenseEntryForm(p: { readonly shared: ExpenseShared }): JSX.Ele
             €
           </span>
         </span>
-        {parsed.invalid.includes(index) && (
-          <p class="expense-error" id={`expense-error-${String(index)}`}>
-            Use a non-negative amount, for example 12,50.
-          </p>
-        )}
+        <Presence show={parsed.invalid.includes(index)}>
+          {parsed.invalid.includes(index) && (
+            <p class="expense-error" id={`expense-error-${String(index)}`}>
+              Use a non-negative amount, for example 12,50.
+            </p>
+          )}
+        </Presence>
       </div>
     );
   }

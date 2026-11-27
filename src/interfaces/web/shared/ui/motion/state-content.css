@@ -58,7 +58,8 @@
 }
 /* 65: Funds newly listed (a search returned them, or the closed block opened) fade in; rows that stay are not re-faded. */
 .mobile-holdings > li.holding-new,
-.holdings-table tbody > tr.holding-new {
+.holdings-table tbody > tr.holding-new,
+.activity-row.row-new {
   animation: motion-fade var(--duration-cue) var(--ease-standard);
 }
 /* 67: Browser-recorded summary settles after the actual local record completes. */
@@ -279,4 +280,10 @@
   .expense-conflict:focus-within {
     translate: 0 -1px;
   }
+}
+/* A best or worst mark in the Month by month matrix appears with a short fade of its cell, since its underline is a
+ * background image and cannot transition. The marks are off until asked for, and nothing else here moves. */
+.matrix td.matrix-best,
+.matrix td.matrix-worst {
+  animation: motion-fade var(--duration-cue) var(--ease-standard);
 }

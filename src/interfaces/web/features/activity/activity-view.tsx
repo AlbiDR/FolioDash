@@ -1,9 +1,10 @@
 import type { JSX } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { EXPENSE_LABELS, type ExpenseDay } from "../../../../core/expenses/work-expenses";
 import { AnimatedFigure, formatFigureCount } from "../../presentation/animated-figure";
 import { Amount } from "../../presentation/privacy/privacy";
 import { RangeSelector } from "../../shared/ui/range-selector";
+import { useRowGlide } from "../../shared/ui/use-row-glide";
 import {
   ACTIVITY_SORTS,
   ACTIVITY_STATUSES,
@@ -59,6 +60,18 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
   const rows = useMemo(() => activityRows(days, { status, month, query, sort }), [days, status, month, query, sort]);
   const weeks = useMemo(() => activityWeeks(rows), [rows]);
   const totals = useMemo(() => activityTotals(rows), [rows]);
+  // Surviving keyed rows glide to their new places when a filter or the sort changes what is listed; a day newly listed
+  // fades in, and a day that stays is never re-faded (FD-029, phase 6).
+  const list = useRef<HTMLElement>(null);
+  useRowGlide(list, ".activity-row", JSON.stringify([status, month, query, sort]));
+  const listedBefore = useRef<ReadonlySet<string> | null>(null);
+  const fresh: ReadonlySet<string> =
+    listedBefore.current === null
+      ? new Set()
+      : new Set(rows.filter((row) => !listedBefore.current?.has(row.day.date)).map((row) => row.day.date));
+  useLayoutEffect(() => {
+    listedBefore.current = new Set(rows.map((row) => row.day.date));
+  });
 
   return (
     <section class="dash activity-dashboard" aria-label="Recorded activity">
@@ -125,7 +138,7 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
         </div>
       </section>
 
-      <section class="card cell-8 activity-list" aria-labelledby="activity-list-title">
+      <section ref={list} class="card cell-8 activity-list" aria-labelledby="activity-list-title">
         <h2 id="activity-list-title" class="card-title">
           Recorded days
         </h2>
@@ -143,7 +156,7 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
               </header>
               <ul class="activity-rows">
                 {week.rows.map((row) => (
-                  <li class="activity-row" key={row.day.date}>
+                  <li class={fresh.has(row.day.date) ? "activity-row row-new" : "activity-row"} key={row.day.date}>
                     <span class="activity-row-main">
                       <b>{activityDayLabel(row.day.date)}</b>
                       <small>{detailOf(row)}</small>

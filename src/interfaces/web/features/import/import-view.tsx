@@ -102,6 +102,10 @@ export function ImportView(props: {
     }
   }
 
+  const reviewed = phase.name === "reviewed";
+  const reviewReady =
+    reviewed && phase.review.status === "reviewed" && phase.review.sheets.some((entry) => entry.outcome.ok);
+  const reviewProblems = reviewed && !reviewReady;
   const earlierAvailable =
     props.ledger.snapshots.length > 0 && props.workbookId !== undefined && props.save?.backfill !== undefined;
   return (
@@ -245,17 +249,21 @@ export function ImportView(props: {
         </div>
 
         <div aria-live="polite" data-busy={phase.name === "reading"} class="status">
-          {phase.name === "reading" && (
-            <p class="notice" data-busy="true">
-              Reading and checking the file…
-            </p>
-          )}
-          {phase.name === "reviewed" &&
-            (phase.review.status === "reviewed" && phase.review.sheets.some((entry) => entry.outcome.ok) ? (
-              <p class="notice notice-success">Review ready. Check the details below, then confirm.</p>
-            ) : (
+          <Presence show={phase.name === "reading"}>
+            {phase.name === "reading" && (
+              <p class="notice" data-busy="true">
+                Reading and checking the file…
+              </p>
+            )}
+          </Presence>
+          <Presence show={reviewReady}>
+            {reviewReady && <p class="notice notice-success">Review ready. Check the details below, then confirm.</p>}
+          </Presence>
+          <Presence show={reviewProblems}>
+            {reviewProblems && (
               <p class="notice notice-warning">The file was checked. It has problems, described below.</p>
-            ))}
+            )}
+          </Presence>
         </div>
 
         {phase.name === "batch" && (

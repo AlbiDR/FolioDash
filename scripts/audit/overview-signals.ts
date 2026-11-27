@@ -23,7 +23,23 @@ const assertions = await runSyntheticJourney({
     // Exactly on the threshold it is not yet due.
     await evaluate("window.syntheticOverview.setToday('2027-07-20')");
     await settle();
-    await check("!document.querySelector('.attention')", "a statement 35 days old asks for nothing yet");
+    // The section leaves through Presence (FD-029): at once it is inert and marked as leaving, and it is gone shortly after.
+    await check(
+      "(() => { const section = document.querySelector('.attention'); return section === null || section.closest('.presence')?.getAttribute('data-present') === 'false'; })()",
+      "a statement 35 days old asks for nothing yet: the section is leaving",
+    );
+    await check(
+      `new Promise((resolve) => {
+        const deadline = performance.now() + 3000;
+        const look = () => {
+          if (document.querySelector('.attention') === null) resolve(true);
+          else if (performance.now() > deadline) resolve(false);
+          else requestAnimationFrame(look);
+        };
+        look();
+      })`,
+      "a statement 35 days old asks for nothing yet: the section is gone",
+    );
 
     // An unconfirmed history change comes first, whatever the date, and points at Your data.
     await evaluate("window.syntheticOverview.setPending(true)");

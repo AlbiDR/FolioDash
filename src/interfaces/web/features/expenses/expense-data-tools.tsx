@@ -238,7 +238,7 @@ export function ExpenseDataTools(props: {
           </details>
         </div>
         <div role="status" aria-live="polite">
-          {busy ? (
+          {busy && (
             <p>
               {operation === "connect"
                 ? "Connecting to Google and checking your expense records…"
@@ -246,9 +246,10 @@ export function ExpenseDataTools(props: {
                   ? "Checking the original operation…"
                   : "Restoring your expense records and checking the result…"}
             </p>
-          ) : message !== "" ? (
-            <p class="notice">{message}</p>
-          ) : null}
+          )}
+          <Presence show={!busy && message !== ""}>
+            {!busy && message !== "" && <p class="notice">{message}</p>}
+          </Presence>
         </div>
       </div>
     </section>

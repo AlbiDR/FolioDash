@@ -375,15 +375,17 @@ export function BackfillEntry(props: {
             Start a new review
           </button>
         )}
-        {stage === "done" && (
-          <BackfillDone
-            savedRevision={savedRevision}
-            confirmRecovery={confirmRecovery}
-            setConfirmRecovery={setConfirmRecovery}
-            restoring={restoring}
-            recover={recover}
-          />
-        )}
+        <Presence show={stage === "done"}>
+          {stage === "done" && (
+            <BackfillDone
+              savedRevision={savedRevision}
+              confirmRecovery={confirmRecovery}
+              setConfirmRecovery={setConfirmRecovery}
+              restoring={restoring}
+              recover={recover}
+            />
+          )}
+        </Presence>
         <Presence show={problem !== ""}>
           {problem !== "" && (
             <p class="field-error" role="alert">
