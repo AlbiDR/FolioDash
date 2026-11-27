@@ -18,6 +18,7 @@
     "lint": "eslint --flag unstable_native_nodejs_ts_config --config config/eslint.config.ts src tests scripts config",
     "test": "vitest run --config config/vitest.config.ts --coverage",
     "test:browser": "vitest run --config config/vitest.browser.config.ts",
+    "test:browser:install": "playwright install webkit firefox",
     "test:scripts": "node --test \"scripts/**/*.test.ts\"",
     "verify:coverage": "node scripts/verify/code/coverage.ts",
     "audit:dependencies": "npm audit --omit=dev --audit-level=moderate",

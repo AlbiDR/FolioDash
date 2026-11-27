@@ -317,6 +317,7 @@ One row is a source template; a fund-link template can render many controls. All
 | f217f265fce6-2 | [index.html:150](../../src/interfaces/web/public/privacy/index.html#L150) | a / action | Contact email | SOURCE CLASSIFIED; STATES OPEN |
 | 145a635bff48-1 | [index.html:152](../../src/interfaces/web/public/privacy/index.html#L152) | a / action | Back to FolioDash | SOURCE CLASSIFIED; STATES OPEN |
 | 9cad9846dbc6-1 | [change-cue.test.tsx:81](../../src/interfaces/web/shared/ui/browser/change-cue.test.tsx#L81) | button / action | declined | SOURCE CLASSIFIED; STATES OPEN |
+| 8cfcca95fe93-1 | [disclosure.test.tsx:18](../../src/interfaces/web/shared/ui/browser/disclosure.test.tsx#L18) | summary / action | More | SOURCE CLASSIFIED; STATES OPEN |
 | c40ccf39b1a8-1 | [deferred-view.tsx:13](../../src/interfaces/web/shared/ui/deferred-view.tsx#L13) | button / action | Reload view | SOURCE CLASSIFIED; STATES OPEN |
 | 0aecfa0f060a-1 | [page-nav.tsx:18](../../src/interfaces/web/shared/ui/page-nav.tsx#L18) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
 | a337f0db5759-1 | [range-selector.tsx:40](../../src/interfaces/web/shared/ui/range-selector.tsx#L40) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |

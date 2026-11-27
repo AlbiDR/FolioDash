@@ -138,6 +138,12 @@ jobs:
           "$chrome" --version
           sw_vers
 
+      # Only the suite that runs the browser component tests needs Playwright's WebKit and Firefox (FD-030).
+      - name: Install WebKit and Firefox for the component tests
+        if: matrix.suite == 'accessibility-and-polish'
+        timeout-minutes: 5
+        run: npm run test:browser:install
+
       - name: Audit the built site in Chrome
         timeout-minutes: 10
         env:

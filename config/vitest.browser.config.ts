@@ -1,8 +1,12 @@
-// Component tests in a real browser: the Web Animations API, view transitions, layout and computed styles behave as
-// they do for people, which a simulated document cannot give motion components. They drive the Google Chrome already
-// installed (locally and on CI's runners), so no browser is downloaded. Owner decision recorded under FD-008.
+// Component tests in real browsers: the Web Animations API, view transitions, layout and computed styles behave as they
+// do for people, which a simulated document cannot give motion components. Chromium uses the Google Chrome already
+// installed (or the CHROME_PATH override), like the rendered audits; WebKit and Firefox use Playwright's own builds,
+// installed once with `npm run test:browser:install` (owner decision recorded under FD-030).
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+
+const chrome =
+  process.env["CHROME_PATH"] === undefined ? { channel: "chrome" } : { executablePath: process.env["CHROME_PATH"] };
 
 export default defineConfig({
   oxc: { jsx: { runtime: "automatic", importSource: "preact" } },
@@ -13,14 +17,12 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      // The Chrome the rendered audits use: the CHROME_PATH override, or the installed Google Chrome.
-      provider: playwright({
-        launchOptions:
-          process.env["CHROME_PATH"] === undefined
-            ? { channel: "chrome" }
-            : { executablePath: process.env["CHROME_PATH"] },
-      }),
-      instances: [{ browser: "chromium" }],
+      provider: playwright(),
+      instances: [
+        { browser: "chromium", provider: playwright({ launchOptions: chrome }) },
+        { browser: "webkit" },
+        { browser: "firefox" },
+      ],
     },
   },
 });

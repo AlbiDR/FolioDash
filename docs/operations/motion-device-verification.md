@@ -7,12 +7,12 @@ Status: **Proposed 2026-11-27; not run.** This is phase 8 of the [polished-by-de
 | Proven, on synthetic data | Where |
 |---|---|
 | Every screen's arrival, in-app entry, data changes, layers and reduced motion, in headless Google Chrome | the rendered audits, locally and on CI's macOS runners ([testing](testing.md)) |
-| Motion components mounted in a real Chrome (change cue, Presence, count-up, page motion, busy indicators) | `npm run test:browser` |
+| Motion components mounted in real Chrome, WebKit (Safari engine) and Firefox (change cue, Presence, count-up, page motion, busy indicators, disclosure) | `npm run test:browser` |
 | Slow-frame behaviour of the navigation pill, reproduced by CPU throttling | `AUDIT_CPU_THROTTLE`, see [the sidebar journey flake](../design/polished-by-default.md#the-sidebar-journey-flake-2026-11-27) |
 
 | Not proven | Why it matters |
 |---|---|
-| Safari and Firefox, desktop and mobile | Different engines run view transitions, entry styles, individual transform properties and animated disclosures differently, or not at all |
+| Safari and Firefox as whole products, and every mobile browser | The component tests run in the WebKit and Firefox engines on desktop; the full-page audits do not. Different engines run view transitions, entry styles, individual transform properties and animated disclosures differently, or not at all |
 | Physical devices | Frame pacing, touch, safe areas, edge-swipe back |
 | Screen readers | Notices now enter and leave through a wrapper; announcements, focus and the "pressed" state of the new selectors are untested with assistive technology |
 | The installed app (PWA) | Standalone window, update flow, launch animation |
@@ -96,6 +96,6 @@ Copy a row per run. Leave a row out rather than writing a result that was not ob
 ## Decisions for the owner
 
 1. **The matrix.** Accept or amend the tiers above, and say which physical devices exist, including the age of the Android phone, because M9 is only meaningful on weaker hardware.
-2. **Automated WebKit and Firefox.** The web quality contract already says browser automation "should cover Chromium, WebKit and Firefox". Vitest browser mode can run the component tests (`npm run test:browser`) in Playwright's WebKit and Firefox as well. That would cover the engine differences in the table above for Presence, the change cue, the count-up and the page motion hook, in seconds, on every push. The cost is two browser downloads on CI (the macOS runner has Chrome only) and a few extra minutes of runner time. It cannot cover touch, screen readers or frame pacing on real hardware. This is a dependency and CI decision, so it is yours.
+2. **Automated WebKit and Firefox. Implemented 2026-11-27 (owner request "Add WebKit and Firefox").** `npm run test:browser:install` downloads the two builds (about 620 MB, outside the repository) and the 15 component tests run in all three engines, locally and in the `accessibility-and-polish` CI suite. A probe found view transitions, individual transform properties, registered properties, `checkVisibility`, `backdrop-filter`, container queries and `@starting-style` supported in all three; `interpolate-size` is supported in Chromium and WebKit but not Firefox, where the disclosure test asserts the fade fallback instead. Original proposal: The web quality contract already says browser automation "should cover Chromium, WebKit and Firefox". Vitest browser mode can run the component tests (`npm run test:browser`) in Playwright's WebKit and Firefox as well. That would cover the engine differences in the table above for Presence, the change cue, the count-up and the page motion hook, in seconds, on every push. The cost is two browser downloads on CI (the macOS runner has Chrome only) and a few extra minutes of runner time. It cannot cover touch, screen readers or frame pacing on real hardware. This is a dependency and CI decision, so it is yours.
 3. **Hosted device services.** A cloud device service could supply Safari and Firefox rows without owning the devices. It is an external service, so it needs your explicit approval, and it would still be limited to the synthetic demo.
 4. **Who runs it.** The scripts take about two hours per device with recordings. If you prefer, I can split M1 to M8 into per-device checklists you can run and send back as recordings and notes, and fill in the results table from them.

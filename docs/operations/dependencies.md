@@ -36,6 +36,8 @@ Added on the owner's request ("add browser component tests") as the FD-008 evalu
 
 Together they add about 20 MB to `node_modules` (`playwright-core` is 14 MB) and no application bytes. They exist for one purpose: component tests of motion in a real browser (`npm run test:browser`, [Testing](testing.md#browser-component-tests)). If those tests stop earning their place, removing the two packages and `config/vitest.browser.config.ts` leaves nothing else behind.
 
+Addendum 2026-11-27 (owner request): the same tests also run in Playwright's WebKit and Firefox builds. They are downloaded by `npm run test:browser:install` into Playwright's cache (about 620 MB, outside the repository and not committed), and on CI only in the `accessibility-and-polish` suite. No new package is added.
+
 ## Test layer, 2026-11-18
 
 Added for phase 7 of the organization standard. All are development dependencies, installed with `--ignore-scripts`, exact-pinned, and none ships in the application.
