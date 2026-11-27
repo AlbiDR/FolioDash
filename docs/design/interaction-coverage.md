@@ -97,17 +97,17 @@ One row is a source template; a fund-link template can render many controls. All
 
 | ID | Source | Element / family | Control or context | State review |
 |---|---|---|---|---|
-| db59d45a3f21-1 | [app-chrome.tsx:138](../../src/interfaces/web/app/app-chrome.tsx#L138) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
-| 6470a469f752-1 | [app-chrome.tsx:180](../../src/interfaces/web/app/app-chrome.tsx#L180) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
-| 180ab658684e-1 | [app-chrome.tsx:194](../../src/interfaces/web/app/app-chrome.tsx#L194) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
-| 91d93062a006-1 | [app-chrome.tsx:209](../../src/interfaces/web/app/app-chrome.tsx#L209) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 7c143373cb64-1 | [app-chrome.tsx:227](../../src/interfaces/web/app/app-chrome.tsx#L227) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
-| 4ab67b5be0f4-1 | [app-chrome.tsx:291](../../src/interfaces/web/app/app-chrome.tsx#L291) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
-| d9dee6c8cf89-1 | [app-chrome.tsx:304](../../src/interfaces/web/app/app-chrome.tsx#L304) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
-| 5c3a3d62fafb-1 | [app-chrome.tsx:315](../../src/interfaces/web/app/app-chrome.tsx#L315) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
-| 5e84be431460-1 | [app-chrome.tsx:320](../../src/interfaces/web/app/app-chrome.tsx#L320) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 92ccc09ab498-1 | [app-chrome.tsx:341](../../src/interfaces/web/app/app-chrome.tsx#L341) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
-| 10f4a7df280f-1 | [app-chrome.tsx:347](../../src/interfaces/web/app/app-chrome.tsx#L347) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| db59d45a3f21-1 | [app-chrome.tsx:146](../../src/interfaces/web/app/app-chrome.tsx#L146) | a / action | nav-link | SOURCE CLASSIFIED; STATES OPEN |
+| 6470a469f752-1 | [app-chrome.tsx:188](../../src/interfaces/web/app/app-chrome.tsx#L188) | button / action | icon-button sidebar-toggle | SOURCE CLASSIFIED; STATES OPEN |
+| 180ab658684e-1 | [app-chrome.tsx:202](../../src/interfaces/web/app/app-chrome.tsx#L202) | a / action | Back to Portfolio | SOURCE CLASSIFIED; STATES OPEN |
+| 91d93062a006-1 | [app-chrome.tsx:217](../../src/interfaces/web/app/app-chrome.tsx#L217) | button / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 7c143373cb64-1 | [app-chrome.tsx:235](../../src/interfaces/web/app/app-chrome.tsx#L235) | a / action | {source.label} | SOURCE CLASSIFIED; STATES OPEN |
+| 4ab67b5be0f4-1 | [app-chrome.tsx:299](../../src/interfaces/web/app/app-chrome.tsx#L299) | button / action | Reload to update | SOURCE CLASSIFIED; STATES OPEN |
+| d9dee6c8cf89-1 | [app-chrome.tsx:312](../../src/interfaces/web/app/app-chrome.tsx#L312) | a / action | See what to do | SOURCE CLASSIFIED; STATES OPEN |
+| 5c3a3d62fafb-1 | [app-chrome.tsx:323](../../src/interfaces/web/app/app-chrome.tsx#L323) | a / action | Your data | SOURCE CLASSIFIED; STATES OPEN |
+| 5e84be431460-1 | [app-chrome.tsx:328](../../src/interfaces/web/app/app-chrome.tsx#L328) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 92ccc09ab498-1 | [app-chrome.tsx:349](../../src/interfaces/web/app/app-chrome.tsx#L349) | summary / action | Explore demo portfolios | SOURCE CLASSIFIED; STATES OPEN |
+| 10f4a7df280f-1 | [app-chrome.tsx:355](../../src/interfaces/web/app/app-chrome.tsx#L355) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aa53db6e3c54-1 | [app-import-routes.tsx:50](../../src/interfaces/web/app/app-import-routes.tsx#L50) | summary / action | Import an existing FolioDash JSON history file | SOURCE CLASSIFIED; STATES OPEN |
 | ba191ec28307-1 | [app.tsx:240](../../src/interfaces/web/app/app.tsx#L240) | a / action | Skip to content | SOURCE CLASSIFIED; STATES OPEN |
 | 7d011ddea82a-1 | [account-client-id.tsx:13](../../src/interfaces/web/features/account/account-client-id.tsx#L13) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |

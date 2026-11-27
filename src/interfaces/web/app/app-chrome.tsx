@@ -10,6 +10,7 @@ import { DEMO_VARIANTS, type demoVariantFrom } from "./demo/demo-portfolio";
 import { type Route, type navEntryOf, routeFrom } from "./routes";
 import { NAV, type SourceStatus } from "./app-model";
 import type { Session } from "./session/session";
+import { advanceElapsed } from "../shared/motion/frame-clock";
 
 interface NavBounds {
   readonly top: number;
@@ -94,7 +95,12 @@ export function AppNav(props: {
     observer.observe(active);
     preference.addEventListener("change", settle);
 
-    const startedAt = performance.now();
+    // The motion advances by the time between drawn frames, never by more than three frames' worth at once. A view
+    // transition holds rendering while it captures the page, and a slow device can stall for hundreds of milliseconds:
+    // measured against the wall clock, the whole motion would be spent unseen and the stretch would never be drawn
+    // (FD-029). On a device drawing every frame this changes nothing.
+    let elapsedMs = 0;
+    let lastFrame: number | null = null;
     const movingDown = previous !== null && target.top + target.bottom > previous.top + previous.bottom;
     const vertical = previous !== null && Math.abs(target.top - previous.top) > Math.abs(target.left - previous.left);
     const movingRight = previous !== null && target.left + target.right > previous.left + previous.right;
@@ -102,7 +108,9 @@ export function AppNav(props: {
     const durationScale = vertical ? 1 : 0.75;
     const frame = (now: number): void => {
       if (previous === null) return;
-      const elapsed = (now - startedAt) / durationScale;
+      elapsedMs = advanceElapsed(elapsedMs, lastFrame, now);
+      lastFrame = now;
+      const elapsed = elapsedMs / durationScale;
       const lead = powerThreeOut(elapsed / NAV_FAST_MS);
       const trail = powerThreeInOut(elapsed / NAV_SLOW_MS);
       const cross = powerThreeInOut(elapsed / NAV_SIDE_MS);

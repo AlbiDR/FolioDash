@@ -17,6 +17,8 @@ Implemented 2026-11-18 as phase 7 of the organization standard. This document ow
 
 None of this is live-Google or real-device proof (`GAT-5`). Every run uses synthetic data.
 
+To see what a slow device does to the rendered audits, `AUDIT_CPU_THROTTLE=10` slows the page tenfold in the interaction audit (for example `AUDIT_CPU_THROTTLE=10 npm run audit:interactions -- portfolio`). It is off by default and not part of CI. A check that passes at normal speed and fails there has found a timing assumption, as the sidebar journey did on 2026-11-27 ([the trace and fix](../design/polished-by-default.md#the-sidebar-journey-flake-2026-11-27)).
+
 ## Browser component tests
 
 Unit tests run in Node, with no document, so they test logic and cannot mount a component. Components that move are tested in a real browser instead (`config/vitest.browser.config.ts`, files named `*.test.tsx` in a `browser/` folder beside what they test, such as `src/interfaces/web/shared/ui/browser/`). They use the installed Google Chrome, or the `CHROME_PATH` override, and no browser is downloaded. A failing test's screenshot goes under `dist/browser-tests/`, never the repository root. `*.test.tsx` files are not product code, so the coverage ratchet excludes them as it excludes `*.test.ts`; coverage still measures only Node runs, and the floors did not move. The suite covers the change cue, Presence's exit and sibling shift, the count-up's in-view rules (including a figure clipped sideways in a scroll container, which needs real layout) and the page motion hook against real view transitions. It is not a substitute for the rendered audits: it tests one component at a time, with no router, data or theme around it.

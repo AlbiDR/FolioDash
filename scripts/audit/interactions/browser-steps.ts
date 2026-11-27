@@ -12,6 +12,11 @@ export function createSteps({ origin, call, evaluate, waitFor }: LocalBrowser) {
     counters.assertions++;
   };
   const visit = async (route: string, width = 1440, variant = "typical"): Promise<void> => {
+    // AUDIT_CPU_THROTTLE=10 slows the page tenfold, which reproduces what a slow device does to frame timing. Off by
+    // default; the sidebar flake of 2026-11-27 only appeared this way (docs/design/polished-by-default.md, phase 6 tail).
+    await call("Emulation.setCPUThrottlingRate", {
+      rate: Math.max(1, Number(process.env["AUDIT_CPU_THROTTLE"] ?? "1")),
+    });
     await call("Emulation.setDeviceMetricsOverride", {
       width,
       height: 1000,
