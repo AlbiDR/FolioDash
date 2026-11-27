@@ -140,14 +140,14 @@ One row is a source template; a fund-link template can render many controls. All
 | 96b48440953a-1 | [activity-view.tsx:115](../../src/interfaces/web/features/activity/activity-view.tsx#L115) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | aacae9081f0e-1 | [checkpoints-preserved.tsx:95](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L95) | button / action | Copy as text | SOURCE CLASSIFIED; STATES OPEN |
 | d12f8f03fdda-1 | [checkpoints-preserved.tsx:122](../../src/interfaces/web/features/checkpoints/checkpoints-preserved.tsx#L122) | textarea / field | Checkpoints kept from another workbook, as text | SOURCE CLASSIFIED; STATES OPEN |
-| cf7a6afc5921-1 | [checkpoints-view.tsx:168](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L168) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
-| f9bd2f9a23de-1 | [checkpoints-view.tsx:177](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L177) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 2a8698cac4d9-1 | [checkpoints-view.tsx:189](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L189) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 2d6e7a441ed7-1 | [checkpoints-view.tsx:205](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L205) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 55a4a17869f1-1 | [checkpoints-view.tsx:217](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L217) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
-| a1faa757a9e8-1 | [checkpoints-view.tsx:257](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L257) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
-| f742351aba49-1 | [checkpoints-view.tsx:260](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L260) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
-| 69fd8dab50bd-1 | [checkpoints-view.tsx:270](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L270) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
+| cf7a6afc5921-1 | [checkpoints-view.tsx:171](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L171) | button / action | Check outcome | SOURCE CLASSIFIED; STATES OPEN |
+| f9bd2f9a23de-1 | [checkpoints-view.tsx:180](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L180) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2a8698cac4d9-1 | [checkpoints-view.tsx:192](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L192) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2d6e7a441ed7-1 | [checkpoints-view.tsx:208](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L208) | input / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 55a4a17869f1-1 | [checkpoints-view.tsx:220](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L220) | button / action | Save checkpoint | SOURCE CLASSIFIED; STATES OPEN |
+| a1faa757a9e8-1 | [checkpoints-view.tsx:265](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L265) | button / action | Withdraw | SOURCE CLASSIFIED; STATES OPEN |
+| f742351aba49-1 | [checkpoints-view.tsx:268](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L268) | button / action | Keep | SOURCE CLASSIFIED; STATES OPEN |
+| 69fd8dab50bd-1 | [checkpoints-view.tsx:278](../../src/interfaces/web/features/checkpoints/checkpoints-view.tsx#L278) | button / action | {'Withdraw the checkpoint of ${formatDateLong(entry.date)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | e7f0ed9b6deb-1 | [expense-data-tools.tsx:160](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L160) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 4bc397f59864-1 | [expense-data-tools.tsx:172](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L172) | button / action | Download expense backup | SOURCE CLASSIFIED; STATES OPEN |
 | df97eafc8842-1 | [expense-data-tools.tsx:177](../../src/interfaces/web/features/expenses/expense-data-tools.tsx#L177) | summary / action | Restore an expense backup | SOURCE CLASSIFIED; STATES OPEN |
@@ -264,7 +264,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 39403a2e60f3-1 | [fund-view.tsx:135](../../src/interfaces/web/features/overview/fund-view.tsx#L135) | button / action | hero-action | SOURCE CLASSIFIED; STATES OPEN |
 | 162f2f7b39ad-1 | [fund-view.tsx:237](../../src/interfaces/web/features/overview/fund-view.tsx#L237) | summary / action | Earlier statements | SOURCE CLASSIFIED; STATES OPEN |
 | 399094bfaa4d-1 | [fund-view.tsx:249](../../src/interfaces/web/features/overview/fund-view.tsx#L249) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
-| 8f1341d0a82f-1 | [mobile-holdings.tsx:17](../../src/interfaces/web/features/overview/mobile-holdings.tsx#L17) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
+| 8f1341d0a82f-1 | [mobile-holdings.tsx:24](../../src/interfaces/web/features/overview/mobile-holdings.tsx#L24) | a / action | holding | SOURCE CLASSIFIED; STATES OPEN |
 | 64d4cd976df9-1 | [months-view.tsx:100](../../src/interfaces/web/features/overview/months-view.tsx#L100) | input / choice | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 63093a33b00c-1 | [months-view.tsx:110](../../src/interfaces/web/features/overview/months-view.tsx#L110) | div / scroll-region | Portfolio totals by month | SOURCE CLASSIFIED; STATES OPEN |
 | e0abd83f2dac-1 | [months-view.tsx:195](../../src/interfaces/web/features/overview/months-view.tsx#L195) | div / scroll-region | Fund history by month | SOURCE CLASSIFIED; STATES OPEN |
@@ -278,16 +278,16 @@ One row is a source template; a fund-link template can render many controls. All
 | 7629eadcb326-1 | [overview-cards.tsx:153](../../src/interfaces/web/features/overview/overview-cards.tsx#L153) | a / action | mover | SOURCE CLASSIFIED; STATES OPEN |
 | b203d838d099-1 | [overview-cards.tsx:216](../../src/interfaces/web/features/overview/overview-cards.tsx#L216) | a / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 79d1b03ed21a-1 | [overview-cards.tsx:255](../../src/interfaces/web/features/overview/overview-cards.tsx#L255) | summary / action | What the numbers mean | SOURCE CLASSIFIED; STATES OPEN |
-| f9deda2cfc0c-1 | [overview-holdings.tsx:104](../../src/interfaces/web/features/overview/overview-holdings.tsx#L104) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
-| df5f93250bb8-1 | [overview-holdings.tsx:167](../../src/interfaces/web/features/overview/overview-holdings.tsx#L167) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
-| 2cc174d3262d-1 | [overview-holdings.tsx:185](../../src/interfaces/web/features/overview/overview-holdings.tsx#L185) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
-| da704f763dd4-1 | [overview-holdings.tsx:200](../../src/interfaces/web/features/overview/overview-holdings.tsx#L200) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
-| 9114490a4d64-1 | [overview-holdings.tsx:231](../../src/interfaces/web/features/overview/overview-holdings.tsx#L231) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
-| 5c6a45aa4640-1 | [overview-holdings.tsx:247](../../src/interfaces/web/features/overview/overview-holdings.tsx#L247) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
-| 8f79016434cd-1 | [overview-holdings.tsx:276](../../src/interfaces/web/features/overview/overview-holdings.tsx#L276) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
-| db7bc1d27aff-1 | [overview-holdings.tsx:332](../../src/interfaces/web/features/overview/overview-holdings.tsx#L332) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| f918f1311e07-1 | [overview-holdings.tsx:341](../../src/interfaces/web/features/overview/overview-holdings.tsx#L341) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
-| 5b681e5e2d09-1 | [overview-holdings.tsx:375](../../src/interfaces/web/features/overview/overview-holdings.tsx#L375) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
+| f9deda2cfc0c-1 | [overview-holdings.tsx:118](../../src/interfaces/web/features/overview/overview-holdings.tsx#L118) | a / action | stretched | SOURCE CLASSIFIED; STATES OPEN |
+| df5f93250bb8-1 | [overview-holdings.tsx:181](../../src/interfaces/web/features/overview/overview-holdings.tsx#L181) | input / field | fund-search | SOURCE CLASSIFIED; STATES OPEN |
+| 2cc174d3262d-1 | [overview-holdings.tsx:199](../../src/interfaces/web/features/overview/overview-holdings.tsx#L199) | button / action | Clear search | SOURCE CLASSIFIED; STATES OPEN |
+| da704f763dd4-1 | [overview-holdings.tsx:214](../../src/interfaces/web/features/overview/overview-holdings.tsx#L214) | select / field | holdings-sort | SOURCE CLASSIFIED; STATES OPEN |
+| d3a4efd49a16-1 | [overview-holdings.tsx:245](../../src/interfaces/web/features/overview/overview-holdings.tsx#L245) | div / scroll-region | Fund holdings | SOURCE CLASSIFIED; STATES OPEN |
+| 5c6a45aa4640-1 | [overview-holdings.tsx:261](../../src/interfaces/web/features/overview/overview-holdings.tsx#L261) | button / action | sort-button | SOURCE CLASSIFIED; STATES OPEN |
+| 8f79016434cd-1 | [overview-holdings.tsx:290](../../src/interfaces/web/features/overview/overview-holdings.tsx#L290) | button / action | Closed funds | SOURCE CLASSIFIED; STATES OPEN |
+| db7bc1d27aff-1 | [overview-holdings.tsx:346](../../src/interfaces/web/features/overview/overview-holdings.tsx#L346) | summary / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| f918f1311e07-1 | [overview-holdings.tsx:355](../../src/interfaces/web/features/overview/overview-holdings.tsx#L355) | div / scroll-region | {'${fund.name} recent statement values'} | SOURCE CLASSIFIED; STATES OPEN |
+| 5b681e5e2d09-1 | [overview-holdings.tsx:389](../../src/interfaces/web/features/overview/overview-holdings.tsx#L389) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4c27cd5734fc-1 | [overview-view.tsx:87](../../src/interfaces/web/features/overview/overview-view.tsx#L87) | a / action | Add your first statement | SOURCE CLASSIFIED; STATES OPEN |
 | 68f008a1b407-1 | [overview-view.tsx:91](../../src/interfaces/web/features/overview/overview-view.tsx#L91) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4e586bf3824f-1 | [overview-view.tsx:133](../../src/interfaces/web/features/overview/overview-view.tsx#L133) | a / action | Add statement | SOURCE CLASSIFIED; STATES OPEN |
@@ -319,7 +319,7 @@ One row is a source template; a fund-link template can render many controls. All
 | 9cad9846dbc6-1 | [change-cue.test.tsx:81](../../src/interfaces/web/shared/ui/browser/change-cue.test.tsx#L81) | button / action | declined | SOURCE CLASSIFIED; STATES OPEN |
 | 8cfcca95fe93-1 | [disclosure.test.tsx:18](../../src/interfaces/web/shared/ui/browser/disclosure.test.tsx#L18) | summary / action | More | SOURCE CLASSIFIED; STATES OPEN |
 | c40ccf39b1a8-1 | [deferred-view.tsx:13](../../src/interfaces/web/shared/ui/deferred-view.tsx#L13) | button / action | Reload view | SOURCE CLASSIFIED; STATES OPEN |
-| 0aecfa0f060a-1 | [page-nav.tsx:18](../../src/interfaces/web/shared/ui/page-nav.tsx#L18) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
+| acf2678485d1-1 | [page-nav.tsx:19](../../src/interfaces/web/shared/ui/page-nav.tsx#L19) | button / action | page-nav-item | SOURCE CLASSIFIED; STATES OPEN |
 | a337f0db5759-1 | [range-selector.tsx:40](../../src/interfaces/web/shared/ui/range-selector.tsx#L40) | button / period-option | Dynamic label; inspect owning component | P1: Chrome states and chart journey PASS; devices/other engines OPEN |
 
 <!-- interaction-inventory:end -->

@@ -5,6 +5,7 @@ import { MAX_NOTE_LENGTH, isSafeNote } from "../../../../core/portfolio/checkpoi
 import { type IsoDate, formatDateLong, parseIsoDate } from "../../../../core/values/iso-date";
 import { type EuroCents, parseItalianAmount } from "../../../../core/values/money";
 import { Amount } from "../../presentation/privacy/privacy";
+import { useLeavingRows } from "../../shared/motion/leaving-rows";
 import { Presence } from "../../shared/ui/presence";
 import { PendingDescription, PreservedList, listed } from "./checkpoints-preserved";
 import "./checkpoints.css";
@@ -121,6 +122,8 @@ export function CheckpointsView(props: {
   const opened = useRef<ReadonlySet<string> | null>(null);
   if (opened.current === null && state.ready) opened.current = new Set(entries.map((entry) => entry.id));
   const known = opened.current;
+  // A withdrawn checkpoint stays while it fades, so the list never snaps shut.
+  const shown = useLeavingRows(entries, (entry) => entry.id).rows;
 
   return (
     <section class="screen checkpoints" aria-label="Checkpoints">
@@ -236,12 +239,17 @@ export function CheckpointsView(props: {
         <p class="card-subtitle">
           Newest first. On the Performance chart a day shows its latest checkpoint; every one is listed here.
         </p>
-        {entries.length === 0 ? (
+        {shown.length === 0 ? (
           <p class="empty-note">No checkpoints yet.</p>
         ) : (
           <ul class="checkpoint-list">
-            {entries.map((entry) => (
-              <li key={entry.id} class={known === null || known.has(entry.id) ? undefined : "checkpoint-new"}>
+            {shown.map(({ item: entry, leaving }) => (
+              <li
+                key={entry.id}
+                class={leaving ? "row-leaving" : known === null || known.has(entry.id) ? undefined : "checkpoint-new"}
+                inert={leaving}
+                aria-hidden={leaving ? true : undefined}
+              >
                 <span class="checkpoint-date">{formatDateLong(entry.date)}</span>
                 <span class="checkpoint-value">
                   <Amount cents={entry.cents} />

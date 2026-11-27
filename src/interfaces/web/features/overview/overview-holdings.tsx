@@ -2,6 +2,7 @@ import type { JSX, RefObject } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
 import { formatDateLong } from "../../../../core/values/iso-date";
 import { Icon } from "../../shared/ui/icons";
+import { useLeavingRows } from "../../shared/motion/leaving-rows";
 import { useRowGlide } from "../../shared/ui/use-row-glide";
 import { MobileHoldings } from "./mobile-holdings";
 import { Sparkline } from "../../presentation/charts/sparkline";
@@ -27,7 +28,8 @@ const GROUP_FROM = 6;
 const SEARCH_FROM = 7;
 
 /** The rows a re-sort moves: desktop holdings rows (not the grouped headers, totals or statement tables) and phone list items. */
-const GLIDING_ROWS = ".holdings-table:not(.statement-table) > tbody > tr:not(.holdings-group), .mobile-holdings > li";
+const GLIDING_ROWS =
+  ".holdings-table:not(.statement-table) > tbody > tr:not(.holdings-group), .holdings-table:not(.statement-table) > tfoot > tr, .mobile-holdings > li";
 
 export function HoldingsCard(props: {
   readonly funds: readonly OverviewFund[];
@@ -80,13 +82,23 @@ export function HoldingsCard(props: {
   });
   // Surviving keyed rows also glide when a search or the closed-fund fold changes their positions. New rows draw
   // immediately; their figures are never tweened. The shared controller carries an interrupted glide forward.
-  useRowGlide(card, GLIDING_ROWS, JSON.stringify([holdingsSort, query, closedOpen]));
   /** Long lists with funds you have sold read as two blocks, each with its count; a short list stays one table. */
   const heldListed = listedFunds.filter((fund) => fund.status !== "closed");
   const closedListed = listedFunds.filter((fund) => fund.status === "closed");
+  // Rows that leave (a search no longer matches them, or the closed block folds) stay while they fade, then the rows
+  // below glide up. The table and the phone list are separate sets, so each keeps its own.
+  const grouped = funds.length >= GROUP_FROM && held.length > 0 && funds.some((fund) => fund.status === "closed");
+  const tableFunds = grouped ? [...heldListed, ...(closedOpen ? closedListed : [])] : listedFunds;
+  const table = useLeavingRows(tableFunds, (fund) => fund.isin);
+  const phone = useLeavingRows(listedFunds, (fund) => fund.isin);
+  const leavingIn = (rows: typeof table.rows): ReadonlySet<string> =>
+    new Set(rows.filter((row) => row.leaving).map((row) => row.item.isin));
+  const leaving = leavingIn(table.rows);
+  const tableHeld = table.rows.filter((row) => row.item.status !== "closed").map((row) => row.item);
+  const tableClosed = table.rows.filter((row) => row.item.status === "closed").map((row) => row.item);
+  useRowGlide(card, GLIDING_ROWS, JSON.stringify([holdingsSort, query, closedOpen, table.version, phone.version]));
   // Keep the table's groups stable while searching, so a surviving fund keeps its keyed row and keyboard target.
   // A group with no matches has no heading; the existing empty-result message covers a completely empty search.
-  const grouped = funds.length >= GROUP_FROM && held.length > 0 && funds.some((fund) => fund.status === "closed");
   /** The bars compare each fund with the largest holding, so a long list still reads; the percentage beside each carries the exact share. */
   const largestShare = Math.max(0, ...held.map((fund) => fund.latest?.share ?? 0));
   /** A fund's value across the chart's period, for the small line under its value. It needs two statements to be a line. */
@@ -98,7 +110,9 @@ export function HoldingsCard(props: {
   const holdingRow = (fund: OverviewFund): JSX.Element => (
     <tr
       key={fund.isin}
-      class={`${fund.status === "closed" ? "closed" : ""}${fresh.has(fund.isin) ? " holding-new" : ""}`.trim()}
+      class={`${fund.status === "closed" ? "closed" : ""}${fresh.has(fund.isin) ? " holding-new" : ""}${leaving.has(fund.isin) ? " row-leaving" : ""}`.trim()}
+      inert={leaving.has(fund.isin)}
+      aria-hidden={leaving.has(fund.isin) ? true : undefined}
     >
       <th scope="row">
         <a href={`#fund/${fund.isin}`} class="stretched">
@@ -224,7 +238,7 @@ export function HoldingsCard(props: {
       {funds.length > 0 && listedFunds.length === 0 && (
         <p class="empty-note search-empty">No funds match. Try another name or ISIN.</p>
       )}
-      <MobileHoldings funds={listedFunds} fresh={fresh} />
+      <MobileHoldings funds={phone.rows.map((row) => row.item)} fresh={fresh} leaving={leavingIn(phone.rows)} />
       {funds.length === 0 ? (
         <p class="empty-note">No funds are held.</p>
       ) : (
@@ -267,7 +281,7 @@ export function HoldingsCard(props: {
                       </th>
                     </tr>
                   )}
-                  {heldListed.map(holdingRow)}
+                  {tableHeld.map(holdingRow)}
                 </tbody>
                 <tbody id="holdings-closed-rows">
                   {closedListed.length > 0 && (
@@ -288,11 +302,11 @@ export function HoldingsCard(props: {
                       </th>
                     </tr>
                   )}
-                  {closedOpen && closedListed.map(holdingRow)}
+                  {tableClosed.map(holdingRow)}
                 </tbody>
               </>
             ) : (
-              <tbody>{listedFunds.map(holdingRow)}</tbody>
+              <tbody>{table.rows.map((row) => holdingRow(row.item))}</tbody>
             )}
             {/* The portfolio's own totals, the same figures as the headline, so the rows and the total can be checked against each other. A filter hides them rather than showing a sum of part of the list. */}
             <tfoot>

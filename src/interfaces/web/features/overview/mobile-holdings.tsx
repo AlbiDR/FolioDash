@@ -9,11 +9,18 @@ export function MobileHoldings(props: {
   readonly funds: readonly OverviewFund[];
   /** Funds that were not listed before this render: only they fade in, so a search never re-fades the rows that stay. */
   readonly fresh: ReadonlySet<string>;
+  /** Funds that have just left the list: they stay while they fade out. */
+  readonly leaving: ReadonlySet<string>;
 }): JSX.Element {
   return (
     <ul class="mobile-holdings">
       {props.funds.map((fund) => (
-        <li key={fund.isin} class={props.fresh.has(fund.isin) ? "holding-new" : undefined}>
+        <li
+          key={fund.isin}
+          class={props.leaving.has(fund.isin) ? "row-leaving" : props.fresh.has(fund.isin) ? "holding-new" : undefined}
+          inert={props.leaving.has(fund.isin)}
+          aria-hidden={props.leaving.has(fund.isin) ? true : undefined}
+        >
           <a href={`#fund/${fund.isin}`} class="holding">
             <span class="holding-id">
               <span class="holding-name">{fund.name}</span>

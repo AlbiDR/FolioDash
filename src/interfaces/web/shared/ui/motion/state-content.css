@@ -62,6 +62,18 @@
 .activity-row.row-new {
   animation: motion-fade var(--duration-cue) var(--ease-standard);
 }
+/* Rows that have just left stay while they fade (use-leaving-rows), then the rows below glide up. */
+.mobile-holdings > li.row-leaving,
+.holdings-table tbody > tr.row-leaving,
+.checkpoint-list > li.row-leaving {
+  animation: motion-fade-out var(--duration-cue) var(--ease-standard) forwards;
+  pointer-events: none;
+}
+@keyframes motion-fade-out {
+  to {
+    opacity: 0;
+  }
+}
 /* 67: Browser-recorded summary settles after the actual local record completes. */
 .recorded {
   animation: motion-label var(--duration-feedback) var(--ease-standard);

@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { prefersReducedMotion } from "../motion/reduced-motion";
 
 /**
  * In-page orientation for a long screen: each item scrolls to a section heading and moves focus there.
@@ -21,12 +22,13 @@ export function PageNav(props: {
               onClick={() => {
                 const target = document.getElementById(item.id);
                 if (target === null) return;
-                target.scrollIntoView({ block: "start", behavior: "auto" });
-                // A disclosure is opened and its summary focused, so the jump lands on readable content.
-                if (target instanceof HTMLDetailsElement) {
-                  target.open = true;
+                // A disclosure is opened first and its summary focused, so the jump lands on readable content.
+                if (target instanceof HTMLDetailsElement) target.open = true;
+                // The page glides to the section; reduced motion jumps at once.
+                target.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" });
+                if (target instanceof HTMLDetailsElement)
                   target.querySelector("summary")?.focus({ preventScroll: true });
-                } else target.focus({ preventScroll: true });
+                else target.focus({ preventScroll: true });
               }}
             >
               {item.label}

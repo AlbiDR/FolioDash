@@ -36,10 +36,18 @@ export async function holdingsJourney({
     "(()=>{const n=text=>parseFloat(text.replace(/[^0-9,\\-]/g,'').replace(',','.'));const body=[...document.querySelectorAll('.desktop-holdings .holdings-table tbody tr:not(.holdings-group)')];const total=document.querySelector('.desktop-holdings .holdings-table tfoot tr.holdings-total');const sum=index=>body.reduce((acc,row)=>acc+(Number.isNaN(n(row.children[index].textContent))?0:n(row.children[index].textContent)),0);return body.length>=10&&!!total&&Math.abs(n(total.children[1].textContent)-sum(1))<0.05&&Math.abs(n(total.children[4].textContent)-sum(4))<0.05&&Math.abs(n(total.children[5].textContent)-sum(5))<0.05})()",
     "twelve funds: the total row still equals the sum of its rows",
   );
+  // Rows a search removes stay while they fade, then leave: watch for the marker, then check none remain and the list shrank.
+  await evaluate(
+    "(()=>{window.auditLeaving=false;window.auditRowsBefore=document.querySelectorAll('.desktop-holdings .holdings-table tbody tr:not(.holdings-group)').length;new MutationObserver(()=>{if(document.querySelector('.desktop-holdings .holdings-table tbody tr.row-leaving'))window.auditLeaving=true}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']})})()",
+  );
   await evaluate(
     "(()=>{const input=document.getElementById('fund-search');input.value='Fund A';input.dispatchEvent(new Event('input',{bubbles:true}))})()",
   );
   await delay(400);
+  await check(
+    "window.auditLeaving===true&&!document.querySelector('.desktop-holdings .holdings-table tr.row-leaving')&&document.querySelectorAll('.desktop-holdings .holdings-table tbody tr:not(.holdings-group)').length<window.auditRowsBefore",
+    "rows a search removes fade out in place and are gone afterwards",
+  );
   await check(
     "(()=>{const foot=document.querySelector('.desktop-holdings .holdings-table tfoot');return foot.querySelectorAll('td[colspan]').length===1&&foot.textContent.includes('Totals cover every fund')&&!foot.querySelector('.pill')})()",
     "a search replaces the totals with an explanation instead of a partial sum",
