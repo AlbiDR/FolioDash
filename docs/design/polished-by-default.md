@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 5 and 7 done; phase 6 done, its remaining items settled by decision (see the second tail batch); phase 8: engine and emulation checks automated and run (`audit:cross-engine`), real-device checks optional and not run.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 5 and 7 done; phase 6 done, its remaining items settled by decision (see the second tail batch); phase 8 closed by the owner on 2026-11-27: engine and emulation checks are automated and run (`audit:cross-engine`), and the real-device checks were closed without being run.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -242,6 +242,10 @@ What changes for a person, under `src/interfaces/web/`:
 ### Phase 8, automated, 2026-11-27
 
 - **The owner found hand-running device scripts too tedious, so they were automated.** `scripts/audit/browsers/cross-engine.ts` (`npm run audit:cross-engine`, in the `accessibility-and-polish` CI suite) runs the checks in Playwright's WebKit, Firefox and Chrome at desktop size and as iPhone 15 and Pixel 7 with touch emulation, with motion on and with Reduce Motion, and records a video and screenshot per run. First run: 240 checks in 8 runs, passed; its first run found only mistakes in its own checks (a privacy toggle that starts pressed, SVG anchors and inline text links counted as small targets). A removed-row fade assertion proves it can fail: it expects the fade with motion and none without. Still unverified and said so in its report: real hardware frame pacing and touch, screen readers, the installed app, and Safari and Firefox as whole products. The owner's remaining option is a five-minute phone check ([guide](../operations/motion-device-checklist.md)).
+
+### Phase 8 closed, 2026-11-27
+
+- **The owner closed the real-device checks without running them.** This is a decision to stop, not a result: no real phone, tablet, screen reader or installed app was tested, and nothing may be described as verified on real hardware. What stands is the automated record: WebKit, Firefox and Chrome with iPhone 15 and Pixel 7 emulation, motion on and Reduce Motion. If a person later reports a device problem, reproduce it first, then fix it at the source with a guard, as with the sidebar flake.
 
 ### The sidebar journey flake, 2026-11-27
 

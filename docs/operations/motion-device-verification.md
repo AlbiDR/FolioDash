@@ -1,6 +1,6 @@
 # Motion verification on other browsers and real devices
 
-Status: **Proposed 2026-11-27; not run.** This is phase 8 of the [polished-by-default plan](../design/polished-by-default.md) (FD-029). It is a script for the owner to run on their own devices, and an automated half that needs a decision. The device and browser matrix belongs to FD-012, which is still open, so the matrix below is a proposal until the owner accepts or amends it. Nothing here has been run, and no result is claimed (STD-11).
+Status: **Closed by the owner 2026-11-27 without running the real-device scripts; no real-device result is claimed.** Originally proposed the same day; not run. This is phase 8 of the [polished-by-default plan](../design/polished-by-default.md) (FD-029). It is a script for the owner to run on their own devices, and an automated half that needs a decision. The device and browser matrix belongs to FD-012, which is still open, so the matrix below is a proposal until the owner accepts or amends it. Nothing here has been run, and no result is claimed (STD-11).
 
 ## What is and is not proven today
 
