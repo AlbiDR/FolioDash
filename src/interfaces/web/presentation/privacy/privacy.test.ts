@@ -4,6 +4,7 @@ import {
   MASK,
   type PrivacyStorage,
   amountText,
+  axisLabelText,
   maskNumbers,
   readPrivacyChoice,
   writePrivacyChoice,
@@ -68,5 +69,14 @@ describe("maskNumbers", () => {
   it("replaces only the number in an already formatted amount", () => {
     expect(maskNumbers("25.743,52 €")).toBe(`${MASK} €`);
     expect(maskNumbers("-806,82 €")).toBe(`-${MASK} €`);
+  });
+});
+
+describe("axis labels while amounts are hidden", () => {
+  it("show only the mask, so an abbreviation cannot give away the size", () => {
+    for (const label of ["12,5k", "1,2M", "-3k", "€ 900"]) {
+      expect(axisLabelText(label, true)).toBe(MASK);
+      expect(axisLabelText(label, false)).toBe(label);
+    }
   });
 });

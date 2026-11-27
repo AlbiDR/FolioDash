@@ -1,10 +1,11 @@
 import "./chart-inspection.css";
 import { useValueAxis } from "./use-value-axis";
+import { dropRepeatedLabels } from "./axis-labels";
 import { useAxisLabels } from "./use-axis-labels";
 import type { ComponentChildren, JSX, TargetedPointerEvent } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { usePrivacy } from "../privacy/privacy";
-import { maskNumbers } from "../privacy/privacy-choice";
+import { axisLabelText, maskNumbers } from "../privacy/privacy-choice";
 import { type ChartSeries, arrivalBaseline, computeLineChart } from "./line-chart-geometry";
 import { LAYOUT, styleClass } from "./line-chart-layout";
 import {
@@ -99,11 +100,13 @@ export function LineChart(props: LineChartProps): JSX.Element {
     [props.series, width, plotHeight, includeZero, valueAxis.margin],
   );
   const axis = useAxisLabels(
-    geometry.xTicks.map((tick) => ({
-      key: String(tick.time),
-      text: props.formatTime(tick.time),
-      x: tick.x,
-    })),
+    dropRepeatedLabels(
+      geometry.xTicks.map((tick) => ({
+        key: String(tick.time),
+        text: props.formatTime(tick.time),
+        x: tick.x,
+      })),
+    ),
     geometry.plot.left,
     geometry.plot.left + geometry.plot.width,
     !geometry.empty,
@@ -271,10 +274,8 @@ export function LineChart(props: LineChartProps): JSX.Element {
               group={valueAxis.group}
               geometry={geometry}
               show={show}
-              format={(value) => {
-                const label = formatAxisValue(value);
-                return hidden ? maskNumbers(label) : label;
-              }}
+              format={(value) => axisLabelText(formatAxisValue(value), hidden)}
+              distinct={formatAxisValue}
             />
             <ChartTimeAxis group={axis.group} labels={axis.labels} y={baseline + 20} />
           </g>

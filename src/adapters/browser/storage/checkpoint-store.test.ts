@@ -233,6 +233,16 @@ describe("checkpoint lock", () => {
     expect(await lock.run(() => Promise.resolve("third"))).toEqual({ status: "held", value: "third" });
   });
 
+  it("lets a failure of the work through instead of calling it an unsupported browser", async () => {
+    const lock = createCheckpointLock("foliodash.checkpoints", manager());
+    await expect(lock.run(() => Promise.reject(new Error("the append failed")))).rejects.toThrow("the append failed");
+  });
+
+  it("calls a lock manager that cannot take the lock unsupported", async () => {
+    const broken = { request: () => Promise.reject(new Error("no lock")) };
+    expect((await createCheckpointLock("x", broken).run(() => Promise.resolve(1))).status).toBe("unsupported");
+  });
+
   it("B2b refuses when the browser has no Web Locks", async () => {
     expect((await createCheckpointLock("x", undefined).run(() => Promise.resolve(1))).status).toBe("unsupported");
   });

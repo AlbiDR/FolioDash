@@ -212,13 +212,21 @@ export function createCheckpointLock(name: string, locks: LockManagerLike | unde
   return {
     async run<T>(work: () => Promise<T>): Promise<CheckpointLockResult<T>> {
       if (locks === undefined) return { status: "unsupported" };
+      const progress = { started: false };
       try {
         return await locks.request<CheckpointLockResult<T>>(
           name,
           { ifAvailable: true, mode: "exclusive" },
-          async (lock) => (lock === null ? { status: "busy" } : { status: "held", value: await work() }),
+          async (lock) => {
+            if (lock === null) return { status: "busy" };
+            progress.started = true;
+            return { status: "held", value: await work() };
+          },
         );
-      } catch {
+      } catch (error) {
+        // A failure of the work itself is the caller's to classify: the write may already have gone out, so it is not
+        // "nothing was sent". Only a lock manager that could not take the lock is unsupported.
+        if (progress.started) throw error;
         return { status: "unsupported" };
       }
     },

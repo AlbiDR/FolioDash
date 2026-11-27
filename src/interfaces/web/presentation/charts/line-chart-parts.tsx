@@ -3,7 +3,7 @@ import { AnimatedFigure } from "../animated-figure";
 import { chartArrivalClass, chartArrivalOrder } from "./motion/recipe";
 import type { ChartGeometry, ChartSeries, PlottedSeries } from "./line-chart-geometry";
 import { styleClass } from "./line-chart-layout";
-import type { PositionedAxisLabel } from "./axis-labels";
+import { type PositionedAxisLabel, printedTickLabels } from "./axis-labels";
 import { VALUE_LABEL_GAP } from "./use-value-axis";
 
 export function ChartReadout(props: {
@@ -254,19 +254,30 @@ export function ChartValueAxis(props: {
   readonly group: RefObject<SVGGElement | null>;
   readonly geometry: ChartGeometry;
   readonly format: (value: number) => string;
+  /** The tick's label as it reads when amounts are shown, so neighbours that round to the same label print once. */
+  readonly distinct: (value: number) => string;
   readonly show: (value: number) => string;
 }): JSX.Element {
   const { plot, yTicks } = props.geometry;
   const edge = plot.left + plot.width;
+  const printed = printedTickLabels(yTicks.map((tick) => props.distinct(tick.value)));
   return (
     <g ref={props.group} class="chart-value-axis">
-      {yTicks.map((tick) => (
+      {yTicks.map((tick, index) => (
         <g key={tick.value}>
           <line x1={plot.left} x2={edge} y1={tick.y} y2={tick.y} />
-          <text class="chart-tick" x={edge + VALUE_LABEL_GAP} y={tick.y} text-anchor="start" dominant-baseline="middle">
-            <title>{props.show(tick.value)}</title>
-            {props.format(tick.value)}
-          </text>
+          {printed[index] === true && (
+            <text
+              class="chart-tick"
+              x={edge + VALUE_LABEL_GAP}
+              y={tick.y}
+              text-anchor="start"
+              dominant-baseline="middle"
+            >
+              <title>{props.show(tick.value)}</title>
+              {props.format(tick.value)}
+            </text>
+          )}
         </g>
       ))}
     </g>

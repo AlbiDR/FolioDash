@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type AxisLabel, positionAxisLabels } from "./axis-labels";
+import { type AxisLabel, dropRepeatedLabels, positionAxisLabels, printedTickLabels } from "./axis-labels";
 
 const labels = (count: number): readonly AxisLabel[] =>
   Array.from({ length: count }, (_, index) => ({
@@ -65,5 +65,25 @@ describe("measured chart date labels", () => {
     expect(positionAxisLabels([], {}, 0, 100, 11)).toEqual([]);
     expect(positionAxisLabels(labels(1), { "0": 42 }, 6, 354, 11)[0]?.visible).toBe(true);
     expect(positionAxisLabels(labels(1), { "0": 100 }, 0, 80, 11)[0]?.visible).toBe(false);
+  });
+});
+
+describe("repeated axis labels", () => {
+  it("keeps one of several neighbouring labels with the same text, the last", () => {
+    const labels = [
+      { key: "a", text: "Nov 26", x: 0 },
+      { key: "b", text: "Nov 26", x: 10 },
+      { key: "c", text: "Dec 26", x: 20 },
+      { key: "d", text: "Nov 26", x: 30 },
+    ];
+    expect(dropRepeatedLabels(labels).map((label) => label.key)).toEqual(["b", "c", "d"]);
+    expect(dropRepeatedLabels([])).toEqual([]);
+  });
+
+  it("prints a value tick once when its neighbours round to the same label, and always prints the lowest and highest", () => {
+    expect(printedTickLabels(["12,3k", "12,3k", "12,4k", "12,4k", "12,4k"])).toEqual([true, false, true, false, true]);
+    expect(printedTickLabels(["12k", "12,1k", "12,2k"])).toEqual([true, true, true]);
+    expect(printedTickLabels(["25", "25", "26"])).toEqual([true, false, true]);
+    expect(printedTickLabels([])).toEqual([]);
   });
 });

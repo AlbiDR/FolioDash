@@ -27,7 +27,13 @@ export type RestFailure =
   | "unexpected";
 
 export type RestResult<T> =
-  { readonly ok: true; readonly value: T } | { readonly ok: false; readonly failure: RestFailure };
+  | { readonly ok: true; readonly value: T }
+  | {
+      readonly ok: false;
+      readonly failure: RestFailure;
+      /** The HTTP status behind an "unexpected" failure, for the one caller that reads a particular status as an answer. */
+      readonly status?: number;
+    };
 
 /**
  * Whether a failed call is known not to have changed anything. A lost answer is not such a failure, and neither is an
@@ -66,7 +72,8 @@ export async function callRest(
   if (response.status === 403) return { ok: false, failure: "forbidden" };
   if (response.status === 404) return { ok: false, failure: "not-found" };
   if (response.status === 429 || response.status >= 500) return { ok: false, failure: "unavailable" };
-  if (response.status < 200 || response.status >= 300) return { ok: false, failure: "unexpected" };
+  if (response.status < 200 || response.status >= 300)
+    return { ok: false, failure: "unexpected", status: response.status };
   try {
     return { ok: true, value: await response.json() };
   } catch {

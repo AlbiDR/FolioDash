@@ -39,6 +39,14 @@ export function maskNumbers(formatted: string): string {
   return formatted.replace(/[\d.,]+/u, MASK);
 }
 
+/**
+ * An axis tick while amounts are hidden: the mask alone. An abbreviated tick such as "12,5k" keeps its suffix under
+ * maskNumbers, which would still tell the size of the portfolio.
+ */
+export function axisLabelText(label: string, hidden: boolean): string {
+  return hidden ? MASK : label;
+}
+
 /** Text for an amount, with its number hidden when asked. Percentages never go through this: they reveal no amount. */
 export function amountText(cents: EuroCents, hidden: boolean, signed = false): string {
   const formatted = signed ? formatSignedEuro(cents) : formatEuro(cents);

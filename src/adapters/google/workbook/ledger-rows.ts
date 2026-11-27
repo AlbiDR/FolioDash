@@ -21,8 +21,11 @@ export async function readLedgerRows(
     url: `${SHEETS}/${encodeURIComponent(workbookId)}/values/${encodeURIComponent(`${LEDGER_TAB}!A1:D`)}?valueRenderOption=UNFORMATTED_VALUE`,
   });
   if (!answer.ok) {
-    // Google answers 400 when the tab does not exist, which is the same as "not a ledger".
-    return answer.failure === "unexpected" ? { ok: true, value: { notALedger: true } } : answer;
+    // Google answers 400 when the tab does not exist, which is the same as "not a ledger". Any other unexpected
+    // status (a timeout, a conflict) says nothing about the tab, so it stays a failure to read.
+    return answer.failure === "unexpected" && answer.status === 400
+      ? { ok: true, value: { notALedger: true } }
+      : answer;
   }
   const values = record(answer.value)?.["values"];
   const lines = Array.isArray(values) ? (values as unknown[]) : [];

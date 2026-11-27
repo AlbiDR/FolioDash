@@ -298,9 +298,9 @@ One row is a source template; a fund-link template can render many controls. All
 | 0b2e3693a3bb-1 | [line-chart-parts.tsx:130](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L130) | div / scroll-region | {'${props.title}: values table'} | SOURCE CLASSIFIED; STATES OPEN |
 | 6c60df19ada7-1 | [line-chart-parts.tsx:221](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L221) | summary / action | Chart tools and values | SOURCE CLASSIFIED; STATES OPEN |
 | 2137e4ae4621-1 | [line-chart-parts.tsx:229](../../src/interfaces/web/presentation/charts/line-chart-parts.tsx#L229) | button / action | Reset chart inspection | SOURCE CLASSIFIED; STATES OPEN |
-| 7f473b4575d1-1 | [line-chart.tsx:176](../../src/interfaces/web/presentation/charts/line-chart.tsx#L176) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
-| c6193f965996-1 | [line-chart.tsx:243](../../src/interfaces/web/presentation/charts/line-chart.tsx#L243) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
-| 63b5f07c9cc3-1 | [line-chart.tsx:313](../../src/interfaces/web/presentation/charts/line-chart.tsx#L313) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
+| 7f473b4575d1-1 | [line-chart.tsx:179](../../src/interfaces/web/presentation/charts/line-chart.tsx#L179) | button / action | {'Highlight ${entry.label}'} | SOURCE CLASSIFIED; STATES OPEN |
+| bfafdc36a0ae-1 | [line-chart.tsx:246](../../src/interfaces/web/presentation/charts/line-chart.tsx#L246) | svg / chart-inspection | chart-svg | SOURCE CLASSIFIED; STATES OPEN |
+| 63b5f07c9cc3-1 | [line-chart.tsx:314](../../src/interfaces/web/presentation/charts/line-chart.tsx#L314) | input / slider | {'${props.title}: observation date'} | SOURCE CLASSIFIED; STATES OPEN |
 | af96ebe7883e-1 | [monthly-bars.tsx:136](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L136) | g / chart-mark | {'${named(bar)}: ${value === null ? "Unavailable" : show(value)}'} | SOURCE CLASSIFIED; STATES OPEN |
 | 9b0ee110f1fd-1 | [monthly-bars.tsx:219](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L219) | input / slider | {'${props.title}: month'} | SOURCE CLASSIFIED; STATES OPEN |
 | e12440fad7f8-1 | [monthly-bars.tsx:250](../../src/interfaces/web/presentation/charts/monthly-bars.tsx#L250) | button / action | Show latest month | SOURCE CLASSIFIED; STATES OPEN |
