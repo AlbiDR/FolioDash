@@ -8,16 +8,17 @@
 @media (max-width: 47.5rem) {
   .allocation-card {
     display: grid;
-    grid-template-columns: 7rem minmax(0, 1fr);
+    grid-template-columns: 9rem minmax(0, 1fr);
     column-gap: var(--space-3);
-    align-items: center;
+    /* The ring stays at the top beside its legend instead of floating mid-height beside a tall list. */
+    align-items: start;
   }
   .allocation-card > :not(.donut):not(.legend) {
     grid-column: 1 / -1;
   }
   .allocation-card > .donut {
     grid-column: 1;
-    width: 7rem;
+    width: 9rem;
     margin: 0;
   }
   .allocation-card > .legend {
@@ -45,6 +46,40 @@
   .allocation-card .legend-value {
     grid-area: value;
     font-size: var(--text-small);
+  }
+}
+
+/* On a narrow card the ring and the legend stack: the ring is centred above a full-width legend, so no fund name is
+ * squeezed into a sliver beside it and broken in the middle of a word. */
+@media (max-width: 35.999rem) {
+  .allocation-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .allocation-card > .donut {
+    grid-column: 1;
+    width: 9rem;
+    justify-self: center;
+    margin-block: var(--space-2);
+  }
+  .allocation-card > .legend {
+    grid-column: 1;
+  }
+  .allocation-card .legend a {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: none;
+    column-gap: var(--space-2);
+  }
+  .allocation-card .legend .dot,
+  .allocation-card .legend-name,
+  .allocation-card .legend-value {
+    grid-area: auto;
+  }
+  .allocation-card .legend-value {
+    font-size: inherit;
+  }
+  .allocation-card .legend-name {
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 }
 

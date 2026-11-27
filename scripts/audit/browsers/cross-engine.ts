@@ -135,7 +135,11 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
   await context.route("**/*", (route) => (route.request().url().startsWith(origin) ? route.continue() : route.abort()));
   const page = await context.newPage();
   const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  // WebKit reports this when a resize reflows content that is itself observed. It is the specification's own benign
+  // notice (nothing was lost; the next frame delivers it), so it is not an error of the page.
+  page.on("pageerror", (error) => {
+    if (!/ResizeObserver loop/iu.test(error.message)) errors.push(error.message);
+  });
   page.on("console", (message) => {
     if (message.type() === "error" && !/Failed to load resource|NetworkError|net::/iu.test(message.text()))
       errors.push(message.text());
@@ -176,6 +180,37 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
         expectThat(moving.length === 0, `Reduce Motion left motion on: ${moving.join(", ")}`, here);
       }
     }
+    // The allocation ring and its legend fit their card: nothing overflows and no fund name breaks inside a word.
+    await go(page, "overview");
+    const original = page.viewportSize();
+    const allocationAt = async (width: number): Promise<string> => {
+      await page.setViewportSize({ width, height: original?.height ?? 900 });
+      await page.evaluate("document.fonts.ready");
+      await delay(500);
+      return page.evaluate<string>(`(() => {
+      const card = document.querySelector(".allocation-card");
+      if (!card) return "missing";
+      const box = card.getBoundingClientRect();
+      const ring = card.querySelector(".donut").getBoundingClientRect();
+      const names = [...card.querySelectorAll(".legend-name")];
+      if (card.scrollWidth > card.clientWidth + 1) return "the card overflows sideways";
+      if (ring.left < box.left - 1 || ring.right > box.right + 1) return "the ring leaves the card";
+      // A word wider than its box is split mid-word: measure each word in the name's own font.
+      const context = document.createElement("canvas").getContext("2d");
+      const cut = names.filter((n) => {
+        context.font = getComputedStyle(n).font;
+        const widest = Math.max(...n.textContent.split(/\\s+/u).map((word) => context.measureText(word).width));
+        return n.scrollWidth > n.clientWidth + 1 || n.clientWidth < widest - 1;
+      }).length;
+      return cut > 0 ? "a fund name is cut off" : "ok";
+    })()`);
+    };
+    for (const width of [320, 380, 600, 700, 1000]) {
+      const allocation = await allocationAt(width);
+      expectThat(allocation === "ok", `the allocation card at ${String(width)} pixels: ${allocation}`, where);
+    }
+    if (original !== null) await page.setViewportSize(original);
+    await settle();
     // Touch targets on a phone: every visible control is easy to hit.
     if (profile.phone) {
       await go(page, "overview");
