@@ -21,3 +21,9 @@ describe("describeAge", () => {
     expect(describeAge(1000, 5000)).toBe("just now");
   });
 });
+
+it("never reads an age higher than it is", () => {
+  expect(describeAge(90_000, 0)).toBe("1 minute ago");
+  expect(describeAge(5_399_000, 0)).toBe("1 hour ago");
+  expect(describeAge(36 * 3_600_000, 0)).toBe("1 day ago");
+});

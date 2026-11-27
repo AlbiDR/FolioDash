@@ -52,11 +52,14 @@ function detailOf(row: ActivityRow): string {
 export function ActivityView(props: ActivityViewProps): JSX.Element {
   const { days, demo } = props;
   const [status, setStatus] = useState<ActivityStatus>("all");
-  const [month, setMonth] = useState("");
+  const [chosenMonth, setMonth] = useState("");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<ActivitySort>("newest");
 
   const months = useMemo(() => activityMonths(days), [days]);
+  // A month chosen before the days changed (the sample giving way to the person's own) may no longer exist; the list and
+  // the select then both read "Any month" instead of filtering by a month nobody can see.
+  const month = months.some((item) => item.key === chosenMonth) ? chosenMonth : "";
   const rows = useMemo(() => activityRows(days, { status, month, query, sort }), [days, status, month, query, sort]);
   const weeks = useMemo(() => activityWeeks(rows), [rows]);
   const totals = useMemo(() => activityTotals(rows), [rows]);
