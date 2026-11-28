@@ -155,8 +155,13 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
   page.on("pageerror", (error) => {
     if (!/ResizeObserver loop/iu.test(error.message)) errors.push(error.message);
   });
+  // Playwright's Linux WebKit is older than Safari and says it ignores the viewport hint `interactive-widget`, which
+  // the app sets on purpose for engines that support it. The notice is not an error of the page.
   page.on("console", (message) => {
-    if (message.type() === "error" && !/Failed to load resource|NetworkError|net::/iu.test(message.text()))
+    if (
+      message.type() === "error" &&
+      !/Failed to load resource|NetworkError|net::|Viewport argument key "interactive-widget"/iu.test(message.text())
+    )
       errors.push(message.text());
   });
   try {
