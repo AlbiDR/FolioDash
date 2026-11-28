@@ -157,11 +157,10 @@
   border-radius: var(--shape-md);
 }
 .expense-field[data-filled="true"] {
-  background: color-mix(in srgb, var(--color-accent-soft) 45%, transparent);
+  background: var(--surface-low);
 }
 .expense-field:focus-within {
-  background: var(--color-accent-soft);
-  box-shadow: inset 3px 0 var(--color-accent);
+  background: var(--surface-high);
 }
 
 .expense-entry[data-dirty="true"] .expense-save-dock {

@@ -124,10 +124,3 @@
 .expense-category-4 {
   background: color-mix(in srgb, var(--color-text) 20%, var(--color-surface));
 }
-
-/* The weekend note is plain information, not an alert: a hairline panel with a muted icon. */
-.expenses-dashboard .expense-note {
-  --tone: var(--color-muted);
-  background: var(--surface-low);
-  box-shadow: inset 0 0 0 1px var(--color-border);
-}
