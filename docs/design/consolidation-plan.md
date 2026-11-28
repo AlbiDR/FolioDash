@@ -121,6 +121,16 @@ Also applied: the `.pill` horizontal padding, the details marker margin, the rev
 
 **Evidence.** Surface counts come from computed styles on a local production build with the service worker unregistered and the update notice dismissed; screenshots before and after (Expenses, Activity and Fund at 1440px, dark) are in the working session's scratchpad, not the repository.
 
+## Phase 3a record, 2026-11-28 (shell navigation and one table recipe)
+
+**Item A, the sidebar (done).** The desktop rail is two groups in one list: Portfolio, Expenses, Activity and Import, and Your data pinned to the foot, set apart by space (`--space-group`) and one hairline, not a box. State is by weight: rest 400, a pointer 500 (new token `--weight-medium`, used only for this), the current page 600. Item height (48px), the 4px gap, labels, order, `aria-current`, the accessible names, the one `nav` landmark and the sliding selection pill are unchanged, and no stripe was added. The phone dock keeps its five items in a row at 69 by 50px, as before.
+
+**Measured, 1440px (rail 192 by 868px, local build, service worker unregistered).** Items 48px tall before and after; the gap between the four working items 4px before and after; first item top 76px before and after; Your data from 284px to 796px, so its distance to the rail's bottom edge went from 536px to 24px. Hovering a row at weight 500 moved nothing but the row's own icon by the existing 2px nudge: every other row's position and width were identical, and the hovered row's width stayed 160px. The selection pill's clip still frames the current row. Phone dock: 375 by 58px, five links 69 by 50px, all 600, unchanged.
+
+**Interaction inventory.** `npm run docs:interactions` was regenerated: 225 source control templates across 55 files, no change, because only presentation changed. No control was added or removed, so no new state is claimed closed.
+
+**What a person sees.** On a wide screen Your data sits at the bottom of the sidebar above a thin line, instead of directly under Import; the other four items are where they were. Labels are lighter (regular) until pointed at (a touch heavier) or current (bold). Phones look the same.
+
 ## Open before phase 1 starts
 
 Settled by the third pass on 2026-11-28:
