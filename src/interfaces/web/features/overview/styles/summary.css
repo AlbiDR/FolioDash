@@ -86,7 +86,7 @@
 .hero-value {
   margin: var(--space-1) 0 0;
   font-size: var(--text-display);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;

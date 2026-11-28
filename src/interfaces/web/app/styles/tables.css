@@ -324,6 +324,6 @@ table {
 .screen-title {
   font-size: var(--text-figure);
   line-height: 1.12;
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   letter-spacing: -0.02em;
 }

@@ -49,7 +49,7 @@
 .topbar-title h1 {
   overflow: hidden;
   font-size: var(--text-title);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-overflow: ellipsis;

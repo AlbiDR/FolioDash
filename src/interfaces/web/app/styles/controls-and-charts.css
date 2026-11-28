@@ -104,7 +104,7 @@
 
 .donut-number {
   font-size: var(--text-figure);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   letter-spacing: -0.03em;
   line-height: 1;
 }

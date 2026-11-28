@@ -74,7 +74,7 @@
   --shape-sm: 8px;
   --shape-md: 12px;
   --shape-lg: 16px;
-  --shape-xl: 20px;
+  --shape-xl: 16px; /* the shell: the sidebar frame and the page header. Lowered from 20px on 2026-11-28 (UI system amendment 3). */
   --shape-full: 999px;
   --radius: var(--shape-sm);
   --radius-lg: var(--shape-lg);
@@ -88,6 +88,8 @@
   --time-layer: 380ms; /* layers and morphs: notices, disclosures, the sidebar and chart geometry */
   --time-page: 450ms; /* moving from one page to another */
   --time-arrival: 560ms; /* a region arriving */
+  --time-hover: var(--time-state); /* the one duration for a pointer entering or leaving a control */
+  --time-exit: calc(var(--time-layer) * 0.65); /* a layer leaving: about 65 percent of the time it took to arrive */
   --time-stagger: 55ms; /* the step between arrivals in reading order */
   --time-loop: 900ms; /* one turn of a busy indicator */
   --ease-state: cubic-bezier(0.2, 0, 0, 1); /* state changes */
@@ -125,7 +127,7 @@
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Roboto Flex", system-ui, "Segoe UI", Roboto,
     sans-serif;
 
-  /* Type: one size per role, never a raw rem in a component. Seven steps and three weights.
+  /* Type: one size per role, never a raw rem in a component. Seven steps and two weights.
    *   caption  axis labels, ISINs, chips
    *   small    labels, hints, captions, secondary rows
    *   body     reading text, field values, list rows
@@ -143,17 +145,23 @@
   --text-display: clamp(2rem, 9vw, 3rem);
   --weight-regular: 400;
   --weight-semibold: 600;
-  --weight-bold: 600;
   --leading-tight: 1.2;
+  --leading-title: 1.3; /* a title that can wrap onto a second line; figures keep --leading-tight */
   --leading-body: 1.5;
 
-  /* Space: a 4 point scale. Inside a group use 1 and 2; between groups of one section 3; between sections 4 and 5. */
+  /* Space: a 4 point scale. Inside a group use 1 and 2; between groups of one section 3; between sections 4 and 5.
+   * The 12px step has no whole number between 2 and 3, so it is named for the gap it fills. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
+  --space-2-5: 0.75rem;
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2.5rem;
-  --section-gap: var(--space-5);
+  /* Tiers: the distance chosen by what is being separated, not by a number. */
+  --space-local: var(--space-2); /* between the parts of one thing: a label and its value */
+  --space-group: var(--space-3); /* between the things of one group */
+  --space-section: var(--space-5); /* between sections */
+  --section-gap: var(--space-section);
   --page-inset: clamp(1rem, 2.4vw, 2rem);
   --gap: clamp(0.875rem, 1.3vw, 1.25rem);
   --touch-target: 3rem;

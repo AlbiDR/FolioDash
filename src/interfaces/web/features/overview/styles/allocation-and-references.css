@@ -168,7 +168,7 @@
 }
 .demo-nav a[aria-current="page"] {
   color: var(--color-text);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .demo-label {
   flex-basis: 100%;

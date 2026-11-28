@@ -80,7 +80,7 @@
 
 .chart-readout-value {
   font-size: var(--text-lead);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 
 .chart-svg {

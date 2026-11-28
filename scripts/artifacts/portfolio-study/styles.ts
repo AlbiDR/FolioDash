@@ -16,7 +16,7 @@ small { font-size: var(--text-caption); }
 .skip:focus { transform: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
 .sidebar { position: fixed; inset: var(--space-3) auto var(--space-3) var(--space-3); width: 208px; display: flex; flex-direction: column; padding: var(--space-4) var(--space-3); background: var(--nav-background); backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-edge); border-radius: var(--shape-xl); box-shadow: var(--glass-shadow); }
-.brand { display: flex; align-items: center; gap: var(--space-2); min-height: var(--touch-target); font-size: var(--text-lead); font-weight: var(--weight-bold); letter-spacing: -0.03em; }
+.brand { display: flex; align-items: center; gap: var(--space-2); min-height: var(--touch-target); font-size: var(--text-lead); font-weight: var(--weight-semibold); letter-spacing: -0.03em; }
 .brand img { border-radius: var(--shape-md); }
 .brand small { display: block; color: var(--color-muted); font-size: var(--text-caption); font-weight: var(--weight-regular); letter-spacing: 0; }
 .nav-label { margin: calc(var(--space-5) * 1.5) 0 var(--space-3); color: var(--color-muted); font-size: var(--text-caption); letter-spacing: 0.08em; }
@@ -39,7 +39,7 @@ small { font-size: var(--text-caption); }
 main { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.7fr); gap: var(--gap); max-width: 1480px; margin: 0 auto; padding: var(--space-4) var(--page-inset) var(--space-5); }
 .page-heading { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: end; gap: var(--space-4); margin-bottom: var(--space-2); }
 .eyebrow { color: var(--color-muted); font-size: var(--text-caption); font-weight: var(--weight-semibold); letter-spacing: 0.1em; margin-bottom: var(--space-2); }
-h1 { font-size: var(--text-figure); font-weight: var(--weight-bold); line-height: var(--leading-tight); letter-spacing: -0.045em; }
+h1 { font-size: var(--text-figure); font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: -0.045em; }
 .intro { color: var(--color-muted); font-size: var(--text-small); margin-top: var(--space-2); }
 .as-of { flex-shrink: 0; color: var(--color-muted); font-size: var(--text-caption); text-align: right; padding: var(--space-2) var(--space-3); border-left: 2px solid var(--color-accent); }
 .as-of strong { display: block; font-size: var(--text-small); font-weight: var(--weight-semibold); color: var(--color-text); margin-top: var(--space-1); }
@@ -106,7 +106,7 @@ th:first-child { text-align: left; }
 .holdings-list > li { padding: var(--space-3) 0; border-top: 1px solid var(--color-border); }
 .fund-name { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .fund-name h3 { overflow-wrap: anywhere; }
-.fund-name .fund-monogram { flex-shrink: 0; display: grid; place-content: center; width: 36px; height: 36px; border-radius: var(--shape-md); font-size: var(--text-caption); font-weight: var(--weight-bold); color: var(--color-text); background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface)); border: 1px solid var(--color-border); box-shadow: inset 0 1px 0 var(--glass-edge); }
+.fund-name .fund-monogram { flex-shrink: 0; display: grid; place-content: center; width: 36px; height: 36px; border-radius: var(--shape-md); font-size: var(--text-caption); font-weight: var(--weight-semibold); color: var(--color-text); background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface)); border: 1px solid var(--color-border); box-shadow: inset 0 1px 0 var(--glass-edge); }
 .fund-value, .fund-gain { display: grid; gap: var(--space-1); text-align: right; min-width: 0; }
 .fund-value strong, .fund-gain strong { font-size: var(--text-small); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .holdings-total { border-top: 1px solid var(--color-border); padding-top: var(--space-3); font-size: var(--text-small); }

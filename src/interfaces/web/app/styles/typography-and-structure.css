@@ -215,7 +215,7 @@
   background: var(--color-surface-2);
   color: var(--color-muted);
   font-size: var(--text-small);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
 }
 .journey-steps li[aria-current="step"] {

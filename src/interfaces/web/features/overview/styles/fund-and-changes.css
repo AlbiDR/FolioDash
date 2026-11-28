@@ -87,7 +87,7 @@
   grid-area: value;
   margin: 0;
   font-size: var(--text-title);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
