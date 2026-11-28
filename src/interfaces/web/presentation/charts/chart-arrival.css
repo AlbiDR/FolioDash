@@ -62,12 +62,8 @@
   );
 }
 
-/* A selected slice uses the same short, paint-only inspection cue as bars. */
-.donut-slice[data-active="true"] {
-  animation: motion-selection-rebound var(--duration-feedback) var(--ease-rebound);
-  transform-box: fill-box;
-  transform-origin: center;
-}
+/* A selected ring slice never moves or resizes: it scaled about its own box, not the ring's centre, so it slid onto its
+   neighbours. Inspection is an opacity cue only (see state-charts.css). */
 .motion-bar-rise,
 .motion-ranking-rise {
   animation-duration: var(--duration-arrival);
@@ -140,20 +136,12 @@
     scale: 0.6;
   }
 }
-@keyframes motion-selection-rebound {
-  50% {
-    scale: 1.06;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .motion-bar-rise,
   .motion-ranking-rise,
   .motion-ring-slice,
   .motion-marker-arrive {
-    animation: none;
-  }
-  .donut-slice[data-active="true"] {
     animation: none;
   }
 }
