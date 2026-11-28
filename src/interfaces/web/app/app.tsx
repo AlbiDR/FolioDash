@@ -194,13 +194,20 @@ export function App(): JSX.Element {
     };
   }, [importLocked, expenseLocked, route, pageMotion]);
 
-  // A newer version of the app, kept waiting until the person chooses to switch.
+  // A newer version of the app swaps in by itself when nobody could notice; otherwise it waits for the person's choice.
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
-  useEffect(() => {
-    watchForUpdate((apply) => {
-      setApplyUpdate(() => apply);
-    });
-  }, []);
+  const locked = useRef(false);
+  locked.current = importLocked || expenseLocked;
+  useEffect(
+    () =>
+      watchForUpdate(
+        (apply) => {
+          setApplyUpdate(() => apply);
+        },
+        () => locked.current,
+      ),
+    [],
+  );
 
   const [hidden, setHidden] = usePrivacyChoice(browserPrivacyStorage);
   const [range, setRange] = useState<ChartRange>("All");
