@@ -63,7 +63,7 @@ Every piece of text is one of these roles. A component picks a role and does not
 | Figure | `--text-figure` | 28px | A primary figure inside a card |
 | Display | `--text-display` | 32px to 48px, fluid | The headline value only |
 
-Weights are 400, 600 and 700 (`--weight-regular`, `--weight-semibold`, `--weight-bold`). Line heights are `--leading-tight` (1.2) for headings and figures and `--leading-body` (1.5) for text. Spacing is a 4px scale; `--section-gap` is the one distance between sections.
+Weights are 400 and 600 (`--weight-regular`, `--weight-semibold`); the duplicate `--weight-bold` is removed (see Amendments 2 and 3 below). Line heights are `--leading-tight` (1.2) for headings and figures, `--leading-title` (1.3, defined, not yet used) for a title that can wrap, and `--leading-body` (1.5) for text. Spacing is a 4px scale with a 12px step (`--space-2-5`) and three tiers (`--space-local` 8px, `--space-group` 16px, `--space-section` 40px); `--section-gap` is the one distance between sections and now names the section tier.
 
 ### Shape and controls
 
@@ -117,6 +117,17 @@ Owner direction: the Expenses screen looked machine-made, so it was audited with
 - **Import pass, 2026-11-28 (polish mode).** The selected entry method showed white text on the white sliding pill, so its label could not be read; the old accent-fill override that predated the slide effect (`048cdd8`) is removed and the shared selected look applies. Information notices now use the neutral tone across the app, so the accent stays on the primary action and the selection; success, warning and error notices keep their tones. The manual entry's running total is a hairline panel instead of a blue one. The flow, the copy, the 52 rem reading width and the step circles are unchanged. The review, cash-question and summary states were not rendered in this pass.
 - **Your data pass, 2026-11-28.** The signed-out screen had no slop worth changing, so the pass is two small refinements. The connection card's state is now the status dot and word: muted while idle or renewing, green once the last Google check completed, amber when the person has to reconnect or the network failed. The reason the button is disabled, that this site has no Google client yet, now sits above the button instead of below it. The signed-in cards could not be rendered without a real Google connection and are covered only by the account-outcomes audit.
 - **Evidence.** `npm run verify`, the rendered audit (interactions, accessibility, reduced motion, choreography within its ceilings, recovery journeys) and the README capture passed on local Chrome with synthetic data. Physical devices, other engines and screen readers remain unverified.
+
+## Consolidation amendments, 2026-11-28
+
+Accepted on the owner's delegation, in the [consolidation plan](consolidation-plan.md) (phase 1). Each can be reversed by the owner.
+
+- **Amendment 2, spacing: accepted.** The 4px scale gains the 12px step as `--space-2-5`, because there was no whole number between `--space-2` and `--space-3` and authors filled the gap with 0.6 to 0.9rem literals (28 distinct literal values, 66 literal uses against 405 token uses in the 2026-11-28 audit; rendered, 410 of 2,579 padding and gap values on Portfolio at 1440px were off the 4px grid). Three tiers sit over the single section distance: `--space-local` (8px), `--space-group` (16px) and `--space-section` (40px). `--section-gap` is kept and now points at the section tier.
+- **Amendment 3, type roles: accepted in part.** `--weight-bold` was the same value as `--weight-semibold` (600), so it is removed and its users, including the portfolio study page, use `--weight-semibold`; nothing renders differently. `--leading-title` (1.3) is defined for titles that can wrap, and is applied to none yet, because applying it changes rendered heights. One heading recipe per level and one card title size are still to do.
+- **Shell radius.** `--shape-xl` goes from 20px to 16px, which lowers the sidebar frame and the page header (the only two users) to the card radius. This is a visible change of 4px at those corners; it moves no box.
+- **Added, unused.** `--time-hover` (the one hover duration, equal to `--time-state`) and `--time-exit` (65 percent of `--time-layer`, about 247ms). No existing motion value changed and nothing uses the new ones yet.
+
+Off-grid literals replaced in `controls-and-charts.css`, `shell.css`, `review-and-your-data.css`, `tables.css` and `page-chrome.css` are listed in the phase 1 record of the plan, with the ones that were not replaced and why.
 
 ## Evidence
 

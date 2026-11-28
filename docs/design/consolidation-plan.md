@@ -69,6 +69,14 @@ Each phase ends with a green `npm run verify`, a rendered audit, a local `npm ru
 
 Curved lines (would invent values between statements), dashed grid (dashes already mean Net invested), blur on figures, a keypad for expense entry, wake and ASCII effects, gauge, heatmap and meter (no matching data), a quota meter (no limits in the product).
 
+## Phase 1 record, 2026-11-28
+
+**Done.** Tokens: the 12px step (`--space-2-5`), the tiers (`--space-local`, `--space-group`, `--space-section`) with `--section-gap` kept, `--time-hover` and `--time-exit` (both unused, no value changed), `--leading-title` (unused), `--weight-bold` removed (a pure alias of 600; ten stylesheets and the portfolio study moved to `--weight-semibold`), and `--shape-xl` 20px to 16px for the shell. Replaced in `shell.css`: the nav padding, brand padding, nav link padding, a 4px gap and a 0.75rem gap; in `controls-and-charts.css`: the donut margin, the legend padding, the perf row gap; in `review-and-your-data.css`: the account section gap, the plain list indent, the steps margin and the build stamp margin; in `tables.css`: three 0.5rem values and the matrix cell padding; in `page-chrome.css`: the status chip and the privacy toggle.
+
+**Not replaced, because a box would move by more than 2px (each is a decision for you).** Measured as a same-state before and after on the local build, so these are the edits that were tried and reverted: the holdings table cell padding `0.7rem` (to 12px: +1.6px a row, and the rows add up to a drift of up to 45px lower on the Portfolio page at 375px together with the next item); the `.perf` gap `0.15rem` and `.perf-row` padding `0.45rem` (seven rows each +1.6px, about 21px over the card); the list gaps `0.6rem` in `.plain-list` and `.steps` (to 8px: 3.2px over three items); the `.legend a` gap `0.6rem` (name shifts 1.6px and widens 3.2px at 1440px); the segmented button padding `0.8rem` and link padding `0.9rem` (the Activity status control narrows by 4.8px). Left because they are not on the ladder and are not whole-pixel rhythm: 2px and 3px nudges in the segmented control and nav list, `-1px` visually hidden margins, `0.1rem` nav link gap (a 2.4px shift), the 1.25rem values (a 4px shift either way), `2.25rem` and the `6.5rem` bottom navigation clearance.
+
+**Evidence.** Computed before and after on the local production build with synthetic data and no service worker, same state for both, all five screens. At 1440px and at 375px no page height changed and no box moved by more than 1.6px (the largest was 1.6px). Portfolio padding and gap values off the 4px grid: 412 of 2,582 down to 404 at 1440px; 562 of 2,381 down to 558 at 375px; distinct padding values 15 to 14 at 1440px and 13 to 12 at 375px. The first comparison against an earlier snapshot was invalid because the update notice and a changed Expenses state shifted pages by up to 62px, and is not used.
+
 ## Open before phase 1 starts
 
 Settled by the third pass on 2026-11-28:
