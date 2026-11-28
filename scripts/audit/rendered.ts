@@ -8,9 +8,10 @@ const MACOS_RUNNERS = 5;
 
 const suites = {
   "interactions-portfolio": ["audit:interactions -- portfolio"],
-  "interactions-records-and-reload": ["audit:interactions -- records", "audit:reload-stability", "audit:page-overflow"],
+  "interactions-records-and-reload": ["audit:interactions -- records", "audit:reload-stability"],
   "interactions-phone-and-choreography": ["audit:interactions -- phone", "audit:choreography"],
-  "accessibility-and-polish": ["audit:accessibility", "audit:portfolio-polish", "test:browser"],
+  // The page overflow audit runs Playwright's WebKit and Firefox, which only this suite installs.
+  "accessibility-and-polish": ["audit:accessibility", "audit:portfolio-polish", "test:browser", "audit:page-overflow"],
   "reduced-motion-and-recovery": [
     "audit:reduced-motion",
     "audit:backfill-recovery",
