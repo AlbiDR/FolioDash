@@ -29,11 +29,11 @@
   color: inherit;
 }
 .hero .pill.gain {
-  background: color-mix(in srgb, var(--hero-gain) 20%, transparent);
+  background: transparent;
   color: var(--hero-gain);
 }
 .hero .pill.loss {
-  background: color-mix(in srgb, var(--color-on-hero) 14%, transparent);
+  background: transparent;
   color: var(--color-on-hero);
 }
 

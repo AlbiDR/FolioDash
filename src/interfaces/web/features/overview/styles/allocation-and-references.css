@@ -1,4 +1,29 @@
 /* ---------- Allocation: the ring and its legend ---------- */
+/* The allocation is a share, so its ring and legend step down from the accent instead of using the series hues. */
+.allocation-card .series-0 {
+  --series-color: var(--color-accent);
+}
+.allocation-card .series-1 {
+  --series-color: color-mix(in srgb, var(--color-accent) 86%, var(--color-surface));
+}
+.allocation-card .series-2 {
+  --series-color: color-mix(in srgb, var(--color-accent) 74%, var(--color-surface));
+}
+.allocation-card .series-3 {
+  --series-color: color-mix(in srgb, var(--color-accent) 64%, var(--color-surface));
+}
+.allocation-card .series-4 {
+  --series-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-surface));
+}
+.allocation-card .series-5 {
+  --series-color: color-mix(in srgb, var(--color-accent) 48%, var(--color-surface));
+}
+.allocation-card .series-6 {
+  --series-color: color-mix(in srgb, var(--color-accent) 42%, var(--color-surface));
+}
+.allocation-card .series-7 {
+  --series-color: color-mix(in srgb, var(--color-accent) 36%, var(--color-surface));
+}
 .allocation-card {
   align-self: start;
 }

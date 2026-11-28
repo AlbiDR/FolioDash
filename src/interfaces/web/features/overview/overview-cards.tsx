@@ -37,7 +37,7 @@ export function StatCard(props: {
           <p class="stat-caption">
             {kpi.comparedWith === undefined || kpi.comparedWith === null
               ? props.caption
-              : `Since ${formatDateLong(kpi.comparedWith)}.`}
+              : `Since ${formatDateLong(kpi.comparedWith)}`}
           </p>
         </>
       )}
@@ -123,7 +123,7 @@ export function ReturnsCard(props: { readonly grid: ReturnsGrid; readonly estima
           </tbody>
         </table>
       </div>
-      {props.estimated && <p class="footnote">Cash timing affects percentage estimates.</p>}
+      {props.estimated && <p class="footnote">Cash timing affects percentage estimates</p>}
     </div>
   );
 }

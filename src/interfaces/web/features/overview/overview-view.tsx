@@ -225,7 +225,7 @@ export function OverviewView(props: {
             />
           );
         })}
-        {props.model.estimated && <p class="footnote">Cash timing affects percentage estimates.</p>}
+        {props.model.estimated && <p class="footnote">Cash timing affects percentage estimates</p>}
       </section>
       <Presence show={attention.length > 0} class="cell-12">
         {attention.length > 0 && (

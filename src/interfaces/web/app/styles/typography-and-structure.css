@@ -54,13 +54,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+:is(strong, h4) {
+  font-weight: var(--weight-semibold);
+}
+
+.pill.gain,
+.pill.loss {
+  padding-inline: 0;
+  background: transparent;
+}
+
 .pill.gain {
-  background: color-mix(in srgb, var(--color-gain) 15%, transparent);
   color: var(--color-gain);
 }
 
 .pill.loss {
-  background: color-mix(in srgb, var(--color-loss) 15%, transparent);
   color: var(--color-loss);
 }
 
