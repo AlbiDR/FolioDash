@@ -177,3 +177,7 @@ The audit times measured in that run, from the start of each audit to the end of
 | `reduced-motion-and-recovery` | reduced motion and the other seven recovery audits | 100 s |
 
 `node scripts/audit/rendered.ts --matrix` fails if a sixth suite is added, so the limit cannot be exceeded silently. When an audit grows or a new one arrives, rebalance the five suites instead of adding one. The run for this change reports the result.
+
+### Cross-engine audit in parallel, 2026-11-28
+
+On the release run for `301ac74` (7 minutes 12 seconds) the `accessibility-and-polish` suite took 5 minutes 41 seconds, and `audit:cross-engine` was 3 minutes 55 seconds of it (accessibility 35 s, portfolio polish 54 s, component tests 15 s). The audit makes eight independent runs (four engine profiles, each with motion on and with Reduce Motion), one after another, and each is mostly fixed waits. `scripts/audit/browsers/cross-engine.ts` now runs up to four at once (`CROSS_ENGINE_CONCURRENCY`, default 4; `1` restores the old order). Locally the audit went from 3 minutes 44 seconds to 59 seconds with the same 280 checks. Splitting the engines into separate CI jobs was not done: the account starts at most five macOS jobs at once and all five suites already use them. The CI effect is measured by the first release run after this change.

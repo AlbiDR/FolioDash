@@ -58,7 +58,13 @@ const PROFILES: readonly Profile[] = [
     launch: {},
     phone: false,
   },
-  { name: "Safari engine, iPhone 15", type: webkit, options: { ...devices["iPhone 15"] }, launch: {}, phone: true },
+  {
+    name: "Safari engine, iPhone 15",
+    type: webkit,
+    options: { ...devices["iPhone 15"] },
+    launch: {},
+    phone: true,
+  },
   {
     name: "Firefox, desktop",
     type: firefox,
@@ -66,7 +72,13 @@ const PROFILES: readonly Profile[] = [
     launch: {},
     phone: false,
   },
-  { name: "Chrome, Pixel 7", type: chromium, options: { ...devices["Pixel 7"] }, launch: chrome, phone: true },
+  {
+    name: "Chrome, Pixel 7",
+    type: chromium,
+    options: { ...devices["Pixel 7"] },
+    launch: chrome,
+    phone: true,
+  },
 ];
 
 const server = createServer((request, response) => {
@@ -125,7 +137,10 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
   const where = `${profile.name}, ${reduced ? "Reduce Motion" : "motion on"}`;
   const videos = join(OUT, `${profile.name}${reduced ? " reduced" : ""}`.replace(/[^a-z0-9]+/giu, "-").toLowerCase());
   mkdirSync(videos, { recursive: true });
-  const browser = await profile.type.launch({ headless: true, ...profile.launch });
+  const browser = await profile.type.launch({
+    headless: true,
+    ...profile.launch,
+  });
   const context = await browser.newContext({
     ...profile.options,
     reducedMotion: reduced ? "reduce" : "no-preference",
@@ -306,11 +321,18 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 const only = process.argv[2];
+// The eight runs share nothing (each has its own browser and context) and spend most of their time in fixed waits, so
+// they run side by side. Run alone they took about four minutes on the CI runner, which set the release time.
+// CROSS_ENGINE_CONCURRENCY=1 restores the one-at-a-time order for debugging a flaky run.
+const CONCURRENCY = Math.max(1, Number(process.env["CROSS_ENGINE_CONCURRENCY"] ?? "4") || 1);
 try {
-  for (const profile of PROFILES) {
-    if (only !== undefined && !profile.name.toLowerCase().includes(only.toLowerCase())) continue;
-    for (const reduced of [false, true]) await run(profile, reduced);
-  }
+  const queue = PROFILES.filter(
+    (profile) => only === undefined || profile.name.toLowerCase().includes(only.toLowerCase()),
+  ).flatMap((profile) => [false, true].map((reduced) => ({ profile, reduced })));
+  const worker = async (): Promise<void> => {
+    for (let job = queue.shift(); job !== undefined; job = queue.shift()) await run(job.profile, job.reduced);
+  };
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, worker));
 } finally {
   server.close();
 }
