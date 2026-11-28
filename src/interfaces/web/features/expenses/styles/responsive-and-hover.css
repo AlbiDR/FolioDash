@@ -157,7 +157,8 @@
   border-radius: var(--shape-md);
 }
 .expense-field[data-filled="true"] {
-  background: var(--surface-low);
+  /* Tinted toward the text colour, so a filled field is a step lighter than the card in dark mode and a step greyer in light. */
+  background: color-mix(in srgb, var(--color-text) 4%, var(--color-surface));
 }
 .expense-field:focus-within {
   background: var(--surface-high);
