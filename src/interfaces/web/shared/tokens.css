@@ -74,7 +74,8 @@
   --shape-sm: 8px;
   --shape-md: 12px;
   --shape-lg: 16px;
-  --shape-xl: 16px; /* the shell: the sidebar frame and the page header. Lowered from 20px on 2026-11-28 (UI system amendment 3). */
+  /* The shell (the sidebar frame and the page header) uses the card radius. Lowered from 20px on 2026-11-28 (UI system amendment 3). */
+  --shape-xl: var(--shape-lg);
   --shape-full: 999px;
   --radius: var(--shape-sm);
   --radius-lg: var(--shape-lg);
