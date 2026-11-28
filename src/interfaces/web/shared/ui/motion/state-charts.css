@@ -219,7 +219,7 @@
   /* style-allow layout-motion: stroke width changes paint only and never layout, and gives the inspected line its emphasis */
   transition: stroke-width var(--duration-feedback) var(--ease-smooth);
 }
-/* Inspection is an opacity/stroke treatment; allocation angles never change. */
+/* Inspection dims the other slices and grows the active one outward; allocation angles never change. */
 .donut-centre {
   pointer-events: none;
 }
@@ -229,10 +229,23 @@
 .donut-slice {
   stroke: var(--color-surface);
   stroke-width: 0;
+}
+/* The slice sits in a group translated to the ring's centre, so origin 0 0 is the ring's centre and a scaled slice grows
+   straight outward on its own angles. The default origin (its own box, or the view-box centre) slid it onto its
+   neighbours. The growth is a held state, not a rebound, and the svg may draw past its box so the grown rim is not cut. */
+.donut .donut-slice {
+  transform-origin: 0 0;
   /* style-allow layout-motion: stroke width changes paint only and never layout, and draws the keyboard focus ring on a slice */
   transition:
     opacity var(--duration-short) var(--ease-smooth),
-    stroke-width var(--duration-short) var(--ease-smooth);
+    stroke-width var(--duration-short) var(--ease-smooth),
+    scale var(--duration-short) var(--ease-smooth);
+}
+.donut svg {
+  overflow: visible;
+}
+.donut .donut-slice[data-active="true"] {
+  scale: 1.05;
 }
 .donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) {
   opacity: 0.4;

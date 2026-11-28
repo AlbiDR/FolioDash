@@ -62,8 +62,7 @@
   );
 }
 
-/* A selected ring slice never moves or resizes: it scaled about its own box, not the ring's centre, so it slid onto its
-   neighbours. Inspection is an opacity cue only (see state-charts.css). */
+/* A selected ring slice grows outward about the ring's centre; see state-charts.css. */
 .motion-bar-rise,
 .motion-ranking-rise {
   animation-duration: var(--duration-arrival);
