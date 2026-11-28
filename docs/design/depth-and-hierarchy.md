@@ -1,6 +1,6 @@
 # Depth and hierarchy
 
-Status: **Draft 2026-11-19. Owner decided D2 on 2026-11-19: keep the card lift. The other decisions are still proposed, not implemented.** Owner request after comparing FolioDash with a public studio dashboard: find what makes its screens read as polished, and decide which of those ideas fit FolioDash's contracts. This record changes no token value and no layout. Each decision that changes what a person sees needs the owner's approval before code.
+Status: **Draft 2026-11-19. Owner decided D2 on 2026-11-19: keep the card lift. On 2026-11-28 the owner delegated the remaining choices and D1 was accepted and built for the Portfolio (amendment 4, below). D3 to D7 are still as proposed.** Owner request after comparing FolioDash with a public studio dashboard: find what makes its screens read as polished, and decide which of those ideas fit FolioDash's contracts. This record changes no token value and no layout. Each decision that changes what a person sees needs the owner's approval before code.
 
 Authority: [UI system](ui-system.md) (type, shape, containers and the rules for the next change), [interaction coverage](interaction-coverage.md), [motion layer](motion-layer.md), the [dashboard coherence](dashboard-coherence.md) record, and the financial and privacy rules in [CleanStack](../architecture/cleanstack.md). Where this draft and those records disagree, the existing record stands until the owner decides.
 
@@ -71,6 +71,21 @@ What the prototype changes, tokens and one component only:
 - **Arrival motion (a design change to the motion layer).** Dashboard cards used to arrive with a 2px, 220ms nudge that no one could see. They now rise 16px from transparent over 380ms, 45ms apart and capped at the sixth card (about 0.6 seconds in all). The new values are tokens (`--motion-rise`, `--motion-rise-opacity`, `--motion-stagger`). This replaces the earlier "no stagger" note in `refinement.css`; reduced motion still removes all of it, through the existing global rule. Not built: bar growth on first paint, because the bar morph owns the bars' transforms.
 
 Measured, not judged: dark page against card was computed from the token values. Light page against card was not recomputed, and no hero text contrast is re-measured. The range journey, the README capture and a physical device are not run. The rest of D1 to D7 and both questions below stay open.
+
+## Amendment 4 accepted, 2026-11-28 (phase 2a, Portfolio only)
+
+The owner delegated the choice (consolidation plan). Decided: **D1 is accepted** as three depth tiers, each a token in `shared/tokens.css`: `--depth-flat` (no edge, no shadow), `--depth-card` (one 1px edge, no shadow, drawn with `--edge-card`) and `--depth-hero` (one soft shadow, no edge). A surface takes exactly one tier, so no surface combines a ring and a shadow at full strength. **Open question 1 is answered:** the card edge is raised to a measured contrast of at least 1.5:1 and not 3:1. **Open question 2 is answered** by the Astryx elevation findings in the consolidation plan: an edge or a soft elevation, never both at full strength; three tiers; space before containment.
+
+Measured (WCAG relative luminance of the edge as composited on the card; card against page is unchanged at 1.16:1 light and 1.12:1 dark):
+
+| Pair | Before light | After light | Before dark | After dark |
+|---|---|---|---|---|
+| Card edge against the card | 1.24 | 1.75 | 1.34 | 1.54 |
+| Card edge against the page | 1.07 | 1.51 | 1.50 | 1.72 |
+
+The tiers apply to the Portfolio only, through `--card-depth` set on `.portfolio-dashboard`; other screens keep the earlier ring plus shadow until their own phase. The fine-pointer lift (D2) is kept: it is a state of the card, and its brighter edge is tinted from the new card edge so it is still brighter than the resting edge. The glass shell and the jump bar keep their glass shadow.
+
+What a person sees on Portfolio: card edges are a crisp thin line with no soft shadow under the cards; the navy summary card loses its thin edge line and gains a soft shadow; the Performance card is a plain surface (no top-to-bottom gradient) and its readout (date and the two values) is a row with one hairline instead of a boxed panel; the Allocation card is the same colour as its neighbours; the chart tools and values panels (inside the closed disclosure) are hairline-separated sections instead of boxes inside the card; on a phone the Changes sparklines lose their small grey box.
 
 ## Questions for the owner
 
