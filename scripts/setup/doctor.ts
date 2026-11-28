@@ -4,7 +4,10 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import process from "node:process";
+import { parseConfig, pluginFinding, SKILL_MARKER, skillFinding } from "./agent-tooling-policy.ts";
 import { driftFindings, nodeFinding, type Finding, type Level } from "./doctor-policy.ts";
 
 const CI_NODE_MAJOR = 22;
@@ -66,6 +69,15 @@ findings.push(
   chrome === null || chrome === ""
     ? { level: "warn", name: "Chrome", detail: "not found; the rendered audits need it (set CHROME_PATH)" }
     : { level: "pass", name: "Chrome", detail: `found for the rendered audits (${chrome})` },
+);
+
+const agentTooling = parseConfig(readFileSync("config/agent-tooling.json", "utf8"));
+findings.push(pluginFinding(run("claude", ["plugin", "list"]), agentTooling.plugins));
+findings.push(
+  skillFinding(agentTooling.skills, (name) => {
+    const marker = join(homedir(), ".agents", "skills", name, SKILL_MARKER);
+    return existsSync(marker) ? readFileSync(marker, "utf8").trim() : null;
+  }),
 );
 
 const hooksPath = run("git", ["rev-parse", "--git-path", "hooks/commit-msg"]);

@@ -52,6 +52,7 @@
     "doctor": "node scripts/setup/doctor.ts",
     "health": "node scripts/audit/health.ts",
     "setup:hooks": "node scripts/setup/hooks.ts",
+    "setup:agents": "node scripts/setup/agents.ts",
     "audit:reduced-motion": "node scripts/audit/reduced-motion.ts",
     "audit:choreography": "node scripts/audit/choreography.ts",
     "audit:motion-snapshot": "node scripts/audit/motion/snapshot.ts",

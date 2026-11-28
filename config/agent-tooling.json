@@ -1,0 +1,21 @@
+{
+  "marketplaces": [
+    { "name": "googlechrome", "source": "GoogleChrome/modern-web-guidance" },
+    { "name": "heydamir", "source": "heydamir/unslop" }
+  ],
+  "plugins": ["modern-web-guidance@googlechrome", "unslop@heydamir"],
+  "skills": [
+    {
+      "name": "modern-web-guidance",
+      "repository": "https://github.com/GoogleChrome/modern-web-guidance.git",
+      "commit": "2b4aa13a72dd47cd135b06ce5abfccd92e19b24f",
+      "path": "skills/modern-web-guidance"
+    },
+    {
+      "name": "unslop",
+      "repository": "https://github.com/heydamir/unslop.git",
+      "commit": "620163eedb3529d9cd23a3994ed8d287d06f760d",
+      "path": "skills/unslop"
+    }
+  ]
+}
