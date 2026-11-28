@@ -152,6 +152,43 @@ jobs:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
         run: npm run audit:rendered -- "$AUDIT_SUITE"
 
+  # The cross-engine audit is Playwright's own WebKit, Firefox and Chrome, so it runs on Linux, which is not limited by
+  # the five concurrent macOS jobs. One job per engine profile; each runs it with motion on and with Reduce Motion on.
+  # Trial (2026-11-28): non-blocking until it has passed on Linux repeatedly; then remove continue-on-error.
+  cross-engine:
+    name: Audit engines (${{ matrix.profile }})
+    needs: build
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ["Safari engine, desktop", "Safari engine, iPhone", "Firefox", "Chrome, Pixel"]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up the project
+        uses: ./.github/actions/setup-project
+
+      - name: Take the built site from the build job
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: web-build
+          path: dist/web
+
+      - name: Install WebKit and Firefox with their system libraries
+        timeout-minutes: 5
+        run: npx playwright install --with-deps webkit firefox
+
+      - name: Audit the built site in this engine
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: npm run audit:cross-engine -- "$PROFILE"
+
   # A pull request fails when its README screenshots fail. A release does not: the screenshots are documentation, and the
   # checked app must still be published. The site job then reuses the screenshots the live site already serves.
   screenshots:
