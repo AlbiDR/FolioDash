@@ -168,6 +168,8 @@ select:focus-visible {
     height: calc(100vh - var(--space-3) * 2);
     margin: var(--space-3) 0 var(--space-3) var(--space-3);
     padding: var(--space-4) var(--space-3);
+    display: flex;
+    flex-direction: column;
     border-radius: var(--shape-xl);
     box-shadow:
       var(--glass-shadow),
@@ -192,20 +194,40 @@ select:focus-visible {
     }
   }
 
+  /* The rail has two groups: the working destinations at the top, and Your data pinned to the foot, set apart by space
+   * and one hairline. It is still one list in reading order. The phone dock keeps its five items in a row. */
   .nav-list {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     gap: var(--space-1);
   }
+  .nav-list > li:last-child {
+    margin-top: auto;
+    padding-top: var(--space-group);
+    border-top: 1px solid var(--color-border);
+  }
 
+  /* State by weight: rest 400, a pointer 500, the current page 600. Nothing sits to the right of a label, so a heavier
+   * label moves nothing else. The size and the 48px target are unchanged. */
   .nav-link {
     flex-direction: row;
     gap: var(--space-2-5);
     height: var(--touch-target);
     padding: 0 var(--space-2);
     font-size: var(--text-body);
+    font-weight: var(--weight-regular);
     position: relative;
     z-index: 0;
+  }
+  .nav-link[aria-current="page"] {
+    font-weight: var(--weight-semibold);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .nav-link:not([aria-current="page"]):hover {
+      font-weight: var(--weight-medium);
+    }
   }
 
   .content {
