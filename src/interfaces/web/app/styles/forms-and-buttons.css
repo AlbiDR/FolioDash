@@ -79,7 +79,7 @@
   width: 100%;
   max-width: 28rem;
   min-height: 2.75rem;
-  padding: 0.5rem 0.9rem;
+  padding: var(--space-2) var(--space-3);
   font: inherit;
   color: var(--color-text);
   background: var(--color-surface-2);

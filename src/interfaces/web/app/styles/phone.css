@@ -187,7 +187,7 @@
   }
   .matrix th,
   .matrix td {
-    padding: 0.6rem var(--space-2);
+    padding: var(--space-2) var(--space-2);
   }
 }
 

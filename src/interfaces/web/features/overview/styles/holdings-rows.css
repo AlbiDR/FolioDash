@@ -179,7 +179,7 @@
   }
   .statement-table th,
   .statement-table td {
-    padding-inline: 0.25rem;
+    padding-inline: var(--space-1);
   }
 }
 .recent-fund-history-group {
