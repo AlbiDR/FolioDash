@@ -95,8 +95,7 @@
   }
 }
 
-/* The week is a ledger: weekday, a status dot and word, the amount in one right-aligned column. On wide screens the
- * entry and the week share a height, so neither leaves an empty band under it. */
+/* The week is a ledger: weekday, a status dot and word, the amount in one right-aligned column. */
 .expense-week-list button {
   grid-template-columns: 4.5rem minmax(0, 1fr) auto 1rem;
 }
@@ -122,16 +121,10 @@
 .expense-week-state.needs-review::before {
   background: var(--color-caution);
 }
-.expense-week-footer {
-  margin-top: auto;
-}
-.expense-week {
-  display: flex;
-  flex-direction: column;
-}
+/* On a weekend the entry is the shorter card, so it takes the week's height and the two end together. On a workday the
+ * form is the taller card and the week keeps its own height, so no gap opens inside it. */
 @media (min-width: 70.001rem) {
-  .expense-entry,
-  .expense-week {
+  .expense-entry:has(.expense-note) {
     align-self: stretch;
   }
 }
