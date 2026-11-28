@@ -7,6 +7,21 @@
   min-width: 0;
 }
 
+/* The sample note is one slim row, not a card with a gap around a single line. */
+.activity-sample {
+  padding-block: var(--space-3);
+  background: var(--surface-low);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+.activity-sample .card-subtitle {
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+.activity-dashboard b {
+  font-weight: var(--weight-semibold);
+}
+
 .activity-tools {
   display: grid;
   gap: var(--space-3);
@@ -84,19 +99,31 @@
   color: var(--color-muted);
   overflow-wrap: anywhere;
 }
+/* The status is a dot and a word, the same signature as the week on Expenses, not a badge on every row. */
 .activity-tag {
-  padding: 2px var(--space-2);
-  border-radius: var(--shape-full);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-muted);
   font-size: var(--text-caption);
   white-space: nowrap;
 }
-.activity-tag.is-complete {
-  color: var(--color-gain);
-  background: var(--surface-low);
+.activity-tag::before {
+  content: "";
+  flex: none;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--shape-full);
+  background: currentColor;
+}
+.activity-tag.is-complete::before {
+  background: var(--color-gain);
 }
 .activity-tag.is-partial {
   color: var(--color-notice-text);
-  background: var(--color-notice);
+}
+.activity-tag.is-partial::before {
+  background: var(--color-caution);
 }
 .activity-empty {
   color: var(--color-muted);
@@ -118,8 +145,25 @@
 }
 .activity-figures dd {
   margin: 0;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   text-align: end;
+}
+/* The recorded total leads the card: set large, and the categories follow as a ruled list. */
+.activity-figures > .activity-lead {
+  display: grid;
+  justify-content: stretch;
+  gap: var(--space-1);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.activity-lead dd {
+  font-size: var(--text-title);
+  font-weight: var(--weight-regular);
+  letter-spacing: -0.03em;
+  text-align: start;
+}
+.activity-lead .amount {
+  text-align: start;
 }
 .activity-subhead {
   margin: var(--space-4) 0 var(--space-2);

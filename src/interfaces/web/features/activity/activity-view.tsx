@@ -181,7 +181,7 @@ export function ActivityView(props: ActivityViewProps): JSX.Element {
           In this view
         </h2>
         <dl class="activity-figures">
-          <div>
+          <div class="activity-lead">
             <dt>Recorded total</dt>
             <dd>{totals.total === null ? "Not fully known" : <Amount cents={totals.total} />}</dd>
           </div>
