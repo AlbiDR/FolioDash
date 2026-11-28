@@ -302,9 +302,12 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
     // Disclosures open and close.
     await go(page, "connection");
     const summary = page.locator("details > summary").first();
+    // The screen can re-render once as its state settles (seen on Linux WebKit), so wait for the disclosure to be there
+    // and read it through the same locator instead of looking it up again by selector.
+    await summary.waitFor({ state: "attached", timeout: 5000 }).catch(() => undefined);
     if ((await summary.count()) > 0) {
       const opened = (): Promise<unknown> =>
-        page.evaluate("document.querySelector('details > summary').parentElement.open");
+        summary.evaluate((element) => (element.parentElement as HTMLDetailsElement).open);
       const was = await opened();
       await summary.click();
       await delay(500);
