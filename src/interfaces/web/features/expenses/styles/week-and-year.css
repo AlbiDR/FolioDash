@@ -105,6 +105,7 @@ label.expense-year {
 .expense-annual {
   background: var(--color-hero);
   color: var(--color-on-hero);
+  box-shadow: var(--depth-hero);
 }
 .expense-annual .card-label,
 .expense-annual .hint,
