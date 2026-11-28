@@ -6,9 +6,15 @@ import "../motion/state-content.css";
 
 const host = document.createElement("div");
 document.body.append(host);
-afterEach(() => {
+afterEach(async () => {
   render(null, host);
   host.replaceChildren();
+  // Suspected, not proven (it failed on CI in 4 of 7 runs and once locally under load): Preact flushes effects after paint
+  // on a real timer (35 ms at most) and schedules one flush at a time, so a flush still pending when the next test
+  // installs fake timers would run that test's effects on real time, after the fake clock had moved on. Let it finish.
+  await new Promise((done) => {
+    setTimeout(done, 80);
+  });
 });
 
 function List(props: { readonly ids: readonly string[] }) {
