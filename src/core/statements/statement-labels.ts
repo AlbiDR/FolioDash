@@ -22,6 +22,9 @@ import {
  */
 export const CLOSE_WINDOW_DAYS = 7;
 
+/** A late export, up to this day of a month, can still close the previous month. */
+export const LATE_EXPORT_DAYS = 14;
+
 export type StatementLabelKind =
   /** Dated well inside a month, named after its own month exactly as before. */
   | "unchanged"
@@ -68,9 +71,34 @@ export function statementLabels(dates: readonly IsoDate[]): readonly StatementLa
   const named = new Set<number>();
   const labels = new Array<StatementLabel>(dates.length);
 
-  for (const { date, index } of order) {
+  /** True when a later statement would close `month` by the ordinary early/late window. */
+  const closesLater = (from: number, month: number): boolean =>
+    order.slice(from + 1).some(({ date: later }) => {
+      const laterOwn = monthSerial(later);
+      const laterDay = dayOf(later);
+      if (laterDay <= CLOSE_WINDOW_DAYS) return laterOwn - 1 === month;
+      return laterDay > lastDayOfMonth(later) - CLOSE_WINDOW_DAYS && laterOwn === month;
+    });
+
+  for (const [position, { date, index }] of order.entries()) {
     const own = monthSerial(date);
     const day = dayOf(date);
+    // A late export (days 8 to 14) closes the previous month only when nothing
+    // names that month yet and a later statement closes this month, so a lone
+    // mid-month statement keeps its own month.
+    if (day > CLOSE_WINDOW_DAYS && day <= LATE_EXPORT_DAYS && !named.has(own - 1) && closesLater(position, own)) {
+      const target = firstOfMonth(own - 1);
+      if (target !== null) {
+        named.add(own - 1);
+        labels[index] = {
+          kind: "closes-previous-month",
+          short: formatMonthShort(target),
+          long: `${formatMonthYear(target)} close, exported ${formatDateLong(date)}`,
+          detail: `exported ${formatDateLong(date)}`,
+        };
+        continue;
+      }
+    }
     const early = day <= CLOSE_WINDOW_DAYS;
     const late = !early && day > lastDayOfMonth(date) - CLOSE_WINDOW_DAYS;
     if (early || late) {

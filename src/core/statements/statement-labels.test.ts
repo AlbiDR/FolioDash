@@ -110,6 +110,24 @@ describe("statementLabels", () => {
     ]);
   });
 
+  it("names a late export as the previous month's close when nothing else claims it", () => {
+    const result = names(
+      "2025-09-01",
+      "2025-10-10",
+      "2025-11-02",
+      "2026-05-03",
+      "2026-06-08",
+      "2026-07-02",
+      "2026-08-14",
+      "2026-09-01",
+    ).map((entry) => entry.short);
+    expect(result).toEqual(["Aug 25", "Sep 25", "Oct 25", "Apr 26", "May 26", "Jun 26", "Jul 26", "Aug 26"]);
+  });
+
+  it("keeps a lone mid-month statement in its own month", () => {
+    expect(names("2025-10-10")).toEqual([{ short: "Oct 25", long: "10 October 2025", kind: "unchanged" }]);
+  });
+
   it("keeps the as-of date in every long name and returns one name per date in the order given", () => {
     const dates = ["2026-02-01", "2026-01-15", "2026-03-01"].map(date);
     const labels = statementLabels(dates);
