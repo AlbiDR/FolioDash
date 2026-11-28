@@ -155,14 +155,16 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
   page.on("pageerror", (error) => {
     if (!/ResizeObserver loop/iu.test(error.message)) errors.push(error.message);
   });
-  // Playwright's Linux WebKit is older than Safari and says it ignores the viewport hint `interactive-widget`, which
-  // the app sets on purpose for engines that support it. The notice is not an error of the page.
+  // The app asks for `interactive-widget=resizes-content` on purpose (the layout follows the on-screen keyboard where an
+  // engine supports it). Playwright's Linux WebKit is older than Safari and says it ignores that key. That one notice is
+  // tolerated from that one engine on that one platform; any other engine reporting it is an error, and the cold open
+  // below checks that the app still asks for the hint, so the tolerance can never hide a changed or missing tag.
+  const olderWebKit = profile.type === webkit && process.platform === "linux";
   page.on("console", (message) => {
-    if (
-      message.type() === "error" &&
-      !/Failed to load resource|NetworkError|net::|Viewport argument key "interactive-widget"/iu.test(message.text())
-    )
-      errors.push(message.text());
+    const text = message.text();
+    if (message.type() !== "error" || /Failed to load resource|NetworkError|net::/iu.test(text)) return;
+    if (olderWebKit && /^Viewport argument key "interactive-widget" not recognized and ignored\.?$/u.test(text)) return;
+    errors.push(text);
   });
   try {
     // Cold open: it draws, it fits the screen, and where motion is on the engine really animates it. A page that is
@@ -180,6 +182,13 @@ async function run(profile: Profile, reduced: boolean): Promise<void> {
       where,
     );
     if (!reduced) expectThat(sawAnimation, "nothing animated while the Portfolio arrived", where);
+    expectThat(
+      (await page.evaluate(
+        "document.querySelector('meta[name=viewport]')?.content.includes('interactive-widget=resizes-content')",
+      )) === true,
+      "the viewport no longer asks for interactive-widget=resizes-content",
+      where,
+    );
     for (const route of ROUTES) {
       await go(page, route);
       const here = `${where}, ${route}`;
