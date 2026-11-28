@@ -83,7 +83,7 @@ Measured (WCAG relative luminance of the edge as composited on the card; card ag
 | Card edge against the card | 1.24 | 1.75 | 1.34 | 1.54 |
 | Card edge against the page | 1.07 | 1.51 | 1.50 | 1.72 |
 
-The tiers apply to the Portfolio only, through `--card-depth` set on `.portfolio-dashboard`; other screens keep the earlier ring plus shadow until their own phase. The fine-pointer lift (D2) is kept: it is a state of the card, and its brighter edge is tinted from the new card edge so it is still brighter than the resting edge. The glass shell and the jump bar keep their glass shadow.
+The tiers first applied to the Portfolio; phase 2b (2026-11-28) moved them to the shared card and chart rules, so every card now takes the card tier, the hero rule takes the hero tier and no surface combines a ring with a shadow. The sample notice strips keep one hairline by exception. The fine-pointer lift (D2) is kept: it is a state of the card, and its brighter edge is tinted from the new card edge so it is still brighter than the resting edge. The glass shell and the jump bar keep their glass shadow.
 
 What a person sees on Portfolio: card edges are a crisp thin line with no soft shadow under the cards; the navy summary card loses its thin edge line and gains a soft shadow; the Performance card is a plain surface (no top-to-bottom gradient) and its readout (date and the two values) is a row with one hairline instead of a boxed panel; the Allocation card is the same colour as its neighbours; the chart tools and values panels (inside the closed disclosure) are hairline-separated sections instead of boxes inside the card; on a phone the Changes sparklines lose their small grey box.
 
