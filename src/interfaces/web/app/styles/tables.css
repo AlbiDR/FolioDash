@@ -1,6 +1,10 @@
 /* ---------- Holdings table and month tables ---------- */
 
 .table-scroll {
+  /* A containing block for everything absolutely positioned inside. Without it, the visually hidden text in a header
+   * cell (the date of a half-month statement, the best and worst marks) is placed against the page, so it is not
+   * clipped by this region and its place in the last columns widens the page itself by the width of the table. */
+  position: relative;
   overflow-x: auto;
   overscroll-behavior-x: contain;
 }

@@ -8,7 +8,7 @@ const MACOS_RUNNERS = 5;
 
 const suites = {
   "interactions-portfolio": ["audit:interactions -- portfolio"],
-  "interactions-records-and-reload": ["audit:interactions -- records", "audit:reload-stability"],
+  "interactions-records-and-reload": ["audit:interactions -- records", "audit:reload-stability", "audit:page-overflow"],
   "interactions-phone-and-choreography": ["audit:interactions -- phone", "audit:choreography"],
   "accessibility-and-polish": ["audit:accessibility", "audit:portfolio-polish", "test:browser"],
   "reduced-motion-and-recovery": [

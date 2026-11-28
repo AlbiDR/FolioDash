@@ -61,7 +61,8 @@
     "audit:checkpoints": "node scripts/audit/checkpoints.ts",
     "audit:portfolio-polish": "node scripts/audit/portfolio-polish.ts",
     "audit:cross-engine": "node scripts/audit/browsers/cross-engine.ts",
-    "audit:reload-stability": "node scripts/audit/reload-stability.ts"
+    "audit:reload-stability": "node scripts/audit/reload-stability.ts",
+    "audit:page-overflow": "node scripts/audit/browsers/page-overflow.ts"
   },
   "engines": {
     "node": ">=22.18.0"
