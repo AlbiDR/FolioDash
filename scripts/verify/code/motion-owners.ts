@@ -63,6 +63,16 @@ interface OwnerRow {
   readonly owner: string;
 }
 
+/** Removes HTML comments repeatedly, so removing one cannot join its surroundings into a new `<!--`. */
+function withoutHtmlComments(text: string): string {
+  let current = text;
+  for (let previous = ""; previous !== current;) {
+    previous = current;
+    current = current.replace(/<!--[\s\S]*?-->/g, "");
+  }
+  return current;
+}
+
 /** The owner table's rows: each stylesheet path, relative to the web interface, and its owner cell. HTML comments are
  * not part of the table. */
 export function ownerTableRows(record: string): OwnerRow[] {
@@ -70,7 +80,7 @@ export function ownerTableRows(record: string): OwnerRow[] {
   if (start < 0) return [];
   const rest = record.slice(start + TABLE_HEADING.length);
   const end = rest.search(/\n## /);
-  const section = (end < 0 ? rest : rest.slice(0, end)).replace(/<!--[\s\S]*?-->/g, "");
+  const section = withoutHtmlComments(end < 0 ? rest : rest.slice(0, end));
   return [...section.matchAll(/^\| `([^`]+\.(?:css|html))` \|(.*)\|\s*$/gm)].map((match) => {
     const cells = (match[2] ?? "").split("|");
     return { path: match[1] ?? "", owner: (cells[cells.length - 1] ?? "").trim() };

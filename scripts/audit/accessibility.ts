@@ -33,11 +33,11 @@ interface Violation {
 }
 
 const axeSource = readFileSync("node_modules/axe-core/axe.min.js", "utf8");
-const WEEK_ROWS = ".expense-week-list button";
-const WEEK_ROW_COUNT = `document.querySelectorAll(${JSON.stringify(WEEK_ROWS)}).length`;
+// The selector is a fixed literal written straight into the page script, so no value is escaped or interpolated into code.
+const WEEK_ROW_COUNT = `document.querySelectorAll(".expense-week-list button").length`;
 /** Presses one week row once it is enabled and reports whether it is now the selected day. */
 function selectWeekRow(index: number): string {
-  return `(()=>{const b=document.querySelectorAll(${JSON.stringify(WEEK_ROWS)})[${String(index)}];if(!b||b.disabled)return false;if(b.getAttribute("aria-pressed")!=="true")b.click();return b.getAttribute("aria-pressed")==="true"})()`;
+  return `(()=>{const b=document.querySelectorAll(".expense-week-list button")[${String(Math.trunc(index))}];if(!b||b.disabled)return false;if(b.getAttribute("aria-pressed")!=="true")b.click();return b.getAttribute("aria-pressed")==="true"})()`;
 }
 let screens = 0;
 const found = new Map<string, { help: string; impact: string; nodes: number; elements: string[] }>();
