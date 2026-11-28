@@ -22,6 +22,7 @@ import { resolveClientId } from "../../../adapters/browser/connection/client-id"
 import { demoVariantFrom } from "./demo/demo-portfolio";
 import { navEntryOf, routeFrom, type Route } from "./routes";
 import { watchForUpdate } from "./platform/service-worker";
+import { updateSeen } from "./platform/update-notice";
 import { describeConnect } from "../features/account/account-text";
 import { useCheckpoints, useExpenses, useNow, useSession } from "./session/use-session";
 import { toIsoDate } from "../../../core/values/iso-date";
@@ -196,6 +197,9 @@ export function App(): JSX.Element {
 
   // A newer version of the app swaps in by itself when nobody could notice; otherwise it waits for the person's choice.
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
+  // Told once, after the start that follows an update, which version is now running.
+  const [updatedFrom] = useState(() => updateSeen(browserPrivacyStorage, __APP_BUILD__));
+  const [updateAcknowledged, setUpdateAcknowledged] = useState(false);
   const locked = useRef(false);
   locked.current = importLocked || expenseLocked;
   useEffect(
@@ -279,6 +283,10 @@ export function App(): JSX.Element {
             />
             <AppNotices
               applyUpdate={applyUpdate}
+              updatedTo={updatedFrom !== null && !updateAcknowledged ? __APP_BUILD__ : null}
+              acknowledgeUpdate={() => {
+                setUpdateAcknowledged(true);
+              }}
               importLocked={importLocked}
               expenseLocked={expenseLocked}
               portfolioScreen={portfolioScreen}

@@ -4,6 +4,7 @@ import { REDUCED_MOTION_QUERY } from "../shared/motion/reduced-motion";
 import type { SessionState } from "../../../applications/session/session-model";
 import { PrivacyToggle } from "../presentation/privacy/privacy";
 import { Presence } from "../shared/ui/presence";
+import { AppUpdateNotices } from "./app-update-notices";
 import { usePageMotion } from "../shared/ui/use-page-motion";
 import { Icon } from "../shared/ui/icons";
 import { DEMO_VARIANTS, type demoVariantFrom } from "./demo/demo-portfolio";
@@ -262,6 +263,8 @@ export function AppTopbar(props: {
 
 export function AppNotices(props: {
   applyUpdate: (() => void) | null;
+  updatedTo: string | null;
+  acknowledgeUpdate: () => void;
   importLocked: boolean;
   expenseLocked: boolean;
   portfolioScreen: boolean;
@@ -275,6 +278,8 @@ export function AppNotices(props: {
 }): JSX.Element {
   const {
     applyUpdate,
+    updatedTo,
+    acknowledgeUpdate,
     importLocked,
     expenseLocked,
     portfolioScreen,
@@ -288,20 +293,13 @@ export function AppNotices(props: {
   } = props;
   return (
     <>
-      <Presence show={applyUpdate !== null}>
-        {applyUpdate !== null && (
-          <div class="notice app-update" role="status">
-            <p>
-              A new version of FolioDash is ready.
-              {importLocked && <> Finish the import or return to statement selection before updating.</>}
-              {expenseLocked && <> Save or discard the expense draft, or check its uncertain save, before updating.</>}
-            </p>
-            <button type="button" disabled={importLocked || expenseLocked} onClick={applyUpdate}>
-              Reload to update
-            </button>
-          </div>
-        )}
-      </Presence>
+      <AppUpdateNotices
+        applyUpdate={applyUpdate}
+        updatedTo={updatedTo}
+        acknowledgeUpdate={acknowledgeUpdate}
+        importLocked={importLocked}
+        expenseLocked={expenseLocked}
+      />
       <Presence show={portfolioScreen && route.name !== "overview" && data.mode === "signed-out"}>
         <p class="notice" role="status">
           This demo uses synthetic data. Continue with Google to use your own records.
