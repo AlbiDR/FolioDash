@@ -24,6 +24,7 @@
   --edge-card: rgba(16, 19, 28, 0.25);
   --depth-flat: none;
   --depth-card: inset 0 0 0 1px var(--edge-card);
+  --card-depth: var(--depth-card); /* what a card or a chart takes unless a surface names another tier */
   --depth-hero: 0 12px 32px -8px rgba(16, 19, 28, 0.3);
   --shadow-card-lift: 0 4px 14px rgba(20, 20, 24, 0.06);
   --shadow-handle: 0 1px 3px rgba(0, 0, 0, 0.18);
@@ -36,7 +37,7 @@
   --color-border: rgba(16, 19, 28, 0.1);
   --color-grid: rgba(16, 19, 28, 0.1);
   --color-inspect-edge: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
-  --color-card-edge-lift: color-mix(in srgb, var(--color-accent) 28%, var(--color-border));
+  --color-card-edge-lift: color-mix(in srgb, var(--color-accent) 35%, var(--edge-card));
   --shadow-inspect: inset 0 0 0 1px var(--color-inspect-edge), 0 6px 18px var(--color-accent-soft);
 
   /* Dynamic accent: a primary, its tonal container, and a quiet secondary and tertiary. */

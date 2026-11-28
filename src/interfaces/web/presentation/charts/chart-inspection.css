@@ -71,13 +71,13 @@
   margin-top: var(--space-2);
   font-size: var(--text-small);
 }
+/* The tools and values panels are space and one hairline, not boxes inside the card. The scroll region keeps its own
+ * edge, because a scrollable area needs one and a visible boundary for keyboard focus. */
 .chart-tools,
 .chart-values {
   min-width: 0;
-  padding: var(--space-3);
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--shape-sm);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
 }
 .chart-tools {
   display: grid;
@@ -113,7 +113,6 @@
   max-block-size: 30rem;
   margin-top: var(--space-3);
   overflow: auto;
-  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--shape-xs);
   overscroll-behavior-inline: contain;
@@ -197,7 +196,7 @@
 @media (max-width: 47.5rem) {
   .chart-tools,
   .chart-values {
-    padding: var(--space-2);
+    padding: var(--space-2) 0;
   }
   .chart-values-scroll {
     max-block-size: 26rem;

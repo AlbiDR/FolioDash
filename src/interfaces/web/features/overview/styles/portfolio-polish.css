@@ -1,15 +1,9 @@
 /* Portfolio composition: retain the selected blue/glass baseline, its density and every financial projection.
  * Surface light and inspection feedback are paint only. Chart paths, allocation angles and values stay exact.
- * Depth: every card here takes the card tier (one edge, no shadow) and the hero takes the hero tier (one shadow, no
- * edge). The lift on a fine pointer is a state of the card and keeps its brighter edge, tinted from the card edge. */
-.portfolio-dashboard {
-  --card-depth: var(--depth-card);
-  --color-card-edge-lift: color-mix(in srgb, var(--color-accent) 35%, var(--edge-card));
-}
+ * Depth comes from the shared tiers in tokens.css: a card takes the card tier, the hero the hero tier. */
 .portfolio-dashboard > .hero {
   padding: var(--card-padding);
   background: radial-gradient(ellipse at top right, var(--color-hero-sheen), transparent 70%), var(--color-hero);
-  box-shadow: var(--depth-hero);
 }
 .portfolio-dashboard .hero-header {
   padding-bottom: var(--space-2);
@@ -55,19 +49,6 @@
   margin-top: var(--space-2);
   margin-bottom: var(--space-3);
   border-bottom: 1px solid var(--color-border);
-}
-/* The tools and values panels are space and one hairline, not boxes inside the card. The scroll region keeps its own
- * edge, because a scrollable area needs one and a visible boundary for keyboard focus. */
-.portfolio-dashboard .chart-tools,
-.portfolio-dashboard .chart-values {
-  padding-inline: 0;
-  background: transparent;
-  border: 0;
-  border-top: 1px solid var(--color-border);
-  border-radius: 0;
-}
-.portfolio-dashboard .chart-values-scroll {
-  background: transparent;
 }
 .portfolio-trend .chart:focus-within .chart-readout {
   border-radius: var(--shape-md);

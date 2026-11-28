@@ -3,7 +3,7 @@
   padding: var(--card-padding);
   background: var(--color-surface);
   border-radius: var(--shape-lg);
-  box-shadow: var(--card-depth, inset 0 0 0 1px var(--color-border), var(--shadow-card));
+  box-shadow: var(--card-depth);
 }
 
 .chart-note {
