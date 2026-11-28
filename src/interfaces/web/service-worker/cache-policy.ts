@@ -42,3 +42,15 @@ export function navigationCacheKey(requestUrl: string, scopeUrl: string): string
 
 /** A page load (not a script, style or image request). */
 export const isPageLoad = (mode: string): boolean => mode === "navigate";
+
+/**
+ * The built files a page document names (scripts, styles, preloads) that are missing from the saved list.
+ * Empty means the page belongs to the same build as the list. A page left over in the browser's own cache or at
+ * the host's edge from the previous deployment names files that no longer exist, and saving it would leave an app
+ * that opens blank and, because the saved copy is answered first, stays blank.
+ */
+export function shellFilesMissing(html: string, files: readonly string[]): string[] {
+  const known = new Set(files.map((file) => file.replace(/^\.\//, "")));
+  const named = [...html.matchAll(/(?:href|src)="\.\/(assets\/[^"?#]+)"/g)].map((match) => match[1] ?? "");
+  return named.filter((file) => !known.has(file));
+}

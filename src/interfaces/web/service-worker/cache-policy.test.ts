@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { cacheNameFor, isOldCache, isPageLoad, navigationCacheKey, shouldHandle } from "./cache-policy";
+import {
+  cacheNameFor,
+  isOldCache,
+  isPageLoad,
+  navigationCacheKey,
+  shellFilesMissing,
+  shouldHandle,
+} from "./cache-policy";
 
 const SCOPE = "https://example.test/FolioDash/";
 
@@ -63,5 +70,19 @@ describe("caches", () => {
   it("tells a page load from other requests", () => {
     expect(isPageLoad("navigate")).toBe(true);
     expect(isPageLoad("cors")).toBe(false);
+  });
+});
+
+describe("shellFilesMissing", () => {
+  const files = ["assets/index-NEW.js", "assets/index-NEW.css", "manifest.webmanifest"];
+  const page = (script: string): string =>
+    `<script type="module" src="./assets/${script}"></script><link rel="stylesheet" href="./assets/index-NEW.css">`;
+
+  it("accepts a page whose files all belong to the build", () => {
+    expect(shellFilesMissing(page("index-NEW.js"), files)).toEqual([]);
+  });
+
+  it("names the files of a page left over from the previous deployment", () => {
+    expect(shellFilesMissing(page("index-OLD.js"), files)).toEqual(["assets/index-OLD.js"]);
   });
 });

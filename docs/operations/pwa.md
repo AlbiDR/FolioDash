@@ -35,6 +35,16 @@ HTTPS (GitHub Pages gives it), a manifest with a name, a `start_url`, a `standal
 - The OAuth origin is unchanged: an installed app runs on the same `https://albidr.github.io` origin, so no new authorised origin is needed.
 - Because the app shell is cached, a visitor sees a new deployment only after the new worker has installed and they reload. The notice makes that visible.
 
+## Updates that left an app blank, fixed 2026-11-28
+
+An installed copy (reported on a Safari web app on macOS, "Add to Dock") opened blank after an update and only wiping the site's data recovered it. Cause: the worker saved the new version's files with the browser's default fetch, which may answer from the browser's own HTTP cache, and GitHub Pages lets pages be cached for ten minutes (`cache-control: max-age=600`). The new version could therefore be saved with the previous deployment's `index.html`, which names script files that the new deployment no longer has. The worker answers saved files first, so every reload showed the same blank page; the page's code never ran, so it could not ask for a fix.
+
+Reproduced in Playwright WebKit with a persistent profile, a local server that mimics Pages (ten-minute caching, old files removed on deploy), and two real builds: before the fix the app is blank on every reload; after it, it shows the new version at once.
+
+- The worker now fetches every file with `cache: "reload"`, and refuses to install (the working version stays in control and the next check retries) when the page it fetched names a file that is not in its list (`shellFilesMissing`).
+- For copies already stuck: when a new worker installs and the version in control saved a page it cannot load, it takes over by itself and reloads the blank windows. Nothing is lost because nothing is showing. A healthy version is still replaced only by the existing rules. If a blank window is open when the fixed version first reaches a device, it recovers on its own within a few seconds; if it does not, quitting the app (Cmd+Q) and reopening it lets the waiting fixed version take over, with no site-data wipe.
+- Not checked: a real Safari web app install (Playwright WebKit shares the engine, not the web-app shell and its storage partition), and the fixed version on the live site.
+
 ## Mobile interface
 
 The phone layout uses a bottom navigation bar with reserved content space and safe-area padding. The viewport opts into edge-to-edge rendering and asks supporting Android browsers to resize content for the keyboard. Actual keyboard and system gesture behaviour still needs a physical-device check.
