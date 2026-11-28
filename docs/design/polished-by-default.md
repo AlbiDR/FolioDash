@@ -1,6 +1,6 @@
 # Polished by default
 
-Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 5 and 7 done; phase 6 done, its remaining items settled by decision (see the second tail batch); phase 8 closed by the owner on 2026-11-27: engine and emulation checks are automated and run (`audit:cross-engine`), and the real-device checks were closed without being run.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the Verdin and Talmo demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
+Status: **Accepted by the owner 2026-11-26: all seven recommended decisions (FD-029). Phases 0 to 5 and 7 done; phase 6 done, its remaining items settled by decision (see the second tail batch); phase 8 closed by the owner on 2026-11-27: engine and emulation checks are automated and run (`audit:cross-engine`), and the real-device checks were closed without being run.** Owner request: make a strong pass of motion, morphing and dynamism across every element, layer, tab and page, and, more importantly, build the layer that makes coherent, professional, in-motion UI the default an author gets for free, at the level of the referenced dashboard demos. References named by the owner: Astryx, responsive CSS Grid, bento-ui, frontend-design, Impeccable, NN/g, Google adaptive app guidance, WCAG 2.2, W3C reflow guidance and the shared UI system.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-11, UXC-12, UXC-13 and ARC-13, the [motion layer](motion-layer.md), [interaction coverage](interaction-coverage.md), the [UI system](ui-system.md) and the [web quality contract](../operations/web-quality.md). This record proposes; it changes none of them. FD-028 (dynamic charts) stays in force; its open question about figures moving on a sync is taken up in phase 7.
 
@@ -10,9 +10,9 @@ The owner's bar is "coherent, professional, everything animated and in motion". 
 
 ## What the references do
 
-Measured 2026-11-26 in a fresh built-in browser profile, signed out, observation only. Both demos are commercial templates from one vendor: no markup, styles, scripts, fonts, assets or copy were taken, and none will be. The earlier source survey is the [Verdin motion audit](verdin-motion-audit.md).
+Measured 2026-11-26 in a fresh built-in browser profile, signed out, observation only. Both demos are commercial templates from one vendor: no markup, styles, scripts, fonts, assets or copy were taken, and none will be. The earlier source survey is no longer retained in this repository.
 
-| | Talmo | Verdin | FolioDash today (Portfolio, 1024px, synthetic demo) |
+| | Talmo | External dashboard reference | FolioDash today (Portfolio, 1024px, synthetic demo) |
 |---|---|---|---|
 | Easing | One token, `cubic-bezier(.22, 1, .36, 1)` | The same single token | Four: standard, smooth, arrival and spring (overshoot) |
 | Page change | Nothing animates; the page is simply there | One JavaScript-driven stagger: cards fade and rise about 0.6 s each, offset so the page settles in about 1.3 s | `<main>` fades out, then 34 distinct animation kinds start: every card rises, and every heading, subtitle, hero value, chart, mark, ring and bar runs its own recipe |
@@ -24,8 +24,8 @@ Measured 2026-11-26 in a fresh built-in browser profile, signed out, observation
 Three conclusions:
 
 1. **FolioDash's token scale is already tighter than both references.** The polish gap is not a missing scale. It is how motion is authored and choreographed.
-2. **The references choose one gesture per event.** Verdin's entry is one orchestrated movement of panels. FolioDash's entry is many independent recipes with their own durations and delays, so it reads as many things moving rather than one page arriving. NN/g's guidance points the same way: several animations at once compete, and the more often an animation runs, the shorter and subtler it should be.
-3. **The two references disagree about navigation.** Verdin replays its entrance on every page; Talmo keeps navigation still and spends motion on data. Decision 2 asks which FolioDash should follow.
+2. **The references choose one gesture per event.** One reference's entry is one orchestrated movement of panels. FolioDash's entry is many independent recipes with their own durations and delays, so it reads as many things moving rather than one page arriving. NN/g's guidance points the same way: several animations at once compete, and the more often an animation runs, the shorter and subtler it should be.
+3. **The two references disagree about navigation.** One reference replays its entrance on every page; Talmo keeps navigation still and spends motion on data. Decision 2 asks which FolioDash should follow.
 
 ## Audit of FolioDash
 
@@ -56,7 +56,7 @@ This is the strongest argument for the proposal: every polish pass so far has be
 
 ### What a person sees
 
-- **Page arrival is busy.** On 2026-11-21 the owner extended the Verdin reference to staggered text, count-up figures and charts growing from zero on open and route entry ([interactions](../operations/interactions.md#text-figures-and-chart-arrivals-2026-11-21)), and the same day's coordinated arrival gave them one 560 ms curve and one 55 ms stagger. The result is consistent timing but not one gesture: every heading and subtitle runs its own arrival on top of its card's rise, so text moves twice, and charts, rings and bars start while their card is still rising. This record keeps that direction and changes only how it is coordinated (decision 2).
+- **Page arrival is busy.** On 2026-11-21 the owner extended the external dashboard reference to staggered text, count-up figures and charts growing from zero on open and route entry ([interactions](../operations/interactions.md#text-figures-and-chart-arrivals-2026-11-21)), and the same day's coordinated arrival gave them one 560 ms curve and one 55 ms stagger. The result is consistent timing but not one gesture: every heading and subtitle runs its own arrival on top of its card's rise, so text moves twice, and charts, rings and bars start while their card is still rising. This record keeps that direction and changes only how it is coordinated (decision 2).
 - **Page change has little continuity.** The shell stays mounted and the navigation highlight stretches to its new item, but the content fades out, the page title replays its arrival, and the next page assembles from nothing. Opening a fund from Holdings, or Month by month from the Portfolio, gives no sense of where the new page came from.
 - **Data changes are the strongest part.** A period change morphs every chart line, the trends and the monthly bars, and a holdings sort glides its rows (FD-028). This is the quality bar the rest should reach.
 - **Some motion overshoots.** `--ease-spring`, which bounces past its end, is declared on many controls, but most of those declarations are overridden. Where it is live, the brand's hover, the current navigation icon's settle, the period selector's confirmation and the checkpoint markers' arrival overshoot. Impeccable advises against bounce and elastic curves by reflex, and neither reference uses one.
@@ -321,7 +321,7 @@ Work through the [gap table](#gaps-by-surface) by role. Presence for layers: the
 The owner accepted every recommendation below on 2026-11-26 (FD-029). Decision 2 amends the 2026-11-21 per-route arrival direction.
 
 1. **Meaning of "everything in motion".** Recommended: every change is animated and each event is one coordinated movement. Alternative: more simultaneous motion, which the references and NN/g advise against.
-2. **Navigation.** The owner's 2026-11-21 direction is Verdin's: staggered text, count-ups and growing charts on open and on every route entry. Recommended: keep the full arrival on first open and when a page is entered from outside the app, and make in-app navigation a short continuity transition where persistent chrome stays still and the new page arrives as one quicker gesture, closer to Talmo and to NN/g's rule that frequent motion should be shorter. Alternative: keep the full arrival on every route entry, as now, coordinated into one gesture. Choosing the recommendation amends the 2026-11-21 direction, so it needs the owner's word.
+2. **Navigation.** The owner's 2026-11-21 direction is the external reference's: staggered text, count-ups and growing charts on open and on every route entry. Recommended: keep the full arrival on first open and when a page is entered from outside the app, and make in-app navigation a short continuity transition where persistent chrome stays still and the new page arrives as one quicker gesture, closer to Talmo and to NN/g's rule that frequent motion should be shorter. Alternative: keep the full arrival on every route entry, as now, coordinated into one gesture. Choosing the recommendation amends the 2026-11-21 direction, so it needs the owner's word.
 3. **View transitions.** Recommended: adopt same-document view transitions as the continuity mechanism, feature-detected, with the current page motion as the fallback. It is a new mechanism, so it gets its own entry here and in the Astryx register.
 4. **The `motion` package.** Recommended: remove it. The Web Animations API, the shared primitives and view transitions cover every role above. Keeping it requires an FD-008 evaluation and an amendment to the motion layer's no-library rule.
 5. **Spring easing.** Recommended: retire it from hover and press; keep at most the bounded selection rebound.
@@ -331,6 +331,6 @@ The owner accepted every recommendation below on 2026-11-26 (FD-029). Decision 2
 ## Out of scope
 
 - No change to financial calculation, chart policy or privacy timing.
-- No copying from Verdin, Talmo or any other template, and no new dependency.
+- No copying from external templates, and no new dependency.
 - Surfaces, depth and typography beyond motion: the [Depth and hierarchy](depth-and-hierarchy.md) draft owns them.
 - No motion gallery or preview route.

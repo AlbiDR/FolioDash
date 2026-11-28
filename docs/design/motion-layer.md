@@ -1,6 +1,6 @@
 # Motion layer
 
-Status: **Revised 2026-11-22 after the Verdin adaptation review.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, bar morph and presence use them. The data-reveal recipes below now give charts named, token-owned adoption points. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change financial calculation or privacy timing. The first draft was committed in `0f63c5a`; this revision supersedes it.
+Status: **Revised 2026-11-22 after the external motion adaptation review.** The Animate and Settle primitives exist in `shared/motion/`, and the row glide, bar morph and presence use them. The data-reveal recipes below now give charts named, token-owned adoption points. Owner request: make UI and UX animation easy to create, review and prove, now and as the app grows. This record decides the shape and the order. It does not change financial calculation or privacy timing. The first draft was committed in `0f63c5a`; this revision supersedes it.
 
 Authority: [CleanStack](../architecture/cleanstack.md) UXC-1, UXC-4, UXC-5, UXC-12, UXC-13 and ARC-13, the [interaction coverage](interaction-coverage.md) contract and the [rendered interaction audit](../operations/interactions.md). Architecture, not a redesign, so the [Astryx reference](astryx-reference.md) is not the governing reference for the mechanics. Any visual change still follows its own design record.
 
