@@ -37,7 +37,7 @@ it("grows the inspected slice outward about the ring's centre and never moves an
   await settle();
   const after = paths().map((path) => path.getBoundingClientRect());
 
-  const grow = 1.05;
+  const grow = 1.15;
   const expected = (rect: DOMRect) => ({
     left: centre.x + (rect.left - centre.x) * grow,
     top: centre.y + (rect.top - centre.y) * grow,
@@ -57,6 +57,6 @@ it("grows the inspected slice outward about the ring's centre and never moves an
     expect(rect.width).toBeCloseTo(was.width, 1);
   }
   // The grown rim stays inside the svg's own box, so nothing is clipped or pushed against a neighbour.
-  expect(active.right).toBeLessThanOrEqual(box.right + 6);
-  expect(active.bottom).toBeLessThanOrEqual(box.bottom + 6);
+  expect(active.right).toBeLessThanOrEqual(box.right + 12);
+  expect(active.bottom).toBeLessThanOrEqual(box.bottom + 12);
 });

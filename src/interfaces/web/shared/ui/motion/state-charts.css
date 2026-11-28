@@ -245,7 +245,7 @@
   overflow: visible;
 }
 .donut .donut-slice[data-active="true"] {
-  scale: 1.05;
+  scale: 1.15;
 }
 .donut[data-inspecting="true"] .donut-slice:not([data-active="true"]) {
   opacity: 0.4;
