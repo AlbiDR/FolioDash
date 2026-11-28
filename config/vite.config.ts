@@ -29,7 +29,7 @@ export default defineConfig({
   build: {
     outDir: fileURLToPath(new URL("../dist/web", import.meta.url)),
     emptyOutDir: true,
-    target: "es2022",
+    target: "es2023",
   },
   define: { __APP_BUILD__: JSON.stringify(buildStamp()), __SYNTHETIC_ACCEPTANCE__: "false" },
   plugins: [serviceWorkerPlugin()],

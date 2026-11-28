@@ -267,7 +267,7 @@ export function expenseReport(
   const first = toIsoDate(year, 1, 1);
   const last = toIsoDate(year, 12, 31);
   const startDate =
-    [...days].sort((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : 0))[0]?.date ?? null;
+    days.toSorted((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : 0))[0]?.date ?? null;
   const recorded = days.filter((day) => day.date.slice(0, 4) === String(year) && day.date <= today);
   const totals = expenseTotals(recorded);
   const complete = recorded.filter((day) => expenseEntryStatus(day.amounts).complete);

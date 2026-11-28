@@ -33,8 +33,8 @@ export function organizationRequests(tabs: readonly TabInfo[]): unknown[] {
   const ordered = [...views, ...tabs.filter((tab) => !managed.has(tab.id)), ...technical];
   // Bringing each desired tab to index zero in reverse order avoids Google's
   // before-the-move index convention, including its no-op at current index + 1.
-  const requests: unknown[] = [...ordered]
-    .reverse()
+  const requests: unknown[] = ordered
+    .toReversed()
     .map((tab) => ({ updateSheetProperties: { properties: { sheetId: tab.id, index: 0 }, fields: "index" } }));
   for (const tab of [...views, ...technical]) {
     const role = tab.viewRoles[0];

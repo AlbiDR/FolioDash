@@ -147,7 +147,7 @@ export function computeLineChart(series: readonly ChartSeries[], layout: ChartLa
     .digits(2);
 
   const plotted = series.map((entry): PlottedSeries => {
-    const ordered = [...entry.points].sort((left, right) => left.time - right.time);
+    const ordered = entry.points.toSorted((left, right) => left.time - right.time);
     const points: PlottedPoint[] = [];
     const paths: string[] = [];
     const areas: string[] = [];

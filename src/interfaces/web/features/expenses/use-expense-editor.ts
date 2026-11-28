@@ -77,8 +77,7 @@ export function useExpenseEditor(props: ExpensesViewProps) {
   const selectedConflict = conflicts.find((conflict) => conflict.date === editor.date);
   const earlierVersions = (props.history ?? [])
     .filter((command) => command.date === editor.date && command.id !== editorDay?.revision)
-    .slice()
-    .reverse();
+    .toReversed();
   const selectedKind = expenseDayKind(editorDay, editor.date, props.today, report.startDate);
   const dates = weekDates(week);
   const weekDays = props.days.filter((day) => dates.includes(day.date) && day.date <= props.today);

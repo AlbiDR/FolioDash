@@ -143,7 +143,7 @@ export function LineChart(props: LineChartProps): JSX.Element {
   const lineTimes = new Set(
     props.series.filter((entry) => entry.markers !== true).flatMap((entry) => entry.points.map((point) => point.time)),
   );
-  const lastTime = [...times].reverse().find((time) => lineTimes.has(time)) ?? times[times.length - 1];
+  const lastTime = times.findLast((time) => lineTimes.has(time)) ?? times[times.length - 1];
   const selectedTime = scrubbed !== null && times.includes(scrubbed) ? scrubbed : null;
   const hoveredTime = hovered !== null && times.includes(hovered) ? hovered : null;
   const activeTime = hoveredTime ?? selectedTime ?? lastTime;

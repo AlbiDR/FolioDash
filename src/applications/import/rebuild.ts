@@ -101,7 +101,7 @@ export function rebuildLedger(
   newRevision: () => string,
 ): RebuildResult {
   let state = EMPTY_LEDGER;
-  for (const source of [...sources].sort((left, right) => left.date.localeCompare(right.date))) {
+  for (const source of sources.toSorted((left, right) => left.date.localeCompare(right.date))) {
     const sheet = parseStoredSheet(source.sheet);
     if (sheet === null)
       return { status: "failed", date: source.date, message: "The stored statement could not be read." };

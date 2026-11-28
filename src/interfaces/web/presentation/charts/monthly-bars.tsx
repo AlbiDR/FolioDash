@@ -83,7 +83,7 @@ export function MonthlyBars(props: {
   if (present.length === 0) {
     return <p class="empty-note">No month has a figure to show yet.</p>;
   }
-  const latest = [...props.bars].reverse().find((bar) => bar.value !== null);
+  const latest = props.bars.findLast((bar) => bar.value !== null);
   const selected = props.bars.find((bar) => bar.key === pinned);
   const shown = props.bars.find((bar) => bar.key === (hovered ?? focused)) ?? selected ?? latest;
   const tabStop = focused ?? selected?.key ?? latest?.key;

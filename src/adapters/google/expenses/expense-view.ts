@@ -23,7 +23,7 @@ export function buildExpenseView(
 ): Grid {
   const money = (amount: EuroCents | null): GridCell =>
     amount === null ? plainCell("") : { value: amount / 100, format: '#,##0.00" €"', emphasis: null };
-  const startDate = [...days].sort((left, right) => left.date.localeCompare(right.date))[0]?.date ?? null;
+  const startDate = days.toSorted((left, right) => left.date.localeCompare(right.date))[0]?.date ?? null;
   const descriptions = {
     complete: "Recorded workday",
     partial: "Needs review; amount recorded so far",

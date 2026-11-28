@@ -70,6 +70,7 @@ Normal success does not require opening an editor, calling AI, running a repair 
 - Accessible numerical tables/text alternatives accompany charts; tooltips work for touch/keyboard where applicable.
 - Apply WCAG AA contrast and readable focus treatment. Automated accessibility tests do not replace screen-reader, touch and wording review.
 - Browser automation should cover Chromium, WebKit and Firefox. Actual support claims name tested versions/devices through FD-012; simulated Android dimensions are not a physical Android check.
+- The build and type baseline is ES2023 (`config/tsconfig.json`, `config/vite.config.ts`, `config/pwa.ts`), raised from ES2022 on 2026-11-28 by the owner so the copying array methods `toSorted`, `toReversed` and `findLast` can replace copy-then-sort code. That needs Chrome 110, Safari 16 or Firefox 115 or newer; an older browser is not supported, and FD-012 still owns the tested-version claim.
 
 ## 5. Error and progress taxonomy
 

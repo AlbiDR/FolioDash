@@ -37,7 +37,7 @@ export function serviceWorkerPlugin(): Plugin {
         write: false,
         format: "iife",
         platform: "browser",
-        target: "es2022",
+        target: "es2023",
         minify: true,
         legalComments: "none",
         logLevel: "error",
