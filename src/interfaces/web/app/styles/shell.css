@@ -25,20 +25,6 @@ body {
   font-optical-sizing: auto;
 }
 
-/* A restrained tonal backdrop makes the navigation material visible without
- * placing translucency behind financial figures. It never animates. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(40rem 30rem at 0% 0%, var(--ambient-a), transparent 65%),
-    radial-gradient(36rem 28rem at 100% 0%, var(--ambient-b), transparent 65%),
-    radial-gradient(40rem 30rem at 60% 100%, var(--ambient-c), transparent 65%);
-  pointer-events: none;
-}
-
 h1,
 h2,
 h3,

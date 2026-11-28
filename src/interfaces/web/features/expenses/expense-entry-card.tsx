@@ -51,7 +51,7 @@ export function ExpenseEntryCard(p: { readonly shared: ExpenseShared }): JSX.Ele
     <article class="card expense-entry" ref={editorElement} aria-labelledby="expense-entry-heading" data-dirty={dirty}>
       <div class="expense-card-heading">
         <div>
-          <p class="eyebrow">{demo ? "Record a day · sample" : "Record a day"}</p>
+          <p class="eyebrow">Record a day</p>
           <h2
             id="expense-entry-heading"
             class="card-title expense-date"
@@ -120,7 +120,7 @@ export function ExpenseEntryCard(p: { readonly shared: ExpenseShared }): JSX.Ele
       <Presence show={!isWorkday(editor.date)}>
         {!isWorkday(editor.date) && (
           <div class="expense-note">
-            <p>The tracker covers Monday to Friday, so there is nothing to record on a weekend.</p>
+            <p>The tracker covers Monday to Friday.</p>
             <div class="expense-note-actions">
               {previousWorkday !== null && (
                 <button

@@ -1,0 +1,171 @@
+/* The ledger treatment of the Expenses screen (docs/design/ui-system.md, "Ledger treatment of Expenses").
+ * The graphite palette itself lives in the shared tokens. This screen adds ruled rows with a status dot, quiet
+ * controls at the control radius, two weights, and one rich moment: the yearly total. */
+.expenses-dashboard {
+  --weight-semibold: 500;
+}
+
+/* Controls: the shared pill shape, as an outline instead of a blue tint, so the one primary action stands out. Hover,
+ * focus and press come from the shared control feedback; the hover surface is restated because the fill is transparent. */
+.expenses-dashboard :is(button:not(.primary, .quiet), .page-nav a) {
+  background: transparent;
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+.expenses-dashboard :is(.expense-week-list, .expense-record-list) button {
+  box-shadow: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .expenses-dashboard :is(button:not(.primary, .quiet), .page-nav a):hover:not(:disabled) {
+    background: var(--color-surface-2);
+  }
+}
+.expenses-dashboard .expense-note button,
+.expenses-dashboard .expense-review button:not(.primary),
+.expenses-dashboard .expense-conflict button {
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+/* Labels and status read as text, not as badges. The state is a dot and a word. */
+.expenses-dashboard .eyebrow {
+  font-weight: var(--weight-regular);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.expense-state {
+  gap: var(--space-2);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-weight: var(--weight-regular);
+}
+.expense-state::before,
+.expense-week-state::before {
+  content: "";
+  flex: none;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--shape-full);
+  background: var(--color-muted);
+}
+.expense-state.needs-review {
+  background: transparent;
+  color: var(--color-notice-text);
+}
+.expense-state.needs-review::before {
+  background: var(--color-caution);
+}
+.expense-annual .expense-state {
+  background: transparent;
+  color: var(--color-hero-muted);
+}
+.expense-annual .expense-state::before {
+  background: var(--color-hero-muted);
+}
+
+/* The sample notice is one slim row. */
+.expenses-dashboard > .get-started {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title action" "text action";
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) var(--card-padding);
+  background: var(--surface-low);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+.expenses-dashboard > .get-started .card-title {
+  grid-area: title;
+  margin: 0;
+  font-size: var(--text-body);
+}
+.expenses-dashboard > .get-started .card-subtitle {
+  grid-area: text;
+  margin: 0;
+  font-size: var(--text-small);
+}
+.expenses-dashboard > .get-started .primary {
+  grid-area: action;
+}
+@media (max-width: 40rem) {
+  .expenses-dashboard > .get-started {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "text" "action";
+  }
+}
+
+/* The week is a ledger: weekday, a status dot and word, the amount in one right-aligned column. On wide screens the
+ * entry and the week share a height, so neither leaves an empty band under it. */
+.expense-week-list button {
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto 1rem;
+}
+.expense-week-date {
+  white-space: nowrap;
+}
+.expense-week-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.expense-week-state[data-kind="no-work"]::before,
+.expense-week-state[data-kind="not-entered"]::before,
+.expense-week-state[data-kind="future"]::before,
+.expense-week-state[data-kind="outside-history"]::before,
+.expense-week-state[data-kind="weekend"]::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--color-muted);
+}
+.expense-week-state[data-kind="complete"]::before {
+  background: var(--color-gain);
+}
+.expense-week-state.needs-review::before {
+  background: var(--color-caution);
+}
+.expense-week-footer {
+  margin-top: auto;
+}
+.expense-week {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 70.001rem) {
+  .expense-entry,
+  .expense-week {
+    align-self: stretch;
+  }
+}
+
+/* The yearly total is the one rich moment: an ink card with the figure set large. */
+.expense-annual .expense-metric-value {
+  font-size: var(--text-display);
+  font-weight: var(--weight-regular);
+  letter-spacing: -0.04em;
+}
+.expense-projection .expense-total {
+  font-weight: var(--weight-regular);
+}
+
+/* Categories are a ranked list: the leading one carries the accent and the rest step down in neutral. */
+.expense-category-0 {
+  background: var(--color-accent);
+}
+.expense-category-1 {
+  background: color-mix(in srgb, var(--color-text) 58%, var(--color-surface));
+}
+.expense-category-2 {
+  background: color-mix(in srgb, var(--color-text) 42%, var(--color-surface));
+}
+.expense-category-3 {
+  background: color-mix(in srgb, var(--color-text) 30%, var(--color-surface));
+}
+.expense-category-4 {
+  background: color-mix(in srgb, var(--color-text) 20%, var(--color-surface));
+}
+
+/* The weekend note is plain information, not an alert: a hairline panel with a muted icon. */
+.expenses-dashboard .expense-note {
+  --tone: var(--color-muted);
+  background: var(--surface-low);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}

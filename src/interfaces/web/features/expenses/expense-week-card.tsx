@@ -80,7 +80,10 @@ export function ExpenseWeekCard(p: { readonly shared: ExpenseShared }): JSX.Elem
                 }}
               >
                 <span class="expense-week-date">{shortDate(date)}</span>
-                <span class={`expense-week-state ${kind === "partial" || conflict ? "needs-review" : ""}`}>
+                <span
+                  class={`expense-week-state ${kind === "partial" || conflict ? "needs-review" : ""}`}
+                  data-kind={kind}
+                >
                   {!props.ready ? "Not checked" : conflict ? "Conflicting versions" : weekLabelFor(kind)}
                 </span>
                 <span class="expense-week-amount">

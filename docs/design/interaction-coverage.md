@@ -184,15 +184,15 @@ One row is a source template; a fund-link template can render many controls. All
 | ddc3c9df2333-1 | [expense-record-card.tsx:134](../../src/interfaces/web/features/expenses/expense-record-card.tsx#L134) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | eac9600058e2-1 | [expense-week-card.tsx:45](../../src/interfaces/web/features/expenses/expense-week-card.tsx#L45) | button / action | Previous week | SOURCE CLASSIFIED; STATES OPEN |
 | af95713683f8-1 | [expense-week-card.tsx:55](../../src/interfaces/web/features/expenses/expense-week-card.tsx#L55) | button / action | Next week | SOURCE CLASSIFIED; STATES OPEN |
-| 5b8f86999d58-1 | [expense-week-card.tsx:74](../../src/interfaces/web/features/expenses/expense-week-card.tsx#L74) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
-| 2148479db261-1 | [expense-week-card.tsx:121](../../src/interfaces/web/features/expenses/expense-week-card.tsx#L121) | a / action | Review incomplete or conflicting days | SOURCE CLASSIFIED; STATES OPEN |
+| 7d630460e628-1 | [expense-week-card.tsx:74](../../src/interfaces/web/features/expenses/expense-week-card.tsx#L74) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
+| 2148479db261-1 | [expense-week-card.tsx:124](../../src/interfaces/web/features/expenses/expense-week-card.tsx#L124) | a / action | Review incomplete or conflicting days | SOURCE CLASSIFIED; STATES OPEN |
 | 2007ac045a9f-1 | [expense-year-section.tsx:19](../../src/interfaces/web/features/expenses/expense-year-section.tsx#L19) | select / field | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |
 | 339f9529a16e-1 | [expense-year-section.tsx:116](../../src/interfaces/web/features/expenses/expense-year-section.tsx#L116) | summary / action | Where it goes | SOURCE CLASSIFIED; STATES OPEN |
 | c43b28fa17d7-1 | [expense-year-section.tsx:146](../../src/interfaces/web/features/expenses/expense-year-section.tsx#L146) | summary / action | How these summaries work | SOURCE CLASSIFIED; STATES OPEN |
 | 7b00178c2559-1 | [expense-year-section.tsx:149](../../src/interfaces/web/features/expenses/expense-year-section.tsx#L149) | select / field | expense-policy | SOURCE CLASSIFIED; STATES OPEN |
-| 98ea46c00155-1 | [expenses-view.tsx:34](../../src/interfaces/web/features/expenses/expenses-view.tsx#L34) | button / action | Continue with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 7d4c744251af-1 | [expenses-view.tsx:45](../../src/interfaces/web/features/expenses/expenses-view.tsx#L45) | button / action | Check records | SOURCE CLASSIFIED; STATES OPEN |
-| 1652ed28b427-1 | [expenses-view.tsx:56](../../src/interfaces/web/features/expenses/expenses-view.tsx#L56) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
+| 98ea46c00155-1 | [expenses-view.tsx:35](../../src/interfaces/web/features/expenses/expenses-view.tsx#L35) | button / action | Continue with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 7d4c744251af-1 | [expenses-view.tsx:46](../../src/interfaces/web/features/expenses/expenses-view.tsx#L46) | button / action | Check records | SOURCE CLASSIFIED; STATES OPEN |
+| 1652ed28b427-1 | [expenses-view.tsx:57](../../src/interfaces/web/features/expenses/expenses-view.tsx#L57) | button / action | Check original save | SOURCE CLASSIFIED; STATES OPEN |
 | 2bd1f8aec6ce-1 | [history-ready.tsx:37](../../src/interfaces/web/features/history/history-ready.tsx#L37) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
 | 1714900b765d-1 | [history-view.tsx:253](../../src/interfaces/web/features/history/history-view.tsx#L253) | input / field | history-file | SOURCE CLASSIFIED; STATES OPEN |
 | c482dfce264b-1 | [history-view.tsx:331](../../src/interfaces/web/features/history/history-view.tsx#L331) | button / action | Dynamic label; inspect owning component | SOURCE CLASSIFIED; STATES OPEN |

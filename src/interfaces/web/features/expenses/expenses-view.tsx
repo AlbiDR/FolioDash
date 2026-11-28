@@ -12,6 +12,7 @@ import "./styles/record-a-day.css";
 import "./styles/week-and-year.css";
 import "./styles/categories-and-record.css";
 import "./styles/responsive-and-hover.css";
+import "./styles/ledger.css";
 
 /** All amounts and eligibility come from the canonical expense model. This view owns only drafts and inspection. */
 export function ExpensesView(props: ExpensesViewProps): JSX.Element {
@@ -27,8 +28,8 @@ export function ExpensesView(props: ExpensesViewProps): JSX.Element {
             You are exploring a sample
           </h2>
           <p class="card-subtitle">
-            Try recording expenses with synthetic data. Your own records stay separate. Continue with Google to start
-            your own tracker.
+            The records here are synthetic and stay separate from your own. Continue with Google to start your own
+            tracker.
           </p>
           {props.onConnect !== undefined && (
             <button class="primary" type="button" disabled={locked} onClick={() => void props.onConnect?.()}>

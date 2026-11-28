@@ -103,6 +103,16 @@ Reading screens (Import, Your data) keep a 52rem line length. Dashboards use the
 - **Your data**: one anatomy for every section (title, one sentence, optional note, one action). "How your data is kept" is now "Where your data lives" and the long explanation of staying connected is a disclosure. The expense history asks to connect with a warning notice, not an error.
 - **Update and sign-in notices** (`A new version is ready`, `Continue with Google to save your statements`) put their action on its own row like every other notice.
 
+## Ledger treatment of Expenses, 2026-11-28
+
+Owner direction: the Expenses screen looked machine-made, so it was audited with the unslop skill (revision `620163e`) and rebuilt as a ledger, with the graphite palette promoted to the shared tokens for every screen. The Astryx reference was not consulted for this pass, because it adds no pattern; the references considered were the unslop audit and the screen's own contracts.
+
+- **Direction.** Product: a private tracker where one person records daily work costs and reads weekly and yearly totals. Character: calm, exact, plainspoken. World: a ledger. Moments: the yearly total on an ink card, and the week as ruled rows. Signature: a status dot (recorded, needs review, empty) in the week and the state labels.
+- **Departure, palette.** The blue-tinted surfaces, the navy summary card and the three radial backdrop washes are replaced by graphite neutrals with one blue accent (`shared/tokens.css`). This reverses the 2026-11-16 direction to keep the blue-surface prototype and the ambient backdrop, on the owner's instruction. The glass navigation material stays. The ambient token names remain, transparent, because the layout study's page still reads them.
+- **Departure, controls on Expenses.** Buttons keep the shared pill shape but are outlined instead of tinted, and state chips become a dot and a word. Other screens keep the tonal buttons until they are given the same pass.
+- **Unchanged.** Calculations, privacy hiding, financial geometry, motion and interaction feedback. The week's status span gained a `data-kind` attribute, so the source inventory records its identity change; no control was added.
+- **Evidence.** `npm run verify`, the rendered audit (interactions, accessibility, reduced motion, choreography within its ceilings, recovery journeys) and the README capture passed on local Chrome with synthetic data. Physical devices, other engines and screen readers remain unverified.
+
 ## Evidence
 
 Scratch measuring harness kept outside the repository: headless Google Chrome over the DevTools Protocol, fresh profile each run (no service worker), reduced motion emulated, the built-in synthetic demo and a synthetic device copy seeded into browser storage, bank files from the generated synthetic onboarding fixtures. Widths 320, 375, 430, 768 and 1440, light and dark.
