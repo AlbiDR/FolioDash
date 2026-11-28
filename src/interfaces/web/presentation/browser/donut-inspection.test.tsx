@@ -21,8 +21,22 @@ const slices = [
   { id: "d", label: "D", value: 13, href: "#d" },
 ];
 const paths = () => [...host.querySelectorAll<SVGPathElement>(".donut-slice")];
+const nextFrame = () =>
+  new Promise<void>((resolve) =>
+    requestAnimationFrame(() => {
+      resolve();
+    }),
+  );
+// Wait until nothing is running. A transition can start a frame after the render (Firefox under the full suite measured
+// mid-flight by up to 0.6px), so look again after each frame instead of awaiting a single snapshot of the animations.
 const settle = async () => {
-  await Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  for (let round = 0; round < 10; round += 1) {
+    await nextFrame();
+    const running = document.getAnimations();
+    if (running.length === 0) break;
+    await Promise.all(running.map((animation) => animation.finished.catch(() => undefined)));
+  }
+  await nextFrame();
 };
 
 it("grows the inspected slice outward about the ring's centre and never moves another", async () => {
