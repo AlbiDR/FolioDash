@@ -154,11 +154,10 @@ jobs:
 
   # The cross-engine audit is Playwright's own WebKit, Firefox and Chrome, so it runs on Linux, which is not limited by
   # the five concurrent macOS jobs. One job per engine profile; each runs it with motion on and with Reduce Motion on.
-  # Trial (2026-11-28): non-blocking until it has passed on Linux repeatedly; then remove continue-on-error.
+  # Blocking since 2026-11-28 (owner decision) after passing on Linux; a failure here stops the release like any other audit.
   cross-engine:
     name: Audit engines (${{ matrix.profile }})
     needs: build
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
