@@ -1,11 +1,15 @@
 /* Portfolio composition: retain the selected blue/glass baseline, its density and every financial projection.
- * Surface light and inspection feedback are paint only. Chart paths, allocation angles and values stay exact. */
+ * Surface light and inspection feedback are paint only. Chart paths, allocation angles and values stay exact.
+ * Depth: every card here takes the card tier (one edge, no shadow) and the hero takes the hero tier (one shadow, no
+ * edge). The lift on a fine pointer is a state of the card and keeps its brighter edge, tinted from the card edge. */
+.portfolio-dashboard {
+  --card-depth: var(--depth-card);
+  --color-card-edge-lift: color-mix(in srgb, var(--color-accent) 35%, var(--edge-card));
+}
 .portfolio-dashboard > .hero {
   padding: var(--card-padding);
   background: radial-gradient(ellipse at top right, var(--color-hero-sheen), transparent 70%), var(--color-hero);
-  box-shadow:
-    inset 0 0 0 1px var(--color-hero-edge),
-    var(--shadow-hero);
+  box-shadow: var(--depth-hero);
 }
 .portfolio-dashboard .hero-header {
   padding-bottom: var(--space-2);
@@ -37,7 +41,6 @@
 .portfolio-dashboard .stat > .sparkline {
   padding: var(--space-1);
   border-radius: var(--shape-sm);
-  background: var(--surface-low);
 }
 @container periods (min-width: 28rem) {
   .portfolio-dashboard .stat > .sparkline {
@@ -46,18 +49,29 @@
     background: transparent;
   }
 }
-.portfolio-dashboard .portfolio-trend > .chart {
-  background: linear-gradient(var(--color-surface), var(--color-surface-2));
-}
 .portfolio-trend .chart-readout {
   padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) - 1px);
   margin-top: var(--space-2);
   margin-bottom: var(--space-3);
-  border-radius: var(--shape-md);
-  background: var(--surface-low);
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+/* The tools and values panels are space and one hairline, not boxes inside the card. The scroll region keeps its own
+ * edge, because a scrollable area needs one and a visible boundary for keyboard focus. */
+.portfolio-dashboard .chart-tools,
+.portfolio-dashboard .chart-values {
+  padding-inline: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+}
+.portfolio-dashboard .chart-values-scroll {
+  background: transparent;
 }
 .portfolio-trend .chart:focus-within .chart-readout {
+  border-radius: var(--shape-md);
+  border-bottom-color: transparent;
   background: var(--color-accent-soft);
   box-shadow: inset 0 0 0 1px var(--color-inspect-edge);
 }
@@ -65,9 +79,11 @@
   .portfolio-dashboard > .hero:hover {
     box-shadow:
       inset 0 0 0 1px color-mix(in srgb, var(--color-hero-edge) 65%, var(--color-on-hero)),
-      var(--shadow-hero);
+      var(--depth-hero);
   }
   .portfolio-trend .chart:has(.chart-svg:hover) .chart-readout {
+    border-radius: var(--shape-md);
+    border-bottom-color: transparent;
     background: var(--color-accent-soft);
     box-shadow: inset 0 0 0 1px var(--color-inspect-edge);
   }
@@ -94,9 +110,6 @@
 }
 .portfolio-holdings .holdings-table thead {
   background: var(--surface-low);
-}
-.portfolio-dashboard .allocation-card {
-  background: color-mix(in srgb, var(--primary-container) 18%, var(--color-surface));
 }
 .portfolio-dashboard .donut-centre {
   isolation: isolate;

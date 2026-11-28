@@ -18,6 +18,13 @@
   --shadow-hero: none;
   --card-padding: clamp(1rem, 1.7vw, 1.5rem);
   --shadow-card: 0 1px 2px rgba(20, 20, 24, 0.04);
+  /* Depth tiers (UI system amendment 4). A surface takes exactly one: flat has no edge, card has one 1px edge and no
+   * shadow, hero has one soft shadow and no edge. The card edge measures 1.75:1 against the card and 1.51:1 against the
+   * page here, and 1.54:1 and 1.72:1 in dark. */
+  --edge-card: rgba(16, 19, 28, 0.25);
+  --depth-flat: none;
+  --depth-card: inset 0 0 0 1px var(--edge-card);
+  --depth-hero: 0 12px 32px -8px rgba(16, 19, 28, 0.3);
   --shadow-card-lift: 0 4px 14px rgba(20, 20, 24, 0.06);
   --shadow-handle: 0 1px 3px rgba(0, 0, 0, 0.18);
   --color-surface: #ffffff;
@@ -174,6 +181,8 @@
     --color-background: #0e0e10;
     --shadow-card: 0 6px 26px rgba(0, 0, 0, 0.12);
     --shadow-card-lift: 0 14px 36px rgba(0, 0, 0, 0.34);
+    --edge-card: rgba(255, 255, 255, 0.14);
+    --depth-hero: 0 14px 36px -10px rgba(0, 0, 0, 0.7);
     --color-surface: #1a1b1e;
     --surface-low: #141416;
     --color-surface-2: #232428;
