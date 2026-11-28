@@ -77,6 +77,30 @@ Curved lines (would invent values between statements), dashed grid (dashes alrea
 
 **Evidence.** Computed before and after on the local production build with synthetic data and no service worker, same state for both, all five screens. At 1440px and at 375px no page height changed and no box moved by more than 1.6px (the largest was 1.6px). Portfolio padding and gap values off the 4px grid: 412 of 2,582 down to 404 at 1440px; 562 of 2,381 down to 558 at 375px; distinct padding values 15 to 14 at 1440px and 13 to 12 at 375px. The first comparison against an earlier snapshot was invalid because the update notice and a changed Expenses state shifted pages by up to 62px, and is not used.
 
+### Phase 1b record, 2026-11-28
+
+**Tidy.** `--shape-xl` is now an alias of `--shape-lg`, with the shell comment kept above it. `--space-2-5` keeps its name: the naming contract has no rule for fractional steps, and the other spellings considered (`--space-12`, `--space-3-`) read worse than the gap it fills.
+
+**Decisions on the nine reverted replacements**, by the owner's delegated rule: apply when no audited target falls below 48px or changes a 48px target, no page height moves by more than 8px at 1440 or 375px, and the rendered, accessibility and interaction audits stay green. Measured as a same-state before and after on the local build (synthetic data, service worker unregistered, update notice dismissed).
+
+| Replacement | Decision | Measured shift |
+|---|---|---|
+| `.plain-list` gap `0.6rem` to 8px | Applied | Your data 3.2px shorter, no target affected |
+| `.steps` gap `0.6rem` to 8px | Applied, unmeasured: the Import review is not rendered by the demo | Not measured |
+| `.legend a` gap `0.6rem` to 8px | Applied | Name moves 1.6px and widens 3.2px; no height change |
+| `.segmented button` padding `0.8rem` to 12px | Applied | Each button 1.6px narrower; the six-button period selector is 9.6px narrower at 1440px and the Activity status control 4.8px; every button stays wider than 48px |
+| `.segmented a` padding `0.9rem` to 16px | Applied | No audited screen renders one |
+| `.holdings-table td` padding `0.7rem` | Kept: sub-grid exception | Rows +1.6px each; with the recent-history tables the Portfolio page was 38 to 86px taller at 375px |
+| `.perf` gap `0.15rem` and `.perf-row` padding `0.45rem` | Kept: sub-grid exception | Seven rows, about +21px over the card at 375px |
+
+Also applied: the `.pill` horizontal padding, the details marker margin, the review adjustments indent, the field select padding, the phone matrix cell padding, the statement table inline padding and the nav list gap. Tried and kept as sub-grid exceptions: the `.pill` vertical padding `0.1rem` (+4.8px on pills in table rows), the nav link gap `0.1rem` (grew the mobile nav links by 2.4px, which touches the 48px targets), and the `0.1rem` gaps in the chart readout and chart values table (+2.4px each; chart text is left alone). Left as they are: the segmented control's 2px and 3px nudges, the `-1px` visually hidden margins, the `1.25rem` values (4px either way), `2.25rem`, the `6.5rem` bottom navigation clearance and the `0.65rem` details marker margin in a motion stylesheet.
+
+**Ratchet.** `verify:style` has no spacing-literal ratchet: it holds zero-tolerance rules for motion and colour literals, with no record of exceptions. A spacing rule would be a new rule with its own record under STD-6, which is the new check family the work order excluded, so none was added. Literal spacing declarations now: 31 before this pass, 20 after, counting the exceptions above.
+
+**Numbers, 1440px then 375px, off-grid padding and gap values over all padding and gap values.** Portfolio 404 of 2,582 to 372; 558 of 2,381 to 550. Expenses 4 of 319 to 4; 12 of 317 to 12. Activity 16 of 227 to 10; 18 of 228 to 18. Import 16 of 116 to 8; 16 of 117 to 16. Your data 8 of 98 to 4; 16 of 99 to 12. What stays off the grid is mostly the kept table cell padding and the fluid tokens (`--card-padding`, `--page-inset`, `--gap` are clamps by design). Page heights are unchanged on every screen at both widths except Your data, which is 3px shorter. No audited target changed its 48px size.
+
+**Evidence.** `npm run verify`, the interaction, rendered, accessibility, portfolio polish, reduced-motion and choreography audits, and `npm run capture:readme` passed. Not verified: the Import review and the steps list, other engines, light mode, physical devices and screen readers.
+
 ## Open before phase 1 starts
 
 Settled by the third pass on 2026-11-28:
