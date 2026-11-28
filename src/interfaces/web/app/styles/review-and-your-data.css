@@ -77,7 +77,7 @@
 .account .card,
 .account-section {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-2-5);
   align-content: start;
 }
 
@@ -146,13 +146,13 @@
   display: grid;
   gap: 0.6rem;
   margin: 0;
-  padding-left: 1.1rem;
+  padding-left: var(--space-3);
 }
 
 .steps {
   display: grid;
   gap: 0.6rem;
-  margin: 0.25rem 0 0.9rem;
+  margin: var(--space-1) 0 var(--space-3);
   padding-left: 1.25rem;
 }
 
@@ -170,7 +170,7 @@ details.card > summary {
 }
 
 .build-stamp {
-  margin: 0 0.25rem;
+  margin: 0 var(--space-1);
   user-select: all;
 }
 

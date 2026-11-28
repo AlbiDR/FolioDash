@@ -81,7 +81,7 @@
   container-type: inline-size;
   width: min(100%, 11.25rem);
   aspect-ratio: 1;
-  margin: 0 auto 0.9rem;
+  margin: 0 auto var(--space-3);
 }
 
 .donut svg {
@@ -128,7 +128,7 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.4rem 0;
+  padding: var(--space-2) 0;
   color: inherit;
   text-decoration: none;
 }
@@ -189,7 +189,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-2-5);
   min-height: var(--touch-target);
   padding: 0.45rem 0;
   color: inherit;
