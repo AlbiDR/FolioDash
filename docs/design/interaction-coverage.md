@@ -114,11 +114,11 @@ One row is a source template; a fund-link template can render many controls. All
 | 7d011ddea82a-1 | [account-client-id.tsx:13](../../src/interfaces/web/features/account/account-client-id.tsx#L13) | summary / action | Advanced: Google client ID | SOURCE CLASSIFIED; STATES OPEN |
 | 1bcfbbd10eb1-1 | [account-client-id.tsx:20](../../src/interfaces/web/features/account/account-client-id.tsx#L20) | input / field | client-id | SOURCE CLASSIFIED; STATES OPEN |
 | e98c9f23d6cd-1 | [account-client-id.tsx:42](../../src/interfaces/web/features/account/account-client-id.tsx#L42) | button / action | Save client ID | SOURCE CLASSIFIED; STATES OPEN |
-| a39c4193e413-1 | [account-connection-card.tsx:23](../../src/interfaces/web/features/account/account-connection-card.tsx#L23) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| df3eb53bfc8e-1 | [account-connection-card.tsx:57](../../src/interfaces/web/features/account/account-connection-card.tsx#L57) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
-| bed0a9a37174-1 | [account-connection-card.tsx:82](../../src/interfaces/web/features/account/account-connection-card.tsx#L82) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
-| 848b787c9375-1 | [account-connection-card.tsx:98](../../src/interfaces/web/features/account/account-connection-card.tsx#L98) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
-| 54878b227f1f-1 | [account-connection-card.tsx:107](../../src/interfaces/web/features/account/account-connection-card.tsx#L107) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
+| a39c4193e413-1 | [account-connection-card.tsx:28](../../src/interfaces/web/features/account/account-connection-card.tsx#L28) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| df3eb53bfc8e-1 | [account-connection-card.tsx:68](../../src/interfaces/web/features/account/account-connection-card.tsx#L68) | a / action | Open in Google Sheets | SOURCE CLASSIFIED; STATES OPEN |
+| bed0a9a37174-1 | [account-connection-card.tsx:93](../../src/interfaces/web/features/account/account-connection-card.tsx#L93) | button / action | primary | SOURCE CLASSIFIED; STATES OPEN |
+| 848b787c9375-1 | [account-connection-card.tsx:109](../../src/interfaces/web/features/account/account-connection-card.tsx#L109) | button / action | Reconnect with Google | SOURCE CLASSIFIED; STATES OPEN |
+| 54878b227f1f-1 | [account-connection-card.tsx:118](../../src/interfaces/web/features/account/account-connection-card.tsx#L118) | button / action | Use a different Google account | SOURCE CLASSIFIED; STATES OPEN |
 | 76a11d141f10-1 | [account-device-section.tsx:24](../../src/interfaces/web/features/account/account-device-section.tsx#L24) | a / action | row-link plain | SOURCE CLASSIFIED; STATES OPEN |
 | 4ab8089492ae-1 | [account-device-section.tsx:53](../../src/interfaces/web/features/account/account-device-section.tsx#L53) | button / action | Yes, forget this device | SOURCE CLASSIFIED; STATES OPEN |
 | 86aff31fdb88-1 | [account-device-section.tsx:69](../../src/interfaces/web/features/account/account-device-section.tsx#L69) | button / action | Keep it | SOURCE CLASSIFIED; STATES OPEN |

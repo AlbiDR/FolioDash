@@ -15,11 +15,16 @@ export function AccountConnectionCard(p: { readonly shared: AccountShared }): JS
       </h2>
       {signedOut ? (
         <>
-          <p class="card-subtitle">Not set up yet.</p>
+          <p class="card-subtitle account-status" data-tone="idle">
+            Not set up yet.
+          </p>
           <p>
             Continue with Google and FolioDash creates one private spreadsheet in your own Google Drive for your
             portfolio. The spreadsheet lives in your Google account, and you choose whether to share it.
           </p>
+          {!props.clientConfigured && (
+            <p class="hint">This site has no Google client set up yet. Add it under Advanced below.</p>
+          )}
           <button
             type="button"
             class="primary"
@@ -28,13 +33,19 @@ export function AccountConnectionCard(p: { readonly shared: AccountShared }): JS
           >
             {pending === "connect" ? "Waiting for Google…" : "Continue with Google"}
           </button>
-          {!props.clientConfigured && (
-            <p class="hint">This site has no Google client set up yet. Add it under Advanced below.</p>
-          )}
         </>
       ) : (
         <>
-          <p class="card-subtitle">
+          <p
+            class="card-subtitle account-status"
+            data-tone={
+              state.connection === "reconnect" || state.connection === "offline"
+                ? "attention"
+                : state.connection !== "renewing" && state.connection !== "waiting" && state.mode === "online"
+                  ? "ok"
+                  : "idle"
+            }
+          >
             {state.connection === "renewing"
               ? "Renewing Google access with the account FolioDash remembers…"
               : state.connection === "waiting"
